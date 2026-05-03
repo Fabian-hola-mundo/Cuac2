@@ -1,0 +1,20 @@
+<div class="section" id="testi">
+  <div class="eyebrow"><span class="dot"></span> 05 — Lo que dicen</div>
+  <h2 class="h-section">Equipos que <em>volvieron</em> a trabajar con nosotros.</h2>
+
+  <div class="testi-grid">
+    @for (t of testimonials; track t.name) {
+      <article class="testi">
+        <div class="q-mark">&ldquo;</div>
+        <p class="q">{{ t.quote }}</p>
+        <div class="a">
+          <div class="av" [style.background]="t.avatarBg" [style.color]="t.avatarColor">{{ t.initials }}</div>
+          <div class="a-meta">
+            <div class="n">{{ t.name }}</div>
+            <div class="r">{{ t.role }}</div>
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+</div>

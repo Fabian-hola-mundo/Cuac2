@@ -1,0 +1,101 @@
+.services-wrap {
+  background: var(--mist);
+  border-top: 1px solid rgba(21, 31, 40, 0.06);
+  border-bottom: 1px solid rgba(21, 31, 40, 0.06);
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--s-4);
+}
+
+.svc {
+  background: white;
+  border: 1px solid rgba(21, 31, 40, 0.08);
+  border-radius: var(--r-lg);
+  padding: var(--s-6) var(--s-6) var(--s-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 36px rgba(21, 31, 40, 0.08);
+    border-color: rgba(21, 31, 40, 0.14);
+  }
+
+  .svc-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ember);
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 32px;
+    line-height: 1.05;
+    color: var(--carbon);
+  }
+
+  p { font-size: 14.5px; color: rgba(21, 31, 40, 0.65); line-height: 1.6; }
+
+  ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: var(--s-4);
+    border-top: 1px dashed rgba(21, 31, 40, 0.12);
+  }
+
+  li {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: rgba(21, 31, 40, 0.7);
+    padding-left: 16px;
+    position: relative;
+
+    &::before {
+      content: '+';
+      position: absolute;
+      left: 0;
+      color: var(--ember);
+      font-weight: 700;
+    }
+  }
+
+  &.lead {
+    grid-column: span 6;
+    background: var(--carbon);
+    color: var(--paper);
+    border-color: transparent;
+
+    h3 { color: var(--paper); font-size: 44px; }
+    p { color: rgba(240, 241, 246, 0.7); font-size: 16px; }
+    .svc-tag { color: var(--coral); }
+    ul { border-top-color: rgba(240, 241, 246, 0.15); }
+    li { color: rgba(240, 241, 246, 0.75); }
+  }
+
+  &.col6 { grid-column: span 6; }
+  &.col4 { grid-column: span 4; }
+  &.col3 { grid-column: span 3; }
+}
+
+@media (max-width: 1024px) {
+  .services-grid { grid-template-columns: repeat(6, 1fr); }
+  .svc.lead, .svc.col6 { grid-column: span 6; }
+  .svc.col4, .svc.col3 { grid-column: span 3; }
+}
+
+@media (max-width: 640px) {
+  .services-grid { grid-template-columns: 1fr; }
+  .svc.lead, .svc.col6, .svc.col4, .svc.col3 { grid-column: span 1; }
+}

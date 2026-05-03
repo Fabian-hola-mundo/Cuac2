@@ -1,0 +1,35 @@
+:root {
+  // Colors
+  --carbon:  #151F28;
+  --deep:    #011E54;
+  --sky:     #C0E8FD;
+  --ember:   #EC3813;
+  --coral:   #FF8D75;
+  --mist:    #F0F1F6;
+  --paper:   #FAFAFB;
+  --ink:     #151F28;
+
+  // Typography
+  --display: 'Fauna One', Georgia, serif;
+  --sans:    'Manrope', system-ui, sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  // Spacing (8pt grid)
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3:  12px;
+  --s-4:  16px;
+  --s-5:  24px;
+  --s-6:  32px;
+  --s-7:  48px;
+  --s-8:  64px;
+  --s-9:  96px;
+  --s-10: 128px;
+
+  // Border radii
+  --r-sm:   6px;
+  --r-md:   12px;
+  --r-lg:   20px;
+  --r-xl:   32px;
+  --r-pill: 999px;
+}

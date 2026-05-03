@@ -1,0 +1,109 @@
+.case-wrap {
+  background: var(--deep);
+  color: var(--paper);
+}
+
+.case {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--s-9) var(--s-7);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-8);
+  align-items: center;
+
+  .eyebrow { color: var(--coral); }
+
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(40px, 4.6vw, 60px);
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+    color: var(--paper);
+    margin-bottom: var(--s-5);
+  }
+
+  p {
+    color: rgba(240, 241, 246, 0.72);
+    font-size: 17px;
+    line-height: 1.65;
+    max-width: 50ch;
+    margin-bottom: var(--s-6);
+  }
+}
+
+.case-stats {
+  display: flex;
+  gap: var(--s-7);
+  margin-bottom: var(--s-6);
+}
+
+.case-stat {
+  .k {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: rgba(240, 241, 246, 0.45);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .v {
+    font-family: var(--display);
+    font-size: 36px;
+    color: var(--coral);
+    line-height: 1;
+  }
+}
+
+.case-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--coral);
+
+  &::after { content: '→'; }
+}
+
+.case-vis {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 141, 117, 0.55), transparent 55%),
+    radial-gradient(circle at 75% 70%, rgba(192, 232, 253, 0.30), transparent 55%),
+    var(--carbon);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(240, 241, 246, 0.08);
+
+  .ph {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(240, 241, 246, 0.55);
+  }
+
+  .mark {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -55%);
+    width: 60%;
+    color: rgba(240, 241, 246, 0.18);
+  }
+}
+
+@media (max-width: 1024px) {
+  .case { grid-template-columns: 1fr; }
+}
