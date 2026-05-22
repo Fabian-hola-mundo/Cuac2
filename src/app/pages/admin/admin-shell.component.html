@@ -1,0 +1,123 @@
+<!-- LOGIN SCREEN -->
+@if (!sb.session()) {
+<div id="login-screen">
+  <div class="login-grid">
+    <div class="login-side">
+      <div class="login-dots" aria-hidden="true"></div>
+      <span class="login-deco" aria-hidden="true">Cv</span>
+      <div>
+        <div class="brand-l">Cuaqui<em>verso</em></div>
+        <div class="tag-l">Admin v0.5</div>
+      </div>
+      <h2>Detrás del telón del <em>universo</em>.</h2>
+      <p class="b">Gestiona productos, pedidos, clientes y pagos. Acceso restringido al equipo de operaciones.</p>
+    </div>
+    <div class="login-form">
+      <h3>Hola de nuevo, <em>capitán</em>.</h3>
+      <p class="pp">Entra con tu cuenta de Google o con contraseña.</p>
+      <button class="submit" type="button" (click)="loginGoogle()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12A10 10 0 1 1 12 2"/><path d="M22 12h-10"/></svg>
+        Continuar con Google
+      </button>
+      <div class="or">o usa contraseña</div>
+      <div class="field">
+        <label>Correo</label>
+        <div class="input-wrap">
+          <input class="input" type="email" [(ngModel)]="loginEmail" name="email" autocomplete="email" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <div class="input-wrap">
+          <input class="input" type="password" [(ngModel)]="loginPass" name="password" autocomplete="current-password" />
+        </div>
+      </div>
+      @if (loginError()) {
+        <p style="color:var(--terra);font-size:13px;margin-bottom:8px">{{ loginError() }}</p>
+      }
+      <button class="submit ghost" type="button" [disabled]="loginLoading()" (click)="loginPassword()">
+        {{ loginLoading() ? 'Entrando…' : 'Entrar con contraseña' }}
+      </button>
+      <div class="legal">Solo personal autorizado · sesión cifrada · expira en 24h</div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- ADMIN SHELL -->
+@if (sb.session()) {
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <span class="b1">Cuaqui</span><span class="b2">verso</span>
+      <span class="tag">Admin</span>
+    </div>
+    <div class="sb-section">Tienda</div>
+    <div class="sb-nav">
+      @for (id of NAV_TIENDA; track id) {
+      <a [class.is-active]="state.view() === id && !isInventarioRoute()" (click)="goHome(id)">
+        @if (id === 'dashboard') { <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg> }
+        @if (id === 'productos') { <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5v8L3 16V8Z"/><path d="m21 8-9 5v8l9-5V8Z"/></svg> }
+        @if (id === 'pedidos')   { <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V5a3 3 0 0 1 6 0v3"/></svg> }
+        @if (id === 'clientes')  { <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M21 20c0-2.5-1.9-4.6-4.4-4.95"/></svg> }
+        @if (id === 'pagos')     { <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg> }
+        <span>{{ NAV_META[id].label }}</span>
+        @if (NAV_META[id].count != null) { <span class="count">{{ NAV_META[id].count }}</span> }
+      </a>
+      }
+    </div>
+    <div class="sb-section">Universo</div>
+    <div class="sb-nav">
+      @for (id of NAV_UNIVERSO; track id) {
+      <a [class.is-active]="state.view() === id && !isInventarioRoute()" (click)="goHome(id)">
+        @if (id === 'contenido') { <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.7 6.4.7-4.8 4.4 1.3 6.2L12 17l-5.5 3 1.3-6.2L3 9.4l6.4-.7L12 3Z"/></svg> }
+        @if (id === 'ajustes')   { <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg> }
+        <span>{{ NAV_META[id].label }}</span>
+      </a>
+      }
+    </div>
+    <div class="sb-section">Evento</div>
+    <div class="sb-nav">
+      <a [class.is-active]="isInventarioRoute()" (click)="goInventario()">
+        <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="7" cy="6" r="1" fill="currentColor"/><circle cx="7" cy="12" r="1" fill="currentColor"/><circle cx="7" cy="18" r="1" fill="currentColor"/></svg>
+        <span>Inventario</span>
+        <span class="count">sofa-26</span>
+      </a>
+    </div>
+    <div class="sb-foot">
+      <div class="avatar">{{ userInitial }}</div>
+      <div class="who"><strong>Design Cuac</strong><span>{{ userEmail }}</span></div>
+      <button class="logout" title="Cerrar sesión" (click)="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="m10 16-4-4 4-4"/><path d="M6 12h11"/></svg>
+      </button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar-admin">
+      <div class="crumbs-admin">
+        <span>Cuaquiverso</span><span class="sep">/</span>
+        @for (c of crumbs().slice(0,-1); track $index) {
+          <span>{{ c }}</span><span class="sep">/</span>
+        }
+        <strong>{{ crumbs()[crumbs().length - 1] }}</strong>
+      </div>
+      <div class="top-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <input placeholder="Buscar…" />
+        <kbd>⌘ K</kbd>
+      </div>
+      <div class="top-actions-admin">
+        <button class="ib" title="Notificaciones">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16H6a3 3 0 0 0 3-3V9a3 3 0 0 1 6 0v4a3 3 0 0 0 3 3Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="content">
+      <router-outlet />
+    </div>
+  </main>
+  @if (toast()) {
+  <div class="toast-global">{{ toast() }}</div>
+  }
+</div>
+}
