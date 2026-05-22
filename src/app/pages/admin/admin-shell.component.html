@@ -1,5 +1,5 @@
-<!-- LOGIN SCREEN -->
-@if (!sb.session()) {
+<!-- LOGIN SCREEN — DEV BYPASS ACTIVO, auth deshabilitada temporalmente -->
+@if (false) {
 <div id="login-screen">
   <div class="login-grid">
     <div class="login-side">
@@ -45,7 +45,7 @@
 }
 
 <!-- ADMIN SHELL -->
-@if (sb.session()) {
+@if (true) { <!-- DEV BYPASS -->
 <div class="admin-shell">
   <aside class="sidebar">
     <div class="sb-brand">
