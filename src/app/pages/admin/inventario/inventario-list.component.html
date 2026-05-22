@@ -1,0 +1,77 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Inventario · sofa-2026</div>
+    <h1>Productos del <em>evento</em>.</h1>
+    <p class="sub">Stock en tiempo real. Edita precios, categorías y stock inicial desde aquí.</p>
+  </div>
+  <div class="ph-r">
+    <button class="btn-sm ghost" (click)="verVentas()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-4"/></svg>
+      Log de ventas
+    </button>
+    <button class="btn-sm solid" (click)="nuevo()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo producto
+    </button>
+  </div>
+</div>
+
+<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">
+  <button class="chip" [class.is-on]="catFiltro() === 'all'" (click)="catFiltro.set('all')">Todos</button>
+  @for (c of categorias; track c.id) {
+    <button class="chip" [class.is-on]="catFiltro() === c.id" (click)="catFiltro.set(c.id)">{{ c.label }}</button>
+  }
+</div>
+
+@if (inv.cargando()) {
+  <p style="color:var(--mid);font-size:14px;padding:12px 0">Cargando productos…</p>
+}
+@if (inv.error()) {
+  <p style="color:var(--terra);font-size:14px;padding:12px 0">Error: {{ inv.error() }}</p>
+}
+
+@if (!inv.cargando() && productosFiltrados().length > 0) {
+<div class="panel">
+  <table class="inv-table">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Stock inicial</th>
+        <th>Stock actual</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of productosFiltrados(); track p.id) {
+      <tr class="inv-row" (click)="editar(p)">
+        <td><strong>{{ p.nombre }}</strong></td>
+        <td>{{ labelCategoria(p.categoria) }}</td>
+        <td>{{ fmtCOP(p.precio) }}</td>
+        <td>{{ p.stock_inicial }}</td>
+        <td>
+          <span [style.color]="p.stock_actual === 0 ? 'var(--terra)' : p.stock_actual < 3 ? '#B07820' : 'inherit'">
+            {{ p.stock_actual }}
+          </span>
+        </td>
+        <td>
+          @if (p.activo) { <span class="inv-badge ok">Activo</span> }
+          @else { <span class="inv-badge off">Inactivo</span> }
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+}
+
+@if (!inv.cargando() && productosFiltrados().length === 0 && !inv.error()) {
+<div class="panel" style="text-align:center;padding:48px 24px;color:var(--mid)">
+  <p>No hay productos.
+    <button style="background:none;border:none;color:var(--terra);cursor:pointer;font-size:inherit" (click)="nuevo()">
+      Crea el primero →
+    </button>
+  </p>
+</div>
+}
