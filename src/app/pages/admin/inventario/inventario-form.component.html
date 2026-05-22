@@ -1,0 +1,72 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Inventario · sofa-2026</div>
+    <h1>{{ isEdit() ? 'Editar' : 'Nuevo' }} <em>producto</em>.</h1>
+  </div>
+  <div class="ph-r">
+    <button class="btn-sm ghost" (click)="cancelar()">← Volver</button>
+  </div>
+</div>
+
+<div class="panel" style="max-width:560px">
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+
+    <div class="form-field">
+      <label>Nombre del producto *</label>
+      <input class="input" formControlName="nombre" placeholder="Tote bag sofa-2026" />
+      @if (hasError('nombre')) {
+        <span class="form-err">Nombre requerido (mínimo 2 caracteres)</span>
+      }
+    </div>
+
+    <div class="form-field">
+      <label>Categoría *</label>
+      <select class="input" formControlName="categoria">
+        @for (c of categorias; track c.id) {
+          <option [value]="c.id">{{ c.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label>Precio (COP) *</label>
+      <input class="input" type="number" formControlName="precio" placeholder="28000" min="1" />
+      @if (hasError('precio')) {
+        <span class="form-err">El precio debe ser mayor a 0</span>
+      }
+    </div>
+
+    <div class="form-field">
+      <label>Stock inicial *</label>
+      <input class="input" type="number" formControlName="stock_inicial" placeholder="0" min="0" />
+      @if (!isEdit()) {
+        <span class="form-hint">El stock actual se igualará a este valor al crear</span>
+      }
+      @if (isEdit()) {
+        <span class="form-hint">El stock actual se gestiona desde el POS</span>
+      }
+      @if (hasError('stock_inicial')) {
+        <span class="form-err">El stock no puede ser negativo</span>
+      }
+    </div>
+
+    <div class="form-field form-toggle-row">
+      <label>Producto activo</label>
+      <label class="toggle-switch">
+        <input type="checkbox" formControlName="activo" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    @if (errorMsg()) {
+      <p class="form-api-error">Error al guardar: {{ errorMsg() }}</p>
+    }
+
+    <div style="display:flex;gap:10px;margin-top:24px">
+      <button class="btn-sm solid" type="submit" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando…' : (isEdit() ? 'Actualizar producto' : 'Crear producto') }}
+      </button>
+      <button class="btn-sm ghost" type="button" (click)="cancelar()">Cancelar</button>
+    </div>
+  </form>
+</div>
