@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Cuaquiverso POS</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#E8623D" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --card: #1a1f2e;
+      --card-hover: #22293b;
+      --accent: #E8623D;
+      --accent-dim: rgba(232, 98, 61, 0.15);
+      --text: #f0f2f7;
+      --text-muted: #8892a4;
+      --success: #3ecf8e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --border: rgba(255,255,255,0.08);
+      --radius: 12px;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #app {
+      max-width: 640px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+    }
+    .screen.active {
+      display: flex;
+    }
+
+    /* ── DEVICE NAME SCREEN ── */
+    #screen-device {
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      gap: 24px;
+    }
+    .setup-logo {
+      font-size: 64px;
+      line-height: 1;
+    }
+    .setup-title {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .setup-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .setup-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── LOGIN SCREEN ── */
+    #screen-login {
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      gap: 24px;
+    }
+    .login-logo {
+      font-size: 64px;
+      line-height: 1;
+    }
+    .login-title {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .login-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .login-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .login-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      display: none;
+    }
+    .login-error.visible { display: block; }
+
+    /* ── INPUTS & BUTTONS ── */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"] {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 16px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    input:focus {
+      border-color: var(--accent);
+    }
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 52px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      width: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { transform: scale(0.97); opacity: 0.9; }
+    .btn:disabled { opacity: 0.4; pointer-events: none; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--card-hover); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+    .btn-sm {
+      min-height: 40px;
+      font-size: 14px;
+      border-radius: 8px;
+      padding: 0 16px;
+      width: auto;
+    }
+
+    /* ── CATALOG HEADER ── */
+    #catalog-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(15,17,23,0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-event {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .header-device {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .connection-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .connection-badge.online {
+      background: rgba(62,207,142,0.12);
+      color: var(--success);
+      border: 1px solid rgba(62,207,142,0.25);
+    }
+    .connection-badge.offline {
+      background: rgba(245,158,11,0.12);
+      color: var(--warning);
+      border: 1px solid rgba(245,158,11,0.25);
+    }
+    .connection-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .connection-badge.online .connection-dot {
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── PRODUCT GRID ── */
+    #catalog-body {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    #product-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .product-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.2s;
+    }
+    .product-card.sold-out {
+      opacity: 0.55;
+    }
+    .product-name {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .product-category {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .product-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .product-stock-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+    .stock-info {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .badge-low {
+      background: rgba(245,158,11,0.2);
+      color: var(--warning);
+      border: 1px solid rgba(245,158,11,0.35);
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-sold {
+      color: var(--danger);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn-sell {
+      margin-top: 4px;
+      min-height: 44px;
+      font-size: 15px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid rgba(232,98,61,0.3);
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-sell:active { transform: scale(0.97); background: rgba(232,98,61,0.25); }
+    .btn-sell:disabled { opacity: 0.3; pointer-events: none; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-sheet {
+      background: var(--card);
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 40px;
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: slide-up 0.22s ease-out;
+    }
+    @keyframes slide-up {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .modal-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: -10px auto 0;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .modal-product-info {
+      background: var(--card-hover);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .modal-product-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .modal-product-stock {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .qty-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .qty-label {
+      font-size: 15px;
+      color: var(--text-muted);
+      flex: 1;
+    }
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .qty-btn {
+      background: var(--card-hover);
+      border: none;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 600;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .qty-btn:active { background: var(--accent-dim); }
+    .qty-value {
+      background: var(--card);
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+      width: 56px;
+      text-align: center;
+      border: none;
+      height: 48px;
+      padding: 0;
+      pointer-events: none;
+    }
+    .modal-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-hover);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+    .modal-total-label { font-size: 14px; color: var(--text-muted); }
+    .modal-total-value { font-size: 22px; font-weight: 800; color: var(--accent); }
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── TOAST ── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      pointer-events: none;
+      width: calc(100% - 32px);
+      max-width: 480px;
+    }
+    .toast {
+      background: #2a3244;
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      border-left: 3px solid var(--accent);
+      width: 100%;
+      animation: toast-in 0.2s ease-out;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--danger); }
+    .toast.warning { border-left-color: var(--warning); }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── LOADING ── */
+    .loading-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 40px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #catalog-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      padding: 40px;
+      gap: 16px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      padding: 60px 24px;
+      gap: 16px;
+      color: var(--text-muted);
+      font-size: 15px;
+      text-align: center;
+    }
+    .empty-icon { font-size: 48px; }
+
+    /* ── LOGOUT BTN ── */
+    #logout-btn {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    #logout-btn:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- SCREEN 0: Device Name -->
+  <div id="screen-device" class="screen">
+    <div class="setup-logo">🦆</div>
+    <div class="setup-title">Cuaquiverso POS</div>
+    <div class="setup-sub">Antes de comenzar, asigna un nombre a este dispositivo</div>
+    <div class="setup-form">
+      <input type="text" id="device-name-input" placeholder="Ej: Caja 1, Merch Stand…" maxlength="40" autocomplete="off" />
+      <button class="btn btn-primary" onclick="window.confirmDeviceName()">Confirmar</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: Login -->
+  <div id="screen-login" class="screen">
+    <div class="login-logo">🦆</div>
+    <div class="login-title">Iniciar sesión</div>
+    <div class="login-sub">Accede con tu cuenta de Cuaquiverso</div>
+    <div class="login-form">
+      <input type="email" id="login-email" value="designcuac@gmail.com" autocomplete="email" />
+      <input type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password" />
+      <div id="login-error" class="login-error"></div>
+      <button class="btn btn-primary" id="login-btn" onclick="window.doLogin()">Entrar</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Catalog -->
+  <div id="screen-catalog" class="screen">
+    <div id="catalog-header">
+      <div class="header-row">
+        <span class="header-event" id="header-event-name">SOFÁ 2026</span>
+        <span id="connection-badge" class="connection-badge online">
+          <span class="connection-dot"></span>
+          <span id="connection-label">Conectado</span>
+        </span>
+      </div>
+      <div class="header-row">
+        <span class="header-device" id="header-device-name"></span>
+        <span id="pending-badge" style="display:none; font-size:12px; color:var(--warning);">0 pendientes</span>
+      </div>
+    </div>
+
+    <div id="catalog-loading">
+      <div class="loading-spinner"></div>
+      Cargando productos…
+    </div>
+
+    <div id="catalog-body" style="display:none; flex:1; overflow-y:auto; padding:16px;">
+      <div id="product-grid"></div>
+      <div id="empty-state" class="empty-state" style="display:none;">
+        <span class="empty-icon">📦</span>
+        No hay productos activos para este evento.
+      </div>
+    </div>
+
+    <button id="logout-btn" onclick="window.doLogout()" title="Cerrar sesión">Salir</button>
+  </div>
+
+</div>
+
+<!-- SALE MODAL -->
+<div id="sale-modal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Registrar venta</div>
+    <div class="modal-product-info">
+      <div class="modal-product-name" id="modal-product-name">—</div>
+      <div class="modal-product-stock" id="modal-product-stock">Stock disponible: —</div>
+    </div>
+    <div class="qty-row">
+      <span class="qty-label">Cantidad</span>
+      <div class="qty-controls">
+        <button class="qty-btn" onclick="window.changeQty(-1)">−</button>
+        <input type="number" class="qty-value" id="modal-qty" value="1" readonly />
+        <button class="qty-btn" onclick="window.changeQty(1)">+</button>
+      </div>
+    </div>
+    <div class="modal-total">
+      <span class="modal-total-label">Total</span>
+      <span class="modal-total-value" id="modal-total">$0</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="confirm-sale-btn" onclick="window.confirmSale()">Registrar venta</button>
+      <button class="btn btn-secondary" onclick="window.closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<script type="module">
+  const SUPABASE_URL = 'https://ytqcwrjxlnlsjgnjxiiw.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWN3cmp4bG5sc2pnbmp4aWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTE1MzMsImV4cCI6MjA5NDk4NzUzM30.hW01ztylAFWhy3bAjJXPl4Q8wh2YP_DbpR2oaXWHxVs';
+  const EVENTO_ID = 'sofa-2026';
+  const OFFLINE_QUEUE_KEY = 'pos_offline_queue';
+  const DEVICE_NAME_KEY = 'pos_device_name';
+
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ── STATE ──
+  let products = [];
+  let selectedProduct = null;
+  let currentQty = 1;
+  let isOnline = navigator.onLine;
+  let realtimeChannel = null;
+
+  // ── UTILS ──
+  function formatCOP(n) {
+    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function getDeviceName() {
+    return localStorage.getItem(DEVICE_NAME_KEY) || 'Dispositivo';
+  }
+
+  function getOfflineQueue() {
+    try { return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function saveOfflineQueue(q) {
+    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q));
+  }
+
+  function updatePendingBadge() {
+    const q = getOfflineQueue();
+    const badge = document.getElementById('pending-badge');
+    if (q.length > 0) {
+      badge.style.display = 'inline';
+      badge.textContent = `${q.length} pendiente${q.length > 1 ? 's' : ''}`;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // ── TOAST ──
+  function showToast(msg, type = 'default', duration = 2500) {
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(8px)';
+      el.style.transition = 'opacity 0.3s, transform 0.3s';
+      setTimeout(() => el.remove(), 300);
+    }, duration);
+  }
+
+  // ── CONNECTION STATUS ──
+  function updateConnectionUI() {
+    const badge = document.getElementById('connection-badge');
+    const label = document.getElementById('connection-label');
+    if (isOnline) {
+      badge.className = 'connection-badge online';
+      label.textContent = 'Conectado';
+    } else {
+      badge.className = 'connection-badge offline';
+      label.textContent = 'Sin conexión';
+    }
+    updatePendingBadge();
+  }
+
+  window.addEventListener('online', async () => {
+    isOnline = true;
+    updateConnectionUI();
+    showToast('Conexión restaurada. Sincronizando…', 'warning');
+    await syncOfflineQueue();
+  });
+
+  window.addEventListener('offline', () => {
+    isOnline = false;
+    updateConnectionUI();
+    showToast('Sin conexión. Las ventas se guardarán localmente.', 'warning');
+  });
+
+  // ── OFFLINE QUEUE SYNC ──
+  async function syncOfflineQueue() {
+    const queue = getOfflineQueue();
+    if (queue.length === 0) return;
+
+    let synced = 0;
+    const remaining = [];
+
+    for (const item of queue) {
+      try {
+        const { error: insertError } = await sb.from('ventas_evento').insert({
+          producto_id: item.producto_id,
+          cantidad: item.cantidad,
+          dispositivo: item.dispositivo,
+          vendido_en: item.vendido_en,
+          sincronizado: true
+        });
+        if (insertError) throw insertError;
+
+        const { error: rpcError } = await sb.rpc('decrementar_stock_seguro', {
+          p_producto_id: item.producto_id,
+          p_cantidad: item.cantidad
+        });
+        if (rpcError) throw rpcError;
+
+        synced++;
+      } catch (e) {
+        console.error('Sync error:', e);
+        remaining.push(item);
+      }
+    }
+
+    saveOfflineQueue(remaining);
+    updatePendingBadge();
+
+    if (synced > 0) {
+      showToast(`✓ ${synced} venta${synced > 1 ? 's' : ''} sincronizada${synced > 1 ? 's' : ''}`, 'success', 3500);
+      await loadProducts();
+    }
+    if (remaining.length > 0) {
+      showToast(`${remaining.length} venta${remaining.length > 1 ? 's' : ''} no se pudo sincronizar`, 'error');
+    }
+  }
+
+  // ── PRODUCT CARD RENDER ──
+  function renderProducts() {
+    const grid = document.getElementById('product-grid');
+    const empty = document.getElementById('empty-state');
+    grid.innerHTML = '';
+
+    const active = products.filter(p => p.activo);
+    if (active.length === 0) {
+      empty.style.display = 'flex';
+      return;
+    }
+    empty.style.display = 'none';
+
+    active.forEach(p => {
+      const soldOut = p.stock_actual <= 0;
+      const lowStock = p.stock_actual > 0 && p.stock_actual < 3;
+
+      const card = document.createElement('div');
+      card.className = `product-card${soldOut ? ' sold-out' : ''}`;
+      card.dataset.id = p.id;
+
+      let stockBadge = '';
+      if (soldOut) {
+        stockBadge = `<span class="badge-sold">Agotado</span>`;
+      } else if (lowStock) {
+        stockBadge = `<span class="badge-low">⚠ Poco stock</span>`;
+      }
+
+      card.innerHTML = `
+        <div class="product-category">${p.categoria || '—'}</div>
+        <div class="product-name">${p.nombre}</div>
+        <div class="product-price">${formatCOP(p.precio)}</div>
+        <div class="product-stock-row">
+          <span class="stock-info">Stock: ${p.stock_actual}</span>
+          ${stockBadge}
+        </div>
+        <button class="btn-sell" ${soldOut ? 'disabled' : ''} onclick="window.openSaleModal('${p.id}')">− 1</button>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  // ── LOAD PRODUCTS ──
+  async function loadProducts() {
+    try {
+      const { data, error } = await sb
+        .from('productos_evento')
+        .select('*')
+        .eq('evento_id', EVENTO_ID)
+        .eq('activo', true)
+        .order('categoria')
+        .order('nombre');
+
+      if (error) throw error;
+      products = data || [];
+      renderProducts();
+    } catch (e) {
+      console.error('Load products error:', e);
+      showToast('Error cargando productos', 'error');
+    }
+  }
+
+  // ── REALTIME ──
+  function subscribeRealtime() {
+    if (realtimeChannel) sb.removeChannel(realtimeChannel);
+
+    realtimeChannel = sb
+      .channel('productos-pos')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'productos_evento',
+        filter: `evento_id=eq.${EVENTO_ID}`
+      }, payload => {
+        if (payload.eventType === 'UPDATE' && payload.new) {
+          const idx = products.findIndex(p => p.id === payload.new.id);
+          if (idx !== -1) {
+            products[idx] = { ...products[idx], ...payload.new };
+            renderProducts();
+          }
+        } else if (payload.eventType === 'INSERT' && payload.new) {
+          products.push(payload.new);
+          renderProducts();
+        } else if (payload.eventType === 'DELETE' && payload.old) {
+          products = products.filter(p => p.id !== payload.old.id);
+          renderProducts();
+        }
+      })
+      .subscribe();
+  }
+
+  // ── SHOW CATALOG ──
+  async function showCatalog() {
+    showScreen('screen-catalog');
+    document.getElementById('header-device-name').textContent = getDeviceName();
+    document.getElementById('catalog-loading').style.display = 'flex';
+    document.getElementById('catalog-body').style.display = 'none';
+
+    updateConnectionUI();
+    await loadProducts();
+
+    document.getElementById('catalog-loading').style.display = 'none';
+    document.getElementById('catalog-body').style.display = 'block';
+
+    subscribeRealtime();
+
+    if (getOfflineQueue().length > 0 && isOnline) {
+      await syncOfflineQueue();
+    }
+  }
+
+  // ── MODAL ──
+  window.openSaleModal = function(productId) {
+    selectedProduct = products.find(p => p.id === productId);
+    if (!selectedProduct || selectedProduct.stock_actual <= 0) return;
+
+    currentQty = 1;
+    document.getElementById('modal-product-name').textContent = selectedProduct.nombre;
+    document.getElementById('modal-product-stock').textContent = `Stock disponible: ${selectedProduct.stock_actual}`;
+    document.getElementById('modal-qty').value = 1;
+    document.getElementById('modal-total').textContent = formatCOP(selectedProduct.precio);
+    document.getElementById('confirm-sale-btn').disabled = false;
+    document.getElementById('sale-modal').classList.add('open');
+  };
+
+  window.closeModal = function() {
+    document.getElementById('sale-modal').classList.remove('open');
+    selectedProduct = null;
+    currentQty = 1;
+  };
+
+  window.changeQty = function(delta) {
+    if (!selectedProduct) return;
+    const max = selectedProduct.stock_actual;
+    currentQty = Math.max(1, Math.min(max, currentQty + delta));
+    document.getElementById('modal-qty').value = currentQty;
+    document.getElementById('modal-total').textContent = formatCOP(selectedProduct.precio * currentQty);
+  };
+
+  // ── CONFIRM SALE ──
+  window.confirmSale = async function() {
+    if (!selectedProduct || currentQty < 1) return;
+
+    const btn = document.getElementById('confirm-sale-btn');
+    btn.disabled = true;
+    btn.textContent = 'Procesando…';
+
+    const saleRecord = {
+      producto_id: selectedProduct.id,
+      cantidad: currentQty,
+      dispositivo: getDeviceName(),
+      vendido_en: new Date().toISOString(),
+      sincronizado: isOnline
+    };
+
+    if (isOnline) {
+      try {
+        const { error: insertError } = await sb.from('ventas_evento').insert(saleRecord);
+        if (insertError) throw insertError;
+
+        const { error: rpcError } = await sb.rpc('decrementar_stock_seguro', {
+          p_producto_id: selectedProduct.id,
+          p_cantidad: currentQty
+        });
+        if (rpcError) throw rpcError;
+
+        // Optimistic update local
+        const idx = products.findIndex(p => p.id === selectedProduct.id);
+        if (idx !== -1) {
+          products[idx].stock_actual = Math.max(0, products[idx].stock_actual - currentQty);
+          renderProducts();
+        }
+
+        showToast(`✓ Venta registrada: ${currentQty}× ${selectedProduct.nombre}`, 'success');
+        window.closeModal();
+      } catch (e) {
+        console.error('Sale error:', e);
+        // Fallback to offline
+        const q = getOfflineQueue();
+        q.push(saleRecord);
+        saveOfflineQueue(q);
+        updatePendingBadge();
+        showToast('Error online. Venta guardada sin conexión.', 'warning');
+        window.closeModal();
+      }
+    } else {
+      // Offline: save to queue
+      const q = getOfflineQueue();
+      q.push(saleRecord);
+      saveOfflineQueue(q);
+
+      // Optimistic update
+      const idx = products.findIndex(p => p.id === selectedProduct.id);
+      if (idx !== -1) {
+        products[idx].stock_actual = Math.max(0, products[idx].stock_actual - currentQty);
+        renderProducts();
+      }
+
+      updatePendingBadge();
+      showToast(`Venta guardada sin conexión (${q.length} pendiente${q.length > 1 ? 's' : ''})`, 'warning');
+      window.closeModal();
+    }
+  };
+
+  // ── LOGIN ──
+  window.doLogin = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const btn = document.getElementById('login-btn');
+    const errEl = document.getElementById('login-error');
+
+    errEl.classList.remove('visible');
+    btn.disabled = true;
+    btn.textContent = 'Entrando…';
+
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      errEl.textContent = error.message === 'Invalid login credentials'
+        ? 'Email o contraseña incorrectos'
+        : error.message;
+      errEl.classList.add('visible');
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+    } else {
+      await showCatalog();
+    }
+  };
+
+  // ── LOGOUT ──
+  window.doLogout = async function() {
+    if (!confirm('¿Cerrar sesión?')) return;
+    if (realtimeChannel) sb.removeChannel(realtimeChannel);
+    await sb.auth.signOut();
+    showScreen('screen-login');
+  };
+
+  // ── DEVICE NAME ──
+  window.confirmDeviceName = function() {
+    const val = document.getElementById('device-name-input').value.trim();
+    if (!val) {
+      showToast('Escribe un nombre para el dispositivo', 'error');
+      return;
+    }
+    localStorage.setItem(DEVICE_NAME_KEY, val);
+    checkSession();
+  };
+
+  // Allow Enter key on inputs
+  document.getElementById('device-name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.confirmDeviceName();
+  });
+  document.getElementById('login-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.doLogin();
+  });
+
+  // Close modal on overlay click
+  document.getElementById('sale-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('sale-modal')) window.closeModal();
+  });
+
+  // ── INIT ──
+  async function checkSession() {
+    const deviceName = localStorage.getItem(DEVICE_NAME_KEY);
+    if (!deviceName) {
+      showScreen('screen-device');
+      return;
+    }
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      await showCatalog();
+    } else {
+      showScreen('screen-login');
+    }
+  }
+
+  checkSession();
+</script>
+</body>
+</html>
