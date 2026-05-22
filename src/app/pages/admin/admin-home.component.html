@@ -1,0 +1,703 @@
+<div class="content-home">
+  @switch (view()) {
+
+        <!-- ══ DASHBOARD ══════════════════════════════════════════════════ -->
+        @case ('dashboard') {
+        <div class="ph">
+          <div class="ph-l">
+            <div class="eyebrow"><span class="dot"></span> Dashboard <span class="num">/ 00</span></div>
+            <h1>Hola, <em>Capitán</em>. Esto pasó en el cuaquiverso.</h1>
+            <p class="sub">Resumen de la semana. Pedidos en aumento, dos productos requieren reposición.</p>
+          </div>
+          <div class="ph-r">
+            <button class="btn-sm ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg> Exportar reporte</button>
+            <button class="btn-sm solid" (click)="go('productos', { newProduct: true })"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Producto nuevo</button>
+          </div>
+        </div>
+
+        <div class="kpi-strip">
+          <div class="kpi-item" data-tone="rio">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Ingresos (7d)</div>
+            <div class="kpi-n">$3.482.000</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+18.4%</span><span>vs semana pasada</span></div>
+          </div>
+          <div class="kpi-item" data-tone="terra">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V5a3 3 0 0 1 6 0v3"/></svg> Pedidos (7d)</div>
+            <div class="kpi-n">124</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+12</span><span>vs 112</span></div>
+          </div>
+          <div class="kpi-item" data-tone="sol">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M21 20c0-2.5-1.9-4.6-4.4-4.95"/></svg> Nuevos clientes</div>
+            <div class="kpi-n">38</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+5</span><span>vs 33</span></div>
+          </div>
+          <div class="kpi-item" data-tone="selva">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.7 6.4.7-4.8 4.4 1.3 6.2L12 17l-5.5 3 1.3-6.2L3 9.4l6.4-.7L12 3Z"/></svg> Ticket promedio</div>
+            <div class="kpi-n">$28.080</div>
+            <div class="kpi-delta"><svg class="kpi-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="m5 12 7 7 7-7"/></svg><span class="kpi-down">-3.1%</span><span>$28.980 → $28.080</span></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:var(--s-4)">
+          <div class="panel">
+            <div class="panel-h"><div><h3>Ingresos diarios</h3><div class="sub">Últimos 14 días · COP</div></div><div style="display:flex;gap:6px"><button class="chip is-on">7d</button><button class="chip">14d</button><button class="chip">30d</button></div></div>
+            <div class="panel-b">
+              <div class="chart-wrap">
+                @for (b of BARS; track $index; let i = $index) {
+                <div class="chart-bar" [class.hi]="i >= BARS.length - 3" [style.height.%]="barHeight(b)">
+                  @if (i % 2 === 1) { <div class="lbl">{{ DAYS[i] }}</div> }
+                </div>
+                }
+              </div>
+              <div style="margin-top:var(--s-5);display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-4);padding-top:var(--s-4);border-top:1px solid var(--carbon-08)">
+                <div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Mejor día</div><div style="font-family:var(--display);font-size:22px;margin-top:4px">Domingo · $220k</div></div>
+                <div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Promedio</div><div style="font-family:var(--display);font-size:22px;margin-top:4px">$104k/día</div></div>
+                <div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Conversión</div><div style="font-family:var(--display);font-size:22px;margin-top:4px">3.4%</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><div><h3>Necesita tu mirada</h3><div class="sub">3 alertas activas</div></div></div>
+            <div class="panel-b">
+              <div class="feed">
+                <div class="feed-row" data-tone="terra"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5v8L3 16V8Z"/><path d="m21 8-9 5v8l9-5V8Z"/></svg></div><div class="f-t"><strong>Vuelo de colibrí · A2</strong><span>Stock en 0 · pendiente reposición</span></div><div class="f-tm">CQV-0036</div></div>
+                <div class="feed-row" data-tone="warn"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5v8L3 16V8Z"/><path d="m21 8-9 5v8l9-5V8Z"/></svg></div><div class="f-t"><strong>Diario de páramo</strong><span>Quedan 6 unidades · stock bajo</span></div><div class="f-tm">CQV-0039</div></div>
+                <div class="feed-row" data-tone="warn"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg></div><div class="f-t"><strong>Pago pendiente · #CQ-2811</strong><span>Contra-entrega · 24h sin confirmación</span></div><div class="f-tm">$110k</div></div>
+                <div class="feed-row" data-tone="rio"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 17V5H2v12h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M14 8h4l4 4v5h-2"/><path d="M14 17h1"/></svg></div><div class="f-t"><strong>3 envíos por despachar</strong><span>Servientrega · cierre 5pm</span></div><div class="f-tm">Hoy</div></div>
+                <div class="feed-row" data-tone="ok"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div><div class="f-t"><strong>Carta del jueves</strong><span>Programada para 18 mayo · 1.487 destinatarios</span></div><div class="f-tm">Lista</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:var(--s-4)">
+          <div class="panel-h"><div><h3>Pedidos recientes</h3><div class="sub">Últimas 24 horas</div></div><button class="btn-sm ghost" (click)="go('pedidos')">Ver todos →</button></div>
+          <div class="panel-b flush">
+            <table class="tbl">
+              <thead><tr><th>Orden</th><th>Cliente</th><th>Items</th><th>Pago</th><th>Envío</th><th class="num">Total</th><th>Fecha</th></tr></thead>
+              <tbody>
+                @for (o of ORDERS.slice(0,5); track o.id) {
+                <tr (click)="openOrder()">
+                  <td><span class="id">{{ o.id }}</span></td>
+                  <td><strong style="font-weight:600">{{ o.customer }}</strong><div style="font-size:11.5px;color:var(--carbon-50);font-family:var(--mono)">{{ o.city }}</div></td>
+                  <td>{{ o.items }}</td>
+                  <td><span class="badge" [class]="sb(o.status).tone"><span class="pdot"></span>{{ sb(o.status).label }}</span></td>
+                  <td><span class="badge" [class]="sb(o.shipping).tone"><span class="pdot"></span>{{ sb(o.shipping).label }}</span></td>
+                  <td class="num">{{ fmtCOP(o.total) }}</td>
+                  <td><span class="id">{{ o.date.slice(11) }}</span></td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        }
+
+        <!-- ══ PRODUCTS ═══════════════════════════════════════════════════ -->
+        @case ('productos') {
+        <div class="ph">
+          <div class="ph-l">
+            <div class="eyebrow"><span class="dot"></span> Catálogo <span class="num">/ 01</span></div>
+            <h1>Productos del <em>cuaquiverso</em></h1>
+            <p class="sub">42 productos · 8 categorías · 8 personajes.</p>
+          </div>
+          <div class="ph-r">
+            <button class="btn-sm ghost">Importar CSV</button>
+            <button class="btn-sm ghost">Exportar</button>
+            <button class="btn-sm solid" (click)="openEditor(null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Producto nuevo</button>
+          </div>
+        </div>
+        <div class="tlb">
+          <div class="search-min"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg><input placeholder="Buscar por nombre o SKU…" [value]="productQuery()" (input)="productQuery.set($any($event.target).value)" /></div>
+          <div class="spacer"></div>
+          <div class="chips">
+            <button class="chip" [class.is-on]="productCat() === 'all'" (click)="productCat.set('all')">Todos <span class="ct">{{ PRODUCTS.length }}</span></button>
+            @for (c of CATEGORIES; track c.id) { <button class="chip" [class.is-on]="productCat() === c.id" (click)="productCat.set(c.id)">{{ c.label }} <span class="ct">{{ prodCountForCat(c.id) }}</span></button> }
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-b flush">
+            <table class="tbl">
+              <thead><tr><th style="width:36px"><input type="checkbox" /></th><th>Producto</th><th>SKU</th><th>Personaje</th><th>Categoría</th><th>Estado</th><th class="num">Precio</th><th class="num">Stock</th><th>Actualizado</th><th></th></tr></thead>
+              <tbody>
+                @for (p of filteredProducts(); track p.id) {
+                <tr (click)="openEditor(p)">
+                  <td (click)="$event.stopPropagation()"><input type="checkbox" /></td>
+                  <td><div class="pname"><div class="thumb" [style.background]="tone(p.color).bg" [style.color]="tone(p.color).fg">{{ p.name.charAt(0) }}</div><div class="meta"><strong>{{ p.name }}</strong><span>{{ p.id }}{{ p.flag ? ' · ' + p.flag : '' }}</span></div></div></td>
+                  <td><span class="id">{{ p.sku }}</span></td>
+                  <td><span class="badge"><span style="width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px" [style.background]="char(p.character).accent"></span>{{ char(p.character).name }}</span></td>
+                  <td>{{ cat(p.category).label }}</td>
+                  <td><span class="badge" [class]="sb(p.status).tone"><span class="pdot"></span>{{ sb(p.status).label }}</span></td>
+                  <td class="num">{{ fmtCOP(p.price) }}</td>
+                  <td class="num" [style.color]="stockColor(p.stock)">{{ p.stock }}</td>
+                  <td><span class="id">{{ p.updated }}</span></td>
+                  <td class="actions" (click)="$event.stopPropagation()">
+                    <button class="icon-act" title="Ver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button class="icon-act" title="Duplicar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button>
+                    <button class="icon-act" title="Editar" (click)="openEditor(p)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4 4 14v6h6L20 10"/><path d="M14 4l3-3 4 4-3 3"/></svg></button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="margin-top:var(--s-4);display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--carbon-50)">
+          <span>Mostrando {{ filteredProducts().length }} de {{ PRODUCTS.length }} productos</span>
+          <div style="display:flex;gap:6px"><button class="chip">← Anterior</button><button class="chip is-on">1</button><button class="chip">2</button><button class="chip">Siguiente →</button></div>
+        </div>
+        }
+
+        <!-- ══ ORDERS ═════════════════════════════════════════════════════ -->
+        @case ('pedidos') {
+        <div class="ph">
+          <div class="ph-l">
+            <div class="eyebrow"><span class="dot"></span> Operación <span class="num">/ 02</span></div>
+            <h1>Pedidos <em>en curso</em></h1>
+            <p class="sub">Todo lo que ha pasado por la tienda. Click en cualquiera para ver detalle.</p>
+          </div>
+          <div class="ph-r">
+            <button class="btn-sm ghost">Imprimir guías (3)</button>
+            <button class="btn-sm ghost">Exportar</button>
+            <button class="btn-sm solid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Pedido manual</button>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab" [class.on]="orderTab()==='all'"     (click)="orderTab.set('all')">Todos     <span class="ct">{{ ordersByTab().all.length }}</span></button>
+          <button class="tab" [class.on]="orderTab()==='paid'"    (click)="orderTab.set('paid')">Pagados   <span class="ct">{{ ordersByTab().paid.length }}</span></button>
+          <button class="tab" [class.on]="orderTab()==='pending'" (click)="orderTab.set('pending')">Pendientes <span class="ct">{{ ordersByTab().pending.length }}</span></button>
+          <button class="tab" [class.on]="orderTab()==='shipped'" (click)="orderTab.set('shipped')">Enviados  <span class="ct">{{ ordersByTab().shipped.length }}</span></button>
+          <button class="tab" [class.on]="orderTab()==='issues'"  (click)="orderTab.set('issues')">Problemas <span class="ct">{{ ordersByTab().issues.length }}</span></button>
+        </div>
+        <div class="tlb">
+          <div class="search-min"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg><input placeholder="Buscar por orden, cliente, ciudad…" /></div>
+          <button class="chip">Últimos 7 días</button>
+          <div class="spacer"></div>
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--carbon-50)">{{ currentOrders().length }} pedidos</span>
+        </div>
+        <div class="panel">
+          <div class="panel-b flush">
+            <table class="tbl">
+              <thead><tr><th style="width:36px"><input type="checkbox" /></th><th>Orden</th><th>Cliente</th><th>Ciudad</th><th>Items</th><th>Pago</th><th>Envío</th><th>Método</th><th class="num">Total</th><th>Fecha</th><th></th></tr></thead>
+              <tbody>
+                @for (o of currentOrders(); track o.id) {
+                <tr (click)="openOrder()">
+                  <td (click)="$event.stopPropagation()"><input type="checkbox" /></td>
+                  <td><span class="id" style="color:var(--carbon);font-weight:600">{{ o.id }}</span></td>
+                  <td><strong style="font-weight:600">{{ o.customer }}</strong><div style="font-size:11px;color:var(--carbon-50);font-family:var(--mono)">{{ o.email }}</div></td>
+                  <td>{{ o.city }}</td>
+                  <td>{{ o.items }}</td>
+                  <td><span class="badge" [class]="sb(o.status).tone"><span class="pdot"></span>{{ sb(o.status).label }}</span></td>
+                  <td><span class="badge" [class]="sb(o.shipping).tone"><span class="pdot"></span>{{ sb(o.shipping).label }}</span></td>
+                  <td><span style="font-family:var(--mono);font-size:11.5px;color:var(--carbon-70)">{{ o.method }}</span></td>
+                  <td class="num">{{ fmtCOP(o.total) }}</td>
+                  <td><span class="id">{{ o.date }}</span></td>
+                  <td class="actions" (click)="$event.stopPropagation()">
+                    <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        }
+
+        <!-- ══ CUSTOMERS ══════════════════════════════════════════════════ -->
+        @case ('clientes') {
+        <div class="ph">
+          <div class="ph-l">
+            <div class="eyebrow"><span class="dot"></span> Comunidad <span class="num">/ 03</span></div>
+            <h1>Quienes <em>habitan</em> el cuaquiverso</h1>
+            <p class="sub">Clientes con al menos un pedido o registro.</p>
+          </div>
+          <div class="ph-r">
+            <button class="btn-sm ghost">Enviar carta a seleccionados</button>
+            <button class="btn-sm ghost">Exportar CSV</button>
+            <button class="btn-sm solid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Cliente manual</button>
+          </div>
+        </div>
+        <div class="kpi-strip">
+          <div class="kpi-item" data-tone="rio">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M21 20c0-2.5-1.9-4.6-4.4-4.95"/></svg> Clientes totales</div>
+            <div class="kpi-n">1.487</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+38</span><span>esta semana</span></div>
+          </div>
+          <div class="kpi-item" data-tone="terra">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.7 6.4.7-4.8 4.4 1.3 6.2L12 17l-5.5 3 1.3-6.2L3 9.4l6.4-.7L12 3Z"/></svg> VIP (3+ pedidos)</div>
+            <div class="kpi-n">142</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+6</span><span>vs 136</span></div>
+          </div>
+          <div class="kpi-item" data-tone="sol">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Gasto promedio</div>
+            <div class="kpi-n">$184k</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+4.2%</span><span>LTV creciendo</span></div>
+          </div>
+          <div class="kpi-item" data-tone="selva">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg> Suscritos a carta</div>
+            <div class="kpi-n">1.087</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+22</span><span>73% del total</span></div>
+          </div>
+        </div>
+        <div class="tlb">
+          <div class="search-min"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg><input placeholder="Buscar por nombre, email o ciudad…" /></div>
+          <div class="spacer"></div>
+          <div class="chips"><button class="chip is-on">Todos <span class="ct">{{ CUSTOMERS.length }}</span></button><button class="chip">VIP <span class="ct">2</span></button><button class="chip">Activos <span class="ct">4</span></button><button class="chip">Con problemas <span class="ct">2</span></button></div>
+        </div>
+        <div class="panel">
+          <div class="panel-b flush">
+            <table class="tbl">
+              <thead><tr><th style="width:36px"><input type="checkbox" /></th><th>Cliente</th><th>Email</th><th>Ciudad</th><th>Tipo</th><th class="num">Pedidos</th><th class="num">Gastado</th><th>Última actividad</th><th></th></tr></thead>
+              <tbody>
+                @for (c of CUSTOMERS; track c.id) {
+                <tr>
+                  <td (click)="$event.stopPropagation()"><input type="checkbox" /></td>
+                  <td><div class="pname"><div class="thumb" style="background:var(--cream-2);color:var(--carbon)">{{ initials(c.name) }}</div><div class="meta"><strong>{{ c.name }}</strong><span>{{ c.id }}</span></div></div></td>
+                  <td><span class="id">{{ c.email }}</span></td>
+                  <td>{{ c.city }}</td>
+                  <td>
+                    @if (c.tag === 'VIP')        { <span class="badge warn"><span class="pdot"></span>★ VIP</span> }
+                    @if (c.tag === 'Activo')     { <span class="badge ok"><span class="pdot"></span>Activo</span> }
+                    @if (c.tag === 'Devolución') { <span class="badge lila"><span class="pdot"></span>Devolución</span> }
+                    @if (c.tag === 'Fallido')    { <span class="badge err"><span class="pdot"></span>Fallido</span> }
+                  </td>
+                  <td class="num">{{ c.orders }}</td>
+                  <td class="num">{{ fmtCOP(c.spent) }}</td>
+                  <td><span class="id">{{ c.last }}</span></td>
+                  <td class="actions">
+                    <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        }
+
+        <!-- ══ PAYMENTS ═══════════════════════════════════════════════════ -->
+        @case ('pagos') {
+        <div class="ph">
+          <div class="ph-l">
+            <div class="eyebrow"><span class="dot"></span> Caja <span class="num">/ 04</span></div>
+            <h1>Pagos y <em>movimientos</em></h1>
+            <p class="sub">Conciliación con Bold, PSE y Nequi.</p>
+          </div>
+          <div class="ph-r">
+            <button class="btn-sm ghost">Exportar para contador</button>
+            <button class="btn-sm solid">Descargar reporte</button>
+          </div>
+        </div>
+        <div class="kpi-strip">
+          <div class="kpi-item" data-tone="selva">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Neto del mes</div>
+            <div class="kpi-n">$8.214k</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+24%</span><span>vs mes pasado</span></div>
+          </div>
+          <div class="kpi-item" data-tone="rio">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg> Comisiones</div>
+            <div class="kpi-n">$246k</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+$38k</span><span>3.0% promedio</span></div>
+          </div>
+          <div class="kpi-item" data-tone="sol">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg> Pendiente</div>
+            <div class="kpi-n">$110k</div>
+            <div class="kpi-delta"><svg class="kpi-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="m5 12 7 7 7-7"/></svg><span class="kpi-down">-$48k</span><span>1 pedido</span></div>
+          </div>
+          <div class="kpi-item" data-tone="terra">
+            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg> Reembolsos</div>
+            <div class="kpi-n">$234k</div>
+            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+1</span><span>1 caso</span></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:var(--s-4);margin-top:var(--s-4)">
+          <div class="panel">
+            <div class="panel-h"><div><h3>Movimientos</h3><div class="sub">Últimos 30 días</div></div></div>
+            <div class="panel-b flush">
+              <table class="tbl">
+                <thead><tr><th>Pago</th><th>Orden</th><th>Método</th><th>Fecha</th><th>Estado</th><th class="num">Monto</th><th class="num">Comisión</th><th class="num">Neto</th></tr></thead>
+                <tbody>
+                  @for (p of PAYMENTS; track p.id) {
+                  <tr>
+                    <td><span class="id" style="color:var(--carbon);font-weight:600">{{ p.id }}</span></td>
+                    <td><span class="id">{{ p.order }}</span></td>
+                    <td><span style="font-family:var(--mono);font-size:11.5px">{{ p.method }}</span></td>
+                    <td><span class="id">{{ p.date }}</span></td>
+                    <td><span class="badge" [class]="sb(p.status).tone"><span class="pdot"></span>{{ sb(p.status).label }}</span></td>
+                    <td class="num">{{ fmtCOP(p.amount) }}</td>
+                    <td class="num" style="color:var(--carbon-50)">{{ fmtCOP(p.fee) }}</td>
+                    <td class="num" [style.color]="p.net < 0 ? 'var(--terra)' : p.net === 0 ? 'var(--carbon-30)' : 'var(--carbon)'" style="font-weight:600">{{ fmtCOP(p.net) }}</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+            <div class="panel">
+              <div class="panel-h"><h3>Pasarelas</h3></div>
+              <div class="panel-b" style="display:flex;flex-direction:column;gap:14px">
+                @for (g of GATEWAYS; track g.name) {
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="width:36px;height:36px;border-radius:8px;display:grid;place-items:center;font-family:var(--display);font-size:16px" [style.background]="tone(g.color).bg" [style.color]="tone(g.color).fg">{{ g.name.charAt(0) }}</div>
+                  <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">{{ g.name }}</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--carbon-50);letter-spacing:.06em">{{ g.fee }} · {{ g.count }} pagos</div></div>
+                  <span class="badge" [class]="g.tone"><span class="pdot"></span>{{ g.state }}</span>
+                </div>
+                }
+                <button class="btn-sm ghost" style="justify-content:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Conectar pasarela</button>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-h"><h3>Próximo depósito</h3></div>
+              <div class="panel-b">
+                <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Bancolombia · ahorros •2104</div>
+                <div style="font-family:var(--display);font-size:38px;line-height:1;margin:8px 0 4px;letter-spacing:-.015em">$1.247.500</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--carbon-70)">Programado para <strong style="color:var(--carbon)">17 mayo · 09:00</strong></div>
+                <div style="margin-top:var(--s-3);padding:10px;background:var(--cream-2);border-radius:8px;font-size:12px;color:var(--carbon-70)">22 pagos consolidados. Comisión total: <strong style="color:var(--carbon)">$37.420</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
+        <!-- ══ CONTENT ════════════════════════════════════════════════════ -->
+        @case ('contenido') {
+        <div class="ph">
+          <div class="ph-l">
+            <div class="eyebrow"><span class="dot"></span> Contenido <span class="num">/ 05</span></div>
+            <h1>Personajes <em>del elenco</em></h1>
+            <p class="sub">Cada personaje vive en su propia página. Edita su historia, color, región y productos asociados.</p>
+          </div>
+          <div class="ph-r">
+            <button class="btn-sm ghost">Ver página universo</button>
+            <button class="btn-sm solid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Personaje nuevo</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-b flush">
+            <table class="tbl">
+              <thead><tr><th>Personaje</th><th>Región</th><th>Color</th><th class="num">Productos</th><th>Página</th><th>Última edición</th><th></th></tr></thead>
+              <tbody>
+                @for (c of CHARACTERS; track c.id) {
+                <tr>
+                  <td><div class="pname"><div class="thumb" [style.background]="tone(c.color).bg" [style.color]="tone(c.color).fg">{{ c.name.charAt(0) }}</div><div class="meta"><strong>{{ c.name }}</strong><span>{{ c.id }}</span></div></div></td>
+                  <td>{{ c.region }}</td>
+                  <td><span style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px"><span style="width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--carbon-12)" [style.background]="c.accent"></span>{{ c.accent }}</span></td>
+                  <td class="num">{{ prodCountForChar(c.id) }}</td>
+                  <td><span class="badge ok"><span class="pdot"></span>Publicada</span></td>
+                  <td><span class="id">Hace 2 semanas</span></td>
+                  <td class="actions">
+                    <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4 4 14v6h6L20 10"/><path d="M14 4l3-3 4 4-3 3"/></svg></button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--s-4);margin-top:var(--s-4)">
+          <div class="panel">
+            <div class="panel-h"><h3>Newsletter · Carta del Cuaquiverso</h3><span class="sub">Quincenal</span></div>
+            <div class="panel-b">
+              <div class="kv-list">
+                <div class="kv"><span class="k">Suscritos</span><span class="v">1.087</span></div>
+                <div class="kv"><span class="k">Última carta</span><span class="v">02 mayo 2026</span></div>
+                <div class="kv"><span class="k">Apertura promedio</span><span class="v">42%</span></div>
+                <div class="kv"><span class="k">Próxima carta</span><span class="v" style="color:var(--terra)">18 mayo · programada</span></div>
+              </div>
+              <div style="margin-top:var(--s-4);display:flex;gap:10px">
+                <button class="btn-sm ghost">Editar borrador</button>
+                <button class="btn-sm solid">Enviar prueba</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Páginas estáticas</h3><span class="sub">5 páginas</span></div>
+            <div class="panel-b" style="display:flex;flex-direction:column;gap:10px">
+              @for (pg of ['Manifiesto','Envíos','Cambios y devoluciones','Tallas','Mayoristas']; track pg) {
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--cream-2);border-radius:8px">
+                <svg style="width:16px;height:16px;color:var(--carbon-70)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
+                <div style="flex:1;font-size:13.5px;font-weight:500">{{ pg }}</div>
+                <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4 4 14v6h6L20 10"/><path d="M14 4l3-3 4 4-3 3"/></svg></button>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+        }
+
+        <!-- ══ SETTINGS ═══════════════════════════════════════════════════ -->
+        @case ('ajustes') {
+        <div class="ph">
+          <div class="ph-l">
+            <div class="eyebrow"><span class="dot"></span> Sistema <span class="num">/ 06</span></div>
+            <h1>Ajustes de la <em>tienda</em></h1>
+            <p class="sub">Datos del negocio, impuestos, envíos, plantillas de correo y permisos del equipo.</p>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:220px 1fr;gap:var(--s-5)">
+          <nav class="panel" style="align-self:flex-start">
+            <div class="panel-b" style="padding:8px;display:flex;flex-direction:column;gap:2px">
+              @for (item of [['Negocio',true],['Impuestos',false],['Envíos y tarifas',false],['Plantillas de correo',false],['Equipo y permisos',false],['Integraciones',false],['Dominios',false]]; track $index) {
+              <button [style.background]="item[1] ? 'var(--cream-2)' : 'transparent'" [style.color]="item[1] ? 'var(--carbon)' : 'var(--carbon-70)'" [style.fontWeight]="item[1] ? '600' : '500'" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13.5px;text-align:left">{{ item[0] }}</button>
+              }
+            </div>
+          </nav>
+          <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+            <div class="panel">
+              <div class="panel-h"><h3>Datos del negocio</h3><span class="sub">Lo que aparece en facturas</span></div>
+              <div class="panel-b">
+                <div class="grid-2">
+                  <div class="field"><label>Razón social</label><input class="input" value="Cuaquiverso S.A.S." /></div>
+                  <div class="field"><label>NIT</label><input class="input" value="901.234.567-8" /></div>
+                  <div class="field"><label>Email de contacto</label><input class="input" value="hola@cuaquiverso.co" /></div>
+                  <div class="field"><label>Teléfono</label><input class="input" value="+57 311 444 0001" /></div>
+                  <div class="field" style="grid-column:span 2"><label>Dirección fiscal</label><input class="input" value="Cra 11 # 71-30, Bogotá, Colombia" /></div>
+                  <div class="field"><label>Régimen tributario</label><select class="select"><option>Régimen Simple</option><option>Responsable de IVA</option><option>No responsable</option></select></div>
+                  <div class="field"><label>Moneda</label><select class="select"><option>COP — Peso colombiano</option><option>USD — Dólar</option></select></div>
+                </div>
+                <div style="margin-top:var(--s-4);display:flex;justify-content:flex-end;gap:10px">
+                  <button class="btn-sm ghost">Cancelar</button>
+                  <button class="btn-sm solid">Guardar cambios</button>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-h"><h3>Equipo</h3><span class="sub">3 miembros activos</span></div>
+              <div class="panel-b flush">
+                <table class="tbl">
+                  <thead><tr><th>Persona</th><th>Rol</th><th>Email</th><th>Último acceso</th><th></th></tr></thead>
+                  <tbody>
+                    <tr><td><div class="pname"><div class="thumb" style="background:var(--cream-2);color:var(--carbon)">CC</div><div class="meta"><strong>Capitán Cuac</strong><span>Activo</span></div></div></td><td><span class="badge ok"><span class="pdot"></span>Owner</span></td><td><span class="id">admin&#64;cuaquiverso.co</span></td><td><span class="id">Ahora</span></td><td class="actions"><button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4 4 14v6h6L20 10"/><path d="M14 4l3-3 4 4-3 3"/></svg></button></td></tr>
+                    <tr><td><div class="pname"><div class="thumb" style="background:var(--cream-2);color:var(--carbon)">MJ</div><div class="meta"><strong>María José</strong><span>Activo</span></div></div></td><td><span class="badge rio"><span class="pdot"></span>Operaciones</span></td><td><span class="id">mj&#64;cuaquiverso.co</span></td><td><span class="id">Ayer 18:22</span></td><td class="actions"><button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4 4 14v6h6L20 10"/><path d="M14 4l3-3 4 4-3 3"/></svg></button></td></tr>
+                    <tr><td><div class="pname"><div class="thumb" style="background:var(--cream-2);color:var(--carbon)">FA</div><div class="meta"><strong>Felipe Andrade</strong><span>Activo</span></div></div></td><td><span class="badge lila"><span class="pdot"></span>Contenido</span></td><td><span class="id">fa&#64;cuaquiverso.co</span></td><td><span class="id">Hace 3d</span></td><td class="actions"><button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4 4 14v6h6L20 10"/><path d="M14 4l3-3 4 4-3 3"/></svg></button></td></tr>
+                  </tbody>
+                </table>
+                <div style="padding:var(--s-4) var(--s-5);border-top:1px solid var(--carbon-08)">
+                  <button class="btn-sm ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Invitar a alguien</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
+  }<!-- end @switch -->
+</div><!-- end .content-home -->
+
+<!-- ══ PRODUCT EDITOR DRAWER ════════════════════════════════════════════════ -->
+@if (editorOn()) {
+<div class="drawer-back on" (click)="closeEditor()"></div>
+<div class="drawer on">
+  <div class="drawer-h">
+    <div>
+      <div class="crumbs-admin"><span>Productos</span><span class="sep">/</span><strong>{{ editingProduct() ? editingProduct()!.id : 'Nuevo producto' }}</strong></div>
+      <h2>{{ editingProduct() ? 'Editar · ' + editingProduct()!.name : 'Crear producto nuevo' }}</h2>
+    </div>
+    <button class="drawer-close" (click)="closeEditor()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="drawer-b">
+    <div class="grid-form-cols">
+      <div style="display:flex;flex-direction:column;gap:var(--s-5)">
+        <div class="panel">
+          <div class="panel-h"><h3>General</h3><span class="sub">Lo básico</span></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+            <div class="field"><label>Nombre del producto</label><input class="input" [(ngModel)]="editorName" name="editorName" placeholder="Ej: El explorador soñador" /><div class="help">Usa títulos cortos con personalidad.</div></div>
+            <div class="grid-2">
+              <div class="field"><label>SKU <span class="opt">(único)</span></label><input class="input" [(ngModel)]="editorSku" name="editorSku" placeholder="TEE-CUAC-EXP" /></div>
+              <div class="field"><label>Categoría</label><select class="select" [(ngModel)]="editorCategory" name="editorCategory">@for (c of CATEGORIES; track c.id) { <option [value]="c.id">{{ c.label }}</option> }</select></div>
+            </div>
+            <div class="field"><label>Descripción</label><textarea class="textarea" [(ngModel)]="editorDesc" name="editorDesc" rows="4"></textarea><div class="help">Cuenta la historia del producto.</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><div><h3>Imágenes</h3><span class="sub">Mín. 1 · Recomendado 4</span></div><span style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--carbon-50)">JPG/PNG · 1500×1500 mín</span></div>
+          <div class="panel-b">
+            <div class="img-grid">
+              @for (img of editorImages; track img; let idx = $index) {
+              <div class="img-slot filled">
+                <div class="img-fill" [style.background]="tone(editingProduct()?.color ?? 'rio').bg" [style.color]="tone(editingProduct()?.color ?? 'rio').fg">
+                  {{ char(editorCharacter).name.charAt(0) }}
+                  @if (idx === 0) { <span class="pri-flag">Principal</span> }
+                  <button class="rm-img" (click)="removeImage(idx)">✕</button>
+                </div>
+              </div>
+              }
+              @if (editorImages.length < 8) {
+              <button class="img-slot" (click)="addImage()"><div class="img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;margin:0 auto 6px;display:block"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m3 18 5-5 4 4 3-3 6 6"/></svg>Subir<br/>imagen</div></button>
+              }
+            </div>
+            <div class="help" style="margin-top:12px">La primera será la imagen principal del catálogo.</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Variantes</h3><span class="sub">Talla y color</span></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+            <div class="field"><label>Tallas disponibles</label><div class="var-grid">@for (s of SIZES; track s) { <button class="var-chip" [class.on]="editorSizes.includes(s)" (click)="toggleSize(s)">{{ s }}</button> }</div></div>
+            <div class="field"><label>Colores</label><div class="clr-grid">@for (c of COLOR_OPTS; track c) { <button class="clr-sw" [class.on]="editorColors.includes(c)" [style.background]="c" (click)="toggleColor(c)"></button> }</div><div class="help">{{ editorVariants }} variantes · {{ editorSizes.length }} tallas × {{ editorColors.length }} colores</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>SEO y enlaces</h3><span class="sub">Opcional</span></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+            <div class="field"><label>Slug de URL</label><input class="input" [value]="editorSlug" placeholder="el-explorador-sonador" /><div class="help">cuaquiverso.co/producto/<strong style="color:var(--carbon)">{{ editorSlug || 'slug' }}</strong></div></div>
+            <div class="grid-2"><div class="field"><label>Meta título</label><input class="input" placeholder="Ej: Camiseta Cuac — Cuaquiverso" /></div><div class="field"><label>Etiquetas</label><input class="input" placeholder="cuac, camiseta, verano" /></div></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+        <div class="panel">
+          <div class="panel-h"><h3>Estado</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            @for (opt of [['active','Activo','Visible en la tienda'],['draft','Borrador','Oculto, en edición'],['out','Agotado','Sin stock, no comprable']]; track opt[0]) {
+            <label [style.background]="editorStatus === opt[0] ? 'var(--cream-2)' : 'transparent'" style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--carbon-08);border-radius:10px;cursor:pointer">
+              <input type="radio" name="editorStatus" [value]="opt[0]" [(ngModel)]="editorStatus" style="margin-top:3px" />
+              <div><div style="font-weight:600;font-size:13.5px">{{ opt[1] }}</div><div style="font-size:12px;color:var(--carbon-50)">{{ opt[2] }}</div></div>
+            </label>
+            }
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Precio e inventario</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            <div class="field"><label>Precio (COP)</label><input class="input" type="number" [(ngModel)]="editorPrice" name="editorPrice" placeholder="89000" /></div>
+            <div class="grid-2"><div class="field"><label>Precio antes</label><input class="input" type="number" placeholder="—" /></div><div class="field"><label>Costo</label><input class="input" type="number" placeholder="35000" /></div></div>
+            <div class="field"><label>Stock total</label><input class="input" type="number" [(ngModel)]="editorStock" name="editorStock" /><div class="help">Avísame cuando baje de <strong style="color:var(--carbon)">10</strong></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Personaje</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:8px">
+            @for (c of CHARACTERS; track c.id) {
+            <label [style.background]="editorCharacter === c.id ? 'var(--cream-2)' : 'transparent'" style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer">
+              <input type="radio" name="editorCharacter" [value]="c.id" [(ngModel)]="editorCharacter" />
+              <span style="width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-family:var(--display);font-size:13px" [style.background]="tone(c.color).bg" [style.color]="tone(c.color).fg">{{ c.name.charAt(0) }}</span>
+              <span style="font-size:13.5px;font-weight:500">{{ c.name }}</span>
+              <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--carbon-50);text-transform:uppercase">{{ c.region.split('·')[0] }}</span>
+            </label>
+            }
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Envío</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            <div class="grid-2"><div class="field"><label>Peso (g)</label><input class="input" type="number" placeholder="240" /></div><div class="field"><label>Bulto</label><select class="select"><option value="sm">Pequeño</option><option value="med">Medio</option><option value="lg">Grande</option></select></div></div>
+            <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" checked /> Permitir contra-entrega</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-f">
+    <button class="btn-sm danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg> {{ editingProduct() ? 'Eliminar producto' : 'Descartar' }}</button>
+    <div style="display:flex;gap:10px">
+      <button class="btn-sm ghost" (click)="closeEditor()">Cancelar</button>
+      <button class="btn-sm ghost">Vista previa</button>
+      <button class="btn-sm solid" (click)="saveEditor()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="m5 12 5 5L20 7"/></svg> {{ editingProduct() ? 'Guardar cambios' : 'Crear producto' }}</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- ══ ORDER DETAIL DRAWER ════════════════════════════════════════════════ -->
+@if (orderOn()) {
+<div class="drawer-back on" (click)="closeOrder()"></div>
+<div class="drawer on">
+  <div class="drawer-h">
+    <div>
+      <div class="crumbs-admin"><span>Pedidos</span><span class="sep">/</span><strong>{{ ORDER_DETAIL.id }}</strong></div>
+      <h2>Pedido {{ ORDER_DETAIL.id }} <span style="margin-left:10px;vertical-align:middle"><span class="badge ok"><span class="pdot"></span>Pagado</span></span></h2>
+    </div>
+    <button class="drawer-close" (click)="closeOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="drawer-b">
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:var(--s-4)">
+      <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+        <div class="panel">
+          <div class="panel-h"><h3>Productos</h3><span class="sub">{{ ORDER_DETAIL.items.length }} items</span></div>
+          <div class="panel-b flush">
+            <table class="tbl">
+              <thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead>
+              <tbody>
+                @for (it of ORDER_DETAIL.items; track it.sku) {
+                <tr>
+                  <td><div class="pname"><div class="thumb" [style.background]="tone(it.color).bg" [style.color]="tone(it.color).fg">{{ it.label.charAt(0) }}</div><div class="meta"><strong>{{ it.name }}</strong><span>{{ it.sku }} · {{ it.variant }}</span></div></div></td>
+                  <td class="num">{{ it.qty }}</td>
+                  <td class="num">{{ fmtCOP(it.price) }}</td>
+                  <td class="num">{{ fmtCOP(it.price * it.qty) }}</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:var(--s-4) var(--s-5);border-top:1px solid var(--carbon-08);background:var(--cream)">
+            <div class="kv-list" style="max-width:320px;margin-left:auto">
+              <div class="kv"><span class="k">Subtotal</span><span class="v">{{ fmtCOP(ORDER_DETAIL.totals.subtotal) }}</span></div>
+              <div class="kv"><span class="k">Envío</span><span class="v">{{ fmtCOP(ORDER_DETAIL.totals.shipping) }}</span></div>
+              <div class="kv"><span class="k">Descuento</span><span class="v" style="color:var(--selva)">-{{ fmtCOP(ORDER_DETAIL.totals.discount) }}</span></div>
+              <div class="kv total"><span class="k">Total</span><span class="v">{{ fmtCOP(ORDER_DETAIL.totals.total) }}</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Línea de tiempo</h3><span class="sub">Eventos del pedido</span></div>
+          <div class="panel-b">
+            <div class="timeline">
+              @for (t of ORDER_DETAIL.timeline; track $index) {
+              <div class="tl-row" [class]="t.state"><div class="tm">{{ t.time }}</div><div class="pt"><span class="dot"></span></div><div class="ct"><div class="tt">{{ t.title }}</div><div class="desc">{{ t.desc }}</div></div></div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+        <div class="panel">
+          <div class="panel-h"><h3>Cliente</h3></div>
+          <div class="panel-b">
+            <div style="font-family:var(--display);font-size:20px;line-height:1.1;margin-bottom:4px">{{ ORDER_DETAIL.customer.name }}</div>
+            <div style="font-size:13px;color:var(--carbon-70)">{{ ORDER_DETAIL.customer.email }}</div>
+            <div style="font-family:var(--mono);font-size:11.5px;color:var(--carbon-50);margin-top:4px">{{ ORDER_DETAIL.customer.phone }}</div>
+            <div style="margin-top:var(--s-3);padding-top:var(--s-3);border-top:1px dashed var(--carbon-08);display:flex;justify-content:space-between;font-size:12px">
+              <span style="color:var(--carbon-50)">Cliente desde {{ ORDER_DETAIL.customer.since }}</span>
+              <span><strong>{{ ORDER_DETAIL.customer.orders }}</strong> pedidos</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Dirección de envío</h3></div>
+          <div class="panel-b" style="font-size:13.5px;line-height:1.6">
+            <div>{{ ORDER_DETAIL.shipping.address }}</div>
+            <div>{{ ORDER_DETAIL.shipping.city }}</div>
+            <div style="font-family:var(--mono);font-size:11.5px;color:var(--carbon-50)">{{ ORDER_DETAIL.shipping.zip }}</div>
+            <div style="margin-top:var(--s-3);padding-top:var(--s-3);border-top:1px dashed var(--carbon-08)">
+              <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Transportadora</div>
+              <div style="margin-top:4px;font-weight:600">{{ ORDER_DETAIL.shipping.carrier }}</div>
+              <div style="font-family:var(--mono);font-size:11.5px;color:var(--terra)">{{ ORDER_DETAIL.shipping.tracking }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Acciones</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn-sm solid" style="justify-content:center">Marcar despachado</button>
+            <button class="btn-sm ghost" style="justify-content:center">Generar factura</button>
+            <button class="btn-sm ghost" style="justify-content:center">Reenviar confirmación</button>
+            <button class="btn-sm danger" style="justify-content:center">Cancelar pedido</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-f">
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">Creado {{ ORDER_DETAIL.date }}</span>
+    <button class="btn-sm ghost" (click)="closeOrder()">Cerrar</button>
+  </div>
+</div>
+}
+
+<!-- ══ TOAST ══════════════════════════════════════════════════════════════ -->
+<div class="toast" [class.on]="toast()">
+  <span class="tdot"></span>{{ toast() }}
+</div>
