@@ -71,6 +71,8 @@ export class AdminShellComponent implements OnInit {
 
   ngOnInit() {
     this.sb.db.auth.onAuthStateChange(() => {});
+    // DEV BYPASS: auto-login para que RLS tenga sesión válida mientras el auth gate está desactivado
+    this.sb.signInWithPassword('designcuac@gmail.com', 'Cuac123');
   }
 
   goHome(id: ViewId) {
