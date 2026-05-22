@@ -1,0 +1,78 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Inventario · sofa-2026</div>
+    <h1>Log de <em>ventas</em>.</h1>
+    <p class="sub">{{ ventas().length }} registros en el período seleccionado.</p>
+  </div>
+  <div class="ph-r">
+    <button class="btn-sm ghost" (click)="volver()">← Inventario</button>
+  </div>
+</div>
+
+<div class="ventas-filter">
+  <label>Desde
+    <input class="input" type="date" [(ngModel)]="desde" />
+  </label>
+  <label>Hasta
+    <input class="input" type="date" [(ngModel)]="hasta" />
+  </label>
+  <button class="btn-sm solid" (click)="cargar()">Filtrar</button>
+</div>
+
+@if (cargando()) { <p style="color:var(--mid);font-size:14px;padding:12px 0">Cargando…</p> }
+@if (errorMsg()) { <p style="color:var(--terra);font-size:14px;padding:12px 0">Error: {{ errorMsg() }}</p> }
+
+@if (!cargando()) {
+<div class="ventas-grid">
+
+  <div class="panel">
+    <div class="panel-h"><h3>Detalle de ventas</h3></div>
+    @if (ventas().length === 0) {
+      <p style="padding:24px;color:var(--mid);font-size:14px">Sin ventas en este período.</p>
+    }
+    @if (ventas().length > 0) {
+    <table class="ventas-table">
+      <thead>
+        <tr>
+          <th>Fecha / Hora</th>
+          <th>Producto</th>
+          <th>Cant.</th>
+          <th>Dispositivo</th>
+          <th>Sync</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (v of ventas(); track v.id) {
+        <tr>
+          <td class="ventas-fecha">{{ fmtFecha(v.vendido_en) }}</td>
+          <td>{{ v.productos_evento?.nombre ?? '—' }}</td>
+          <td><strong>{{ v.cantidad }}</strong></td>
+          <td class="ventas-device">{{ v.dispositivo ?? '—' }}</td>
+          <td>
+            @if (v.sincronizado) { <span class="ventas-sync ok">✓</span> }
+            @else { <span class="ventas-sync warn">Pendiente</span> }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+  </div>
+
+  <div class="panel">
+    <div class="panel-h"><h3>Totales por producto</h3></div>
+    <div class="panel-b">
+      @if (totalesPorProducto().length === 0) {
+        <p style="color:var(--mid);font-size:14px">Sin datos.</p>
+      }
+      @for (t of totalesPorProducto(); track t.nombre) {
+      <div class="ventas-total-row">
+        <span>{{ t.nombre }}</span>
+        <strong>{{ t.total }} ud.</strong>
+      </div>
+      }
+    </div>
+  </div>
+
+</div>
+}

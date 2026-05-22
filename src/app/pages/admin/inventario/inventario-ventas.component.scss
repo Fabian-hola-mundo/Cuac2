@@ -1,0 +1,64 @@
+:host { display: block; }
+
+.ventas-filter {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--mid);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-weight: 600;
+  }
+}
+
+.ventas-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.ventas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    color: var(--mid);
+    font-weight: 500;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  td { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+}
+
+.ventas-fecha  { font-size: 12px; white-space: nowrap; }
+.ventas-device { font-size: 12px; color: var(--mid); }
+
+.ventas-sync {
+  font-size: 12px;
+  &.ok   { color: #1F8A5B; }
+  &.warn { color: #B07820; }
+}
+
+.ventas-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  &:last-child { border-bottom: none; }
+}
