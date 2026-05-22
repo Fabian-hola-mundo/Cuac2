@@ -80,7 +80,15 @@ export class AdminShellComponent implements OnInit {
 
   goInventario() { this.router.navigate(['/admin/inventario']); }
 
-  async loginGoogle() { await this.sb.signInWithGoogle(); }
+  async loginGoogle() {
+    this.loginLoading.set(true);
+    this.loginError.set(null);
+    const { error } = await this.sb.signInWithGoogle();
+    this.loginLoading.set(false);
+    if (error) {
+      this.loginError.set('Google no está habilitado aún. Usa contraseña por ahora.');
+    }
+  }
 
   async loginPassword() {
     this.loginLoading.set(true);
