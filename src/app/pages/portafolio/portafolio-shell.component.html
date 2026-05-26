@@ -1,0 +1,75 @@
+<div class="port-hero">
+  <div class="port-hero-inner">
+    @if (!isCuac) {
+      <a class="back-link" routerLink="/portafolio">← Cuac Design</a>
+    }
+    <div class="eyebrow">
+      <span class="pulse"></span>
+      {{ isCuac ? 'Estudio · Cuac Design' : 'Portafolio personal' }}
+    </div>
+    <h1>{{ hero.name }}</h1>
+    <p class="hero-role">{{ hero.role }}</p>
+    <em class="hero-tagline">{{ hero.tagline }}</em>
+  </div>
+</div>
+
+<div class="port-content">
+
+  <div class="chips">
+    <button class="chip" [class.is-on]="catFiltro() === 'all'" (click)="catFiltro.set('all')">
+      Todos
+    </button>
+    @for (c of categorias; track c.id) {
+      <button class="chip" [class.is-on]="catFiltro() === c.id" (click)="catFiltro.set(c.id)">
+        {{ c.label }}
+      </button>
+    }
+  </div>
+
+  @if (cargando()) {
+    <p class="port-loading">Cargando proyectos…</p>
+  }
+
+  @if (!cargando() && filteredProjects().length > 0) {
+    <div class="port-grid">
+      @for (p of filteredProjects(); track p.id) {
+        <article class="port-card" [class.is-featured]="p.featured">
+          <div
+            class="port-card-cover"
+            [class.has-image]="!!p.cover_url"
+            [style.backgroundImage]="p.cover_url ? 'url(' + p.cover_url + ')' : null">
+            <div class="port-card-foot">
+              <span class="port-card-cat">{{ p.category }}</span>
+              <strong class="port-card-title">{{ p.title }}</strong>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (!cargando() && filteredProjects().length === 0) {
+    <div class="port-empty">
+      <p>Sin proyectos en esta categoría aún.</p>
+    </div>
+  }
+
+  @if (isCuac) {
+    <div class="personal-footer">
+      <p class="pf-label">El equipo también tiene voz propia.</p>
+      <div class="pf-grid">
+        <a class="pf-card pf-natalia" routerLink="/portafolio/natalia">
+          <strong>Natalia Castañeda Caicedo</strong>
+          <span>Diseño editorial, ilustración y branding</span>
+          <span class="pf-link">Ver portafolio →</span>
+        </a>
+        <a class="pf-card pf-nathali" routerLink="/portafolio/nathali">
+          <strong>Nathali Ramírez Ortiz</strong>
+          <span>Diseño UI/UX, ilustración y branding</span>
+          <span class="pf-link">Ver portafolio →</span>
+        </a>
+      </div>
+    </div>
+  }
+
+</div>
