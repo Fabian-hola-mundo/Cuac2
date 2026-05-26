@@ -59,6 +59,11 @@ export const routes: Routes = [
     data: { theme: 'nathali' },
   },
   {
+    path: 'portafolio/:slug',
+    loadComponent: () =>
+      import('./pages/portafolio/portafolio-detail.component').then(m => m.PortafolioDetailComponent),
+  },
+  {
     path: 'admin',
     loadComponent: () =>
       import('./pages/admin/admin-shell.component').then(m => m.AdminShellComponent),

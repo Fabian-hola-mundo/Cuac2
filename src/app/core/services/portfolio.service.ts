@@ -9,6 +9,7 @@ export interface PortfolioProject {
   category: string;
   authors: string[];
   description: string | null;
+  client_comment: string | null;
   cover_url: string | null;
   images: string[];
   tags: string[];
@@ -63,6 +64,17 @@ export class PortfolioService {
       .eq('id', id)
       .single();
     if (error && error.code !== 'PGRST116') console.error('[portfolio] getById:', error.message);
+    return data as PortfolioProject | null;
+  }
+
+  async getBySlug(slug: string): Promise<PortfolioProject | null> {
+    const { data, error } = await this.sb.db
+      .from('portfolio_projects')
+      .select('*')
+      .eq('slug', slug)
+      .eq('published', true)
+      .single();
+    if (error && error.code !== 'PGRST116') console.error('[portfolio] getBySlug:', error.message);
     return data as PortfolioProject | null;
   }
 

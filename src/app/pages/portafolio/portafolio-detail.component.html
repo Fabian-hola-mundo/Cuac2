@@ -1,0 +1,76 @@
+@if (cargando()) {
+  <div class="state-screen">
+    <p class="state-label">Cargando proyecto…</p>
+  </div>
+}
+
+@if (notFound()) {
+  <div class="state-screen">
+    <p class="state-title">Proyecto no encontrado.</p>
+    <a class="back-link-lg" routerLink="/portafolio">← Volver al portafolio</a>
+  </div>
+}
+
+@if (project(); as p) {
+
+  <div class="detail-hero"
+       [class.has-cover]="!!p.cover_url"
+       [style.backgroundImage]="p.cover_url ? 'url(' + p.cover_url + ')' : null">
+    <div class="detail-hero-inner">
+      <div class="back-nav">
+        <a class="back-link" routerLink="/">← Inicio</a>
+        <a class="back-link" [routerLink]="backUrl">{{ backLabel }}</a>
+      </div>
+      <div class="detail-eyebrow">
+        <span class="pulse"></span>
+        {{ catLabel(p.category) }}
+      </div>
+      <h1>{{ p.title }}</h1>
+    </div>
+  </div>
+
+  <div class="detail-content">
+
+    <div class="detail-meta">
+      <div class="meta-authors">
+        @for (a of p.authors; track a) {
+          <span class="author-chip">{{ authorLabel(a) }}</span>
+        }
+      </div>
+      @if (p.tags.length > 0) {
+        <div class="meta-tags">
+          @for (t of p.tags; track t) {
+            <span class="tag">{{ t }}</span>
+          }
+        </div>
+      }
+    </div>
+
+    @if (p.description) {
+      <div class="detail-description">
+        <p>{{ p.description }}</p>
+      </div>
+    }
+
+    @if (p.images.length > 0) {
+      <div class="detail-gallery">
+        @for (img of p.images; track img; let i = $index) {
+          <div class="gallery-item"
+               [class.span-full]="p.images.length % 2 !== 0 && i === p.images.length - 1"
+               [style.backgroundImage]="'url(' + img + ')'"></div>
+        }
+      </div>
+    }
+
+    @if (p.client_comment) {
+      <blockquote class="client-quote">
+        <p>{{ p.client_comment }}</p>
+      </blockquote>
+    }
+
+    <div class="detail-footer">
+      <a class="back-link-lg" [routerLink]="backUrl">{{ backLabel }}</a>
+    </div>
+
+  </div>
+}

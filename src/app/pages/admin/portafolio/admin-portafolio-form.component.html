@@ -66,6 +66,13 @@
         </div>
 
         <div class="field">
+          <label>Comentario del cliente <span class="opt">opcional</span></label>
+          <textarea class="input" formControlName="client_comment" rows="3"
+            placeholder="«El resultado superó nuestras expectativas…» — Cliente, Empresa"></textarea>
+          <span class="help">Aparece como cita destacada en la página del proyecto.</span>
+        </div>
+
+        <div class="field">
           <label>Tags</label>
           <div class="tag-row">
             <input class="input" style="flex:1" [(ngModel)]="tagInput" [ngModelOptions]="{standalone:true}"

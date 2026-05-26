@@ -39,12 +39,13 @@ export class AdminPortafolioFormComponent implements OnInit {
   tagInput      = '';
 
   form = this.fb.group({
-    title:       ['', [Validators.required, Validators.minLength(2)]],
-    slug:        ['', [Validators.required]],
-    category:    ['branding', Validators.required],
-    description: [''],
-    featured:    [false],
-    published:   [false],
+    title:          ['', [Validators.required, Validators.minLength(2)]],
+    slug:           ['', [Validators.required]],
+    category:       ['branding', Validators.required],
+    description:    [''],
+    client_comment: [''],
+    featured:       [false],
+    published:      [false],
   });
 
   async ngOnInit() {
@@ -54,12 +55,13 @@ export class AdminPortafolioFormComponent implements OnInit {
       const p = await this.portfolio.getById(id);
       if (p) {
         this.form.patchValue({
-          title:       p.title,
-          slug:        p.slug,
-          category:    p.category,
-          description: p.description ?? '',
-          featured:    p.featured,
-          published:   p.published,
+          title:          p.title,
+          slug:           p.slug,
+          category:       p.category,
+          description:    p.description ?? '',
+          client_comment: p.client_comment ?? '',
+          featured:       p.featured,
+          published:      p.published,
         });
         this.selectedAuthors.set(p.authors);
         this.tags.set(p.tags);
@@ -141,16 +143,17 @@ export class AdminPortafolioFormComponent implements OnInit {
       }
 
       const payload = {
-        title:       v.title!,
+        title:          v.title!,
         slug,
-        category:    v.category!,
-        authors:     this.selectedAuthors(),
-        description: v.description ?? null,
-        cover_url:   coverUrl,
+        category:       v.category!,
+        authors:        this.selectedAuthors(),
+        description:    v.description || null,
+        client_comment: v.client_comment || null,
+        cover_url:      coverUrl,
         images,
-        tags:        this.tags(),
-        featured:    v.featured ?? false,
-        published:   v.published ?? false,
+        tags:           this.tags(),
+        featured:       v.featured ?? false,
+        published:      v.published ?? false,
       };
 
       const result = this.isEdit()

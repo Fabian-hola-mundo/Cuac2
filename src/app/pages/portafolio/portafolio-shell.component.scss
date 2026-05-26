@@ -15,6 +15,12 @@
   }
 }
 
+.back-nav {
+  display: flex;
+  gap: var(--s-5);
+  margin-bottom: var(--s-5);
+}
+
 .back-link {
   display: inline-block;
   font-family: var(--mono);
@@ -23,7 +29,6 @@
   text-transform: uppercase;
   color: var(--theme-hero-muted, rgba(240, 241, 246, 0.5));
   text-decoration: none;
-  margin-bottom: var(--s-5);
   transition: color 0.2s;
 
   &:hover { color: var(--theme-hero-text, var(--paper)); }
@@ -122,6 +127,9 @@ h1 {
 }
 
 .port-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
   border-radius: var(--r-lg);
   overflow: hidden;
   cursor: pointer;
@@ -258,12 +266,16 @@ h1 {
 
 // ── Reduced motion ────────────────────────────────────────────────────────────
 @media (prefers-reduced-motion: reduce) {
-  .pulse { animation: none; }
+  .pulse          { animation: none; }
   .port-card-cover { transition: none; }
   .port-card-foot  { transition: none; opacity: 1; transform: none; }
   .back-link       { transition: none; }
   .chip            { transition: none; }
   .pf-card         { transition: none; }
+}
+
+@media (max-width: 480px) {
+  .back-nav { flex-direction: column; gap: var(--s-2); }
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────
