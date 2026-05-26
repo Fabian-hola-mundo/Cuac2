@@ -29,7 +29,7 @@ export class EventosService {
       .select('*')
       .eq('estado', 'activo')
       .maybeSingle();
-    if (error) return null;
+    if (error) throw error;
     return data;
   }
 

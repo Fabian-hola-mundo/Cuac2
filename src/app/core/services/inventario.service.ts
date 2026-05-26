@@ -64,9 +64,13 @@ export class InventarioService {
       .from('productos_evento')
       .select('*')
       .order('creado_en', { ascending: false });
-    this.cargando.set(false);
-    if (error) { this.error.set(error.message); return; }
+    if (error) {
+      this.error.set(error.message);
+      this.cargando.set(false);
+      return;
+    }
     this.productos.set(data ?? []);
+    this.cargando.set(false);
   }
 
   /** Mantiene compatibilidad con el POS — filtra por evento activo */
@@ -78,9 +82,13 @@ export class InventarioService {
       .select('*')
       .eq('evento_id', EVENTO_ACTIVO)
       .order('creado_en', { ascending: false });
-    this.cargando.set(false);
-    if (error) { this.error.set(error.message); return; }
+    if (error) {
+      this.error.set(error.message);
+      this.cargando.set(false);
+      return;
+    }
     this.productos.set(data ?? []);
+    this.cargando.set(false);
   }
 
   async getProducto(id: string): Promise<ProductoEvento | null> {
@@ -156,14 +164,4 @@ export class InventarioService {
     return data ?? [];
   }
 
-  async getVentasPorRango(desde: string, hasta: string): Promise<VentaEvento[]> {
-    const { data, error } = await this.sb.db
-      .from('ventas_evento')
-      .select('*, productos_evento(nombre, categoria, precio)')
-      .gte('vendido_en', desde)
-      .lte('vendido_en', hasta)
-      .order('vendido_en', { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  }
 }
