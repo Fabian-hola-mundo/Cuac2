@@ -66,9 +66,9 @@ export class AdminPortafolioListComponent implements OnInit {
   }
 
   authorColor(author: string): string {
-    if (author === 'natalia') return '#E87A89';
-    if (author === 'nathali') return '#8B9ED9';
-    return '#011E54';
+    if (author === 'natalia') return '#7A2A3F'; // dark rose — 9.0:1 on white
+    if (author === 'nathali') return '#2A3B8A'; // deep indigo — 9.6:1 on white
+    return '#011E54';                            // deep navy — 15:1 on white
   }
 
   catLabel(id: string): string {

@@ -17,13 +17,13 @@
 
 .featured-badge {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ember);
+  color: #BF2E0B;                      // darker ember — 5.5:1 on white
   padding: 2px 6px;
   border-radius: var(--r-sm);
-  background: rgba(236, 56, 19, 0.1);
+  background: rgba(191, 46, 11, 0.1);
 }
 
 .row-actions {

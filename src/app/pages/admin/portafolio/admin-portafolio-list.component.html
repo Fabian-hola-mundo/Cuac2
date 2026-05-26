@@ -24,7 +24,7 @@
 }
 
 @if (cargando()) {
-  <p style="color:var(--carbon-50);font-size:14px;padding:12px 0">Cargando proyectos…</p>
+  <p style="color:rgba(21,31,40,0.5);font-size:14px;padding:12px 0">Cargando proyectos…</p>
 }
 
 @if (!cargando() && filteredProjects().length > 0) {
@@ -99,7 +99,7 @@
 @if (!cargando() && filteredProjects().length === 0 && !errorMsg()) {
 <div class="panel" style="padding:64px 32px;text-align:center">
   <p style="font-family:var(--display);font-size:22px;letter-spacing:-0.01em;margin-bottom:8px">Sin proyectos aún.</p>
-  <p style="color:var(--carbon-50);font-size:14px;margin-bottom:24px">Crea el primer proyecto del portafolio.</p>
+  <p style="color:rgba(21,31,40,0.5);font-size:14px;margin-bottom:24px">Crea el primer proyecto del portafolio.</p>
   <button class="btn-sm solid" (click)="nuevo()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
     Nuevo proyecto

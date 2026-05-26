@@ -256,6 +256,16 @@ h1 {
   margin-top: var(--s-3);
 }
 
+// ── Reduced motion ────────────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .pulse { animation: none; }
+  .port-card-cover { transition: none; }
+  .port-card-foot  { transition: none; opacity: 1; transform: none; }
+  .back-link       { transition: none; }
+  .chip            { transition: none; }
+  .pf-card         { transition: none; }
+}
+
 // ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 1024px) {
   .port-grid { grid-template-columns: repeat(2, 1fr); }
