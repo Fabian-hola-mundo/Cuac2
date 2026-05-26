@@ -1,0 +1,161 @@
+<!-- Page Header -->
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Tienda · Productos</div>
+    <h1>Catálogo de <em>productos</em>.</h1>
+    <p class="sub">{{ inv.productos().length }} productos en total. Gestiona stock, visibilidad y variantes.</p>
+  </div>
+  <div class="ph-r">
+    <button class="btn-sm ghost" (click)="verVentas()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-4"/></svg>
+      Registro de ventas
+    </button>
+    <button class="btn-sm solid" (click)="nuevo()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo producto
+    </button>
+  </div>
+</div>
+
+<!-- Filter Toolbar -->
+<div class="tlb">
+  <div class="chips">
+    <button class="chip" [class.is-on]="catFiltro() === 'all'" (click)="catFiltro.set('all')">Todas</button>
+    @for (c of categorias; track c.id) {
+      <button class="chip" [class.is-on]="catFiltro() === c.id" (click)="catFiltro.set(c.id)">{{ c.label }}</button>
+    }
+  </div>
+  <div class="spacer"></div>
+  <div class="search-min">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+    <input placeholder="Buscar producto…" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
+  </div>
+</div>
+
+<!-- Loading / Error states -->
+@if (inv.cargando()) {
+  <p style="color:var(--carbon-50);font-size:14px;padding:12px 0">Cargando productos…</p>
+}
+@if (inv.error()) {
+  <p style="color:var(--terra);font-size:14px;padding:12px 0">{{ inv.error() }}</p>
+}
+
+<!-- Table -->
+@if (!inv.cargando() && productosFiltrados().length > 0) {
+<div class="panel">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th class="num">Precio COP</th>
+        <th class="num">Stock inicial</th>
+        <th class="num">Stock actual</th>
+        <th>Estado</th>
+        <th class="actions">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of productosFiltrados(); track p.id) {
+      <tr (click)="editar(p)">
+        <td>
+          <div class="pname">
+            <div class="thumb" [style.background]="toneForCat(p.categoria)">{{ p.nombre[0] }}</div>
+            <div class="meta">
+              <strong>{{ p.nombre }}</strong>
+              <span>{{ labelCategoria(p.categoria) }}</span>
+            </div>
+          </div>
+        </td>
+        <td class="id">{{ p.categoria }}</td>
+        <td class="num">{{ fmtCOP(p.precio) }}</td>
+        <td class="num">{{ p.stock_inicial }}</td>
+        <td class="num">
+          @if (p.stock_actual === 0) {
+            <span class="badge err"><span class="pdot"></span>Agotado</span>
+          } @else if (p.stock_actual < 3) {
+            <span class="badge warn"><span class="pdot"></span>{{ p.stock_actual }} ud.</span>
+          } @else {
+            <span style="font-variant-numeric:tabular-nums">{{ p.stock_actual }}</span>
+          }
+        </td>
+        <td>
+          @if (p.activo) { <span class="badge ok"><span class="pdot"></span>Activo</span> }
+          @else { <span class="badge"><span class="pdot"></span>Inactivo</span> }
+        </td>
+        <td class="actions">
+          <!-- Ver detalle -->
+          <button class="icon-act" title="Ver detalle" (click)="verDetalle(p, $event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <!-- Editar -->
+          <button class="icon-act" title="Editar" (click)="editar(p); $event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
+          </button>
+          <!-- Duplicar -->
+          <button class="icon-act" title="Duplicar" (click)="duplicar(p, $event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <!-- Ocultar / Mostrar -->
+          @if (p.activo) {
+            <button class="icon-act" title="Ocultar producto" (click)="toggleActivo(p, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          } @else {
+            <button class="icon-act" title="Mostrar producto" (click)="toggleActivo(p, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          }
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+}
+
+<!-- Empty state -->
+@if (!inv.cargando() && productosFiltrados().length === 0 && !inv.error()) {
+  <div class="panel" style="padding:64px 32px;text-align:center">
+    <p style="font-family:var(--display);font-size:22px;margin-bottom:8px">Sin productos aún.</p>
+    <p style="color:var(--carbon-50);font-size:14px;margin-bottom:24px">Crea el primer producto del catálogo.</p>
+    <button class="btn-sm solid" (click)="nuevo()">+ Nuevo producto</button>
+  </div>
+}
+
+<!-- Detail Drawer backdrop -->
+<div class="drawer-back" [class.on]="drawerOpen()" (click)="cerrarDrawer()"></div>
+
+<!-- Detail Drawer -->
+<div class="drawer" [class.on]="drawerOpen()">
+  @if (drawerProduct()) {
+    <div class="drawer-h">
+      <div>
+        <div class="eyebrow"><span class="dot"></span> Detalle</div>
+        <h2>{{ drawerProduct()!.nombre }}</h2>
+      </div>
+      <button class="drawer-close" (click)="cerrarDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="drawer-b">
+      <div class="kv-list">
+        <div class="kv"><span class="k">Categoría</span><span class="v">{{ labelCategoria(drawerProduct()!.categoria) }}</span></div>
+        <div class="kv"><span class="k">Personaje</span><span class="v">{{ drawerProduct()!.personaje || '—' }}</span></div>
+        <div class="kv"><span class="k">Precio</span><span class="v">{{ fmtCOP(drawerProduct()!.precio) }}</span></div>
+        <div class="kv"><span class="k">Stock inicial</span><span class="v">{{ drawerProduct()!.stock_inicial }}</span></div>
+        <div class="kv"><span class="k">Stock actual</span><span class="v">{{ drawerProduct()!.stock_actual }}</span></div>
+        <div class="kv"><span class="k">Estado</span><span class="v">{{ drawerProduct()!.activo ? 'Activo' : 'Inactivo' }}</span></div>
+      </div>
+    </div>
+    <div class="drawer-f">
+      <button class="btn-sm ghost" (click)="cerrarDrawer()">Cerrar</button>
+      <button class="btn-sm solid" (click)="editar(drawerProduct()!); cerrarDrawer()">Editar</button>
+    </div>
+  }
+</div>
+
+<!-- Local toast -->
+@if (toast()) {
+  <div class="toast-global">{{ toast() }}</div>
+}
