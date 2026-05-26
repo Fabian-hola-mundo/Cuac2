@@ -1,0 +1,95 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Evento</div>
+    <h1>Historial de <em>eventos</em>.</h1>
+    <p class="sub">{{ eventos().length }} eventos registrados.</p>
+  </div>
+  <div class="ph-r">
+    <button class="btn-sm solid" (click)="abrirDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo evento
+    </button>
+  </div>
+</div>
+
+@if (cargando()) {
+  <p style="color:var(--carbon-50);font-size:14px;padding:12px 0">Cargando eventos…</p>
+}
+@if (errorMsg()) {
+  <p style="color:var(--terra);font-size:14px;padding:12px 0">{{ errorMsg() }}</p>
+}
+
+@if (!cargando() && eventos().length > 0) {
+<div class="panel">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Estado</th>
+        <th>Fecha inicio</th>
+        <th>Fecha fin</th>
+        <th class="num">Duración</th>
+        <th class="num">Total vendido</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (e of eventos(); track e.id) {
+      <tr (click)="irAEvento(e)" style="cursor:pointer">
+        <td><strong>{{ e.nombre }}</strong></td>
+        <td>
+          @if (e.estado === 'activo') {
+            <span class="badge ok"><span class="pdot"></span>En curso</span>
+          } @else {
+            <span class="badge"><span class="pdot"></span>Finalizado</span>
+          }
+        </td>
+        <td class="id">{{ fmtFecha(e.fecha_inicio) }}</td>
+        <td class="id">{{ e.fecha_fin ? fmtFecha(e.fecha_fin) : '—' }}</td>
+        <td class="num">{{ duracion(e) }}</td>
+        <td class="num">{{ totales()[e.id] != null ? totales()[e.id] + ' ud.' : '…' }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+}
+
+@if (!cargando() && eventos().length === 0 && !errorMsg()) {
+  <div class="panel" style="padding:64px 32px;text-align:center">
+    <p style="font-family:var(--display);font-size:22px;margin-bottom:8px">Sin eventos aún.</p>
+    <p style="color:var(--carbon-50);font-size:14px;margin-bottom:24px">Crea el primer evento para empezar a registrar ventas.</p>
+    <button class="btn-sm solid" (click)="abrirDrawer()">+ Nuevo evento</button>
+  </div>
+}
+
+<!-- Drawer backdrop -->
+<div class="drawer-back" [class.on]="drawerOpen()" (click)="cerrarDrawer()"></div>
+
+<!-- Drawer: Nuevo evento -->
+<div class="drawer" [class.on]="drawerOpen()" style="width:440px">
+  <div class="drawer-h">
+    <div>
+      <div class="eyebrow"><span class="dot"></span> Nuevo evento</div>
+      <h2>Crear evento</h2>
+    </div>
+    <button class="drawer-close" (click)="cerrarDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-b">
+    <div class="field">
+      <label>Nombre del evento <span class="opt">*</span></label>
+      <input class="input" [(ngModel)]="nuevoNombre" placeholder="ej. SOFA 2026" (keyup.enter)="crearEvento()" />
+      <span class="help">El evento quedará como activo. Solo puede existir un evento activo a la vez.</span>
+    </div>
+    @if (createError()) {
+      <p style="color:var(--terra);font-size:13px;margin-top:var(--s-3)">{{ createError() }}</p>
+    }
+  </div>
+  <div class="drawer-f">
+    <button class="btn-sm ghost" (click)="cerrarDrawer()">Cancelar</button>
+    <button class="btn-sm solid" [disabled]="creando()" (click)="crearEvento()">
+      {{ creando() ? 'Creando…' : 'Crear evento' }}
+    </button>
+  </div>
+</div>
