@@ -1,0 +1,229 @@
+<!-- src/app/pages/cotizador/cotizador.component.html -->
+<div class="cotizador-page">
+
+  <!-- ── Hero ─────────────────────────────────────────────────────────────── -->
+  <section class="cot-hero">
+    <div class="cot-hero-inner">
+      <div class="eyebrow">
+        <span class="pulse"></span>
+        Estimador · Cuac Design
+      </div>
+      <h1>¿Cuánto cuesta <em>tu proyecto</em>?</h1>
+      <p class="cot-hero-sub">Dos preguntas. Un rango al instante. Sin compromiso.</p>
+    </div>
+  </section>
+
+  <!-- ── Estimador rápido ──────────────────────────────────────────────────── -->
+  <section class="cot-estimator">
+    <div class="cot-inner">
+      <div class="section-eyebrow">
+        <span class="dot"></span> 01 &mdash; Estimador rápido
+      </div>
+
+      <div class="est-grid">
+        <!-- Servicio -->
+        <div class="est-block">
+          <div class="est-lbl">¿Qué necesitas?</div>
+          <div class="chips">
+            @for (s of servicios; track s.id) {
+              <button
+                class="chip"
+                [class.is-on]="selectedService() === s.id"
+                (click)="selectService(s.id)">
+                {{ s.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Escala -->
+        <div class="est-block">
+          <div class="est-lbl">Escala del proyecto</div>
+          <div class="scope-row">
+            @for (e of escalas; track e.id) {
+              <button
+                class="scope-btn"
+                [class.is-on]="selectedScale() === e.id"
+                (click)="selectScale(e.id)">
+                {{ e.label }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA estimador -->
+      <button class="est-submit" (click)="verEstimado()">
+        <span class="est-submit-label">Listo &mdash; ver mi estimado</span>
+        <span class="est-submit-arrow">&#9889;</span>
+      </button>
+
+      <!-- Resultado -->
+      @if (showResult()) {
+        <div class="result-card">
+          <div class="result-left">
+            <div class="result-eyebrow">Rango estimado &middot; {{ servicioLabel() }} {{ escalaLabel() }}</div>
+            <div class="result-price">{{ rangoLabel() }}</div>
+            <div class="result-sub">COP &middot; sin IVA</div>
+          </div>
+          <div class="result-tag">{{ resultado().semanas }} semanas</div>
+        </div>
+        <div class="includes">
+          @for (item of incluye(); track item) {
+            <div class="inc-item">
+              <span class="inc-arrow">&rarr;</span>
+              {{ item }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ── CTA para formulario ──────────────────────────────────────────────── -->
+  <section class="cot-cta-zone">
+    <div class="cot-inner">
+      <div class="cta-card">
+        <div class="cta-copy">
+          <strong>¿Quieres una cotización 100% personalizada?</strong>
+          <p>Te respondemos en <strong>2 días hábiles</strong> con una propuesta a la medida de tu proyecto.</p>
+        </div>
+        @if (!formVisible()) {
+          <button class="btn-cot-reveal" (click)="revealForm()">
+            Quiero cotización &rarr;
+          </button>
+        }
+      </div>
+      <p class="cta-alt">
+        O escríbenos directo a
+        <a href="mailto:hola@cuacdesign.com">hola&#64;cuacdesign.com</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Formulario detallado ──────────────────────────────────────────────── -->
+  @if (formVisible()) {
+    <section class="cot-form" #formSection>
+      <div class="cot-inner">
+        <div class="section-eyebrow">
+          <span class="dot" style="background:var(--ember)"></span> 02 &mdash; Cotización personalizada
+        </div>
+        <h2 class="form-h">Cuéntanos sobre tu proyecto</h2>
+
+        @if (submitted()) {
+          <!-- Estado: enviado -->
+          <div class="form-success">
+            <div class="form-success-icon">&#10003;</div>
+            <h3>¡Solicitud enviada!</h3>
+            <p>Tu cotización está en nuestras manos.<br>
+              Te respondemos a <strong>{{ form.value.email }}</strong> en menos de 2 días hábiles.</p>
+            <p class="form-success-footer">— Equipo Cuac &middot; hola&#64;cuacdesign.com</p>
+          </div>
+        } @else {
+          <form [formGroup]="form" (ngSubmit)="submitForm()" novalidate>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="form-lbl" for="nombre">Nombre</label>
+                <input id="nombre" class="form-inp" formControlName="nombre" type="text" autocomplete="name">
+                @if (fieldError('nombre')) {
+                  <span class="field-err">{{ fieldError('nombre') }}</span>
+                }
+              </div>
+              <div class="form-field">
+                <label class="form-lbl" for="email">Correo electrónico</label>
+                <input id="email" class="form-inp" formControlName="email" type="email" autocomplete="email">
+                @if (fieldError('email')) {
+                  <span class="field-err">{{ fieldError('email') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="form-lbl" for="empresa">Empresa / Marca</label>
+                <input id="empresa" class="form-inp" formControlName="empresa" type="text" autocomplete="organization">
+                @if (fieldError('empresa')) {
+                  <span class="field-err">{{ fieldError('empresa') }}</span>
+                }
+              </div>
+              <div class="form-field">
+                <label class="form-lbl" for="telefono">Teléfono / WhatsApp <span class="opt">(opcional)</span></label>
+                <input id="telefono" class="form-inp" formControlName="telefono" type="tel" autocomplete="tel">
+              </div>
+            </div>
+
+            <div class="form-field">
+              <div class="form-lbl">Servicio(s) que necesitas</div>
+              <div class="chips">
+                @for (s of servicios; track s.id) {
+                  <button
+                    type="button"
+                    class="chip"
+                    [class.is-on]="isFormServicioSelected(s.id)"
+                    (click)="toggleFormServicio(s.id)">
+                    {{ s.label }}
+                  </button>
+                }
+              </div>
+              @if (form.touched && formServicios().length === 0) {
+                <span class="field-err">Selecciona al menos un servicio</span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label class="form-lbl" for="descripcion">Cuéntanos sobre tu proyecto</label>
+              <textarea
+                id="descripcion"
+                class="form-inp form-textarea"
+                formControlName="descripcion"
+                rows="4"
+                placeholder="¿Qué quieres lograr? ¿Tienes referentes? ¿Cuál es tu timeline ideal?">
+              </textarea>
+              @if (fieldError('descripcion')) {
+                <span class="field-err">{{ fieldError('descripcion') }}</span>
+              }
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="form-lbl" for="presupuesto">Presupuesto aproximado <span class="opt">(opcional)</span></label>
+                <input id="presupuesto" class="form-inp" formControlName="presupuesto" type="text"
+                  placeholder="Ej: $4.000.000 – $8.000.000 COP">
+              </div>
+              <div class="form-field">
+                <label class="form-lbl" for="timeline">¿Cuándo necesitas empezar? <span class="opt">(opcional)</span></label>
+                <select id="timeline" class="form-inp form-select" formControlName="timeline">
+                  <option value="">Selecciona una opción</option>
+                  @for (t of timelines; track t) {
+                    <option [value]="t">{{ t }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            @if (submitError()) {
+              <div class="form-error-banner">
+                {{ submitError() }}
+              </div>
+            }
+
+            <button type="submit" class="btn-cot-submit" [disabled]="submitting()">
+              @if (submitting()) {
+                <span class="spinner"></span> Enviando…
+              } @else {
+                Enviar solicitud de cotización &rarr;
+              }
+            </button>
+
+            <p class="form-note">
+              Respondemos en 2 días hábiles &middot; Bogotá GMT&minus;5 &middot; hola&#64;cuacdesign.com
+            </p>
+
+          </form>
+        }
+      </div>
+    </section>
+  }
+
+</div>
