@@ -78,6 +78,13 @@ export const routes: Routes = [
             m => m.InventarioVentasComponent,
           ),
       },
+      {
+        path: 'cotizaciones',
+        loadComponent: () =>
+          import('./pages/admin/cotizaciones/cotizaciones-list.component').then(
+            m => m.CotizacionesListComponent,
+          ),
+      },
     ],
   },
 ];

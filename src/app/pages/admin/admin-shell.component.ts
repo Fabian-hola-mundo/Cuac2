@@ -40,6 +40,7 @@ export class AdminShellComponent implements OnInit {
 
   crumbs = computed(() => {
     const url = this.routerUrl();
+    if (url.includes('/cotizaciones'))                 return ['Diseño', 'Cotizaciones'];
     if (url.includes('/inventario/ventas'))            return ['Evento', 'Inventario', 'Log de ventas'];
     if (url.includes('/inventario/nuevo'))             return ['Evento', 'Inventario', 'Nuevo producto'];
     if (url.match(/\/inventario\/.+\/editar/))         return ['Evento', 'Inventario', 'Editar producto'];
@@ -81,6 +82,7 @@ export class AdminShellComponent implements OnInit {
   }
 
   goInventario() { this.router.navigate(['/admin/inventario']); }
+  goCotizaciones() { this.router.navigate(['/admin/cotizaciones']); }
 
   async loginGoogle() {
     this.loginLoading.set(true);
