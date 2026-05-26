@@ -8,6 +8,8 @@ export interface PortfolioProject {
   slug: string;
   category: string;
   authors: string[];
+  headline: string | null;
+  client_name: string | null;
   description: string | null;
   client_comment: string | null;
   cover_url: string | null;

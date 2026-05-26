@@ -45,6 +45,19 @@
         </div>
 
         <div class="field">
+          <label>Tagline <span class="opt">opcional</span></label>
+          <input class="input" formControlName="headline"
+            placeholder="Una frase que resume el espíritu del proyecto" />
+          <span class="help">Aparece en itálica bajo el título en la vista del proyecto.</span>
+        </div>
+
+        <div class="field">
+          <label>Cliente <span class="opt">opcional</span></label>
+          <input class="input" formControlName="client_name"
+            placeholder="Nombre de la empresa o cliente" />
+        </div>
+
+        <div class="field">
           <label>Autores <span class="opt">*</span></label>
           <div class="author-checks">
             @for (a of [['cuac','Cuac','#011E54'],['natalia','Natalia','#E87A89'],['nathali','Nathali','#8B9ED9']]; track a[0]) {
