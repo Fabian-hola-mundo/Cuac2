@@ -156,6 +156,7 @@ export class CotizadorComponent {
         headers: { 'Content-Type': 'application/json', apikey: environment.supabaseKey },
         body: JSON.stringify(payload),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data.ok) throw new Error(data.error ?? 'Error desconocido');
       this.submitted.set(true);
