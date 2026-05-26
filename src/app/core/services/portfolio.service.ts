@@ -42,24 +42,27 @@ export class PortfolioService {
       .order('featured', { ascending: false })
       .order('created_at', { ascending: false });
     if (author) q = (q as any).contains('authors', [author]);
-    const { data } = await q;
+    const { data, error } = await q;
+    if (error) console.error('[portfolio] getPublished:', error.message);
     return (data ?? []) as PortfolioProject[];
   }
 
   async getAll(): Promise<PortfolioProject[]> {
-    const { data } = await this.sb.db
+    const { data, error } = await this.sb.db
       .from('portfolio_projects')
       .select('*')
       .order('created_at', { ascending: false });
+    if (error) console.error('[portfolio] getAll:', error.message);
     return (data ?? []) as PortfolioProject[];
   }
 
   async getById(id: string): Promise<PortfolioProject | null> {
-    const { data } = await this.sb.db
+    const { data, error } = await this.sb.db
       .from('portfolio_projects')
       .select('*')
       .eq('id', id)
       .single();
+    if (error && error.code !== 'PGRST116') console.error('[portfolio] getById:', error.message);
     return data as PortfolioProject | null;
   }
 
@@ -88,15 +91,16 @@ export class PortfolioService {
     return { error: error?.message ?? null };
   }
 
-  async uploadImage(slug: string, file: File, name: string): Promise<string | null> {
-    const path = `${slug}/${name}`;
+  async uploadImage(slug: string, file: File, name: string): Promise<{ url: string | null; error: string | null }> {
+    const safeName = name.replace(/[^a-z0-9._-]/gi, '_');
+    const path = `${slug}/${safeName}`;
     const { error } = await this.sb.db.storage
       .from('portfolio')
       .upload(path, file, { upsert: true });
-    if (error) return null;
+    if (error) return { url: null, error: error.message };
     const { data } = this.sb.db.storage
       .from('portfolio')
       .getPublicUrl(path);
-    return data.publicUrl;
+    return { url: data.publicUrl, error: null };
   }
 }
