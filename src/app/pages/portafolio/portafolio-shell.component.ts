@@ -1,6 +1,6 @@
 import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import {
   PortfolioService,
   PortfolioProject,
@@ -45,7 +45,6 @@ const HERO_DATA: Record<Theme, { name: string; role: string; tagline: string }> 
 export class PortafolioShellComponent implements OnInit {
   private portfolioSvc = inject(PortfolioService);
   private route        = inject(ActivatedRoute);
-  private router       = inject(Router);
 
   theme: Theme = 'cuac';
   readonly categorias = PORTFOLIO_CATEGORIES;
