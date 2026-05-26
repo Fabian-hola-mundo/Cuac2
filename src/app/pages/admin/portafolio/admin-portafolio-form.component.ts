@@ -117,48 +117,53 @@ export class AdminPortafolioFormComponent implements OnInit {
     this.guardando.set(true);
     this.errorMsg.set(null);
 
-    const v    = this.form.value;
-    const slug = v.slug!;
-    let coverUrl: string | null = this.coverPreview() ?? null;
+    try {
+      const v    = this.form.value;
+      const slug = v.slug!;
+      let coverUrl: string | null = this.coverPreview() ?? null;
 
-    if (this.coverFile) {
-      const ext = this.coverFile.name.split('.').pop() ?? 'jpg';
-      const { url } = await this.portfolio.uploadImage(slug, this.coverFile, `cover.${ext}`);
-      coverUrl = url;
-    }
-
-    let images: string[] = this.existingImages;
-    if (this.galleryFiles.length > 0) {
-      const uploaded: string[] = [];
-      for (let i = 0; i < this.galleryFiles.length; i++) {
-        const f   = this.galleryFiles[i];
-        const ext = f.name.split('.').pop() ?? 'jpg';
-        const { url } = await this.portfolio.uploadImage(slug, f, `img-${i + 1}.${ext}`);
-        if (url) uploaded.push(url);
+      if (this.coverFile) {
+        const ext = this.coverFile.name.split('.').pop() ?? 'jpg';
+        const { url } = await this.portfolio.uploadImage(slug, this.coverFile, `cover.${ext}`);
+        coverUrl = url;
       }
-      images = uploaded;
+
+      let images: string[] = this.existingImages;
+      if (this.galleryFiles.length > 0) {
+        const uploaded: string[] = [];
+        for (let i = 0; i < this.galleryFiles.length; i++) {
+          const f   = this.galleryFiles[i];
+          const ext = f.name.split('.').pop() ?? 'jpg';
+          const { url } = await this.portfolio.uploadImage(slug, f, `img-${i + 1}.${ext}`);
+          if (url) uploaded.push(url);
+        }
+        images = uploaded;
+      }
+
+      const payload = {
+        title:       v.title!,
+        slug,
+        category:    v.category!,
+        authors:     this.selectedAuthors(),
+        description: v.description ?? null,
+        cover_url:   coverUrl,
+        images,
+        tags:        this.tags(),
+        featured:    v.featured ?? false,
+        published:   v.published ?? false,
+      };
+
+      const result = this.isEdit()
+        ? await this.portfolio.update(this.editId()!, payload)
+        : await this.portfolio.create(payload);
+
+      if (result.error) { this.errorMsg.set(result.error); return; }
+      this.router.navigate(['/admin/portafolio']);
+    } catch {
+      this.errorMsg.set('Error al guardar el proyecto.');
+    } finally {
+      this.guardando.set(false);
     }
-
-    const payload = {
-      title:       v.title!,
-      slug,
-      category:    v.category!,
-      authors:     this.selectedAuthors(),
-      description: v.description ?? null,
-      cover_url:   coverUrl,
-      images,
-      tags:        this.tags(),
-      featured:    v.featured ?? false,
-      published:   v.published ?? false,
-    };
-
-    const result = this.isEdit()
-      ? await this.portfolio.update(this.editId()!, payload)
-      : await this.portfolio.create(payload);
-
-    this.guardando.set(false);
-    if (result.error) { this.errorMsg.set(result.error); return; }
-    this.router.navigate(['/admin/portafolio']);
   }
 
   cancelar() { this.router.navigate(['/admin/portafolio']); }
