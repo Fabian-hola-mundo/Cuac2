@@ -107,8 +107,8 @@ h1 {
 
   &.is-on,
   &:hover {
-    background: var(--theme-accent, var(--ember));
-    border-color: var(--theme-accent, var(--ember));
+    background: var(--theme-chip-active, var(--carbon));
+    border-color: var(--theme-chip-active, var(--carbon));
     color: var(--paper);
   }
 }
@@ -228,7 +228,7 @@ h1 {
     line-height: 1.1;
   }
 
-  span { font-size: 14px; color: rgba(21, 31, 40, 0.6); }
+  span { font-size: 14px; color: rgba(21, 31, 40, 0.72); }
 }
 
 .pf-natalia {
