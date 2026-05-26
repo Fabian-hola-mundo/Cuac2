@@ -38,10 +38,14 @@ export class AdminShellComponent implements OnInit {
 
   isInventarioRoute    = computed(() => this.routerUrl().includes('/admin/inventario'));
   isCotizacionesRoute  = computed(() => this.routerUrl().includes('/admin/cotizaciones'));
+  isPortafolioRoute    = computed(() => this.routerUrl().includes('/admin/portafolio'));
 
   crumbs = computed(() => {
     const url = this.routerUrl();
     if (url.includes('/cotizaciones'))                 return ['Diseño', 'Cotizaciones'];
+    if (url.includes('/portafolio/nuevo'))             return ['Estudio', 'Portafolio', 'Nuevo proyecto'];
+    if (url.match(/\/portafolio\/.+\/editar/))         return ['Estudio', 'Portafolio', 'Editar proyecto'];
+    if (url.includes('/portafolio'))                   return ['Estudio', 'Portafolio'];
     if (url.includes('/inventario/ventas'))            return ['Evento', 'Inventario', 'Log de ventas'];
     if (url.includes('/inventario/nuevo'))             return ['Evento', 'Inventario', 'Nuevo producto'];
     if (url.match(/\/inventario\/.+\/editar/))         return ['Evento', 'Inventario', 'Editar producto'];
@@ -84,6 +88,7 @@ export class AdminShellComponent implements OnInit {
 
   goInventario() { this.router.navigate(['/admin/inventario']); }
   goCotizaciones() { this.router.navigate(['/admin/cotizaciones']); }
+  goPortafolio() { this.router.navigate(['/admin/portafolio']); }
 
   async loginGoogle() {
     this.loginLoading.set(true);

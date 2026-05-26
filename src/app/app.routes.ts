@@ -41,6 +41,24 @@ export const routes: Routes = [
       import('./pages/cuaquiverso/universo/universo.component').then(m => m.UniversoComponent),
   },
   {
+    path: 'portafolio',
+    loadComponent: () =>
+      import('./pages/portafolio/portafolio-shell.component').then(m => m.PortafolioShellComponent),
+    data: { theme: 'cuac' },
+  },
+  {
+    path: 'portafolio/natalia',
+    loadComponent: () =>
+      import('./pages/portafolio/portafolio-shell.component').then(m => m.PortafolioShellComponent),
+    data: { theme: 'natalia' },
+  },
+  {
+    path: 'portafolio/nathali',
+    loadComponent: () =>
+      import('./pages/portafolio/portafolio-shell.component').then(m => m.PortafolioShellComponent),
+    data: { theme: 'nathali' },
+  },
+  {
     path: 'admin',
     loadComponent: () =>
       import('./pages/admin/admin-shell.component').then(m => m.AdminShellComponent),
@@ -83,6 +101,27 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/admin/cotizaciones/cotizaciones-list.component').then(
             m => m.CotizacionesListComponent,
+          ),
+      },
+      {
+        path: 'portafolio',
+        loadComponent: () =>
+          import('./pages/admin/portafolio/admin-portafolio-list.component').then(
+            m => m.AdminPortafolioListComponent,
+          ),
+      },
+      {
+        path: 'portafolio/nuevo',
+        loadComponent: () =>
+          import('./pages/admin/portafolio/admin-portafolio-form.component').then(
+            m => m.AdminPortafolioFormComponent,
+          ),
+      },
+      {
+        path: 'portafolio/:id/editar',
+        loadComponent: () =>
+          import('./pages/admin/portafolio/admin-portafolio-form.component').then(
+            m => m.AdminPortafolioFormComponent,
           ),
       },
     ],

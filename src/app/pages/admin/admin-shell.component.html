@@ -76,6 +76,13 @@
       </a>
       }
     </div>
+    <div class="sb-section">Estudio</div>
+    <div class="sb-nav">
+      <a [class.is-active]="isPortafolioRoute()" (click)="goPortafolio()">
+        <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Portafolio</span>
+      </a>
+    </div>
     <div class="sb-section">Evento</div>
     <div class="sb-nav">
       <a [class.is-active]="isInventarioRoute()" (click)="goInventario()">
