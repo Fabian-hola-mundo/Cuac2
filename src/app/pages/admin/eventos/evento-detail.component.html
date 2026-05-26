@@ -1,0 +1,128 @@
+@if (cargando()) {
+  <p style="color:var(--carbon-50);font-size:14px;padding:24px 0">Cargando evento…</p>
+}
+@if (errorMsg()) {
+  <p style="color:var(--terra);font-size:14px;padding:12px 0">{{ errorMsg() }}</p>
+}
+
+@if (!cargando() && evento()) {
+
+  <div class="ph">
+    <div class="ph-l">
+      <div class="eyebrow"><span class="dot"></span> Evento</div>
+      <h1>{{ evento()!.nombre }}</h1>
+      <p class="sub">
+        {{ fmtFecha(evento()!.fecha_inicio) }} →
+        @if (evento()!.fecha_fin) { {{ fmtFecha(evento()!.fecha_fin!) }} }
+        @else { <em>en curso</em> }
+      </p>
+    </div>
+    <div class="ph-r">
+      <button class="btn-sm ghost" (click)="volver()">← Eventos</button>
+      @if (evento()!.estado === 'activo') {
+        <button class="btn-sm danger" (click)="abrirConfirm()">Finalizar evento</button>
+      }
+    </div>
+  </div>
+
+  <div class="kpi-strip" style="margin-bottom:var(--s-6)">
+    @if (hasPrecio()) {
+      <div class="kpi-item" data-tone="selva">
+        <div class="kpi-k">Total COP</div>
+        <div class="kpi-n" style="font-size:24px">{{ fmtCOP(totalCOP()) }}</div>
+      </div>
+    }
+    <div class="kpi-item" data-tone="terra">
+      <div class="kpi-k">Unidades vendidas</div>
+      <div class="kpi-n">{{ totalUnidades() }}</div>
+    </div>
+    <div class="kpi-item" data-tone="rio">
+      <div class="kpi-k">Productos distintos</div>
+      <div class="kpi-n">{{ productosDistintos() }}</div>
+    </div>
+    <div class="kpi-item" data-tone="sol">
+      <div class="kpi-k">Días del evento</div>
+      <div class="kpi-n">{{ diasEvento() }}</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--s-4);align-items:start">
+
+    <!-- Left: Top productos -->
+    <div class="panel">
+      <div class="panel-h">
+        <h3>Top productos</h3>
+        <span class="sub">{{ topProductos().length }} productos vendidos</span>
+      </div>
+      @if (topProductos().length === 0) {
+        <div style="padding:32px;text-align:center;color:var(--carbon-50);font-size:14px">Sin ventas en este evento.</div>
+      }
+      @if (topProductos().length > 0) {
+        <table class="tbl">
+          <thead><tr>
+            <th>Producto</th>
+            <th class="id">Categoría</th>
+            <th class="num">Unidades</th>
+          </tr></thead>
+          <tbody>
+            @for (p of topProductos(); track p.nombre) {
+              <tr>
+                <td><strong>{{ p.nombre }}</strong></td>
+                <td class="id">{{ p.categoria }}</td>
+                <td class="num">{{ p.total }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- Right: Ventas por día -->
+    <div class="panel" style="position:sticky;top:80px">
+      <div class="panel-h">
+        <h3>Ventas por día</h3>
+      </div>
+      @if (ventasPorDia().length === 0) {
+        <div class="panel-b"><p style="color:var(--carbon-50);font-size:14px">Sin datos.</p></div>
+      }
+      @if (ventasPorDia().length > 0) {
+        <table class="tbl">
+          <thead><tr>
+            <th>Fecha</th>
+            <th class="num">Unidades</th>
+          </tr></thead>
+          <tbody>
+            @for (d of ventasPorDia(); track d.dia) {
+              <tr>
+                <td class="id">{{ fmtFecha(d.dia + 'T12:00:00') }}</td>
+                <td class="num">{{ d.unidades }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+  </div>
+
+}
+
+<!-- Confirm dialog -->
+@if (confirmOpen()) {
+  <div class="drawer-back on" (click)="cerrarConfirm()"></div>
+  <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:202;background:var(--paper);border:1px solid var(--carbon-08);border-radius:var(--r-lg);padding:var(--s-6);width:460px;max-width:90vw;box-shadow:0 20px 60px rgba(21,31,40,0.25)">
+    <h3 style="font-family:var(--display);font-size:24px;letter-spacing:-0.01em;margin-bottom:var(--s-3)">¿Finalizar evento?</h3>
+    <p style="color:var(--carbon-70);font-size:14px;line-height:1.55;margin-bottom:var(--s-5)">
+      Estás a punto de cerrar <strong>{{ evento()!.nombre }}</strong>. Se registrará la fecha de fin y no se podrá revertir.
+    </p>
+    @if (finalizeError()) {
+      <p style="color:var(--terra);font-size:13px;margin-bottom:var(--s-4)">{{ finalizeError() }}</p>
+    }
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-sm ghost" (click)="cerrarConfirm()">Cancelar</button>
+      <button class="btn-sm danger" [disabled]="finalizando()" (click)="finalizar()">
+        {{ finalizando() ? 'Finalizando…' : 'Sí, finalizar' }}
+      </button>
+    </div>
+  </div>
+}
