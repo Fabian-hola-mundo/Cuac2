@@ -6,6 +6,18 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function isStr(v: unknown): v is string { return typeof v === 'string' && v.trim().length > 0 }
+
+function esc(val: unknown): string {
+  return String(val ?? '—')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: CORS })
@@ -15,8 +27,13 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { nombre, email, empresa, servicios, descripcion } = body
 
-    if (!nombre || !email || !empresa || !Array.isArray(servicios) || servicios.length === 0 || !descripcion) {
-      return json({ ok: false, error: 'Faltan campos requeridos' }, 400)
+    if (
+      !isStr(nombre) || !isStr(email) || !isStr(empresa) || !isStr(descripcion) ||
+      !EMAIL_RE.test(email) ||
+      !Array.isArray(servicios) || servicios.length === 0 ||
+      !servicios.every((s: unknown) => typeof s === 'string')
+    ) {
+      return json({ ok: false, error: 'Faltan campos requeridos o formato inválido' }, 400)
     }
 
     const supabase = createClient(
@@ -44,12 +61,16 @@ Deno.serve(async (req) => {
 
     if (error) throw error
 
-    // Send notification email — non-blocking failure
-    await sendEmail({
-      to:      'hola@cuacdesign.com',
-      subject: `Nueva cotización de ${empresa} — ${servicios.join(', ')}`,
-      html:    buildHtml(body),
-    }).catch(err => console.error('Resend error (non-fatal):', err))
+    // Fire-and-forget — email failure must not block the response
+    if (Deno.env.get('RESEND_API_KEY')) {
+      sendEmail({
+        to:      'hola@cuacdesign.com',
+        subject: `Nueva cotización de ${empresa} — ${(servicios as string[]).join(', ')}`,
+        html:    buildHtml(body),
+      }).catch(err => console.error('Resend error (non-fatal):', err))
+    } else {
+      console.warn('RESEND_API_KEY not set — email skipped')
+    }
 
     return json({ ok: true, id: data.id })
 
@@ -78,7 +99,7 @@ async function sendEmail(opts: { to: string; subject: string; html: string }) {
 
 function buildHtml(b: Record<string, unknown>): string {
   const row = (label: string, value: unknown) =>
-    `<tr><td style="padding:6px 12px;color:#6b7280;font-size:13px">${label}</td><td style="padding:6px 12px;font-size:13px">${value ?? '—'}</td></tr>`
+    `<tr><td style="padding:6px 12px;color:#6b7280;font-size:13px">${label}</td><td style="padding:6px 12px;font-size:13px">${esc(value)}</td></tr>`
 
   return `
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
