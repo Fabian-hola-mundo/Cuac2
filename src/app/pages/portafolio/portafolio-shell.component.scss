@@ -1,9 +1,12 @@
-:host { display: block; }
+:host {
+  display: block;
+  background: var(--theme-page-bg, var(--paper));
+}
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
 .port-hero {
-  background: var(--deep);
-  color: var(--paper);
+  background: var(--theme-hero-bg, var(--deep));
+  color: var(--theme-hero-text, var(--paper));
   padding: var(--s-10) var(--s-7) var(--s-8);
 
   &-inner {
@@ -18,12 +21,12 @@
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(240, 241, 246, 0.5);
+  color: var(--theme-hero-muted, rgba(240, 241, 246, 0.5));
   text-decoration: none;
   margin-bottom: var(--s-5);
   transition: color 0.2s;
 
-  &:hover { color: var(--paper); }
+  &:hover { color: var(--theme-hero-text, var(--paper)); }
 }
 
 .eyebrow {
@@ -34,7 +37,7 @@
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(240, 241, 246, 0.5);
+  color: var(--theme-hero-muted, rgba(240, 241, 246, 0.5));
   margin-bottom: var(--s-4);
 }
 
@@ -57,20 +60,20 @@ h1 {
   font-size: clamp(40px, 5vw, 72px);
   line-height: 1.02;
   letter-spacing: -0.02em;
-  color: var(--paper);
+  color: var(--theme-hero-text, var(--paper));
   margin-bottom: var(--s-4);
 }
 
 .hero-role {
   font-size: 17px;
-  color: rgba(240, 241, 246, 0.65);
+  color: var(--theme-hero-muted, rgba(240, 241, 246, 0.65));
   margin-bottom: var(--s-3);
 }
 
 .hero-tagline {
   font-family: var(--display);
   font-size: 20px;
-  color: var(--theme-accent, var(--ember));
+  color: var(--theme-hero-accent, var(--ember));
   font-style: italic;
 }
 
@@ -127,7 +130,7 @@ h1 {
 
 .port-card-cover {
   aspect-ratio: 4 / 3;
-  background: var(--mist, #F0F1F6);
+  background: var(--theme-surface, var(--mist, #F0F1F6));
   background-size: cover;
   background-position: center;
   position: relative;
@@ -227,15 +230,29 @@ h1 {
   span { font-size: 14px; color: rgba(21, 31, 40, 0.6); }
 }
 
-.pf-natalia { border-top: 3px solid #E87A89; &:hover { background: #FDEEF0; } }
-.pf-nathali { border-top: 3px solid #8B9ED9; &:hover { background: #EEF0FA; } }
+.pf-natalia {
+  background: #FEF4F5;
+  border-top: 3px solid #E87A89;
+
+  &:hover { background: #FDEEF0; }
+
+  .pf-link { color: #C4556A !important; }
+}
+
+.pf-nathali {
+  background: #F5F6FD;
+  border-top: 3px solid #8B9ED9;
+
+  &:hover { background: #EEF0FA; }
+
+  .pf-link { color: #5C6FC7 !important; }
+}
 
 .pf-link {
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.1em;
   margin-top: var(--s-3);
-  color: var(--ink, #151F28) !important;
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────
