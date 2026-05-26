@@ -1,0 +1,108 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Tienda · Productos</div>
+    <h1>{{ isEdit() ? 'Editar' : 'Nuevo' }} <em>producto</em>.</h1>
+  </div>
+  <div class="ph-r">
+    <button class="btn-sm ghost" (click)="cancelar()">← Productos</button>
+  </div>
+</div>
+
+<div class="grid-form-cols">
+  <div class="panel">
+    <div class="panel-h">
+      <h3>{{ isEdit() ? 'Datos del producto' : 'Crear producto' }}</h3>
+      @if (isEdit()) {
+        <span class="sub">Editando</span>
+      } @else {
+        <span class="sub">Nuevo</span>
+      }
+    </div>
+    <div class="panel-b">
+      <form [formGroup]="form" (ngSubmit)="guardar()">
+
+        <div class="field">
+          <label>Nombre del producto <span class="opt">*</span></label>
+          <input class="input" formControlName="nombre" placeholder="Tote bag cuaquiverso" />
+          @if (hasError('nombre')) {
+            <span class="help" style="color:var(--terra)">Nombre requerido (mínimo 2 caracteres)</span>
+          }
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Categoría <span class="opt">*</span></label>
+            <select class="input select" formControlName="categoria">
+              @for (c of categorias; track c.id) {
+                <option [value]="c.id">{{ c.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label>Precio COP <span class="opt">*</span></label>
+            <input class="input" type="number" formControlName="precio" placeholder="28000" min="1" />
+            @if (hasError('precio')) {
+              <span class="help" style="color:var(--terra)">Debe ser mayor a 0</span>
+            }
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Stock inicial <span class="opt">{{ isEdit() ? '' : '*' }}</span></label>
+          <input class="input" type="number" formControlName="stock_inicial" placeholder="0" min="0" />
+          @if (isEdit()) {
+            <span class="help">El POS gestiona el stock actual</span>
+          } @else {
+            <span class="help">El stock actual se igualará a este valor al crear el producto</span>
+          }
+          @if (hasError('stock_inicial')) {
+            <span class="help" style="color:var(--terra)">El stock no puede ser negativo</span>
+          }
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Personaje</label>
+            <select class="input select" formControlName="personaje">
+              <option [value]="null">Sin personaje</option>
+              @for (c of characters; track c.id) {
+                <option [value]="c.id">{{ c.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="field inv-toggle-row">
+            <label>Producto activo en el POS</label>
+            <label class="inv-toggle">
+              <input type="checkbox" formControlName="activo" />
+              <span class="inv-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        @if (errorMsg()) {
+          <p style="font-size:13px;color:var(--terra);margin-bottom:var(--s-4)">{{ errorMsg() }}</p>
+        }
+
+        <div style="display:flex;gap:10px;margin-top:var(--s-5)">
+          <button class="btn-sm solid" type="submit" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : (isEdit() ? 'Actualizar' : 'Crear producto') }}
+          </button>
+          <button class="btn-sm ghost" type="button" (click)="cancelar()">Cancelar</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <div class="panel" style="align-self:start">
+    <div class="panel-h"><h3>Personajes</h3></div>
+    <div class="panel-b">
+      @for (c of characters; track c.id) {
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--carbon-08)">
+          <span style="font-size:13.5px">{{ c.label }}</span>
+          <span class="id">{{ c.id }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>
