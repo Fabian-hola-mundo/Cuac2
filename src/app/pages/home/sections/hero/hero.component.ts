@@ -8,10 +8,12 @@ import {
   signal,
   NgZone,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-hero',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './hero.component.html',
   styleUrl: './hero.component.scss',
 })
@@ -37,7 +39,7 @@ export class HeroComponent implements OnInit, OnDestroy {
 
   glyphTransforms = signal<string[]>(['', '', '', '']);
 
-  private glyphSvcs = ['brand', 'motion', 'web', 'illu'];
+  private glyphSvcs = ['brand', 'editorial', 'web', 'illu'];
 
   constructor(private ngZone: NgZone) {}
 
