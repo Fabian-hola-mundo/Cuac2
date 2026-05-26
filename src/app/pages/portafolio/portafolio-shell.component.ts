@@ -10,9 +10,8 @@ import {
 type Theme = 'cuac' | 'natalia' | 'nathali';
 
 // Maps theme key → author name used in portfolio_projects.authors[]
-// cuac = undefined means "all published" (no author filter)
-const THEME_AUTHOR: Record<Theme, string | undefined> = {
-  cuac:    undefined,
+const THEME_AUTHOR: Record<Theme, string> = {
+  cuac:    'cuac',
   natalia: 'natalia',
   nathali: 'nathali',
 };
