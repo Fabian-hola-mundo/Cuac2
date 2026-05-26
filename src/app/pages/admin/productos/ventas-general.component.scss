@@ -1,0 +1,15 @@
+:host { display: block; }
+
+.inv-date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  > label {
+    font-family: var(--sans);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--carbon-70);
+    font-weight: 500;
+  }
+}
