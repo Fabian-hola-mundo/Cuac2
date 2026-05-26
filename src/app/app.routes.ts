@@ -129,6 +129,50 @@ export const routes: Routes = [
             m => m.AdminPortafolioFormComponent,
           ),
       },
+      // New productos routes
+      {
+        path: 'productos',
+        loadComponent: () =>
+          import('./pages/admin/productos/productos-list.component').then(
+            m => m.ProductosListComponent,
+          ),
+      },
+      {
+        path: 'productos/ventas',
+        loadComponent: () =>
+          import('./pages/admin/productos/ventas-general.component').then(
+            m => m.VentasGeneralComponent,
+          ),
+      },
+      {
+        path: 'productos/nuevo',
+        loadComponent: () =>
+          import('./pages/admin/productos/producto-form.component').then(
+            m => m.ProductoFormComponent,
+          ),
+      },
+      {
+        path: 'productos/:id/editar',
+        loadComponent: () =>
+          import('./pages/admin/productos/producto-form.component').then(
+            m => m.ProductoFormComponent,
+          ),
+      },
+      // New eventos routes
+      {
+        path: 'eventos',
+        loadComponent: () =>
+          import('./pages/admin/eventos/eventos-list.component').then(
+            m => m.EventosListComponent,
+          ),
+      },
+      {
+        path: 'eventos/:id',
+        loadComponent: () =>
+          import('./pages/admin/eventos/evento-detail.component').then(
+            m => m.EventoDetailComponent,
+          ),
+      },
     ],
   },
 ];

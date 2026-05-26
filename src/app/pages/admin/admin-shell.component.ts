@@ -39,6 +39,8 @@ export class AdminShellComponent implements OnInit {
   isInventarioRoute    = computed(() => this.routerUrl().includes('/admin/inventario'));
   isCotizacionesRoute  = computed(() => this.routerUrl().includes('/admin/cotizaciones'));
   isPortafolioRoute    = computed(() => this.routerUrl().includes('/admin/portafolio'));
+  isProductosRoute     = computed(() => this.routerUrl().includes('/admin/productos'));
+  isEventosRoute       = computed(() => this.routerUrl().includes('/admin/eventos'));
 
   crumbs = computed(() => {
     const url = this.routerUrl();
@@ -50,6 +52,12 @@ export class AdminShellComponent implements OnInit {
     if (url.includes('/inventario/nuevo'))             return ['Evento', 'Inventario', 'Nuevo producto'];
     if (url.match(/\/inventario\/.+\/editar/))         return ['Evento', 'Inventario', 'Editar producto'];
     if (url.includes('/inventario'))                   return ['Evento', 'Inventario'];
+    if (url.includes('/productos/ventas'))             return ['Tienda', 'Productos', 'Registro de ventas'];
+    if (url.includes('/productos/nuevo'))              return ['Tienda', 'Productos', 'Nuevo producto'];
+    if (url.match(/\/productos\/.+\/editar/))          return ['Tienda', 'Productos', 'Editar producto'];
+    if (url.includes('/productos'))                    return ['Tienda', 'Productos'];
+    if (url.match(/\/eventos\/.+/))                    return ['Evento', 'Eventos', 'Detalle'];
+    if (url.includes('/eventos'))                      return ['Evento', 'Eventos'];
 
     const map: Record<ViewId, string[]> = {
       dashboard: ['Resumen'],
@@ -82,8 +90,12 @@ export class AdminShellComponent implements OnInit {
   }
 
   goHome(id: ViewId) {
+    if (id === 'productos') {
+      this.router.navigate(['/admin/productos']);
+      return;
+    }
     this.state.view.set(id);
-    if (this.isInventarioRoute() || this.isPortafolioRoute() || this.isCotizacionesRoute()) {
+    if (this.isInventarioRoute() || this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute()) {
       this.router.navigate(['/admin']);
     }
   }
@@ -91,6 +103,8 @@ export class AdminShellComponent implements OnInit {
   goInventario() { this.router.navigate(['/admin/inventario']); }
   goCotizaciones() { this.router.navigate(['/admin/cotizaciones']); }
   goPortafolio() { this.router.navigate(['/admin/portafolio']); }
+  goProductos() { this.router.navigate(['/admin/productos']); }
+  goEventos()   { this.router.navigate(['/admin/eventos']); }
 
   async loginGoogle() {
     this.loginLoading.set(true);
