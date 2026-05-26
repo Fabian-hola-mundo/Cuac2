@@ -1,0 +1,128 @@
+<!-- src/app/pages/admin/cotizaciones/cotizaciones-list.component.html -->
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Diseño · Cuac</div>
+    <h1>Cotizaciones</h1>
+    <p class="sub">Solicitudes recibidas desde el formulario del sitio.</p>
+  </div>
+  <div class="ph-r">
+    <button class="btn-sm ghost" (click)="cargar()">
+      Actualizar
+    </button>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="chips" style="margin-bottom:var(--s-5)">
+  @for (f of FILTROS; track f.id) {
+    <button class="chip" [class.is-on]="filtro() === f.id" (click)="filtro.set(f.id)">
+      {{ f.label }}
+    </button>
+  }
+</div>
+
+@if (cargando()) {
+  <p style="color:var(--carbon-50);font-size:14px;padding:12px 0">Cargando cotizaciones…</p>
+}
+@if (error()) {
+  <p style="color:var(--terra);font-size:14px;padding:12px 0">{{ error() }}</p>
+}
+
+@if (!cargando() && filtradas().length === 0) {
+  <div class="empty">
+    <p>No hay cotizaciones {{ filtro() !== 'todos' ? 'con estado "' + filtro() + '"' : '' }}.</p>
+  </div>
+}
+
+@if (!cargando() && filtradas().length > 0) {
+  <div class="panel">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Empresa</th>
+          <th>Nombre</th>
+          <th>Servicios</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of filtradas(); track c.id) {
+          <tr class="tbl-row" [class.is-expanded]="expandedId() === c.id" (click)="toggleExpand(c.id)">
+            <td class="cell-date">{{ fmtFecha(c.created_at) }}</td>
+            <td class="cell-empresa"><strong>{{ c.empresa }}</strong></td>
+            <td>{{ c.nombre }}</td>
+            <td>
+              <div class="tag-list">
+                @for (s of c.servicios; track s) {
+                  <span class="tag">{{ s }}</span>
+                }
+              </div>
+            </td>
+            <td>
+              <span class="badge" [class]="estadoBadge(c.estado)">{{ c.estado }}</span>
+            </td>
+            <td class="cell-toggle">
+              <span class="chevron" [class.up]="expandedId() === c.id">&#8250;</span>
+            </td>
+          </tr>
+
+          <!-- Accordion detail -->
+          @if (expandedId() === c.id) {
+            <tr class="detail-row">
+              <td colspan="6">
+                <div class="detail-card">
+                  <div class="detail-grid">
+                    <div class="detail-field">
+                      <div class="detail-lbl">Email</div>
+                      <div class="detail-val">{{ c.email }}</div>
+                    </div>
+                    <div class="detail-field">
+                      <div class="detail-lbl">Teléfono</div>
+                      <div class="detail-val">{{ c.telefono || '—' }}</div>
+                    </div>
+                    <div class="detail-field">
+                      <div class="detail-lbl">Presupuesto</div>
+                      <div class="detail-val">{{ c.presupuesto || '—' }}</div>
+                    </div>
+                    <div class="detail-field">
+                      <div class="detail-lbl">Timeline</div>
+                      <div class="detail-val">{{ c.timeline || '—' }}</div>
+                    </div>
+                    @if (c.estimador_rango) {
+                      <div class="detail-field">
+                        <div class="detail-lbl">Estimador</div>
+                        <div class="detail-val">{{ c.estimador_servicio }} · {{ c.estimador_escala }} · {{ c.estimador_rango }}</div>
+                      </div>
+                    }
+                  </div>
+                  <div class="detail-field" style="margin-top:12px">
+                    <div class="detail-lbl">Descripción del proyecto</div>
+                    <div class="detail-desc">{{ c.descripcion }}</div>
+                  </div>
+                  <div class="detail-actions">
+                    <button class="btn-sm solid" (click)="cambiarEstado(c.id, 'respondida'); $event.stopPropagation()">
+                      Marcar como respondida
+                    </button>
+                    <button class="btn-sm ghost" (click)="copiarEmail(c.email); $event.stopPropagation()">
+                      Copiar email
+                    </button>
+                    <button class="btn-sm danger" (click)="cambiarEstado(c.id, 'descartada'); $event.stopPropagation()">
+                      Descartar
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- Toast -->
+@if (toast()) {
+  <div class="toast">{{ toast() }}</div>
+}
