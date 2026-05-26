@@ -36,7 +36,8 @@ export class AdminShellComponent implements OnInit {
     { initialValue: this.router.url }
   );
 
-  isInventarioRoute = computed(() => this.routerUrl().includes('/admin/inventario'));
+  isInventarioRoute    = computed(() => this.routerUrl().includes('/admin/inventario'));
+  isCotizacionesRoute  = computed(() => this.routerUrl().includes('/admin/cotizaciones'));
 
   crumbs = computed(() => {
     const url = this.routerUrl();
