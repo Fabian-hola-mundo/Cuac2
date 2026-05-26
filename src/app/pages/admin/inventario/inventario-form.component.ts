@@ -58,6 +58,7 @@ export class InventarioFormComponent implements OnInit {
       evento_id:     EVENTO_ACTIVO,
       nombre:        v.nombre!,
       categoria:     v.categoria!,
+      personaje:     null as string | null,
       precio:        v.precio!,
       stock_inicial: v.stock_inicial!,
       activo:        v.activo ?? true,

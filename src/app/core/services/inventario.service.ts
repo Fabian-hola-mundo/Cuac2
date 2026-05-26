@@ -3,9 +3,10 @@ import { SupabaseService } from './supabase.service';
 
 export interface ProductoEvento {
   id: string;
-  evento_id: string;
+  evento_id: string | null;
   nombre: string;
   categoria: string;
+  personaje: string | null;
   precio: number;
   stock_inicial: number;
   stock_actual: number;
@@ -20,7 +21,8 @@ export interface VentaEvento {
   dispositivo: string | null;
   vendido_en: string;
   sincronizado: boolean;
-  productos_evento?: { nombre: string; categoria: string };
+  canal: 'evento' | 'web';
+  productos_evento?: { nombre: string; categoria: string; precio?: number };
 }
 
 export const EVENTO_ACTIVO = 'sofa-2026';
@@ -35,6 +37,17 @@ export const CATEGORIAS = [
   { id: 'charm',     label: 'Charms'     },
 ];
 
+export const CHARACTERS = [
+  { id: 'cuac',       label: 'Cuac'       },
+  { id: 'yeison',     label: 'Yeison'     },
+  { id: 'roar',       label: 'Roar'       },
+  { id: 'kiki',       label: 'Kiki'       },
+  { id: 'abejandro',  label: 'Abejandro'  },
+  { id: 'atolita',    label: 'Atolita'    },
+  { id: 'colibriana', label: 'Colibriana' },
+  { id: 'tiburcio',   label: 'Tiburcio'   },
+];
+
 @Injectable({ providedIn: 'root' })
 export class InventarioService {
   readonly productos = signal<ProductoEvento[]>([]);
@@ -43,6 +56,20 @@ export class InventarioService {
 
   constructor(private sb: SupabaseService) {}
 
+  /** Carga TODOS los productos (catálogo global — sin filtrar por evento) */
+  async cargarTodos(): Promise<void> {
+    this.cargando.set(true);
+    this.error.set(null);
+    const { data, error } = await this.sb.db
+      .from('productos_evento')
+      .select('*')
+      .order('creado_en', { ascending: false });
+    this.cargando.set(false);
+    if (error) { this.error.set(error.message); return; }
+    this.productos.set(data ?? []);
+  }
+
+  /** Mantiene compatibilidad con el POS — filtra por evento activo */
   async cargarProductos(): Promise<void> {
     this.cargando.set(true);
     this.error.set(null);
@@ -73,7 +100,7 @@ export class InventarioService {
       .from('productos_evento')
       .insert({ ...payload, stock_actual: payload.stock_inicial });
     if (error) return { error: error.message };
-    await this.cargarProductos();
+    await this.cargarTodos();
     return { error: null };
   }
 
@@ -86,18 +113,56 @@ export class InventarioService {
       .update(payload)
       .eq('id', id);
     if (error) return { error: error.message };
-    await this.cargarProductos();
+    await this.cargarTodos();
     return { error: null };
   }
 
-  async getVentas(desde?: string, hasta?: string): Promise<VentaEvento[]> {
+  async duplicarProducto(id: string): Promise<{ error: string | null }> {
+    const original = await this.getProducto(id);
+    if (!original) return { error: 'Producto no encontrado' };
+    const { id: _id, creado_en: _ce, stock_actual: _sa, ...rest } = original;
+    const { error } = await this.sb.db
+      .from('productos_evento')
+      .insert({ ...rest, nombre: `${rest.nombre} (copia)`, stock_actual: rest.stock_inicial });
+    if (error) return { error: error.message };
+    await this.cargarTodos();
+    return { error: null };
+  }
+
+  async toggleActivo(id: string, activo: boolean): Promise<{ error: string | null }> {
+    const { error } = await this.sb.db
+      .from('productos_evento')
+      .update({ activo })
+      .eq('id', id);
+    if (error) return { error: error.message };
+    await this.cargarTodos();
+    return { error: null };
+  }
+
+  async getVentas(
+    desde?: string,
+    hasta?: string,
+    canal?: 'evento' | 'web'
+  ): Promise<VentaEvento[]> {
     let q = this.sb.db
       .from('ventas_evento')
-      .select('*, productos_evento(nombre, categoria)')
+      .select('*, productos_evento(nombre, categoria, precio)')
       .order('vendido_en', { ascending: false });
     if (desde) q = q.gte('vendido_en', `${desde}T00:00:00`);
     if (hasta) q = q.lte('vendido_en', `${hasta}T23:59:59`);
+    if (canal) q = q.eq('canal', canal);
     const { data, error } = await q;
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async getVentasPorRango(desde: string, hasta: string): Promise<VentaEvento[]> {
+    const { data, error } = await this.sb.db
+      .from('ventas_evento')
+      .select('*, productos_evento(nombre, categoria, precio)')
+      .gte('vendido_en', desde)
+      .lte('vendido_en', hasta)
+      .order('vendido_en', { ascending: false });
     if (error) throw error;
     return data ?? [];
   }
