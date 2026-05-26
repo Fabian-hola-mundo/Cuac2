@@ -83,7 +83,9 @@ export class AdminShellComponent implements OnInit {
 
   goHome(id: ViewId) {
     this.state.view.set(id);
-    if (this.isInventarioRoute()) this.router.navigate(['/admin']);
+    if (this.isInventarioRoute() || this.isPortafolioRoute() || this.isCotizacionesRoute()) {
+      this.router.navigate(['/admin']);
+    }
   }
 
   goInventario() { this.router.navigate(['/admin/inventario']); }
