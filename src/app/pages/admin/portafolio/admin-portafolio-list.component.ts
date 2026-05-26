@@ -25,7 +25,7 @@ export class AdminPortafolioListComponent implements OnInit {
   readonly errorMsg    = signal<string | null>(null);
   readonly confirmId   = signal<string | null>(null);
 
-  filteredProjects = computed(() => {
+  readonly filteredProjects = computed(() => {
     const cat  = this.catFiltro();
     const list = this.projects();
     return cat === 'all' ? list : list.filter(p => p.category === cat);
@@ -33,8 +33,13 @@ export class AdminPortafolioListComponent implements OnInit {
 
   async ngOnInit() {
     this.cargando.set(true);
-    this.projects.set(await this.portfolio.getAll());
-    this.cargando.set(false);
+    try {
+      this.projects.set(await this.portfolio.getAll());
+    } catch {
+      this.errorMsg.set('Error al cargar proyectos.');
+    } finally {
+      this.cargando.set(false);
+    }
   }
 
   nuevo()                       { this.router.navigate(['/admin/portafolio/nuevo']); }
@@ -43,6 +48,7 @@ export class AdminPortafolioListComponent implements OnInit {
   async togglePublished(p: PortfolioProject) {
     const result = await this.portfolio.update(p.id, { published: !p.published });
     if (result.error) { this.errorMsg.set(result.error); return; }
+    this.errorMsg.set(null);
     this.projects.update(list =>
       list.map(x => x.id === p.id ? { ...x, published: !x.published } : x)
     );
@@ -55,6 +61,7 @@ export class AdminPortafolioListComponent implements OnInit {
     const result = await this.portfolio.remove(p.id);
     this.confirmId.set(null);
     if (result.error) { this.errorMsg.set(result.error); return; }
+    this.errorMsg.set(null);
     this.projects.update(list => list.filter(x => x.id !== p.id));
   }
 
