@@ -12,7 +12,7 @@
   // Typography
   --display: 'Fauna One', Georgia, serif;
   --sans:    'Manrope', system-ui, sans-serif;
-  --mono:    'JetBrains Mono', ui-monospace, monospace;
+  --mono:    'Manrope', system-ui, sans-serif;
 
   // Spacing (8pt grid)
   --s-1:  4px;
@@ -32,4 +32,25 @@
   --r-lg:   20px;
   --r-xl:   32px;
   --r-pill: 999px;
+}
+
+[data-theme="cuac"] {
+  --theme-primary: #011E54;
+  --theme-accent:  #EC3813;
+  --theme-surface: #F0F1F6;
+  --theme-on-primary: #FAFAFB;
+}
+
+[data-theme="natalia"] {
+  --theme-primary: #E87A89;
+  --theme-accent:  #C4556A;
+  --theme-surface: #FDEEF0;
+  --theme-on-primary: #FAFAFB;
+}
+
+[data-theme="nathali"] {
+  --theme-primary: #8B9ED9;
+  --theme-accent:  #5C6FC7;
+  --theme-surface: #EEF0FA;
+  --theme-on-primary: #FAFAFB;
 }
