@@ -20,7 +20,11 @@ export class VentasGeneralComponent implements OnInit {
   readonly ventas       = signal<VentaEvento[]>([]);
   readonly cargando     = signal(false);
   readonly errorMsg     = signal<string | null>(null);
-  readonly eventoActivo = signal<Evento | null>(null);
+  readonly eventos      = signal<Evento[]>([]);
+
+  readonly eventoActivo = computed(() =>
+    this.eventos().find(e => e.estado === 'activo') ?? null
+  );
 
   ventaSeleccionada = signal<VentaEvento | null>(null);
 
@@ -64,19 +68,19 @@ export class VentasGeneralComponent implements OnInit {
 
   ngOnInit() {
     this.cargar();
-    this.cargarEventoActivo();
+    this.cargarEventos();
   }
 
-  private async cargarEventoActivo() {
+  private async cargarEventos() {
     try {
-      const e = await this.eventosSvc.getEventoActivo();
-      this.eventoActivo.set(e);
+      const list = await this.eventosSvc.getEventos();
+      this.eventos.set(list);
     } catch { /* no-op */ }
   }
 
-  esEventoActual(eventoId?: string | null): boolean {
-    const activo = this.eventoActivo();
-    return !!activo && activo.id === eventoId;
+  eventoDeVenta(eventoId?: string | null): Evento | null {
+    if (!eventoId) return null;
+    return this.eventos().find(e => e.id === eventoId) ?? null;
   }
 
   async cargar() {

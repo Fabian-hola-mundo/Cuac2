@@ -82,14 +82,16 @@
           <td><strong>{{ v.productos_evento?.nombre ?? '—' }}</strong></td>
           <td class="num">{{ v.cantidad }}</td>
           <td>
-            @if (v.canal === 'evento') {
-              @if (esEventoActual(v.productos_evento?.evento_id)) {
-                <span class="badge ok"><span class="pdot"></span>{{ eventoActivo()!.nombre }}</span>
+            @if (v.canal === 'web') {
+              <span class="badge">Web</span>
+            } @else if (eventoDeVenta(v.productos_evento?.evento_id); as ev) {
+              @if (ev.estado === 'activo') {
+                <span class="badge ok"><span class="pdot"></span>{{ ev.nombre }}</span>
               } @else {
-                <span class="badge rio"><span class="pdot"></span>{{ v.productos_evento?.evento_id ?? 'Evento' }}</span>
+                <span class="badge rio">{{ ev.nombre }}</span>
               }
             } @else {
-              <span class="badge">Web</span>
+              <span class="badge">Regular</span>
             }
           </td>
           <td class="id">{{ v.canal === 'evento' ? (v.dispositivo ?? '—') : '—' }}</td>
@@ -156,14 +158,16 @@
         <div class="kv">
           <span class="k">Evento</span>
           <span class="v">
-            @if (v.canal === 'evento') {
-              @if (esEventoActual(v.productos_evento?.evento_id)) {
-                <span class="badge ok"><span class="pdot"></span>{{ eventoActivo()!.nombre }} <em style="font-weight:400;opacity:.7">· en curso</em></span>
+            @if (v.canal === 'web') {
+              <span class="badge">Web</span>
+            } @else if (eventoDeVenta(v.productos_evento?.evento_id); as ev) {
+              @if (ev.estado === 'activo') {
+                <span class="badge ok"><span class="pdot"></span>{{ ev.nombre }} <em style="font-weight:400;opacity:.7">· en curso</em></span>
               } @else {
-                <span class="badge rio"><span class="pdot"></span>{{ v.productos_evento?.evento_id ?? 'Evento' }}</span>
+                <span class="badge rio">{{ ev.nombre }}</span>
               }
             } @else {
-              <span class="badge">Web</span>
+              <span class="badge">Regular</span>
             }
           </span>
         </div>
