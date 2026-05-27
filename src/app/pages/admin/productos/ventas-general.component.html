@@ -70,7 +70,7 @@
           <th>Fecha / Hora</th>
           <th>Producto</th>
           <th class="num">Cant.</th>
-          <th>Canal</th>
+          <th>Evento</th>
           <th>Dispositivo</th>
           <th>Sync</th>
         </tr>
@@ -83,9 +83,13 @@
           <td class="num">{{ v.cantidad }}</td>
           <td>
             @if (v.canal === 'evento') {
-              <span class="badge rio"><span class="pdot"></span>{{ v.productos_evento?.evento_id ?? 'Evento' }}</span>
+              @if (esEventoActual(v.productos_evento?.evento_id)) {
+                <span class="badge ok"><span class="pdot"></span>{{ eventoActivo()!.nombre }}</span>
+              } @else {
+                <span class="badge rio"><span class="pdot"></span>{{ v.productos_evento?.evento_id ?? 'Evento' }}</span>
+              }
             } @else {
-              <span class="badge ok"><span class="pdot"></span>Web</span>
+              <span class="badge">Web</span>
             }
           </td>
           <td class="id">{{ v.canal === 'evento' ? (v.dispositivo ?? '—') : '—' }}</td>
@@ -150,12 +154,16 @@
         <div class="kv"><span class="k">Categoría</span><span class="v">{{ v.productos_evento?.categoria ?? '—' }}</span></div>
         <div class="kv"><span class="k">Cantidad</span><span class="v">{{ v.cantidad }}</span></div>
         <div class="kv">
-          <span class="k">Canal</span>
+          <span class="k">Evento</span>
           <span class="v">
             @if (v.canal === 'evento') {
-              <span class="badge rio"><span class="pdot"></span>{{ v.productos_evento?.evento_id ?? 'Evento' }}</span>
+              @if (esEventoActual(v.productos_evento?.evento_id)) {
+                <span class="badge ok"><span class="pdot"></span>{{ eventoActivo()!.nombre }} <em style="font-weight:400;opacity:.7">· en curso</em></span>
+              } @else {
+                <span class="badge rio"><span class="pdot"></span>{{ v.productos_evento?.evento_id ?? 'Evento' }}</span>
+              }
             } @else {
-              <span class="badge ok"><span class="pdot"></span>Web</span>
+              <span class="badge">Web</span>
             }
           </span>
         </div>

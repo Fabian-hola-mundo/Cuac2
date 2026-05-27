@@ -3,6 +3,7 @@ import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { Router }         from '@angular/router';
 import { InventarioService, VentaEvento } from '../../../core/services/inventario.service';
+import { EventosService, Evento } from '../../../core/services/eventos.service';
 
 @Component({
   selector: 'app-ventas-general',
@@ -12,12 +13,14 @@ import { InventarioService, VentaEvento } from '../../../core/services/inventari
   styleUrl: './ventas-general.component.scss',
 })
 export class VentasGeneralComponent implements OnInit {
-  private router = inject(Router);
-  private inv    = inject(InventarioService);
+  private router     = inject(Router);
+  private inv        = inject(InventarioService);
+  private eventosSvc = inject(EventosService);
 
-  readonly ventas   = signal<VentaEvento[]>([]);
-  readonly cargando = signal(false);
-  readonly errorMsg = signal<string | null>(null);
+  readonly ventas       = signal<VentaEvento[]>([]);
+  readonly cargando     = signal(false);
+  readonly errorMsg     = signal<string | null>(null);
+  readonly eventoActivo = signal<Evento | null>(null);
 
   ventaSeleccionada = signal<VentaEvento | null>(null);
 
@@ -59,7 +62,22 @@ export class VentasGeneralComponent implements OnInit {
     this.totalesPorProducto().reduce((acc, t) => acc + t.total, 0)
   );
 
-  ngOnInit() { this.cargar(); }
+  ngOnInit() {
+    this.cargar();
+    this.cargarEventoActivo();
+  }
+
+  private async cargarEventoActivo() {
+    try {
+      const e = await this.eventosSvc.getEventoActivo();
+      this.eventoActivo.set(e);
+    } catch { /* no-op */ }
+  }
+
+  esEventoActual(eventoId?: string | null): boolean {
+    const activo = this.eventoActivo();
+    return !!activo && activo.id === eventoId;
+  }
 
   async cargar() {
     this.cargando.set(true);
