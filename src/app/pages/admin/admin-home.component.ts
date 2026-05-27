@@ -28,11 +28,38 @@ export class AdminHomeComponent implements OnDestroy {
   // ── Drawer states ──────────────────────────────────────────────────────────
   editorOn       = signal(false);
   orderOn        = signal(false);
+  manualOrderOn  = signal(false);
   editingProduct = signal<Product | null>(null);
 
   // ── Toast ──────────────────────────────────────────────────────────────────
   toast = signal<string | null>(null);
   private toastTimer?: ReturnType<typeof setTimeout>;
+
+  // ── Pedido manual ──────────────────────────────────────────────────────────
+  moClienteNombre    = '';
+  moClienteEmail     = '';
+  moClienteTel       = '';
+  moClienteCiudad    = '';
+  moClienteDireccion = '';
+  moMetodo           = 'efectivo';
+  moCanal            = 'web';
+  moNotas            = '';
+  moProductSearch    = '';
+  moItems            = signal<{ id: string; name: string; price: number; qty: number }[]>([]);
+
+  moProductosFiltrados = computed(() => {
+    const q = this.moProductSearch.toLowerCase().trim();
+    if (!q) return this.PRODUCTS.slice(0, 6);
+    return this.PRODUCTS.filter(p =>
+      p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
+    ).slice(0, 8);
+  });
+
+  moSubtotal = computed(() =>
+    this.moItems().reduce((acc, i) => acc + i.price * i.qty, 0)
+  );
+
+  moTotal = computed(() => this.moSubtotal());
 
   // ── Filters ───────────────────────────────────────────────────────────────
   productCat   = signal('all');
@@ -230,6 +257,48 @@ export class AdminHomeComponent implements OnDestroy {
 
   openOrder() { this.orderOn.set(true); }
   closeOrder() { this.orderOn.set(false); }
+
+  openManualOrder() {
+    this.moClienteNombre    = '';
+    this.moClienteEmail     = '';
+    this.moClienteTel       = '';
+    this.moClienteCiudad    = '';
+    this.moClienteDireccion = '';
+    this.moMetodo           = 'efectivo';
+    this.moCanal            = 'web';
+    this.moNotas            = '';
+    this.moProductSearch    = '';
+    this.moItems.set([]);
+    this.manualOrderOn.set(true);
+  }
+
+  closeManualOrder() { this.manualOrderOn.set(false); }
+
+  moAddProduct(p: Product) {
+    this.moItems.update(items => {
+      const existing = items.find(i => i.id === p.id);
+      if (existing) {
+        return items.map(i => i.id === p.id ? { ...i, qty: i.qty + 1 } : i);
+      }
+      return [...items, { id: p.id, name: p.name, price: p.price, qty: 1 }];
+    });
+  }
+
+  moRemoveItem(id: string) {
+    this.moItems.update(items => items.filter(i => i.id !== id));
+  }
+
+  moChangeQty(id: string, delta: number) {
+    this.moItems.update(items =>
+      items.map(i => i.id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i)
+    );
+  }
+
+  moCrear() {
+    if (this.moItems().length === 0 || !this.moClienteNombre.trim()) return;
+    this.closeManualOrder();
+    this.flash('Pedido manual creado.');
+  }
 
   flash(msg: string) {
     this.toast.set(msg);

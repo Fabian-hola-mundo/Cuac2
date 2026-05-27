@@ -159,7 +159,7 @@
           <div class="ph-r">
             <button class="btn-sm ghost">Imprimir guías (3)</button>
             <button class="btn-sm ghost">Exportar</button>
-            <button class="btn-sm solid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Pedido manual</button>
+            <button class="btn-sm solid" (click)="openManualOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Pedido manual</button>
           </div>
         </div>
         <div class="tabs">
@@ -693,6 +693,171 @@
   <div class="drawer-f">
     <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">Creado {{ ORDER_DETAIL.date }}</span>
     <button class="btn-sm ghost" (click)="closeOrder()">Cerrar</button>
+  </div>
+</div>
+}
+
+<!-- ══ MANUAL ORDER DRAWER ══════════════════════════════════════════════════ -->
+@if (manualOrderOn()) {
+<div class="drawer-back on" (click)="closeManualOrder()"></div>
+<div class="drawer on" style="width:min(880px,94vw)">
+  <div class="drawer-h">
+    <div>
+      <div class="crumbs-admin"><span>Pedidos</span><span class="sep">/</span><strong>Pedido manual</strong></div>
+      <h2>Crear pedido manual</h2>
+    </div>
+    <button class="drawer-close" (click)="closeManualOrder()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-b">
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:var(--s-4);align-items:start">
+
+      <!-- Columna izquierda: productos + resumen -->
+      <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+
+        <div class="panel">
+          <div class="panel-h"><h3>Línea de productos</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            <div class="search-min">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+              <input placeholder="Buscar producto por nombre o SKU…" [(ngModel)]="moProductSearch" name="moSearch" />
+            </div>
+            @if (moProductosFiltrados().length > 0) {
+              <div style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto">
+                @for (p of moProductosFiltrados(); track p.id) {
+                  <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--cream-2)">
+                    <div [style.background]="tone(p.color).bg" [style.color]="tone(p.color).fg" style="width:30px;height:30px;border-radius:6px;display:grid;place-items:center;font-family:var(--display);font-size:13px;flex-shrink:0">{{ p.name.charAt(0) }}</div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                      <div style="font-family:var(--mono);font-size:10.5px;color:var(--carbon-50)">{{ p.sku }} · {{ fmtCOP(p.price) }}</div>
+                    </div>
+                    <button class="btn-sm ghost" style="padding:4px 10px;font-size:12px" (click)="moAddProduct(p)">+ Agregar</button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        @if (moItems().length > 0) {
+        <div class="panel">
+          <div class="panel-h"><h3>Items del pedido</h3><span class="sub">{{ moItems().length }} productos</span></div>
+          <div class="panel-b flush">
+            <table class="tbl">
+              <thead><tr><th>Producto</th><th class="num">Precio</th><th class="num">Cant.</th><th class="num">Subtotal</th><th></th></tr></thead>
+              <tbody>
+                @for (item of moItems(); track item.id) {
+                <tr>
+                  <td><strong style="font-size:13px">{{ item.name }}</strong></td>
+                  <td class="num">{{ fmtCOP(item.price) }}</td>
+                  <td class="num">
+                    <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+                      <button class="icon-act" style="width:22px;height:22px;font-size:14px" (click)="moChangeQty(item.id, -1)">−</button>
+                      <span style="font-variant-numeric:tabular-nums;min-width:20px;text-align:center">{{ item.qty }}</span>
+                      <button class="icon-act" style="width:22px;height:22px;font-size:14px" (click)="moChangeQty(item.id, 1)">+</button>
+                    </div>
+                  </td>
+                  <td class="num">{{ fmtCOP(item.price * item.qty) }}</td>
+                  <td class="actions">
+                    <button class="icon-act" title="Quitar" (click)="moRemoveItem(item.id)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:var(--s-4) var(--s-5);border-top:1px solid var(--carbon-08);background:var(--cream)">
+            <div class="kv-list" style="max-width:280px;margin-left:auto">
+              <div class="kv"><span class="k">Subtotal</span><span class="v">{{ fmtCOP(moSubtotal()) }}</span></div>
+              <div class="kv"><span class="k">Envío</span><span class="v" style="color:var(--carbon-50)">Por definir</span></div>
+              <div class="kv total"><span class="k">Total estimado</span><span class="v">{{ fmtCOP(moTotal()) }}</span></div>
+            </div>
+          </div>
+        </div>
+        }
+
+      </div>
+
+      <!-- Columna derecha: cliente + pago + notas -->
+      <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+
+        <div class="panel">
+          <div class="panel-h"><h3>Cliente</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            <div class="field">
+              <label>Nombre <span style="color:var(--terra)">*</span></label>
+              <input class="input" [(ngModel)]="moClienteNombre" name="moNombre" placeholder="Ej: Mariana Restrepo" />
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input class="input" type="email" [(ngModel)]="moClienteEmail" name="moEmail" placeholder="correo@ejemplo.co" />
+            </div>
+            <div class="field">
+              <label>Teléfono</label>
+              <input class="input" [(ngModel)]="moClienteTel" name="moTel" placeholder="+57 311 000 0000" />
+            </div>
+            <div class="field">
+              <label>Ciudad</label>
+              <input class="input" [(ngModel)]="moClienteCiudad" name="moCiudad" placeholder="Bogotá" />
+            </div>
+            <div class="field">
+              <label>Dirección</label>
+              <input class="input" [(ngModel)]="moClienteDireccion" name="moDireccion" placeholder="Cra 11 # 71-30" />
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h"><h3>Pago</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            <div class="field">
+              <label>Método de pago</label>
+              <select class="select" [(ngModel)]="moMetodo" name="moMetodo">
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+                <option value="nequi">Nequi</option>
+                <option value="bold">Bold</option>
+                <option value="contra-entrega">Contra-entrega</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Canal</label>
+              <select class="select" [(ngModel)]="moCanal" name="moCanal">
+                <option value="web">Web</option>
+                <option value="evento">Evento</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h"><h3>Notas</h3></div>
+          <div class="panel-b">
+            <textarea class="textarea" rows="3" [(ngModel)]="moNotas" name="moNotas" placeholder="Instrucciones especiales, tallas, etc."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="drawer-f">
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">
+      @if (moItems().length === 0) { Agrega al menos 1 producto }
+      @else if (!moClienteNombre.trim()) { Ingresa el nombre del cliente }
+      @else { {{ moItems().length }} producto(s) · {{ fmtCOP(moTotal()) }} }
+    </span>
+    <div style="display:flex;gap:10px">
+      <button class="btn-sm ghost" (click)="closeManualOrder()">Cancelar</button>
+      <button class="btn-sm solid"
+        [disabled]="moItems().length === 0 || !moClienteNombre.trim()"
+        (click)="moCrear()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="m5 12 5 5L20 7"/></svg>
+        Crear pedido
+      </button>
+    </div>
   </div>
 </div>
 }
