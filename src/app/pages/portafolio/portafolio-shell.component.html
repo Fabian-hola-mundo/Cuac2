@@ -1,55 +1,85 @@
-<div class="port-hero">
-  <div class="port-hero-inner">
-    <div class="back-nav">
-      <a class="back-link" routerLink="/">← Inicio</a>
-      @if (!isCuac) {
-        <a class="back-link" routerLink="/portafolio">← Cuac Design</a>
-      }
-    </div>
-    <div class="eyebrow">
-      <span class="pulse"></span>
+<!-- ── Hero ─────────────────────────────────────────────────────────────────── -->
+<div class="port-hero" [style.min-height]="hero.height">
+  <app-portfolio-shader [theme]="theme()"></app-portfolio-shader>
+
+  <nav class="hero-nav" aria-label="Navegación de portafolio">
+    <a class="hero-back" routerLink="/">← Inicio</a>
+    @if (!isCuac) {
+      <a class="hero-back" routerLink="/portafolio">← Cuac Design</a>
+    }
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="pulse" aria-hidden="true"></span>
       {{ hero.eyebrow }}
     </div>
-    <h1>
-      <span>{{ hero.h1Main }}</span>
-      <span>{{ hero.h1Sub }}</span>
+    <h1 class="hero-h1">
+      {{ hero.h1Main }}<br>
+      <em class="hero-h1-sub">{{ hero.h1Sub }}</em>
     </h1>
-    <p class="hero-role">{{ hero.rol }}</p>
+    <p class="hero-meta">{{ hero.rol }}</p>
     @if (hero.disciplinas) {
-      <em class="hero-tagline">{{ hero.disciplinas }}</em>
+      <p class="hero-disciplinas">{{ hero.disciplinas }}</p>
     }
+  </div>
+
+  <div class="scroll-hint" aria-hidden="true">
+    <span class="scroll-line"></span>
+    <span class="scroll-label">Explorar</span>
   </div>
 </div>
 
+<!-- ── Content ───────────────────────────────────────────────────────────────── -->
 <div class="port-content">
 
-  <div class="chips">
-    <button class="chip" [class.is-on]="catFiltro() === 'all'" [attr.aria-pressed]="catFiltro() === 'all'" (click)="catFiltro.set('all')">
-      Todos
+  <!-- ── Filter bar ──────────────────────────────────────────────────────────── -->
+  <nav class="filter-bar" aria-label="Filtrar por categoría">
+    <button
+      class="filter-item"
+      [class.active]="catFiltro() === 'all'"
+      [attr.aria-pressed]="catFiltro() === 'all'"
+      (click)="catFiltro.set('all')">
+      Todos <span class="filter-count">{{ totalCount() }}</span>
     </button>
     @for (c of categorias; track c.id) {
-      <button class="chip" [class.is-on]="catFiltro() === c.id" [attr.aria-pressed]="catFiltro() === c.id" (click)="catFiltro.set(c.id)">
-        {{ c.label }}
-      </button>
+      @if (countFor(c.id) > 0) {
+        <button
+          class="filter-item"
+          [class.active]="catFiltro() === c.id"
+          [attr.aria-pressed]="catFiltro() === c.id"
+          (click)="catFiltro.set(c.id)">
+          {{ c.label }} <span class="filter-count">{{ countFor(c.id) }}</span>
+        </button>
+      }
     }
-  </div>
+  </nav>
 
+  <!-- ── Grid ────────────────────────────────────────────────────────────────── -->
   @if (cargando()) {
-    <p class="port-loading">Cargando proyectos…</p>
+    <p class="port-loading" role="status">Cargando proyectos…</p>
   }
 
   @if (!cargando() && filteredProjects().length > 0) {
     <div class="port-grid">
       @for (p of filteredProjects(); track p.id) {
-        <a class="port-card" [class.is-featured]="p.featured" [routerLink]="['/portafolio', p.slug]" [attr.aria-label]="p.title + ' · ' + p.category">
-          <div
-            class="port-card-cover"
-            [class.has-image]="!!p.cover_url"
-            [style.backgroundImage]="p.cover_url ? 'url(' + p.cover_url + ')' : null">
-            <div class="port-card-foot">
-              <span class="port-card-cat">{{ p.category }}</span>
-              <strong class="port-card-title">{{ p.title }}</strong>
-            </div>
+        <a
+          class="port-card"
+          [style.grid-column]="'span ' + p.span"
+          [style.aspect-ratio]="p.ar"
+          [routerLink]="['/portafolio', p.slug]"
+          [attr.aria-label]="p.title + ' · ' + catLabel(p.category)">
+          @if (p.cover_url) {
+            <div class="card-bg" [style.backgroundImage]="'url(' + p.cover_url + ')'"></div>
+          }
+          <div class="card-label">
+            <span class="card-cat">{{ catLabel(p.category) }}</span>
+            <span class="card-title-sm">{{ p.title }}</span>
+          </div>
+          <div class="card-overlay" aria-hidden="true">
+            <span class="overlay-cat">{{ catLabel(p.category) }}</span>
+            <span class="overlay-title">{{ p.title }}</span>
+            <span class="overlay-cta">Ver proyecto</span>
           </div>
         </a>
       }
@@ -57,24 +87,27 @@
   }
 
   @if (!cargando() && filteredProjects().length === 0) {
-    <div class="port-empty">
+    <div class="port-empty" role="status">
       <p>Sin proyectos en esta categoría aún.</p>
     </div>
   }
 
+  <!-- ── Personal footer (Cuac only) ─────────────────────────────────────────── -->
   @if (isCuac) {
     <div class="personal-footer">
-      <p class="pf-label">El equipo también tiene voz propia.</p>
+      <p class="pf-eyebrow">El equipo también tiene voz propia</p>
       <div class="pf-grid">
         <a class="pf-card pf-natalia" routerLink="/portafolio/natalia">
-          <strong>Natalia Castañeda Caicedo</strong>
-          <span>Diseño editorial, ilustración y branding</span>
-          <span class="pf-link">Ver portafolio →</span>
+          <span class="pf-tag">Portafolio personal</span>
+          <strong class="pf-name">Natalia Castañeda Caicedo</strong>
+          <span class="pf-rol">Diseño editorial, ilustración y branding</span>
+          <span class="pf-cta">Ver portafolio <span aria-hidden="true">→</span></span>
         </a>
         <a class="pf-card pf-nathali" routerLink="/portafolio/nathali">
-          <strong>Nathali Ramírez Ortiz</strong>
-          <span>Diseño UI/UX, ilustración y branding</span>
-          <span class="pf-link">Ver portafolio →</span>
+          <span class="pf-tag">Portafolio personal</span>
+          <strong class="pf-name">Nathali Ramírez Ortiz</strong>
+          <span class="pf-rol">Diseño UI/UX, ilustración y branding</span>
+          <span class="pf-cta">Ver portafolio <span aria-hidden="true">→</span></span>
         </a>
       </div>
     </div>
