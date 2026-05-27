@@ -83,7 +83,7 @@
           <td class="num">{{ v.cantidad }}</td>
           <td>
             @if (v.canal === 'evento') {
-              <span class="badge rio"><span class="pdot"></span>Evento</span>
+              <span class="badge rio"><span class="pdot"></span>{{ v.productos_evento?.evento_id ?? 'Evento' }}</span>
             } @else {
               <span class="badge ok"><span class="pdot"></span>Web</span>
             }
@@ -115,6 +115,12 @@
         <span style="font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px">{{ t.nombre }}</span>
         <strong style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;flex-shrink:0">{{ t.total }} ud.</strong>
       </div>
+      }
+      @if (totalesPorProducto().length > 0) {
+        <div class="total-row">
+          <span>Total</span>
+          <strong>{{ totalProductosVendidos() }} ud.</strong>
+        </div>
       }
     </div>
   </div>

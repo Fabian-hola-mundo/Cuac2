@@ -22,7 +22,7 @@ export interface VentaEvento {
   vendido_en: string;
   sincronizado: boolean;
   canal: 'evento' | 'web';
-  productos_evento?: { nombre: string; categoria: string; precio?: number };
+  productos_evento?: { nombre: string; categoria: string; precio?: number; evento_id?: string | null };
 }
 
 export const EVENTO_ACTIVO = 'sofa-2026';
@@ -154,7 +154,7 @@ export class InventarioService {
   ): Promise<VentaEvento[]> {
     let q = this.sb.db
       .from('ventas_evento')
-      .select('*, productos_evento(nombre, categoria, precio)')
+      .select('*, productos_evento(nombre, categoria, precio, evento_id)')
       .order('vendido_en', { ascending: false });
     if (desde) q = q.gte('vendido_en', `${desde}T00:00:00`);
     if (hasta) q = q.lte('vendido_en', `${hasta}T23:59:59`);

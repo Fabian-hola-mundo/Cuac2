@@ -50,6 +50,10 @@ export class VentasGeneralComponent implements OnInit {
     return Array.from(map.values()).sort((a, b) => b.total - a.total);
   });
 
+  totalProductosVendidos = computed(() =>
+    this.totalesPorProducto().reduce((acc, t) => acc + t.total, 0)
+  );
+
   ngOnInit() { this.cargar(); }
 
   async cargar() {
