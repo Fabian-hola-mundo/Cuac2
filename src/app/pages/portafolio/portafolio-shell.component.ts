@@ -111,12 +111,25 @@ export class PortafolioShellComponent implements OnInit {
 
   readonly totalCount = computed(() => this.projects().length);
 
+  readonly countPerCat = computed<Record<string, number>>(() => {
+    const map: Record<string, number> = {};
+    for (const p of this.projects()) {
+      map[p.category] = (map[p.category] ?? 0) + 1;
+    }
+    return map;
+  });
+
   countFor(catId: string): number {
-    return this.projects().filter(p => p.category === catId).length;
+    return this.countPerCat()[catId] ?? 0;
   }
 
   catLabel(id: string): string {
     return this.categorias.find(c => c.id === id)?.label ?? id;
+  }
+
+  safeBg(url: string | null): string {
+    if (!url || !/^https?:\/\//.test(url)) return 'none';
+    return `url(${url})`;
   }
 
   async ngOnInit() {

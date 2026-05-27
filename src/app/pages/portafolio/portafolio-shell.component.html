@@ -19,7 +19,7 @@
       <em class="hero-h1-sub">{{ hero.h1Sub }}</em>
     </h1>
     <p class="hero-meta">{{ hero.rol }}</p>
-    @if (hero.disciplinas) {
+    @if (hero.disciplinas?.trim()) {
       <p class="hero-disciplinas">{{ hero.disciplinas }}</p>
     }
   </div>
@@ -70,9 +70,9 @@
           [routerLink]="['/portafolio', p.slug]"
           [attr.aria-label]="p.title + ' · ' + catLabel(p.category)">
           @if (p.cover_url) {
-            <div class="card-bg" [style.backgroundImage]="'url(' + p.cover_url + ')'"></div>
+            <div class="card-bg" [style.backgroundImage]="safeBg(p.cover_url)"></div>
           }
-          <div class="card-label">
+          <div class="card-label" aria-hidden="true">
             <span class="card-cat">{{ catLabel(p.category) }}</span>
             <span class="card-title-sm">{{ p.title }}</span>
           </div>
