@@ -69,6 +69,7 @@ function assignSpans(projects: PortfolioProject[]): SpanProject[] {
       out.push({ ...projects[i + 2], span: 4, ar: '1/1' });
       i += 3;
     } else if (rem === 2) {
+      // featured flag intentionally ignored when only 2 remain — use generic 2-item layout
       out.push({ ...projects[i],     span: 5, ar: '3/4' });
       out.push({ ...projects[i + 1], span: 7, ar: '4/3' });
       i += 2;
@@ -86,20 +87,20 @@ function assignSpans(projects: PortfolioProject[]): SpanProject[] {
   imports: [CommonModule, RouterLink, PortfolioShaderComponent],
   templateUrl: './portafolio-shell.component.html',
   styleUrl: './portafolio-shell.component.scss',
-  host: { '[attr.data-theme]': 'theme' },
+  host: { '[attr.data-theme]': 'theme()' },
 })
 export class PortafolioShellComponent implements OnInit {
   private portfolioSvc = inject(PortfolioService);
   private route        = inject(ActivatedRoute);
 
-  theme: Theme = 'cuac';
+  readonly theme      = signal<Theme>('cuac');
   readonly categorias = PORTFOLIO_CATEGORIES;
   readonly cargando   = signal(false);
   readonly projects   = signal<PortfolioProject[]>([]);
   readonly catFiltro  = signal<string>('all');
 
-  get hero(): HeroData  { return HERO_DATA[this.theme]; }
-  get isCuac(): boolean { return this.theme === 'cuac'; }
+  get hero(): HeroData  { return HERO_DATA[this.theme()]; }
+  get isCuac(): boolean { return this.theme() === 'cuac'; }
 
   readonly filteredProjects = computed<SpanProject[]>(() => {
     const cat      = this.catFiltro();
@@ -119,10 +120,13 @@ export class PortafolioShellComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.theme = (this.route.snapshot.data['theme'] as Theme) ?? 'cuac';
+    this.theme.set((this.route.snapshot.data['theme'] as Theme) ?? 'cuac');
     this.cargando.set(true);
-    const data = await this.portfolioSvc.getPublished(THEME_AUTHOR[this.theme]);
-    this.projects.set(data);
-    this.cargando.set(false);
+    try {
+      const data = await this.portfolioSvc.getPublished(THEME_AUTHOR[this.theme()]);
+      this.projects.set(data);
+    } finally {
+      this.cargando.set(false);
+    }
   }
 }
