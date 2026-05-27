@@ -73,34 +73,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/admin/admin-home.component').then(m => m.AdminHomeComponent),
       },
-      {
-        path: 'inventario',
-        loadComponent: () =>
-          import('./pages/admin/inventario/inventario-list.component').then(
-            m => m.InventarioListComponent,
-          ),
-      },
-      {
-        path: 'inventario/nuevo',
-        loadComponent: () =>
-          import('./pages/admin/inventario/inventario-form.component').then(
-            m => m.InventarioFormComponent,
-          ),
-      },
-      {
-        path: 'inventario/:id/editar',
-        loadComponent: () =>
-          import('./pages/admin/inventario/inventario-form.component').then(
-            m => m.InventarioFormComponent,
-          ),
-      },
-      {
-        path: 'inventario/ventas',
-        loadComponent: () =>
-          import('./pages/admin/inventario/inventario-ventas.component').then(
-            m => m.InventarioVentasComponent,
-          ),
-      },
+
       {
         path: 'cotizaciones',
         loadComponent: () =>

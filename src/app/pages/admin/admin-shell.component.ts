@@ -36,7 +36,6 @@ export class AdminShellComponent implements OnInit {
     { initialValue: this.router.url }
   );
 
-  isInventarioRoute    = computed(() => this.routerUrl().includes('/admin/inventario'));
   isCotizacionesRoute  = computed(() => this.routerUrl().includes('/admin/cotizaciones'));
   isPortafolioRoute    = computed(() => this.routerUrl().includes('/admin/portafolio'));
   isProductosRoute     = computed(() => this.routerUrl().includes('/admin/productos'));
@@ -48,10 +47,6 @@ export class AdminShellComponent implements OnInit {
     if (url.includes('/portafolio/nuevo'))             return ['Estudio', 'Portafolio', 'Nuevo proyecto'];
     if (url.match(/\/portafolio\/.+\/editar/))         return ['Estudio', 'Portafolio', 'Editar proyecto'];
     if (url.includes('/portafolio'))                   return ['Estudio', 'Portafolio'];
-    if (url.includes('/inventario/ventas'))            return ['Evento', 'Inventario', 'Log de ventas'];
-    if (url.includes('/inventario/nuevo'))             return ['Evento', 'Inventario', 'Nuevo producto'];
-    if (url.match(/\/inventario\/.+\/editar/))         return ['Evento', 'Inventario', 'Editar producto'];
-    if (url.includes('/inventario'))                   return ['Evento', 'Inventario'];
     if (url.includes('/productos/ventas'))             return ['Tienda', 'Productos', 'Registro de ventas'];
     if (url.includes('/productos/nuevo'))              return ['Tienda', 'Productos', 'Nuevo producto'];
     if (url.match(/\/productos\/.+\/editar/))          return ['Tienda', 'Productos', 'Editar producto'];
@@ -95,12 +90,11 @@ export class AdminShellComponent implements OnInit {
       return;
     }
     this.state.view.set(id);
-    if (this.isInventarioRoute() || this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute()) {
+    if (this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute()) {
       this.router.navigate(['/admin']);
     }
   }
 
-  goInventario() { this.router.navigate(['/admin/inventario']); }
   goCotizaciones() { this.router.navigate(['/admin/cotizaciones']); }
   goPortafolio() { this.router.navigate(['/admin/portafolio']); }
   goProductos() { this.router.navigate(['/admin/productos']); }
