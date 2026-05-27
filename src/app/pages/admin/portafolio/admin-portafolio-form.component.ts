@@ -158,6 +158,7 @@ export class AdminPortafolioFormComponent implements OnInit {
         cover_url:      coverUrl,
         images,
         tags:           this.tags(),
+        links:          [],
         featured:       v.featured ?? false,
         published:      v.published ?? false,
       };

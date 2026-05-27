@@ -2,22 +2,29 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 
+export interface ProjectLink {
+  label: string;
+  url:   string;
+  type:  'web' | 'video' | 'behance' | 'instagram' | 'other';
+}
+
 export interface PortfolioProject {
-  id: string;
-  title: string;
-  slug: string;
-  category: string;
-  authors: string[];
-  headline: string | null;
-  client_name: string | null;
-  description: string | null;
+  id:             string;
+  title:          string;
+  slug:           string;
+  category:       string;
+  authors:        string[];
+  headline:       string | null;
+  client_name:    string | null;
+  description:    string | null;
   client_comment: string | null;
-  cover_url: string | null;
-  images: string[];
-  tags: string[];
-  featured: boolean;
-  published: boolean;
-  created_at: string;
+  cover_url:      string | null;
+  images:         string[];
+  tags:           string[];
+  links:          ProjectLink[];
+  featured:       boolean;
+  published:      boolean;
+  created_at:     string;
 }
 
 export type ProjectPayload = Omit<PortfolioProject, 'id' | 'created_at'>;
