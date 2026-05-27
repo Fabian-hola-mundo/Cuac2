@@ -39,13 +39,12 @@
   --theme-accent:       #EC3813;
   --theme-surface:      #F0F1F6;
   --theme-on-primary:   #FAFAFB;
-  // Portfolio hero
-  --theme-hero-bg:      #011E54;
-  --theme-hero-text:    #FAFAFB;
-  --theme-hero-muted:   rgba(250, 250, 251, 0.52); // 4.96:1 on #011E54 — passes AA
+  --theme-hero-bg:      #F0F1F6;
+  --theme-hero-text:    #151F28;
+  --theme-hero-muted:   rgba(21, 31, 40, 0.50);
   --theme-hero-accent:  #EC3813;
   --theme-page-bg:      #FAFAFB;
-  --theme-chip-active:  #011E54; // deep navy — paper text = 15.3:1
+  --theme-chip-active:  #151F28;
 }
 
 [data-theme="natalia"] {
@@ -53,13 +52,12 @@
   --theme-accent:       #C4556A;
   --theme-surface:      #FDEEF0;
   --theme-on-primary:   #FAFAFB;
-  // Portfolio hero — salmon pink surface, carbon type
-  --theme-hero-bg:      #E87A89;
+  --theme-hero-bg:      #FBF8F4;
   --theme-hero-text:    #151F28;
-  --theme-hero-muted:   rgba(21, 31, 40, 0.88); // 5.06:1 on #E87A89 — passes AA
-  --theme-hero-accent:  rgba(21, 31, 40, 0.82); // 4.58:1 on #E87A89 — passes AA
+  --theme-hero-muted:   rgba(21, 31, 40, 0.50);
+  --theme-hero-accent:  #C4556A;
   --theme-page-bg:      #FDF6F7;
-  --theme-chip-active:  #7A2A3F; // dark rose — paper text = 9.0:1
+  --theme-chip-active:  #7A2A3F;
 }
 
 [data-theme="nathali"] {
@@ -67,11 +65,10 @@
   --theme-accent:       #5C6FC7;
   --theme-surface:      #EEF0FA;
   --theme-on-primary:   #FAFAFB;
-  // Portfolio hero — blue-violet surface, carbon type
-  --theme-hero-bg:      #8B9ED9;
+  --theme-hero-bg:      #EEF2FD;
   --theme-hero-text:    #151F28;
-  --theme-hero-muted:   rgba(21, 31, 40, 0.88); // 5.33:1 on #8B9ED9 — passes AA
-  --theme-hero-accent:  rgba(21, 31, 40, 0.82); // 4.83:1 on #8B9ED9 — passes AA
+  --theme-hero-muted:   rgba(21, 31, 40, 0.50);
+  --theme-hero-accent:  #5C6FC7;
   --theme-page-bg:      #F4F5FC;
-  --theme-chip-active:  #2A3B8A; // deep indigo — paper text = 9.57:1
+  --theme-chip-active:  #2A3B8A;
 }
