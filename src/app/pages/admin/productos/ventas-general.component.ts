@@ -19,6 +19,11 @@ export class VentasGeneralComponent implements OnInit {
   readonly cargando = signal(false);
   readonly errorMsg = signal<string | null>(null);
 
+  ventaSeleccionada = signal<VentaEvento | null>(null);
+
+  verDetalle(v: VentaEvento)  { this.ventaSeleccionada.set(v); }
+  cerrarDetalle()             { this.ventaSeleccionada.set(null); }
+
   desde = '';
   hasta = '';
   canalFiltro: '' | 'evento' | 'web' = '';
