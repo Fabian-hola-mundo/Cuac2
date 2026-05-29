@@ -1,0 +1,94 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Sistema</div>
+    <h1>Datos del <em>negocio</em></h1>
+    <p class="sub">Lo que aparece en facturas y en la tienda pública.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Datos fiscales</h3><span class="sub">Lo que aparece en facturas</span></div>
+  <div class="panel-b">
+    <div class="grid-2">
+      <div class="field"><label>Razón social</label><input class="input" [value]="razonSocial()" (input)="razonSocial.set($any($event.target).value)" /></div>
+      <div class="field"><label>NIT</label><input class="input" [value]="nit()" (input)="nit.set($any($event.target).value)" /></div>
+      <div class="field"><label>Email de contacto</label><input class="input" type="email" [value]="email()" (input)="email.set($any($event.target).value)" /></div>
+      <div class="field"><label>Teléfono</label><input class="input" [value]="telefono()" (input)="telefono.set($any($event.target).value)" /></div>
+      <div class="field" style="grid-column:span 2"><label>Dirección fiscal</label><input class="input" [value]="direccion()" (input)="direccion.set($any($event.target).value)" /></div>
+      <div class="field"><label>Régimen tributario</label>
+        <select class="select" [value]="regimen()" (change)="regimen.set($any($event.target).value)">
+          <option value="simple">Régimen Simple</option>
+          <option value="iva">Responsable de IVA</option>
+          <option value="no">No responsable</option>
+        </select>
+      </div>
+      <div class="field"><label>Moneda</label>
+        <select class="select" [value]="moneda()" (change)="moneda.set($any($event.target).value)">
+          <option value="COP">COP — Peso colombiano</option>
+          <option value="USD">USD — Dólar</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Identidad visual</h3><span class="sub">Nombre y marca en la tienda pública</span></div>
+  <div class="panel-b">
+    <div class="grid-2">
+      <div class="field"><label>Nombre de la tienda</label><input class="input" [value]="nombreTienda()" (input)="nombreTienda.set($any($event.target).value)" /></div>
+      <div class="field"><label>Color primario</label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="color" [value]="colorPrimario()" (input)="colorPrimario.set($any($event.target).value)" style="width:40px;height:36px;padding:2px;border-radius:6px;border:1px solid var(--carbon-12);cursor:pointer" />
+          <input class="input" [value]="colorPrimario()" (input)="colorPrimario.set($any($event.target).value)" style="flex:1" placeholder="#2A6FDB" />
+        </div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:var(--s-4)">
+      <label>Logo de la tienda</label>
+      <div style="display:flex;align-items:center;gap:16px;padding:16px;border:1px dashed var(--carbon-20);border-radius:10px;margin-top:6px">
+        <div style="width:64px;height:64px;border-radius:12px;background:var(--cream-2);display:grid;place-items:center;font-family:var(--display);font-size:28px;color:var(--carbon-50)">Cv</div>
+        <div>
+          <button class="btn-sm ghost">Subir logo</button>
+          <div class="help" style="margin-top:6px">PNG o SVG · mínimo 200×200px</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Configuración regional</h3></div>
+  <div class="panel-b">
+    <div class="grid-2">
+      <div class="field"><label>Zona horaria</label>
+        <select class="select" [value]="zona()" (change)="zona.set($any($event.target).value)">
+          <option value="America/Bogota">América/Bogotá (UTC-5)</option>
+          <option value="America/New_York">América/New_York (UTC-5/-4)</option>
+          <option value="UTC">UTC</option>
+        </select>
+      </div>
+      <div class="field"><label>Idioma del panel</label>
+        <select class="select" [value]="idioma()" (change)="idioma.set($any($event.target).value)">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;justify-content:flex-end;gap:10px">
+  <button class="btn-sm ghost">Cancelar</button>
+  <button class="btn-sm solid" [disabled]="saving()" (click)="guardar()">
+    @if (saving()) {
+      <svg style="width:13px;height:13px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>
+      Guardando…
+    } @else if (saved()) {
+      <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>
+      Guardado
+    } @else {
+      Guardar cambios
+    }
+  </button>
+</div>
