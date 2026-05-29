@@ -1,0 +1,97 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Sistema</div>
+    <h1><em>Envíos</em> y tarifas</h1>
+    <p class="sub">Zonas de cobertura, transportadoras y política de envío gratis.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Envío gratis</h3></div>
+  <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+    <label style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:600;font-size:13.5px">Activar envío gratis</div>
+        <div style="font-size:12px;color:var(--carbon-50);margin-top:2px">A partir de un monto mínimo de compra</div>
+      </div>
+      <div class="tog-wrap" (click)="envioGratis.set(!envioGratis())"><div class="tog" [class.on]="envioGratis()"></div></div>
+    </label>
+    @if (envioGratis()) {
+    <div class="field" style="max-width:220px">
+      <label>Monto mínimo (COP)</label>
+      <input class="input" type="number" [value]="montoMinimo()" (input)="montoMinimo.set(+$any($event.target).value)" />
+    </div>
+    }
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Zonas de envío</h3><button class="btn-sm ghost" (click)="agregarZona()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Nueva zona</button></div>
+  <div class="panel-b flush">
+    <table class="tbl">
+      <thead><tr><th>Nombre</th><th>Municipios</th><th>Tarifa (COP)</th><th>Plazo</th><th>Activa</th><th></th></tr></thead>
+      <tbody>
+        @for (z of zonas(); track z.id) {
+        <tr>
+          <td><input class="input" style="padding:5px 9px;font-size:13px" [value]="z.nombre" (input)="updateZona(z.id,'nombre',$any($event.target).value)" /></td>
+          <td><input class="input" style="padding:5px 9px;font-size:13px;min-width:180px" [value]="z.municipios" (input)="updateZona(z.id,'municipios',$any($event.target).value)" /></td>
+          <td><input class="input" type="number" style="padding:5px 9px;font-size:13px;width:90px" [value]="z.tarifa" (input)="updateZona(z.id,'tarifa',+$any($event.target).value)" /></td>
+          <td><input class="input" style="padding:5px 9px;font-size:13px;width:90px" [value]="z.plazo" (input)="updateZona(z.id,'plazo',$any($event.target).value)" /></td>
+          <td><div class="tog-wrap" (click)="updateZona(z.id,'activa',!z.activa)"><div class="tog" [class.on]="z.activa"></div></div></td>
+          <td class="actions"><button class="icon-act" (click)="eliminarZona(z.id)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg></button></td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Transportadoras</h3></div>
+  <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+    @for (t of transportadoras(); track t.id) {
+    <div style="padding:14px 16px;border:1px solid var(--carbon-08);border-radius:10px;display:flex;flex-direction:column;gap:var(--s-3)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="width:40px;height:40px;border-radius:8px;background:var(--cream-2);display:grid;place-items:center;font-family:var(--display);font-size:16px;color:var(--carbon-50)">{{ t.nombre.charAt(0) }}</div>
+          <div><div style="font-weight:600;font-size:13.5px">{{ t.nombre }}</div><div style="font-size:12px;color:var(--carbon-50)">{{ t.desc }}</div></div>
+        </div>
+        <div class="tog-wrap" (click)="toggleTransp(t.id)"><div class="tog" [class.on]="t.activa"></div></div>
+      </div>
+      @if (t.activa) {
+      <div class="field">
+        <label>API Key</label>
+        <div style="display:flex;gap:8px">
+          <input class="input" [type]="t.keyVisible ? 'text' : 'password'" style="flex:1" [value]="t.apiKey" (input)="updateKey(t.id, $any($event.target).value)" placeholder="Ingresa tu clave API" />
+          <button class="btn-sm ghost" style="padding:6px 10px" (click)="toggleKey(t.id)">{{ t.keyVisible ? 'Ocultar' : 'Ver' }}</button>
+        </div>
+      </div>
+      }
+    </div>
+    }
+    <div style="padding:14px 16px;border:1px solid var(--carbon-08);border-radius:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:600;font-size:13.5px">Contra-entrega</div>
+          <div style="font-size:12px;color:var(--carbon-50)">El cliente paga al recibir el paquete</div>
+        </div>
+        <div class="tog-wrap" (click)="contraEntrega.set(!contraEntrega())"><div class="tog" [class.on]="contraEntrega()"></div></div>
+      </div>
+      @if (contraEntrega()) {
+      <div class="field" style="margin-top:var(--s-3);max-width:200px">
+        <label>Recargo adicional (COP)</label>
+        <input class="input" type="number" [value]="recargoContra()" (input)="recargoContra.set(+$any($event.target).value)" />
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;justify-content:flex-end;gap:10px">
+  <button class="btn-sm ghost">Cancelar</button>
+  <button class="btn-sm solid" [disabled]="saving()" (click)="guardar()">
+    @if (saving()) { <svg style="width:13px;height:13px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg> Guardando… }
+    @else if (saved()) { <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg> Guardado }
+    @else { Guardar cambios }
+  </button>
+</div>
