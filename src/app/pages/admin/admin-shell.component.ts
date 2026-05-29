@@ -110,7 +110,6 @@ export class AdminShellComponent implements OnInit {
   goPortafolio() { this.router.navigate(['/admin/portafolio']); }
   goProductos() { this.router.navigate(['/admin/productos']); }
   goEventos()   { this.router.navigate(['/admin/eventos']); }
-  goAjustes()   { this.router.navigate(['/admin/ajustes']); }
 
   async loginGoogle() {
     this.loginLoading.set(true);
