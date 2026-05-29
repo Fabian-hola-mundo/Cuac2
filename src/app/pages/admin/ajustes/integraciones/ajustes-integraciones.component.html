@@ -1,0 +1,84 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Sistema</div>
+    <h1><em>Integraciones</em></h1>
+    <p class="sub">Conecta Cuaquiverso con tus herramientas de pagos, analítica y envíos.</p>
+  </div>
+</div>
+
+<div class="int-grid">
+  @for (i of integraciones(); track i.id) {
+  <div class="int-card" [class.is-expanded]="i.expanded">
+    <div class="int-card-head" (click)="i.estado !== 'proximo' && toggle(i.id)">
+      <div class="int-logo" [style.background]="i.color + '22'" [style.color]="i.color">{{ i.nombre.charAt(0) }}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13.5px">{{ i.nombre }}</div>
+        <div style="font-size:12px;color:var(--carbon-50)">{{ i.desc }}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+        <span style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--carbon-50)">{{ i.categoria }}</span>
+        <span class="badge" [class]="estadoTone(i.estado)"><span class="pdot"></span>{{ estadoLabel(i.estado) }}</span>
+        @if (i.estado !== 'proximo') {
+        <svg style="width:14px;height:14px;color:var(--carbon-50);transition:transform 200ms" [style.transform]="i.expanded ? 'rotate(180deg)' : 'rotate(0)'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+        }
+      </div>
+    </div>
+
+    @if (i.expanded) {
+    <div class="int-config">
+      @if (i.config['apiKey'] !== undefined) {
+      <div class="field">
+        <label>API Key</label>
+        <div style="display:flex;gap:8px">
+          <input class="input" [type]="i.keyVisible ? 'text' : 'password'" style="flex:1" [value]="i.config['apiKey']" (input)="updateConfig(i.id,'apiKey',$any($event.target).value)" placeholder="pk_live_…" />
+          <button class="btn-sm ghost" style="padding:6px 10px" (click)="toggleKey(i.id)">{{ i.keyVisible ? 'Ocultar' : 'Ver' }}</button>
+        </div>
+      </div>
+      }
+      @if (i.config['secretKey'] !== undefined) {
+      <div class="field">
+        <label>Secret Key</label>
+        <input class="input" type="password" [value]="i.config['secretKey']" (input)="updateConfig(i.id,'secretKey',$any($event.target).value)" placeholder="sk_live_…" />
+      </div>
+      }
+      @if (i.config['webhookUrl'] !== undefined) {
+      <div class="field">
+        <label>Webhook URL</label>
+        <input class="input" [value]="i.config['webhookUrl']" (input)="updateConfig(i.id,'webhookUrl',$any($event.target).value)" placeholder="https://cuaquiverso.co/webhook/bold" />
+      </div>
+      }
+      @if (i.config['audienceId'] !== undefined) {
+      <div class="field">
+        <label>Audience ID</label>
+        <input class="input" [value]="i.config['audienceId']" (input)="updateConfig(i.id,'audienceId',$any($event.target).value)" placeholder="abc123def456" />
+      </div>
+      }
+      @if (i.config['measurementId'] !== undefined) {
+      <div class="field">
+        <label>Measurement ID</label>
+        <input class="input" [value]="i.config['measurementId']" (input)="updateConfig(i.id,'measurementId',$any($event.target).value)" placeholder="G-XXXXXXXXXX" />
+      </div>
+      }
+      @if (i.config['pixelId'] !== undefined) {
+      <div class="field">
+        <label>Pixel ID</label>
+        <input class="input" [value]="i.config['pixelId']" (input)="updateConfig(i.id,'pixelId',$any($event.target).value)" placeholder="123456789012345" />
+      </div>
+      }
+      @if (i.config['sandbox'] !== undefined) {
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer">
+        <input type="checkbox" [checked]="i.config['sandbox']" (change)="updateConfig(i.id,'sandbox',$any($event.target).checked)" />
+        Modo sandbox (pruebas)
+      </label>
+      }
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:var(--s-3)">
+        <button class="btn-sm ghost" (click)="toggle(i.id)">Cancelar</button>
+        <button class="btn-sm solid" (click)="guardar(i.id)">
+          @if (saving()) { Guardando… } @else { Guardar configuración }
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>
