@@ -1,0 +1,87 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Sistema</div>
+    <h1><em>Impuestos</em> y facturación</h1>
+    <p class="sub">Configuración de IVA, tasas personalizadas y datos de facturación electrónica.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Configuración general</h3></div>
+  <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+    <label style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--carbon-08)">
+      <div>
+        <div style="font-weight:600;font-size:13.5px">Cobrar IVA en todos los productos</div>
+        <div style="font-size:12px;color:var(--carbon-50);margin-top:2px">Aplica la tasa de IVA al precio de los productos</div>
+      </div>
+      <div class="tog-wrap" (click)="cobrarIva.set(!cobrarIva())">
+        <div class="tog" [class.on]="cobrarIva()"></div>
+      </div>
+    </label>
+    <label style="display:flex;justify-content:space-between;align-items:center;padding:12px 0">
+      <div>
+        <div style="font-weight:600;font-size:13.5px">Los precios ya incluyen IVA</div>
+        <div style="font-size:12px;color:var(--carbon-50);margin-top:2px">Los precios en la tienda ya tienen el impuesto incluido</div>
+      </div>
+      <div class="tog-wrap" (click)="ivaIncluido.set(!ivaIncluido())">
+        <div class="tog" [class.on]="ivaIncluido()"></div>
+      </div>
+    </label>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Tasas personalizadas</h3><button class="btn-sm ghost" (click)="agregarTasa()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Agregar tasa</button></div>
+  <div class="panel-b flush">
+    <table class="tbl">
+      <thead><tr><th>Nombre</th><th>Porcentaje</th><th>Aplica a</th><th>Activa</th><th></th></tr></thead>
+      <tbody>
+        @for (t of tasas(); track t.id) {
+        <tr>
+          <td><input class="input" style="padding:5px 9px;font-size:13px" [value]="t.nombre" (input)="updateTasa(t.id, 'nombre', $any($event.target).value)" placeholder="Ej: IVA" /></td>
+          <td><div style="display:flex;align-items:center;gap:6px"><input class="input" type="number" style="padding:5px 9px;font-size:13px;width:70px" [value]="t.porcentaje" (input)="updateTasa(t.id, 'porcentaje', +$any($event.target).value)" /><span style="font-size:12px;color:var(--carbon-50)">%</span></div></td>
+          <td>
+            <select class="select" style="padding:5px 9px;font-size:13px" [value]="t.aplicaA" (change)="updateTasa(t.id, 'aplicaA', $any($event.target).value)">
+              <option value="todos">Todos</option>
+              <option value="camisetas">Camisetas</option>
+              <option value="libros">Libretas</option>
+              <option value="alimentos">Alimentos</option>
+            </select>
+          </td>
+          <td>
+            <div class="tog-wrap" (click)="updateTasa(t.id, 'activa', !t.activa)">
+              <div class="tog" [class.on]="t.activa"></div>
+            </div>
+          </td>
+          <td class="actions">
+            <button class="icon-act" title="Eliminar" (click)="eliminarTasa(t.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Facturación electrónica</h3><span class="sub">Resolución DIAN</span></div>
+  <div class="panel-b">
+    <div class="grid-2">
+      <div class="field"><label>Prefijo de factura</label><input class="input" [value]="prefijoFactura()" (input)="prefijoFactura.set($any($event.target).value)" placeholder="FE-" /></div>
+      <div class="field"><label>Numeración inicial</label><input class="input" type="number" [value]="numeracionInicial()" (input)="numeracionInicial.set(+$any($event.target).value)" /></div>
+      <div class="field"><label>Número de resolución DIAN</label><input class="input" [value]="resolucionDIAN()" (input)="resolucionDIAN.set($any($event.target).value)" /></div>
+      <div class="field"><label>Fecha de vencimiento resolución</label><input class="input" type="date" [value]="fechaResolucion()" (input)="fechaResolucion.set($any($event.target).value)" /></div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;justify-content:flex-end;gap:10px">
+  <button class="btn-sm ghost">Cancelar</button>
+  <button class="btn-sm solid" [disabled]="saving()" (click)="guardar()">
+    @if (saving()) { <svg style="width:13px;height:13px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg> Guardando… }
+    @else if (saved()) { <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg> Guardado }
+    @else { Guardar cambios }
+  </button>
+</div>
