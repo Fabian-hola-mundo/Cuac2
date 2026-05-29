@@ -40,9 +40,18 @@ export class AdminShellComponent implements OnInit {
   isPortafolioRoute    = computed(() => this.routerUrl().includes('/admin/portafolio'));
   isProductosRoute     = computed(() => this.routerUrl().includes('/admin/productos'));
   isEventosRoute       = computed(() => this.routerUrl().includes('/admin/eventos'));
+  isAjustesRoute       = computed(() => this.routerUrl().includes('/admin/ajustes'));
 
   crumbs = computed(() => {
     const url = this.routerUrl();
+    if (url.includes('/ajustes/negocio'))       return ['Sistema', 'Ajustes', 'Negocio'];
+    if (url.includes('/ajustes/impuestos'))     return ['Sistema', 'Ajustes', 'Impuestos'];
+    if (url.includes('/ajustes/envios'))        return ['Sistema', 'Ajustes', 'Envíos y tarifas'];
+    if (url.includes('/ajustes/correos'))       return ['Sistema', 'Ajustes', 'Plantillas de correo'];
+    if (url.includes('/ajustes/equipo'))        return ['Sistema', 'Ajustes', 'Equipo y permisos'];
+    if (url.includes('/ajustes/integraciones')) return ['Sistema', 'Ajustes', 'Integraciones'];
+    if (url.includes('/ajustes/dominios'))      return ['Sistema', 'Ajustes', 'Dominios'];
+    if (url.includes('/ajustes'))              return ['Sistema', 'Ajustes'];
     if (url.includes('/cotizaciones'))                 return ['Diseño', 'Cotizaciones'];
     if (url.includes('/portafolio/nuevo'))             return ['Estudio', 'Portafolio', 'Nuevo proyecto'];
     if (url.match(/\/portafolio\/.+\/editar/))         return ['Estudio', 'Portafolio', 'Editar proyecto'];
@@ -70,8 +79,8 @@ export class AdminShellComponent implements OnInit {
   readonly NAV_UNIVERSO = ['contenido','ajustes'] as ViewId[];
   readonly NAV_META: Record<string, { label: string; count?: number }> = {
     dashboard: { label: 'Dashboard' },
-    productos: { label: 'Productos', count: 42 },
-    pedidos:   { label: 'Pedidos',   count: 12 },
+    productos: { label: 'Productos' },
+    pedidos:   { label: 'Pedidos'   },
     clientes:  { label: 'Clientes'  },
     pagos:     { label: 'Pagos'     },
     contenido: { label: 'Contenido' },
@@ -80,8 +89,6 @@ export class AdminShellComponent implements OnInit {
 
   ngOnInit() {
     this.sb.db.auth.onAuthStateChange(() => {});
-    // DEV BYPASS: auto-login para que RLS tenga sesión válida mientras el auth gate está desactivado
-    this.sb.signInWithPassword('designcuac@gmail.com', 'Cuac123');
   }
 
   goHome(id: ViewId) {
@@ -89,8 +96,12 @@ export class AdminShellComponent implements OnInit {
       this.router.navigate(['/admin/productos']);
       return;
     }
+    if (id === 'ajustes') {
+      this.router.navigate(['/admin/ajustes']);
+      return;
+    }
     this.state.view.set(id);
-    if (this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute()) {
+    if (this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute() || this.isAjustesRoute()) {
       this.router.navigate(['/admin']);
     }
   }
@@ -99,6 +110,7 @@ export class AdminShellComponent implements OnInit {
   goPortafolio() { this.router.navigate(['/admin/portafolio']); }
   goProductos() { this.router.navigate(['/admin/productos']); }
   goEventos()   { this.router.navigate(['/admin/eventos']); }
+  goAjustes()   { this.router.navigate(['/admin/ajustes']); }
 
   async loginGoogle() {
     this.loginLoading.set(true);
