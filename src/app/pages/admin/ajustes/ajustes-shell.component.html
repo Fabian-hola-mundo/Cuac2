@@ -1,0 +1,37 @@
+<div class="ajustes-layout">
+  <nav class="ajustes-nav panel">
+    <div class="panel-b" style="padding:8px;display:flex;flex-direction:column;gap:2px">
+      @for (item of NAV; track item.path) {
+      <a class="aj-link"
+         [routerLink]="item.path"
+         routerLinkActive="is-active">
+        @if (item.icon === 'building') {
+          <svg class="aj-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        }
+        @if (item.icon === 'receipt') {
+          <svg class="aj-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1V2l-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M8 10h8M8 14h4"/></svg>
+        }
+        @if (item.icon === 'truck') {
+          <svg class="aj-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 4v4h-7V8Z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        }
+        @if (item.icon === 'mail') {
+          <svg class="aj-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+        }
+        @if (item.icon === 'users') {
+          <svg class="aj-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M21 20c0-2.5-1.9-4.6-4.4-4.95"/></svg>
+        }
+        @if (item.icon === 'plug') {
+          <svg class="aj-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5M9 7V2M15 7V2M8 7h8l-1 10H9L8 7Z"/></svg>
+        }
+        @if (item.icon === 'globe') {
+          <svg class="aj-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+        }
+        <span>{{ item.label }}</span>
+      </a>
+      }
+    </div>
+  </nav>
+  <div class="ajustes-content">
+    <router-outlet />
+  </div>
+</div>

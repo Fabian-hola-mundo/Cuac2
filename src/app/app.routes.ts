@@ -146,6 +146,50 @@ export const routes: Routes = [
             m => m.EventoDetailComponent,
           ),
       },
+      // Ajustes
+      {
+        path: 'ajustes',
+        loadComponent: () =>
+          import('./pages/admin/ajustes/ajustes-shell.component').then(m => m.AjustesShellComponent),
+        children: [
+          { path: '', redirectTo: 'negocio', pathMatch: 'full' },
+          {
+            path: 'negocio',
+            loadComponent: () =>
+              import('./pages/admin/ajustes/negocio/ajustes-negocio.component').then(m => m.AjustesNegocioComponent),
+          },
+          {
+            path: 'impuestos',
+            loadComponent: () =>
+              import('./pages/admin/ajustes/impuestos/ajustes-impuestos.component').then(m => m.AjustesImpuestosComponent),
+          },
+          {
+            path: 'envios',
+            loadComponent: () =>
+              import('./pages/admin/ajustes/envios/ajustes-envios.component').then(m => m.AjustesEnviosComponent),
+          },
+          {
+            path: 'correos',
+            loadComponent: () =>
+              import('./pages/admin/ajustes/correos/ajustes-correos.component').then(m => m.AjustesCorreosComponent),
+          },
+          {
+            path: 'equipo',
+            loadComponent: () =>
+              import('./pages/admin/ajustes/equipo/ajustes-equipo.component').then(m => m.AjustesEquipoComponent),
+          },
+          {
+            path: 'integraciones',
+            loadComponent: () =>
+              import('./pages/admin/ajustes/integraciones/ajustes-integraciones.component').then(m => m.AjustesIntegracionesComponent),
+          },
+          {
+            path: 'dominios',
+            loadComponent: () =>
+              import('./pages/admin/ajustes/dominios/ajustes-dominios.component').then(m => m.AjustesDominiosComponent),
+          },
+        ],
+      },
     ],
   },
 ];
