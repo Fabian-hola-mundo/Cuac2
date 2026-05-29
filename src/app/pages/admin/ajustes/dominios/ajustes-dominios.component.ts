@@ -52,7 +52,6 @@ export class AjustesDominiosComponent {
   async reVerificar() {
     this.verifState.set('checking');
     await new Promise(r => setTimeout(r, 1200));
-    this.verifState.set('verified');
     this.dominios.update(d => [...d, {
       id: this.nextId++,
       dominio: this.newDomain(),

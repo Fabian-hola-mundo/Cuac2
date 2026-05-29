@@ -79,7 +79,7 @@
       <table class="tbl">
         <thead><tr><th>Tipo</th><th>Host</th><th>Valor</th></tr></thead>
         <tbody>
-          @for (r of DNS_RECORDS; track r.tipo) {
+          @for (r of DNS_RECORDS; track $index) {
           <tr>
             <td><span class="badge">{{ r.tipo }}</span></td>
             <td><span class="id">{{ r.host }}</span></td>
@@ -112,7 +112,7 @@
           <td><span class="id">{{ r.origen }}</span></td>
           <td><span class="id">{{ r.destino }}</span></td>
           <td><span class="badge">{{ r.tipo }}</span></td>
-          <td><span class="badge" [class]="r.activo ? 'ok' : ''"><span class="pdot"></span>{{ r.activo ? 'Activo' : 'Inactivo' }}</span></td>
+          <td><span class="badge" [class.ok]="r.activo"><span class="pdot"></span>{{ r.activo ? 'Activo' : 'Inactivo' }}</span></td>
           <td class="actions"><button class="icon-act" (click)="eliminarRedirect(r.id)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg></button></td>
         </tr>
         }
