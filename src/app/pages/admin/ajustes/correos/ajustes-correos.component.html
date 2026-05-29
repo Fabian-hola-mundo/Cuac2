@@ -1,0 +1,75 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Sistema</div>
+    <h1>Plantillas de <em>correo</em></h1>
+    <p class="sub">Personaliza los mensajes automáticos que reciben tus clientes.</p>
+  </div>
+</div>
+
+<div class="correos-grid">
+  <!-- Lista izquierda -->
+  <nav class="panel" style="align-self:flex-start">
+    <div class="panel-b" style="padding:8px;display:flex;flex-direction:column;gap:2px">
+      @for (p of plantillas(); track p.id) {
+      <div class="pl-item" [class.is-active]="plantillaActiva() === p.id" (click)="plantillaActiva.set(p.id)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.nombre }}</div>
+          <span class="badge" [class]="p.activa ? 'ok' : ''">
+            <span class="pdot"></span>{{ p.activa ? 'Activa' : 'Inactiva' }}
+          </span>
+        </div>
+        <div class="tog-wrap" style="flex-shrink:0" (click)="$event.stopPropagation(); toggleActiva(p.id)">
+          <div class="tog" [class.on]="p.activa"></div>
+        </div>
+      </div>
+      }
+    </div>
+  </nav>
+
+  <!-- Editor derecha -->
+  @if (activePlantilla(); as p) {
+  <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+    <div class="panel">
+      <div class="panel-h"><h3>{{ p.nombre }}</h3><span class="badge" [class]="p.activa ? 'ok' : ''"><span class="pdot"></span>{{ p.activa ? 'Activa' : 'Inactiva' }}</span></div>
+      <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+        <div class="field">
+          <label>Asunto del correo</label>
+          <input class="input" [value]="p.asunto" (input)="updateAsunto(p.id, $any($event.target).value)" />
+        </div>
+        <div class="field">
+          <label>Variables disponibles</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+            @for (v of VARIABLES; track v) {
+            <button class="chip" style="font-family:var(--mono);font-size:11px" (click)="insertarVariable(v)">{{ v }}</button>
+            }
+          </div>
+          <div class="help" style="margin-top:6px">Click en una variable para insertarla al final del cuerpo.</div>
+        </div>
+        <div class="field">
+          <label>Cuerpo del correo</label>
+          <textarea class="textarea" rows="10" [value]="p.cuerpo" (input)="updateCuerpo(p.id, $any($event.target).value)"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h"><h3>Vista previa</h3><span class="sub">Mock del email</span></div>
+      <div class="panel-b">
+        <div class="email-preview">
+          <div class="ep-subject">{{ p.asunto }}</div>
+          <div class="ep-body">{{ p.cuerpo }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px">
+      <button class="btn-sm ghost">Cancelar</button>
+      <button class="btn-sm solid" [disabled]="saving()" (click)="guardar()">
+        @if (saving()) { <svg style="width:13px;height:13px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg> Guardando… }
+        @else if (saved()) { <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg> Guardado }
+        @else { Guardar plantilla }
+      </button>
+    </div>
+  </div>
+  }
+</div>
