@@ -1,0 +1,139 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Sistema</div>
+    <h1><em>Dominios</em></h1>
+    <p class="sub">Administra los dominios asociados a tu tienda.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h3>Dominio principal</h3></div>
+  <div class="panel-b" style="display:flex;align-items:center;gap:16px">
+    <svg style="width:32px;height:32px;color:var(--selva)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+    <div style="flex:1">
+      <div style="font-family:var(--display);font-size:22px;line-height:1">cuaquiverso.co</div>
+      <div style="font-size:12px;color:var(--carbon-50);margin-top:3px">Vence 2027-11-30 · Registrador: GoDaddy</div>
+    </div>
+    <span class="badge ok"><span class="pdot"></span>DNS verificado</span>
+    <span class="badge ok"><span class="pdot"></span>SSL activo</span>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h3>Dominios adicionales</h3>
+    <button class="btn-sm ghost" (click)="addingDomain.set(true)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
+      Agregar dominio
+    </button>
+  </div>
+  <div class="panel-b flush">
+    <table class="tbl">
+      <thead><tr><th>Dominio</th><th>Tipo</th><th>SSL</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        @for (d of dominios(); track d.id) {
+        <tr>
+          <td><span style="font-family:var(--mono);font-size:13px">{{ d.dominio }}</span></td>
+          <td><span class="badge">{{ d.tipo }}</span></td>
+          <td>
+            @if (d.ssl) { <span class="badge ok"><span class="pdot"></span>Activo</span> }
+            @else { <span class="badge"><span class="pdot"></span>Pendiente</span> }
+          </td>
+          <td>
+            @if (d.activo) { <span class="badge ok"><span class="pdot"></span>Activo</span> }
+            @else { <span class="badge err"><span class="pdot"></span>Inactivo</span> }
+          </td>
+          <td class="actions">
+            @if (d.tipo !== 'principal') {
+            <button class="icon-act" title="Eliminar" (click)="eliminarDominio(d.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>
+            </button>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (addingDomain()) {
+  <div style="padding:var(--s-4) var(--s-5);border-top:1px solid var(--carbon-08);display:flex;flex-direction:column;gap:var(--s-3)">
+    <div style="display:flex;gap:12px;align-items:flex-end">
+      <div class="field" style="flex:1"><label>Dominio</label><input class="input" placeholder="mitienda.com" [value]="newDomain()" (input)="newDomain.set($any($event.target).value)" /></div>
+      <div class="field" style="width:160px">
+        <label>Tipo</label>
+        <select class="select" [value]="newDomainTipo()" (change)="newDomainTipo.set($any($event.target).value)">
+          <option value="alias">Alias</option>
+          <option value="redirect">Redirect</option>
+        </select>
+      </div>
+      <button class="btn-sm solid" [disabled]="!newDomain().trim() || verifState() === 'checking'" (click)="verificar()">
+        @if (verifState() === 'checking') { Verificando… } @else { Verificar }
+      </button>
+      <button class="btn-sm ghost" (click)="addingDomain.set(false); verifState.set('idle')">Cancelar</button>
+    </div>
+
+    @if (verifState() === 'records') {
+    <div style="background:var(--cream-2);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:var(--s-3)">
+      <div style="font-weight:600;font-size:13px">Configura estos registros DNS en tu registrador:</div>
+      <table class="tbl">
+        <thead><tr><th>Tipo</th><th>Host</th><th>Valor</th></tr></thead>
+        <tbody>
+          @for (r of DNS_RECORDS; track r.tipo) {
+          <tr>
+            <td><span class="badge">{{ r.tipo }}</span></td>
+            <td><span class="id">{{ r.host }}</span></td>
+            <td><span style="font-family:var(--mono);font-size:11.5px">{{ r.valor }}</span></td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      <button class="btn-sm ghost" style="align-self:flex-start" (click)="reVerificar()">Verificar de nuevo</button>
+    </div>
+    }
+  </div>
+  }
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h3>Redirects</h3>
+    <button class="btn-sm ghost" (click)="addingRedirect.set(true)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
+      Agregar redirect
+    </button>
+  </div>
+  <div class="panel-b flush">
+    <table class="tbl">
+      <thead><tr><th>Origen</th><th>Destino</th><th>Tipo</th><th>Activo</th><th></th></tr></thead>
+      <tbody>
+        @for (r of redirects(); track r.id) {
+        <tr>
+          <td><span class="id">{{ r.origen }}</span></td>
+          <td><span class="id">{{ r.destino }}</span></td>
+          <td><span class="badge">{{ r.tipo }}</span></td>
+          <td><span class="badge" [class]="r.activo ? 'ok' : ''"><span class="pdot"></span>{{ r.activo ? 'Activo' : 'Inactivo' }}</span></td>
+          <td class="actions"><button class="icon-act" (click)="eliminarRedirect(r.id)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg></button></td>
+        </tr>
+        }
+        @if (addingRedirect()) {
+        <tr>
+          <td><input class="input" style="padding:5px 9px;font-size:13px" placeholder="/ruta-vieja" [value]="newRedOrigen()" (input)="newRedOrigen.set($any($event.target).value)" /></td>
+          <td><input class="input" style="padding:5px 9px;font-size:13px" placeholder="/ruta-nueva" [value]="newRedDestino()" (input)="newRedDestino.set($any($event.target).value)" /></td>
+          <td>
+            <select class="select" style="padding:5px 9px;font-size:13px" [value]="newRedTipo()" (change)="newRedTipo.set($any($event.target).value)">
+              <option value="301">301</option>
+              <option value="302">302</option>
+            </select>
+          </td>
+          <td></td>
+          <td class="actions" style="display:flex;gap:4px">
+            <button class="icon-act" title="Confirmar" (click)="agregarRedirect()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg></button>
+            <button class="icon-act" title="Cancelar" (click)="addingRedirect.set(false)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
