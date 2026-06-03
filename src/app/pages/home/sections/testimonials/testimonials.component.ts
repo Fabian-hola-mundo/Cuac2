@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { PortfolioService, PortfolioProject } from '../../../../core/services/portfolio.service';
 
 interface TestimonialDisplay {
@@ -8,6 +9,7 @@ interface TestimonialDisplay {
   initials:    string;
   avatarBg:    string;
   avatarColor: string;
+  slug:        string;
 }
 
 const AVATAR_PALETTE: Array<{ bg: string; color: string }> = [
@@ -29,6 +31,7 @@ function toInitials(name: string | null): string {
 @Component({
   selector: 'app-testimonials',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './testimonials.component.html',
   styleUrl: './testimonials.component.scss',
 })
@@ -50,6 +53,7 @@ export class TestimonialsComponent implements OnInit {
           initials:    toInitials(p.client_person ?? p.client_name),
           avatarBg:    palette.bg,
           avatarColor: palette.color,
+          slug:        p.slug,
         };
       });
       this.testimonials.set(mapped);

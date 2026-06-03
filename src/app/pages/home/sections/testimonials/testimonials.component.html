@@ -5,7 +5,7 @@
 
     <div class="testi-layout">
       @if (testimonials()[0]) {
-        <article class="testi-featured">
+        <a class="testi-featured" [routerLink]="['/portafolio', testimonials()[0].slug]">
           <p class="q-featured">{{ testimonials()[0].quote }}</p>
           <div class="a">
             <div class="av" [style.background]="testimonials()[0].avatarBg" [style.color]="testimonials()[0].avatarColor">{{ testimonials()[0].initials }}</div>
@@ -14,13 +14,13 @@
               <div class="r">{{ testimonials()[0].role }}</div>
             </div>
           </div>
-        </article>
+        </a>
       }
 
       @if (testimonials().length > 1) {
         <div class="testi-secondary">
           @for (t of testimonials().slice(1); track $index) {
-            <article class="testi">
+            <a class="testi" [routerLink]="['/portafolio', t.slug]">
               <p class="q">{{ t.quote }}</p>
               <div class="a">
                 <div class="av" [style.background]="t.avatarBg" [style.color]="t.avatarColor">{{ t.initials }}</div>
@@ -29,7 +29,7 @@
                   <div class="r">{{ t.role }}</div>
                 </div>
               </div>
-            </article>
+            </a>
           }
         </div>
       }
