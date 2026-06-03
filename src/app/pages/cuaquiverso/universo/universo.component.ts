@@ -1,14 +1,17 @@
 import { Component, OnInit, afterNextRender, inject, DestroyRef } from '@angular/core';
 import { SeoService } from '../../../core/services/seo.service';
+import { CartService } from '../services/cart.service';
+import { CartModalComponent } from '../cart-modal/cart-modal.component';
 
 @Component({
   selector: 'app-universo',
   standalone: true,
-  imports: [],
+  imports: [CartModalComponent],
   templateUrl: './universo.component.html',
   styleUrl: './universo.component.scss',
 })
 export class UniversoComponent implements OnInit {
+  readonly cart = inject(CartService);
   private destroyRef = inject(DestroyRef);
   private seo        = inject(SeoService);
 

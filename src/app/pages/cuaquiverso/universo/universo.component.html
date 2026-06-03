@@ -18,18 +18,13 @@
       <span class="b1">Cuaqui</span><span class="dot"></span><span class="b2">verso</span>
     </a>
     <nav class="primary">
-      <a href="/cuaquiverso">Inicio</a>
       <a href="/cuaquiverso/tienda">Tienda</a>
       <a href="/cuaquiverso/universo" class="is-active">Universo</a>
-      <a href="/cuaquiverso#manifiesto">Manifiesto</a>
     </nav>
     <div class="top-actions">
-      <button class="icon-btn" aria-label="Cuenta">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
-      </button>
-      <button class="icon-btn" aria-label="Carrito">
+      <button class="icon-btn" aria-label="Carrito" (click)="cart.open()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h2l2.5 12.5h11L21 7H7"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
-        <span class="badge">3</span>
+        @if (cart.count() > 0) { <span class="badge">{{ cart.count() }}</span> }
       </button>
     </div>
   </div>
@@ -390,3 +385,5 @@
     </div>
   </div>
 </footer>
+
+<app-cart-modal></app-cart-modal>
