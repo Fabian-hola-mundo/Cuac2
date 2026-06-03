@@ -177,8 +177,17 @@ export class AdminPortafolioFormComponent implements OnInit {
 
   async guardar() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.value.show_testimonial) {
+      const count = await this.portfolio.countActiveTestimonials(this.editId() ?? undefined);
+      if (count >= 3) {
+        this.form.patchValue({ show_testimonial: false });
+        this.testimonialError.set('Ya tienes 3 testimonios activos. Desactiva uno antes de agregar otro.');
+        return;
+      }
+    }
     this.guardando.set(true);
     this.errorMsg.set(null);
+    this.testimonialError.set(null);
 
     try {
       const v    = this.form.value;

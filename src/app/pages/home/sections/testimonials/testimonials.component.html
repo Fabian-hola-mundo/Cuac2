@@ -17,20 +17,22 @@
         </article>
       }
 
-      <div class="testi-secondary">
-        @for (t of testimonials().slice(1); track $index) {
-          <article class="testi">
-            <p class="q">{{ t.quote }}</p>
-            <div class="a">
-              <div class="av" [style.background]="t.avatarBg" [style.color]="t.avatarColor">{{ t.initials }}</div>
-              <div class="a-meta">
-                <div class="n">{{ t.name }}</div>
-                <div class="r">{{ t.role }}</div>
+      @if (testimonials().length > 1) {
+        <div class="testi-secondary">
+          @for (t of testimonials().slice(1); track $index) {
+            <article class="testi">
+              <p class="q">{{ t.quote }}</p>
+              <div class="a">
+                <div class="av" [style.background]="t.avatarBg" [style.color]="t.avatarColor">{{ t.initials }}</div>
+                <div class="a-meta">
+                  <div class="n">{{ t.name }}</div>
+                  <div class="r">{{ t.role }}</div>
+                </div>
               </div>
-            </div>
-          </article>
-        }
-      </div>
+            </article>
+          }
+        </div>
+      }
     </div>
   </div>
 }
