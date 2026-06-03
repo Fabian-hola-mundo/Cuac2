@@ -41,6 +41,16 @@ export const routes: Routes = [
       import('./pages/cuaquiverso/universo/universo.component').then(m => m.UniversoComponent),
   },
   {
+    path: 'cuaquiverso/checkout',
+    loadComponent: () =>
+      import('./pages/cuaquiverso/checkout/checkout.component').then(m => m.CheckoutComponent),
+  },
+  {
+    path: 'cuaquiverso/checkout/confirmacion',
+    loadComponent: () =>
+      import('./pages/cuaquiverso/checkout/confirmacion/confirmacion.component').then(m => m.ConfirmacionComponent),
+  },
+  {
     path: 'portafolio',
     loadComponent: () =>
       import('./pages/portafolio/portafolio-shell.component').then(m => m.PortafolioShellComponent),

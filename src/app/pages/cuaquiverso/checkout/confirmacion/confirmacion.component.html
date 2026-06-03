@@ -1,0 +1,165 @@
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/cuaquiverso">Cuaqui<em>verso</em></a>
+    <div class="steps-done">
+      <div class="sd-num">✓</div>
+      <span>Datos y envío</span>
+      <div class="sd-div"></div>
+      <div class="sd-num">✓</div>
+      <span>Pago confirmado</span>
+    </div>
+    <span></span>
+  </div>
+</header>
+
+@if (loading()) {
+  <div class="skeleton-wrap">
+    <div class="skeleton-hero"></div>
+    <div class="skeleton-row"></div>
+    <div class="skeleton-row" style="width:60%"></div>
+  </div>
+}
+
+@if (!loading() && notFound()) {
+  <div class="not-found">
+    <h2>Pedido no encontrado</h2>
+    <p>No encontramos un pedido con esa referencia.</p>
+    <a class="btn-primary" href="/cuaquiverso/tienda" style="display:inline-block;padding:12px 24px">
+      Ir a la tienda
+    </a>
+  </div>
+}
+
+@if (!loading() && pedido()) {
+  <div class="page">
+
+    <div class="confirm-hero">
+      <div>
+        <div class="hero-check">✓</div>
+        <div class="hero-eyebrow">Pago aprobado</div>
+        <h1 class="hero-title">Tu pedido está<br>en <em>camino</em>.</h1>
+        <p class="hero-sub">
+          Recibimos tu pago y ya estamos preparando tu pedido.
+          Te llegará un correo a <strong>{{ pedido()!.email }}</strong>
+          con el número de guía cuando salgamos a despachar.
+        </p>
+        <div class="wompi-badge">
+          Pago procesado por <span class="wl">WOMPI</span>
+        </div>
+      </div>
+      <div class="order-ref">
+        <div class="r-lbl">Número de pedido</div>
+        <div class="r-code">{{ pedido()!.referencia }}</div>
+        <div class="r-date">{{ fechaFormateada() }}</div>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+
+      <div>
+        <div class="card">
+          <div class="card-title">Lo que pediste</div>
+          @for (item of pedido()!.pedido_items; track item.nombre) {
+            <div class="order-item">
+              <div class="oi-swatch" [style.background]="colorHex(item.color)"></div>
+              <div class="oi-info">
+                <div class="oi-name">{{ item.nombre }}</div>
+                <div class="oi-sub">{{ item.sub }} · ×{{ item.cantidad }}</div>
+              </div>
+              <div class="oi-price">{{ fmtPrice(item.precio * item.cantidad) }}</div>
+            </div>
+          }
+        </div>
+
+        <div class="card">
+          <div class="card-title">Dirección de entrega</div>
+          <div class="addr-grid">
+            <div class="addr-field">
+              <div class="lbl">Nombre</div>
+              <div class="val">{{ pedido()!.nombre }} {{ pedido()!.apellido }}</div>
+            </div>
+            <div class="addr-field">
+              <div class="lbl">Ciudad</div>
+              <div class="val">{{ pedido()!.ciudad }}</div>
+            </div>
+            <div class="addr-field" style="grid-column:span 2">
+              <div class="lbl">Dirección</div>
+              <div class="val">
+                {{ pedido()!.direccion }}
+                @if (pedido()!.barrio) { · {{ pedido()!.barrio }} }
+              </div>
+            </div>
+          </div>
+          <div class="ship-note">
+            <span class="sn-icon">📦</span>
+            <div>
+              <strong>El envío se cobra contra entrega</strong>
+              <p>El transportista cobrará el flete al momento de la entrega en tu dirección.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-title">Resumen del pago</div>
+          <div class="total-row">
+            <span>Subtotal</span>
+            <span>{{ fmtPrice(pedido()!.subtotal) }}</span>
+          </div>
+          <div class="total-row">
+            <span>Envío</span>
+            @if (pedido()!.subtotal >= 150000) {
+              <span class="free-tag">GRATIS</span>
+            } @else {
+              <span>Contra entrega</span>
+            }
+          </div>
+          <div class="total-row main">
+            <span>Total pagado</span>
+            <span>{{ fmtPrice(pedido()!.total) }}</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">¿Qué sigue?</div>
+          <div class="next-steps">
+            <div class="ns-item">
+              <div class="ns-num">1</div>
+              <div class="ns-body">
+                <strong>Confirmación por correo</strong>
+                <p>Te enviamos los detalles del pedido a {{ pedido()!.email }}</p>
+              </div>
+            </div>
+            <div class="ns-item">
+              <div class="ns-num">2</div>
+              <div class="ns-body">
+                <strong>Preparación en taller</strong>
+                <p>Empacamos tu pedido en nuestro taller en Bogotá. 1–2 días hábiles.</p>
+              </div>
+            </div>
+            <div class="ns-item">
+              <div class="ns-num">3</div>
+              <div class="ns-body">
+                <strong>Número de guía</strong>
+                <p>Recibirás el código de seguimiento cuando el paquete salga a despachar.</p>
+              </div>
+            </div>
+            <div class="ns-item">
+              <div class="ns-num">4</div>
+              <div class="ns-body">
+                <strong>Entrega y pago del flete</strong>
+                <p>El transportista entrega en tu dirección y cobra el envío en efectivo.</p>
+              </div>
+            </div>
+          </div>
+          <div class="cta-row">
+            <a class="btn-primary" href="/cuaquiverso/tienda">Seguir comprando</a>
+            <a class="btn-ghost" href="/cuaquiverso">Inicio</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

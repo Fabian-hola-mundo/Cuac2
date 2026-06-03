@@ -1,0 +1,220 @@
+@if (cart.count() === 0) {
+  <div class="empty-cart">
+    <h2>Tu carrito está vacío</h2>
+    <p>Agrega productos antes de continuar con la compra.</p>
+    <a class="btn-back" href="/cuaquiverso/tienda">Ir a la tienda →</a>
+  </div>
+} @else {
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/cuaquiverso">Cuaqui<em>verso</em></a>
+    <div class="progress-steps">
+      <div class="ps-step is-active">
+        <div class="ps-num">1</div>
+        <span>Datos y envío</span>
+      </div>
+      <div class="ps-div"></div>
+      <div class="ps-step">
+        <div class="ps-num">2</div>
+        <span>Confirmar</span>
+      </div>
+    </div>
+    <span class="secure-label">Compra segura 🔒</span>
+  </div>
+</header>
+
+<div class="checkout-wrap">
+
+  <div class="form-col">
+    <h1 class="page-title">¿A dónde te lo enviamos?</h1>
+    <p class="page-sub">Completa tus datos para continuar al pago.</p>
+
+    <form [formGroup]="form" (ngSubmit)="pagar()">
+
+      <div class="form-card">
+        <div class="card-title">Datos personales</div>
+        <div class="form-grid">
+          <div class="field" [class.has-error]="touched('nombre')">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" type="text" formControlName="nombre" placeholder="Tu nombre" />
+            @if (touched('nombre')) { <span class="err-msg">Requerido</span> }
+          </div>
+          <div class="field" [class.has-error]="touched('apellido')">
+            <label for="apellido">Apellido</label>
+            <input id="apellido" type="text" formControlName="apellido" placeholder="Tu apellido" />
+            @if (touched('apellido')) { <span class="err-msg">Requerido</span> }
+          </div>
+          <div class="field" [class.has-error]="touched('email')">
+            <label for="email">Correo electrónico</label>
+            <input id="email" type="email" formControlName="email" placeholder="tu@correo.co" />
+            @if (touched('email')) { <span class="err-msg">Correo inválido</span> }
+          </div>
+          <div class="field" [class.has-error]="touched('celular')">
+            <label for="celular">Celular</label>
+            <input id="celular" type="tel" formControlName="celular" placeholder="+57 300 000 0000" />
+            @if (touched('celular')) { <span class="err-msg">Mínimo 10 dígitos</span> }
+          </div>
+        </div>
+        <div class="form-grid-3" style="margin-top:14px">
+          <div class="field" [class.has-error]="touched('tipoDoc')">
+            <label for="tipoDoc">Tipo de doc.</label>
+            <select id="tipoDoc" formControlName="tipoDoc">
+              <option value="CC">Cédula (CC)</option>
+              <option value="CE">Cédula extranjería</option>
+              <option value="NIT">NIT</option>
+              <option value="PA">Pasaporte</option>
+            </select>
+          </div>
+          <div class="field form-full" [class.has-error]="touched('numDoc')">
+            <label for="numDoc">Número de documento</label>
+            <input id="numDoc" type="text" formControlName="numDoc" placeholder="1234567890" />
+            @if (touched('numDoc')) { <span class="err-msg">Requerido</span> }
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="card-title">Dirección de envío</div>
+        <div class="form-grid">
+          <div class="field" [class.has-error]="touched('departamento')">
+            <label for="departamento">Departamento</label>
+            <select id="departamento" formControlName="departamento">
+              <option value="">Selecciona...</option>
+              <option>Bogotá D.C.</option>
+              <option>Antioquia</option>
+              <option>Valle del Cauca</option>
+              <option>Atlántico</option>
+              <option>Santander</option>
+              <option>Cundinamarca</option>
+              <option>Boyacá</option>
+              <option>Nariño</option>
+              <option>Córdoba</option>
+              <option>Risaralda</option>
+              <option>Tolima</option>
+              <option>Huila</option>
+              <option>Cauca</option>
+              <option>Meta</option>
+              <option>Otro</option>
+            </select>
+            @if (touched('departamento')) { <span class="err-msg">Requerido</span> }
+          </div>
+          <div class="field" [class.has-error]="touched('ciudad')">
+            <label for="ciudad">Ciudad / Municipio</label>
+            <input id="ciudad" type="text" formControlName="ciudad"
+                   placeholder="Bogotá, Medellín..." (input)="onCiudadChange()" />
+            @if (touched('ciudad')) { <span class="err-msg">Requerido</span> }
+          </div>
+          <div class="field form-full" [class.has-error]="touched('direccion')">
+            <label for="direccion">Dirección</label>
+            <input id="direccion" type="text" formControlName="direccion"
+                   placeholder="Calle 123 #45-67, Apto 8" />
+            @if (touched('direccion')) { <span class="err-msg">Requerido</span> }
+          </div>
+          <div class="field">
+            <label for="barrio">Barrio</label>
+            <input id="barrio" type="text" formControlName="barrio"
+                   placeholder="Chapinero, El Poblado..." />
+          </div>
+          <div class="field">
+            <label for="codigoPostal">Código postal <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+            <input id="codigoPostal" type="text" formControlName="codigoPostal" placeholder="110111" />
+          </div>
+        </div>
+
+        <div class="shipping-estimator">
+          <span class="est-label">Costo estimado de envío</span>
+          <div class="est-result" style="background:#f5f7fa;color:rgba(21,31,40,.6)">
+            {{ estimadoTexto() }}
+          </div>
+        </div>
+
+        @if (cart.total() >= ENVIO_GRATIS_DESDE) {
+          <div class="ship-banner ship-free">
+            <span>✓</span>
+            <div>
+              <strong>Envío gratis</strong>
+              Tu pedido supera ${{ ENVIO_GRATIS_DESDE.toLocaleString('es-CO') }}.
+              El costo de transporte va por nuestra cuenta.
+            </div>
+          </div>
+        } @else {
+          <div class="ship-banner ship-cod">
+            <span>📦</span>
+            <div>
+              <strong>Envío contra entrega</strong>
+              El transportista cobrará el flete al momento de la entrega.
+              El costo exacto depende de tu ciudad.
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="form-card" style="padding: 18px 24px">
+        <div class="field">
+          <label for="nota">Nota para el pedido <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+          <input id="nota" type="text" formControlName="nota"
+                 placeholder="Instrucciones especiales, referencias del edificio..." />
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <div class="summary-col">
+    <div class="summary-card">
+      <div class="sum-title">Tu pedido</div>
+
+      <div class="sum-items">
+        @for (item of cart.items(); track item.id) {
+          <div class="sum-item">
+            <div class="sum-swatch" [style.background]="colorHex(item.color)"></div>
+            <div class="sum-info">
+              <div class="sum-name">{{ item.name }}</div>
+              <div class="sum-sub">{{ item.sub }} · ×{{ item.qty }}</div>
+            </div>
+            <div class="sum-price">{{ cart.fmtPrice(item.price * item.qty) }}</div>
+          </div>
+        }
+      </div>
+
+      <div class="sum-row">
+        <span>Subtotal</span>
+        <span>{{ cart.fmtPrice(cart.total()) }}</span>
+      </div>
+      <div class="sum-row">
+        <span>Envío</span>
+        @if (cart.total() >= ENVIO_GRATIS_DESDE) {
+          <span class="free-tag">GRATIS</span>
+        } @else {
+          <span>Contra entrega</span>
+        }
+      </div>
+      <div class="sum-row total">
+        <span>Total</span>
+        <span>{{ cart.fmtPrice(cart.total()) }}</span>
+      </div>
+
+      <button class="btn-wompi" type="button" (click)="pagar()"
+              [disabled]="checkout.loading()">
+        @if (checkout.loading()) {
+          Procesando...
+        } @else {
+          Pagar con <span class="wompi-badge">WOMPI</span>
+        }
+      </button>
+
+      @if (checkout.error()) {
+        <div class="error-banner">{{ checkout.error() }}</div>
+      }
+
+      <p class="btn-wompi-note">
+        Serás redirigido a Wompi.<br>
+        Tarjetas, PSE, Nequi, efectivo.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+}
