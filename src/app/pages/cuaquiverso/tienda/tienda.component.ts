@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { SeoService } from '../../../core/services/seo.service';
 
 export interface Product {
   id: number;
@@ -24,6 +25,7 @@ export interface Product {
 })
 export class TiendaComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private seo   = inject(SeoService);
 
   // ── UI state ──────────────────────────────────────────────────────────────
   query = signal('');
@@ -170,6 +172,11 @@ export class TiendaComponent implements OnInit {
 
   // ── Init ──────────────────────────────────────────────────────────────────
   ngOnInit() {
+    this.seo.set({
+      title:       'Tienda — Cuaquiverso',
+      description: 'Compra productos del universo Cuaquiverso: camisetas, libretas, stickers y peluches.',
+      canonical:   'https://cuacdesign.com/cuaquiverso/tienda',
+    });
     const p = this.route.snapshot.queryParams;
     if (p['q'])   this.query.set(p['q']);
     if (p['cat']) this.selectedCats.set(new Set([p['cat']]));

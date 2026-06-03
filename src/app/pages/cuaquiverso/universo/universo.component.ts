@@ -1,4 +1,5 @@
-import { Component, afterNextRender, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, afterNextRender, inject, DestroyRef } from '@angular/core';
+import { SeoService } from '../../../core/services/seo.service';
 
 @Component({
   selector: 'app-universo',
@@ -7,8 +8,17 @@ import { Component, afterNextRender, inject, DestroyRef } from '@angular/core';
   templateUrl: './universo.component.html',
   styleUrl: './universo.component.scss',
 })
-export class UniversoComponent {
+export class UniversoComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
+  private seo        = inject(SeoService);
+
+  ngOnInit(): void {
+    this.seo.set({
+      title:       'El universo — Cuaquiverso',
+      description: 'Conoce los personajes del Cuaquiverso: Cuac, Kiki, Roar, Yeison y más.',
+      canonical:   'https://cuacdesign.com/cuaquiverso/universo',
+    });
+  }
 
   constructor() {
     afterNextRender(() => this.initReveal());

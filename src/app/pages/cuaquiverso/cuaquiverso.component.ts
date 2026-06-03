@@ -1,4 +1,5 @@
-import { Component, afterNextRender, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, afterNextRender, inject, DestroyRef } from '@angular/core';
+import { SeoService } from '../../core/services/seo.service';
 
 interface Character {
   key: string;
@@ -14,11 +15,20 @@ interface Character {
   templateUrl: './cuaquiverso.component.html',
   styleUrl: './cuaquiverso.component.scss',
 })
-export class CuaquiversoComponent {
+export class CuaquiversoComponent implements OnInit {
   cartCount = 3;
   newsletterSubmitted = false;
 
   private destroyRef = inject(DestroyRef);
+  private seo        = inject(SeoService);
+
+  ngOnInit(): void {
+    this.seo.set({
+      title:       'Cuaquiverso — División de producto de Cuac',
+      description: 'Personajes colombianos traducidos a objetos: camisetas, libretas, stickers y más.',
+      canonical:   'https://cuacdesign.com/cuaquiverso',
+    });
+  }
 
   constructor() {
     afterNextRender(() => {
