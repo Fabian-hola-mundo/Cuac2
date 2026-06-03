@@ -1,0 +1,127 @@
+@if (loading()) {
+  <div class="skeleton-wrap">
+    <div class="sk sk-sq"></div>
+    <div>
+      <div class="sk sk-line sm"></div>
+      <div class="sk sk-line lg"></div>
+      <div class="sk sk-line sm" style="width:30%;margin-bottom:24px"></div>
+      <div class="sk sk-line"></div>
+      <div class="sk sk-line" style="width:80%"></div>
+      <div class="sk sk-line" style="width:60%"></div>
+    </div>
+  </div>
+}
+
+@if (!loading() && notFound()) {
+  <div class="not-found">
+    <h2>Producto no encontrado</h2>
+    <p>Este producto no existe o ya no está disponible.</p>
+    <a class="btn-back-tienda" routerLink="/cuaquiverso/tienda">Ver la tienda</a>
+  </div>
+}
+
+@if (!loading() && producto()) {
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" routerLink="/cuaquiverso">Cuaqui<em>verso</em></a>
+      <nav class="top-nav">
+        <a routerLink="/cuaquiverso/tienda">Tienda</a>
+        <a routerLink="/cuaquiverso/universo">Universo</a>
+      </nav>
+      <div class="top-actions">
+        <button class="icon-btn" aria-label="Carrito" (click)="cart.open()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 4h2l2.5 12.5h11L21 7H7"/>
+            <circle cx="9" cy="20" r="1.5"/>
+            <circle cx="18" cy="20" r="1.5"/>
+          </svg>
+          @if (cart.count() > 0) { <span class="badge">{{ cart.count() }}</span> }
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="detail-wrap">
+
+    <div class="gallery-col">
+      <div class="main-img-wrap">
+        @if (mainImg()) {
+          <img [src]="mainImg()!" [alt]="producto()!.nombre" />
+        } @else {
+          <div class="img-placeholder"
+               [style.background]="producto()!.color ? producto()!.color + '33' : 'rgba(21,31,40,.06)'">
+          </div>
+        }
+      </div>
+      @if (allImgs().length > 1) {
+        <div class="thumbs">
+          @for (img of allImgs(); track img; let i = $index) {
+            <button class="thumb"
+                    [class.is-active]="(selectedImg() ?? allImgs()[0]) === img"
+                    (click)="selectedImg.set(img)"
+                    [attr.aria-label]="'Imagen ' + (i + 1)">
+              <img [src]="img" alt="" />
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="info-col">
+      <div class="crumbs">
+        <a routerLink="/cuaquiverso">Inicio</a>
+        <span>/</span>
+        <a routerLink="/cuaquiverso/tienda">Tienda</a>
+        <span>/</span>
+        <span>{{ producto()!.nombre }}</span>
+      </div>
+
+      <div class="product-tags">
+        <span class="tag">{{ catLabel(producto()!.categoria) }}</span>
+        @if (producto()!.personaje) {
+          <span class="tag">{{ charLabel(producto()!.personaje!) }}</span>
+        }
+      </div>
+
+      <h1 class="product-name">{{ producto()!.nombre }}</h1>
+      <div class="product-price">{{ fmtPrice(producto()!.precio) }} COP</div>
+
+      @if (producto()!.flag === 'new') {
+        <div class="flag-badge new">Recién llegado</div>
+      }
+      @if (producto()!.flag === 'last') {
+        <div class="flag-badge last">Últimas unidades</div>
+      }
+
+      @if (producto()!.descripcion) {
+        <p class="product-desc">{{ producto()!.descripcion }}</p>
+      }
+
+      @if (producto()!.material.length > 0) {
+        <div class="material-title">Material</div>
+        <div class="material-chips">
+          @for (m of producto()!.material; track m) {
+            <span class="chip">{{ m }}</span>
+          }
+        </div>
+      }
+
+      @if (producto()!.stock_actual > 0 && producto()!.stock_actual <= 5) {
+        <div class="stock-warning">
+          ⚠ Quedan solo {{ producto()!.stock_actual }} unidades
+        </div>
+      }
+
+      <button class="btn-add" (click)="addToCart()">
+        Agregar al carrito
+      </button>
+
+      <a class="back-link" routerLink="/cuaquiverso/tienda">
+        ← Volver a la tienda
+      </a>
+    </div>
+
+  </div>
+}
+
+<app-cart-modal></app-cart-modal>

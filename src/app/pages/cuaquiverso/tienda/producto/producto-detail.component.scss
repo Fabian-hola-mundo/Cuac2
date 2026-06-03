@@ -1,0 +1,195 @@
+:host {
+  --cream:     #ECEFF3;
+  --carbon-08: rgba(21,31,40,0.08);
+  --carbon-06: rgba(21,31,40,0.06);
+  --carbon-50: rgba(21,31,40,0.50);
+  --carbon-40: rgba(21,31,40,0.40);
+
+  display: block;
+  background: var(--cream);
+  color: var(--carbon);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 70;
+  backdrop-filter: blur(14px) saturate(1.2);
+  background: rgba(236,239,243,0.82);
+  border-bottom: 1px solid var(--carbon-08);
+}
+.topbar-inner {
+  max-width: 1320px; margin: 0 auto; height: 64px;
+  padding: 0 var(--s-7) 0 220px;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-6);
+}
+.brand {
+  font-family: var(--display); font-size: 18px; font-weight: 400;
+  text-decoration: none; color: var(--carbon);
+  em { color: var(--ember); font-style: normal; }
+}
+.top-nav { display: flex; gap: var(--s-5); }
+.top-nav a { font-size: 14px; font-weight: 500; color: var(--carbon); text-decoration: none; opacity:.7; &:hover { opacity:1; } }
+.top-actions { display: flex; align-items: center; }
+.icon-btn {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; background: none; border: none; cursor: pointer;
+  color: var(--carbon);
+  svg { width: 20px; height: 20px; }
+}
+.badge {
+  position: absolute; top: 4px; right: 4px;
+  min-width: 16px; height: 16px; border-radius: 999px;
+  background: var(--ember); color: #fff;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px;
+}
+
+.detail-wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding: 96px var(--s-7) var(--s-9);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: start;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+    padding: 84px var(--s-5) var(--s-7);
+    gap: 28px;
+  }
+}
+
+.gallery-col { position: sticky; top: 84px; }
+
+.main-img-wrap {
+  border-radius: 14px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  background: rgba(21,31,40,.06);
+
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+}
+
+.img-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; opacity: .3;
+}
+
+.thumbs {
+  display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;
+}
+.thumb {
+  width: 68px; height: 68px; border-radius: 8px;
+  overflow: hidden; border: 2px solid transparent;
+  cursor: pointer; padding: 0; background: none;
+  transition: border-color .15s;
+  flex-shrink: 0;
+
+  &.is-active { border-color: var(--carbon); }
+
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+}
+
+.crumbs {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--carbon-50);
+  margin-bottom: 20px;
+  a { color: var(--carbon-50); text-decoration: none; &:hover { color: var(--carbon); } }
+  span { opacity: .5; }
+}
+
+.product-tags {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.tag {
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+  background: rgba(21,31,40,.07); color: var(--carbon);
+}
+
+.product-name {
+  font-family: var(--display); font-size: 30px; font-weight: 400;
+  letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 10px;
+}
+
+.product-price {
+  font-size: 26px; font-weight: 700; letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+
+.flag-badge {
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; margin-bottom: 16px;
+  &.new  { background: #D7EBDD; color: #1F5C39; }
+  &.last { background: #FBE0D5; color: #7A2A10; }
+}
+
+.product-desc {
+  font-size: 15px; color: var(--carbon-50); line-height: 1.65;
+  margin-bottom: 20px; max-width: 52ch;
+}
+
+.material-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--carbon-40); margin-bottom: 8px;
+}
+.material-chips {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.chip {
+  padding: 5px 12px; border-radius: 8px;
+  background: rgba(21,31,40,.06); font-size: 13px;
+}
+
+.stock-warning {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: #7A2A10;
+  background: #FBE0D5; border: 1px solid #F5B08E;
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 20px;
+}
+
+.btn-add {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 15px 24px; margin-bottom: 14px;
+  background: var(--ember); color: #fff;
+  border: none; border-radius: 10px;
+  font-family: var(--sans); font-size: 16px; font-weight: 700;
+  letter-spacing: -0.01em; cursor: pointer;
+  transition: background .15s, transform .12s;
+
+  &:hover { background: #d43010; transform: translateY(-1px); }
+}
+
+.back-link {
+  display: block; text-align: center;
+  font-size: 13px; color: var(--carbon-50);
+  text-decoration: none;
+  &:hover { color: var(--carbon); }
+}
+
+.skeleton-wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding: 96px var(--s-7) var(--s-9);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 56px;
+  @media (max-width: 860px) { grid-template-columns: 1fr; padding: 84px var(--s-5) var(--s-7); }
+}
+.sk { background: rgba(21,31,40,.08); border-radius: 12px; animation: sk-pulse 1.4s ease-in-out infinite; }
+.sk-sq { aspect-ratio: 1/1; }
+.sk-line { height: 16px; margin-bottom: 12px; &.sm { width: 40%; } &.lg { height: 32px; } }
+@keyframes sk-pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+.not-found {
+  max-width: 480px; margin: 120px auto; text-align: center; padding: 0 var(--s-5);
+  h2 { font-family: var(--display); font-size: 24px; margin-bottom: 8px; }
+  p  { color: var(--carbon-50); margin-bottom: 24px; }
+}
+.btn-back-tienda {
+  display: inline-block; padding: 12px 24px;
+  background: var(--carbon); color: var(--cream);
+  border-radius: 10px; font-weight: 700; text-decoration: none; font-size: 14px;
+}
