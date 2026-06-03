@@ -100,7 +100,7 @@ export class TiendaComponent implements OnInit {
 
     let list = this.activeProducts().filter(p => {
       if (cats.size  && !cats.has(p.categoria))                              return false;
-      if (chars.size && p.personaje && !chars.has(p.personaje))             return false;
+      if (chars.size && !chars.has(p.personaje ?? ''))                       return false;
       if (mats.size  && !p.material.some(m => mats.has(m)))                 return false;
       if (avail.size && !this.avFromFlag(p.flag).some(a => avail.has(a)))   return false;
       if (pMin !== null && p.precio < pMin)                                  return false;
@@ -196,7 +196,7 @@ export class TiendaComponent implements OnInit {
     ev.preventDefault();
     ev.stopPropagation();
     this.cart.add({
-      id:    p.id.charCodeAt(0),
+      id:    parseInt(p.id.replace(/-/g, '').substring(0, 8), 16),
       name:  p.nombre,
       sub:   `${this.CAT_SHORT[p.categoria] ?? p.categoria}`,
       price: p.precio,
