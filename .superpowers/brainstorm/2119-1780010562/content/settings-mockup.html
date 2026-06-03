@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuración — Mockup</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream:     #F4F1EC;
+    --cream-2:   #EAE6DF;
+    --carbon:    #151F28;
+    --carbon-70: #4A5568;
+    --carbon-50: #718096;
+    --carbon-30: #A0AEC0;
+    --carbon-12: rgba(21,31,40,.12);
+    --carbon-08: rgba(21,31,40,.08);
+    --rio:    #2A6FDB;
+    --terra:  #E8623D;
+    --selva:  #1F8A5B;
+    --sol:    #B07820;
+    --lila:   #8B6FD8;
+    --rosa:   #FF6FA8;
+    --mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    --display: 'Georgia', serif;
+    --s-3: 8px; --s-4: 12px; --s-5: 20px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    font-size: 13.5px;
+    color: var(--carbon);
+    background: var(--cream);
+    line-height: 1.5;
+    padding: 0;
+  }
+
+  .layout { display: grid; grid-template-columns: 200px 1fr; min-height: 100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: white;
+    border-right: 1px solid var(--carbon-08);
+    padding: 16px 8px;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .sidebar-title {
+    font-family: var(--mono);
+    font-size: 9px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--carbon-30); padding: 0 10px 10px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 8px;
+    font-size: 13px; color: var(--carbon-70); cursor: pointer;
+    transition: background .1s;
+  }
+  .nav-item:hover { background: var(--cream); }
+  .nav-item.active { background: var(--cream-2); color: var(--carbon); font-weight: 600; }
+  .nav-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: .6; }
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  /* ── Content ── */
+  .content { padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; }
+
+  .section-header { margin-bottom: 4px; }
+  .eyebrow { font-family: var(--mono); font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--carbon-30); margin-bottom: 4px; }
+  .section-title { font-family: var(--display); font-size: 26px; letter-spacing: -.01em; }
+  .section-title em { font-style: italic; color: var(--carbon-70); }
+  .section-sub { font-size: 13px; color: var(--carbon-50); margin-top: 4px; }
+
+  /* ── Panel ── */
+  .panel { background: white; border-radius: 12px; border: 1px solid var(--carbon-08); overflow: hidden; }
+  .panel-h { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--carbon-08); }
+  .panel-h h3 { font-size: 13.5px; font-weight: 700; }
+  .panel-h .sub { font-size: 11.5px; color: var(--carbon-50); font-family: var(--mono); }
+  .panel-b { padding: 20px; }
+  .panel-b.flush { padding: 0; }
+
+  /* ── Form ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11.5px; font-weight: 600; color: var(--carbon-70); letter-spacing: .02em; }
+  .input, .select, .textarea {
+    padding: 8px 12px; border: 1.5px solid var(--carbon-12); border-radius: 8px;
+    font-size: 13.5px; font-family: inherit; color: var(--carbon);
+    background: var(--cream); outline: none;
+  }
+  .input:focus, .select:focus { border-color: var(--rio); }
+  .textarea { resize: vertical; min-height: 80px; }
+  .help { font-size: 11.5px; color: var(--carbon-30); margin-top: 2px; }
+
+  /* ── Buttons ── */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-solid { background: var(--carbon); color: white; }
+  .btn-ghost { background: transparent; color: var(--carbon); border: 1.5px solid var(--carbon-12); }
+  .btn-danger { background: transparent; color: var(--terra); border: 1.5px solid rgba(232,98,61,.2); }
+  .actions-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+  /* ── Badge ── */
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .ok   { background: #D7EBDD; color: #1F8A5B; }
+  .warn { background: #FCEFC2; color: #B07820; }
+  .err  { background: #FBE0D5; color: #E8623D; }
+  .rio  { background: #C9D9F6; color: #2A6FDB; }
+  .lila { background: #E5DDF7; color: #8B6FD8; }
+
+  /* ── Table ── */
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { padding: 10px 16px; font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--carbon-30); text-align: left; border-bottom: 1px solid var(--carbon-08); }
+  .tbl td { padding: 11px 16px; border-bottom: 1px solid var(--carbon-08); font-size: 13px; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: var(--cream); }
+
+  /* ── Toggle ── */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--carbon-08); }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-info h4 { font-size: 13.5px; font-weight: 600; }
+  .toggle-info p { font-size: 12px; color: var(--carbon-50); margin-top: 2px; }
+  .switch { width: 36px; height: 20px; background: var(--carbon-12); border-radius: 10px; position: relative; cursor: pointer; flex-shrink: 0; }
+  .switch.on { background: var(--selva); }
+  .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: white; transition: transform .15s; }
+  .switch.on::after { transform: translateX(16px); }
+
+  /* ── Shipping zone ── */
+  .zone-card { background: var(--cream); border: 1.5px solid var(--carbon-08); border-radius: 10px; padding: 14px 16px; }
+  .zone-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .zone-title { font-weight: 700; font-size: 13.5px; }
+  .rate-row { display: flex; align-items: center; gap: 12px; font-size: 12.5px; padding: 6px 0; border-bottom: 1px dashed var(--carbon-08); }
+  .rate-row:last-child { border-bottom: none; }
+  .rate-label { flex: 1; color: var(--carbon-70); }
+
+  /* ── Email template ── */
+  .template-card { border: 1.5px solid var(--carbon-08); border-radius: 10px; overflow: hidden; }
+  .template-header { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; background: var(--cream-2); }
+  .template-type { font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+  .template-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .block-field { display: flex; flex-direction: column; gap: 4px; }
+  .block-label { font-size: 10.5px; font-family: var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--carbon-30); }
+  .block-preview { background: var(--cream); border-radius: 6px; padding: 8px 10px; font-size: 12.5px; color: var(--carbon-70); border: 1px solid var(--carbon-08); }
+  .var-chip { display: inline-block; background: #C9D9F6; color: var(--rio); font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 4px; margin: 2px; }
+
+  /* ── Integration card ── */
+  .int-card { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--carbon-08); }
+  .int-card:last-child { border-bottom: none; }
+  .int-logo { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-family: var(--display); font-size: 17px; flex-shrink: 0; }
+  .int-info { flex: 1; min-width: 0; }
+  .int-name { font-weight: 700; font-size: 13.5px; }
+  .int-detail { font-family: var(--mono); font-size: 10.5px; color: var(--carbon-50); margin-top: 2px; }
+  .int-actions { display: flex; align-items: center; gap: 8px; }
+
+  /* ── Domain card ── */
+  .domain-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--carbon-08); }
+  .domain-row:last-child { border-bottom: none; }
+  .domain-name { font-weight: 700; font-size: 13.5px; flex: 1; }
+  .domain-meta { font-family: var(--mono); font-size: 11px; color: var(--carbon-50); }
+
+  /* ── Section separator ── */
+  .sep { height: 1px; background: var(--carbon-08); margin: 4px 0; }
+
+  /* ── Tabs ── */
+  .section-nav { display: flex; gap: 4px; padding: 4px; background: var(--cream-2); border-radius: 10px; width: fit-content; margin-bottom: 16px; }
+  .section-tab { padding: 6px 14px; border-radius: 7px; font-size: 12.5px; font-weight: 500; color: var(--carbon-70); cursor: pointer; }
+  .section-tab.active { background: white; color: var(--carbon); font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+  /* ── Upload ── */
+  .upload-zone { border: 2px dashed var(--carbon-12); border-radius: 10px; padding: 24px; text-align: center; color: var(--carbon-50); font-size: 12.5px; }
+  .upload-zone strong { display: block; color: var(--carbon); font-size: 13.5px; margin-bottom: 4px; }
+
+  /* Scroll tabs (section selector) */
+  .page-tabs { display: flex; gap: 6px; flex-wrap: wrap; padding: 16px 32px 0; background: var(--cream); border-bottom: 1px solid var(--carbon-08); }
+  .ptab { padding: 8px 16px; font-size: 12px; font-weight: 600; border-radius: 8px 8px 0 0; cursor: pointer; color: var(--carbon-50); border: 1px solid transparent; border-bottom: none; }
+  .ptab.on { background: white; color: var(--carbon); border-color: var(--carbon-08); }
+
+  .section-wrap { display: none; padding: 28px 32px; flex-direction: column; gap: 20px; }
+  .section-wrap.visible { display: flex; }
+</style>
+</head>
+<body>
+
+<div class="page-tabs" id="pageTabs">
+  <div class="ptab on" onclick="show('negocio',this)">01 Negocio</div>
+  <div class="ptab" onclick="show('impuestos',this)">02 Impuestos</div>
+  <div class="ptab" onclick="show('envios',this)">03 Envíos</div>
+  <div class="ptab" onclick="show('plantillas',this)">04 Plantillas</div>
+  <div class="ptab" onclick="show('equipo',this)">05 Equipo</div>
+  <div class="ptab" onclick="show('integraciones',this)">06 Integraciones</div>
+  <div class="ptab" onclick="show('dominios',this)">07 Dominios</div>
+</div>
+
+<!-- ══ 01 NEGOCIO ══ -->
+<div class="section-wrap visible" id="s-negocio">
+  <div class="section-header">
+    <div class="eyebrow">Configuración · 01</div>
+    <div class="section-title">Datos del <em>negocio</em></div>
+    <div class="section-sub">Información fiscal y de contacto. Aparece en facturas y correos automáticos.</div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Identificación fiscal</h3><span class="sub">Lo que aparece en facturas</span></div>
+    <div class="panel-b">
+      <div class="grid-2" style="gap:14px">
+        <div class="field"><label>Razón social</label><input class="input" value="Cuaquiverso S.A.S."></div>
+        <div class="field"><label>NIT</label><input class="input" value="901.234.567-8"></div>
+        <div class="field"><label>Régimen tributario</label>
+          <select class="select"><option>Régimen Simple de Tributación</option><option>Responsable de IVA</option><option>No responsable</option></select>
+        </div>
+        <div class="field"><label>Moneda</label>
+          <select class="select"><option>COP — Peso colombiano</option><option>USD — Dólar</option></select>
+        </div>
+        <div class="field" style="grid-column:span 2"><label>Dirección fiscal</label><input class="input" value="Cra 11 # 71-30, Bogotá, Colombia"></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Contacto y presencia</h3><span class="sub">Visible para clientes</span></div>
+    <div class="panel-b">
+      <div class="grid-2" style="gap:14px">
+        <div class="field"><label>Email de contacto</label><input class="input" value="hola@cuaquiverso.co"></div>
+        <div class="field"><label>Teléfono</label><input class="input" value="+57 311 444 0001"></div>
+        <div class="field"><label>Zona horaria</label>
+          <select class="select"><option>America/Bogota (UTC-5)</option></select>
+        </div>
+        <div class="field"><label>Nombre de la tienda</label><input class="input" value="Cuaquiverso"></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Logo</h3><span class="sub">PNG/SVG · fondo transparente recomendado</span></div>
+    <div class="panel-b" style="display:flex;gap:20px;align-items:flex-start">
+      <div style="width:80px;height:80px;border-radius:12px;background:#C9D9F6;display:grid;place-items:center;font-family:Georgia;font-size:28px;color:#2A6FDB;flex-shrink:0">C</div>
+      <div style="flex:1">
+        <div class="upload-zone"><strong>Arrastra aquí o haz clic</strong>PNG, SVG · máx 2 MB · 400×400 recomendado</div>
+        <div class="actions-row"><button class="btn btn-ghost">Cancelar</button><button class="btn btn-solid">Guardar cambios</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 02 IMPUESTOS ══ -->
+<div class="section-wrap" id="s-impuestos">
+  <div class="section-header">
+    <div class="eyebrow">Configuración · 02</div>
+    <div class="section-title"><em>Impuestos</em></div>
+    <div class="section-sub">Tasas aplicadas a los productos. Colombia: IVA 19% general, exento para algunos bienes.</div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Configuración general</h3></div>
+    <div class="panel-b">
+      <div class="toggle-row">
+        <div class="toggle-info"><h4>Mostrar precios con impuesto incluido</h4><p>Los precios en la tienda incluyen IVA en el valor mostrado.</p></div>
+        <div class="switch on"></div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info"><h4>Desglosar impuesto en el checkout</h4><p>Se muestra una línea separada con el IVA en el resumen.</p></div>
+        <div class="switch on"></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Tasas de impuesto</h3><button class="btn btn-ghost" style="font-size:12px">+ Agregar tasa</button></div>
+    <div class="panel-b flush">
+      <table class="tbl">
+        <thead><tr><th>Nombre</th><th>Porcentaje</th><th>Aplica a</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><strong>IVA General</strong></td><td><span style="font-family:var(--mono);font-size:13px">19%</span></td><td>Camisetas, Totes, Peluches, Tazas, Posters</td><td><span class="badge ok"><span class="dot"></span>Activo</span></td><td style="text-align:right;padding-right:16px"><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button></td></tr>
+          <tr><td><strong>Exento</strong></td><td><span style="font-family:var(--mono);font-size:13px">0%</span></td><td>Libretas, Stickers, Pines</td><td><span class="badge ok"><span class="dot"></span>Activo</span></td><td style="text-align:right;padding-right:16px"><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 03 ENVÍOS ══ -->
+<div class="section-wrap" id="s-envios">
+  <div class="section-header">
+    <div class="eyebrow">Configuración · 03</div>
+    <div class="section-title">Envíos y <em>tarifas</em></div>
+    <div class="section-sub">Transportadoras activas, zonas de cobertura y rangos de precio.</div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Transportadoras</h3><button class="btn btn-ghost" style="font-size:12px">+ Agregar</button></div>
+    <div class="panel-b">
+      <div class="int-card">
+        <div class="int-logo" style="background:#FBE0D5;color:#E8623D">S</div>
+        <div class="int-info"><div class="int-name">Servientrega</div><div class="int-detail">Cuenta #4411208 · 3–5 días hábiles</div></div>
+        <span class="badge ok"><span class="dot"></span>Activa</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button>
+      </div>
+      <div class="int-card">
+        <div class="int-logo" style="background:#C9D9F6;color:#2A6FDB">C</div>
+        <div class="int-info"><div class="int-name">Coordinadora</div><div class="int-detail">Cuenta no configurada</div></div>
+        <span class="badge warn"><span class="dot"></span>Inactiva</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Configurar</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Zonas y tarifas</h3><button class="btn btn-ghost" style="font-size:12px">+ Zona nueva</button></div>
+    <div class="panel-b" style="display:flex;flex-direction:column;gap:12px">
+      <div class="zone-card">
+        <div class="zone-header"><div class="zone-title">Bogotá D.C.</div><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button></div>
+        <div class="rate-row"><span class="rate-label">Hasta 500 g</span><span style="font-family:var(--mono);font-size:12px">$10.000</span></div>
+        <div class="rate-row"><span class="rate-label">501 g – 1 kg</span><span style="font-family:var(--mono);font-size:12px">$13.000</span></div>
+        <div class="rate-row"><span class="rate-label">Más de 1 kg</span><span style="font-family:var(--mono);font-size:12px">$16.000</span></div>
+      </div>
+      <div class="zone-card">
+        <div class="zone-header"><div class="zone-title">Ciudades principales</div><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button></div>
+        <div class="rate-row"><span class="rate-label" style="font-size:11.5px;color:var(--carbon-50)">Medellín, Cali, Barranquilla, Bucaramanga…</span></div>
+        <div class="rate-row"><span class="rate-label">Hasta 500 g</span><span style="font-family:var(--mono);font-size:12px">$12.000</span></div>
+        <div class="rate-row"><span class="rate-label">Más de 500 g</span><span style="font-family:var(--mono);font-size:12px">$15.000</span></div>
+      </div>
+      <div class="zone-card">
+        <div class="zone-header"><div class="zone-title">Resto del país</div><button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button></div>
+        <div class="rate-row"><span class="rate-label">Tarifa única</span><span style="font-family:var(--mono);font-size:12px">$18.000</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Envío gratis</h3></div>
+    <div class="panel-b">
+      <div class="toggle-row">
+        <div class="toggle-info"><h4>Envío gratis a partir de un monto</h4><p>Se aplica automáticamente al superar el umbral.</p></div>
+        <div class="switch on"></div>
+      </div>
+      <div class="field" style="margin-top:12px;max-width:200px">
+        <label>Monto mínimo (COP)</label>
+        <input class="input" value="150000">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 04 PLANTILLAS ══ -->
+<div class="section-wrap" id="s-plantillas">
+  <div class="section-header">
+    <div class="eyebrow">Configuración · 04</div>
+    <div class="section-title">Plantillas de <em>correo</em></div>
+    <div class="section-sub">Correos automáticos al cliente. Edita el texto de cada bloque. Variables disponibles: <span class="var-chip">{{nombre}}</span><span class="var-chip">{{num_pedido}}</span><span class="var-chip">{{total}}</span><span class="var-chip">{{tracking}}</span></div>
+  </div>
+
+  <div class="template-card">
+    <div class="template-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="badge ok"><span class="dot"></span>Activa</span>
+        <span class="template-type">Confirmación de pedido</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Vista previa</button>
+        <div class="switch on"></div>
+      </div>
+    </div>
+    <div class="template-body">
+      <div class="field"><label>Asunto</label><input class="input" value="¡Tu pedido {{num_pedido}} está confirmado! 🦆"></div>
+      <div class="block-field"><div class="block-label">Cabecera</div><div class="block-preview">¡Hola, {{nombre}}! Tu pedido en el Cuaquiverso está en camino. Aquí tienes el resumen de lo que está volando hacia ti.</div></div>
+      <div class="block-field"><div class="block-label">Cuerpo</div><textarea class="textarea">Tu pedido {{num_pedido}} por {{total}} ha sido recibido y pronto comenzará su viaje. Puedes consultar el estado en cualquier momento desde tu cuenta.</textarea></div>
+      <div class="block-field"><div class="block-label">Pie</div><div class="block-preview">Gracias por ser parte del Cuaquiverso. Con cariño desde Bogotá 🌿</div></div>
+    </div>
+  </div>
+
+  <div class="template-card">
+    <div class="template-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="badge ok"><span class="dot"></span>Activa</span>
+        <span class="template-type">Pedido despachado</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Vista previa</button>
+        <div class="switch on"></div>
+      </div>
+    </div>
+    <div class="template-body">
+      <div class="field"><label>Asunto</label><input class="input" value="Tu pedido {{num_pedido}} está en camino 🚚"></div>
+      <div class="block-field"><div class="block-label">Cabecera</div><div class="block-preview">{{nombre}}, tu pedido acaba de salir del nido. Aquí tienes el número de seguimiento.</div></div>
+      <div class="block-field"><div class="block-label">Cuerpo</div><textarea class="textarea">Número de guía: {{tracking}}
+Transportadora: Servientrega
+Tiempo estimado: 3–5 días hábiles</textarea></div>
+      <div class="block-field"><div class="block-label">Pie</div><div class="block-preview">Cualquier novedad, escríbenos a hola@cuaquiverso.co</div></div>
+    </div>
+  </div>
+
+  <div class="template-card" style="opacity:.6">
+    <div class="template-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="badge" style="background:var(--cream-2);color:var(--carbon-50)"><span class="dot"></span>Inactiva</span>
+        <span class="template-type">Pedido entregado</span>
+      </div>
+      <div class="switch"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 05 EQUIPO ══ -->
+<div class="section-wrap" id="s-equipo">
+  <div class="section-header">
+    <div class="eyebrow">Configuración · 05</div>
+    <div class="section-title">Equipo y <em>permisos</em></div>
+    <div class="section-sub">Miembros con acceso al panel de administración.</div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Miembros activos</h3><span class="sub">3 miembros</span></div>
+    <div class="panel-b flush">
+      <table class="tbl">
+        <thead><tr><th>Persona</th><th>Rol</th><th>Último acceso</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px"><div style="width:30px;height:30px;border-radius:8px;background:#C9D9F6;color:#2A6FDB;display:grid;place-items:center;font-weight:700;font-size:12px;flex-shrink:0">CC</div><div><strong>Capitán Cuac</strong><div style="font-family:var(--mono);font-size:10.5px;color:var(--carbon-50)">admin@cuaquiverso.co</div></div></div></td>
+            <td><span class="badge ok"><span class="dot"></span>Owner</span></td>
+            <td><span style="font-family:var(--mono);font-size:11.5px">Ahora mismo</span></td>
+            <td><span class="badge ok"><span class="dot"></span>Activo</span></td>
+            <td style="text-align:right;padding-right:16px"><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" disabled>—</button></td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px"><div style="width:30px;height:30px;border-radius:8px;background:#D7EBDD;color:#1F8A5B;display:grid;place-items:center;font-weight:700;font-size:12px;flex-shrink:0">MJ</div><div><strong>María José</strong><div style="font-family:var(--mono);font-size:10.5px;color:var(--carbon-50)">mj@cuaquiverso.co</div></div></div></td>
+            <td><span class="badge rio"><span class="dot"></span>Operaciones</span></td>
+            <td><span style="font-family:var(--mono);font-size:11.5px">Ayer 18:22</span></td>
+            <td><span class="badge ok"><span class="dot"></span>Activo</span></td>
+            <td style="text-align:right;padding-right:16px"><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px">Editar</button></td>
+          </tr>
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px"><div style="width:30px;height:30px;border-radius:8px;background:#E5DDF7;color:#8B6FD8;display:grid;place-items:center;font-weight:700;font-size:12px;flex-shrink:0">FA</div><div><strong>Felipe Andrade</strong><div style="font-family:var(--mono);font-size:10.5px;color:var(--carbon-50)">fa@cuaquiverso.co</div></div></div></td>
+            <td><span class="badge lila"><span class="dot"></span>Contenido</span></td>
+            <td><span style="font-family:var(--mono);font-size:11.5px">Hace 3 días</span></td>
+            <td><span class="badge ok"><span class="dot"></span>Activo</span></td>
+            <td style="text-align:right;padding-right:16px"><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px">Editar</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="padding:14px 20px;border-top:1px solid var(--carbon-08)">
+        <button class="btn btn-ghost">+ Invitar persona</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Roles disponibles</h3></div>
+    <div class="panel-b" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="padding:12px 14px;background:var(--cream);border-radius:8px;border:1px solid var(--carbon-08)"><strong style="font-size:13px">Owner</strong><p style="font-size:12px;color:var(--carbon-50);margin-top:4px">Acceso total. Puede cambiar configuración y billing.</p></div>
+      <div style="padding:12px 14px;background:var(--cream);border-radius:8px;border:1px solid var(--carbon-08)"><strong style="font-size:13px">Operaciones</strong><p style="font-size:12px;color:var(--carbon-50);margin-top:4px">Pedidos, envíos, clientes. No puede editar ajustes.</p></div>
+      <div style="padding:12px 14px;background:var(--cream);border-radius:8px;border:1px solid var(--carbon-08)"><strong style="font-size:13px">Contenido</strong><p style="font-size:12px;color:var(--carbon-50);margin-top:4px">Productos, portafolio, personajes. Solo lectura en pedidos.</p></div>
+      <div style="padding:12px 14px;background:var(--cream);border-radius:8px;border:1px solid var(--carbon-08)"><strong style="font-size:13px">Solo lectura</strong><p style="font-size:12px;color:var(--carbon-50);margin-top:4px">Puede ver todo pero no editar ni crear nada.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 06 INTEGRACIONES ══ -->
+<div class="section-wrap" id="s-integraciones">
+  <div class="section-header">
+    <div class="eyebrow">Configuración · 06</div>
+    <div class="section-title"><em>Integraciones</em></div>
+    <div class="section-sub">Servicios externos conectados a la tienda.</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-h"><h3>Pasarelas de pago</h3></div>
+    <div class="panel-b">
+      <div class="int-card">
+        <div class="int-logo" style="background:#C9D9F6;color:#2A6FDB">B</div>
+        <div class="int-info"><div class="int-name">Bold</div><div class="int-detail">3.0% + $300 · 64 pagos · API key ••••••8f2a</div></div>
+        <span class="badge ok"><span class="dot"></span>Conectado</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button>
+      </div>
+      <div class="int-card">
+        <div class="int-logo" style="background:#D7EBDD;color:#1F8A5B">P</div>
+        <div class="int-info"><div class="int-name">PSE</div><div class="int-detail">1.99% · 22 pagos · Vía ACH Colombia</div></div>
+        <span class="badge ok"><span class="dot"></span>Conectado</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button>
+      </div>
+      <div class="int-card">
+        <div class="int-logo" style="background:#E5DDF7;color:#8B6FD8">N</div>
+        <div class="int-info"><div class="int-name">Nequi</div><div class="int-detail">1.0% · 12 pagos · +57 311 444 0001</div></div>
+        <span class="badge ok"><span class="dot"></span>Conectado</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-h"><h3>Logística</h3></div>
+    <div class="panel-b">
+      <div class="int-card">
+        <div class="int-logo" style="background:#FBE0D5;color:#E8623D">S</div>
+        <div class="int-info"><div class="int-name">Servientrega</div><div class="int-detail">Cuenta #4411208 · API REST v2</div></div>
+        <span class="badge ok"><span class="dot"></span>Conectado</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-h"><h3>Marketing y analítica</h3></div>
+    <div class="panel-b">
+      <div class="int-card">
+        <div class="int-logo" style="background:#FCEFC2;color:#B07820">M</div>
+        <div class="int-info"><div class="int-name">Mailchimp</div><div class="int-detail">Lista "Carta del Cuaquiverso" · 1.087 suscriptores</div></div>
+        <span class="badge ok"><span class="dot"></span>Conectado</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button>
+      </div>
+      <div class="int-card">
+        <div class="int-logo" style="background:#C9D9F6;color:#2A6FDB">G</div>
+        <div class="int-info"><div class="int-name">Google Analytics</div><div class="int-detail">No configurado · ID de medición requerido</div></div>
+        <span class="badge warn"><span class="dot"></span>Sin configurar</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Conectar</button>
+      </div>
+      <div class="int-card">
+        <div class="int-logo" style="background:#FBE0D5;color:#E8623D">F</div>
+        <div class="int-info"><div class="int-name">Meta Pixel</div><div class="int-detail">No configurado · Pixel ID requerido</div></div>
+        <span class="badge warn"><span class="dot"></span>Sin configurar</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Conectar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 07 DOMINIOS ══ -->
+<div class="section-wrap" id="s-dominios">
+  <div class="section-header">
+    <div class="eyebrow">Configuración · 07</div>
+    <div class="section-title"><em>Dominios</em></div>
+    <div class="section-sub">Dominios conectados a la tienda y estado de certificado SSL.</div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>Dominios activos</h3><button class="btn btn-ghost" style="font-size:12px">+ Agregar dominio</button></div>
+    <div class="panel-b">
+      <div class="domain-row">
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+          <div class="domain-name">cuaquiverso.co <span class="badge ok" style="margin-left:6px;font-size:10px"><span class="dot"></span>Principal</span></div>
+          <div class="domain-meta">SSL activo · Vence 14 nov 2026 · HTTPS forzado</div>
+        </div>
+        <span class="badge ok"><span class="dot"></span>Verificado</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button>
+      </div>
+      <div class="domain-row">
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+          <div class="domain-name">www.cuaquiverso.co</div>
+          <div class="domain-meta">Redirige → cuaquiverso.co · 301</div>
+        </div>
+        <span class="badge ok"><span class="dot"></span>Verificado</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Editar</button>
+      </div>
+      <div class="domain-row">
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+          <div class="domain-name">admin.cuaquiverso.co</div>
+          <div class="domain-meta">Apunta al panel admin · DNS pendiente de propagación</div>
+        </div>
+        <span class="badge warn"><span class="dot"></span>Pendiente</span>
+        <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px">Ver DNS</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>SSL y seguridad</h3></div>
+    <div class="panel-b">
+      <div class="toggle-row">
+        <div class="toggle-info"><h4>Forzar HTTPS</h4><p>Redirige automáticamente todo tráfico HTTP a HTTPS.</p></div>
+        <div class="switch on"></div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info"><h4>HSTS (Strict Transport Security)</h4><p>Instruye al navegador a usar siempre HTTPS.</p></div>
+        <div class="switch on"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id, el) {
+  document.querySelectorAll('.section-wrap').forEach(s => s.classList.remove('visible'));
+  document.getElementById('s-' + id).classList.add('visible');
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+</script>
+</body>
+</html>

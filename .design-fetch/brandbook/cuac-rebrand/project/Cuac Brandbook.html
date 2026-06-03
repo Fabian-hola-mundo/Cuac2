@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuac — Brandbook 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Fauna+One&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --carbon:#151F28; --deep:#011E54; --sky:#C0E8FD; --ember:#EC3813;
+    --coral:#FF8D75; --mist:#F0F1F6; --paper:#FAFAFB; --ink:#151F28;
+    --display:'Fauna One', Georgia, serif;
+    --sans:'Manrope', system-ui, sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+    --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px;
+    --s-5:24px; --s-6:32px; --s-7:48px; --s-8:64px; --s-9:96px; --s-10:128px;
+    --r-sm:6px; --r-md:12px; --r-lg:20px; --r-xl:32px; --r-pill:999px;
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);
+       -webkit-font-smoothing:antialiased;line-height:1.5;}
+  img,svg{display:block;max-width:100%;}
+  a{color:inherit;text-decoration:none;}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit;}
+
+  .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh;}
+
+  /* Side rail */
+  .rail{position:sticky;top:0;height:100vh;background:var(--carbon);
+        color:var(--mist);padding:var(--s-7) var(--s-6);
+        display:flex;flex-direction:column;gap:var(--s-7);
+        border-right:1px solid rgba(255,255,255,0.06);overflow-y:auto;}
+  .rail-brand{display:flex;flex-direction:column;gap:14px;}
+  .rail-logo{color:var(--ember);width:96px;}
+  .rail-title{font-family:var(--display);font-size:20px;line-height:1.1;color:var(--paper);}
+  .rail-meta{font-family:var(--mono);font-size:11px;color:rgba(192,232,253,0.5);
+             letter-spacing:0.08em;text-transform:uppercase;}
+  .rail-doc-switch{margin-top:6px;display:flex;border:1px solid rgba(255,255,255,0.12);
+                   border-radius:var(--r-pill);padding:3px;font-family:var(--mono);
+                   font-size:10px;letter-spacing:0.08em;text-transform:uppercase;}
+  .rail-doc-switch a{flex:1;padding:6px 8px;border-radius:var(--r-pill);text-align:center;color:rgba(255,255,255,0.6);}
+  .rail-doc-switch a.on{background:var(--ember);color:#fff;}
+  .rail-nav{display:flex;flex-direction:column;gap:2px;}
+  .rail-nav-label{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;
+                  color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:var(--s-3);}
+  .rail-nav a{font-size:14px;font-weight:500;padding:9px 12px;border-radius:var(--r-sm);
+              color:rgba(255,255,255,0.7);display:flex;justify-content:space-between;
+              align-items:center;transition:background .18s, color .18s;}
+  .rail-nav a:hover{background:rgba(255,255,255,0.05);color:var(--paper);}
+  .rail-nav a.active{background:var(--ember);color:white;}
+  .rail-nav a span.idx{font-family:var(--mono);font-size:11px;opacity:0.6;}
+  .rail-foot{margin-top:auto;font-family:var(--mono);font-size:10px;
+             color:rgba(255,255,255,0.4);letter-spacing:0.06em;line-height:1.6;}
+
+  .main{min-width:0;}
+  section.page{padding:var(--s-9) var(--s-9);
+               border-bottom:1px solid rgba(21,31,40,0.08);max-width:1280px;}
+  @media (max-width:1100px){section.page{padding:var(--s-8) var(--s-7);}}
+
+  .section-eyebrow{display:inline-flex;align-items:center;gap:var(--s-3);
+                   font-family:var(--mono);font-size:11px;letter-spacing:0.16em;
+                   text-transform:uppercase;color:var(--ember);margin-bottom:var(--s-5);}
+  .section-eyebrow .dot{width:8px;height:8px;background:var(--ember);border-radius:50%;}
+  .section-eyebrow .num{color:rgba(21,31,40,0.4);}
+  .section-h{font-family:var(--display);font-size:clamp(48px,6vw,84px);line-height:0.96;
+             letter-spacing:-0.015em;margin-bottom:var(--s-5);color:var(--carbon);text-wrap:balance;}
+  .section-lede{font-size:19px;line-height:1.55;color:rgba(21,31,40,0.68);
+                max-width:62ch;margin-bottom:var(--s-8);}
+  .section-lede strong{color:var(--carbon);font-weight:600;}
+  .sub-h{font-family:var(--display);font-size:30px;line-height:1.1;
+         margin-top:var(--s-9);margin-bottom:var(--s-3);color:var(--carbon);}
+  .sub-l{font-size:14px;color:rgba(21,31,40,0.65);max-width:62ch;margin-bottom:var(--s-5);}
+  .sub-l em{font-style:italic;color:var(--ember);}
+
+  /* COVER */
+  .cover{background:var(--carbon);color:var(--paper);min-height:100vh;
+         padding:var(--s-9);display:grid;grid-template-rows:auto 1fr auto;gap:var(--s-7);
+         position:relative;overflow:hidden;border-bottom:0;}
+  .cover::before{content:'';position:absolute;inset:0;
+    background:radial-gradient(circle at 85% 15%, rgba(236,56,19,0.18), transparent 45%),
+               radial-gradient(circle at 12% 90%, rgba(192,232,253,0.10), transparent 50%);
+    pointer-events:none;}
+  .cover > *{position:relative;}
+  .cover-top{display:flex;justify-content:space-between;align-items:flex-start;
+             font-family:var(--mono);font-size:11px;letter-spacing:0.12em;
+             color:rgba(240,241,246,0.5);text-transform:uppercase;}
+  .cover-top .stamp{border:1px solid rgba(240,241,246,0.2);padding:6px 12px;
+                    border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:8px;}
+  .cover-top .stamp::before{content:'';width:6px;height:6px;background:var(--coral);border-radius:50%;}
+  .cover-mid{display:flex;flex-direction:column;justify-content:center;gap:var(--s-6);}
+  .cover-mark{color:var(--paper);width:360px;max-width:70vw;}
+  .cover-h{font-family:var(--display);font-size:clamp(64px,9vw,132px);
+           line-height:0.9;letter-spacing:-0.02em;color:var(--paper);}
+  .cover-h em{font-style:italic;color:var(--coral);}
+  .cover-sub{font-size:18px;max-width:56ch;color:rgba(240,241,246,0.65);line-height:1.6;}
+  .cover-bot{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s-6);
+             padding-top:var(--s-6);border-top:1px solid rgba(240,241,246,0.12);}
+  .cover-bot-cell .k{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;
+                     color:rgba(240,241,246,0.4);text-transform:uppercase;margin-bottom:6px;}
+  .cover-bot-cell .v{font-family:var(--display);font-size:17px;color:var(--paper);}
+
+  /* ESSENCE */
+  .essence-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-7);}
+  .essence-card{border:1px solid rgba(21,31,40,0.10);border-radius:var(--r-lg);
+                padding:var(--s-7) var(--s-6);background:white;}
+  .essence-card.dark{background:var(--deep);color:var(--paper);border-color:transparent;}
+  .essence-card .label{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;
+                       text-transform:uppercase;color:var(--ember);margin-bottom:var(--s-4);}
+  .essence-card.dark .label{color:var(--coral);}
+  .essence-card h3{font-family:var(--display);font-size:32px;line-height:1.05;margin-bottom:var(--s-4);}
+  .essence-card p{font-size:15px;line-height:1.65;color:rgba(21,31,40,0.7);}
+  .essence-card.dark p{color:rgba(240,241,246,0.7);}
+
+  .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s-4);margin-top:var(--s-7);}
+  .pillar{border:1px solid rgba(21,31,40,0.10);border-radius:var(--r-md);
+          padding:var(--s-5);background:var(--paper);}
+  .pillar .num{font-family:var(--mono);font-size:11px;color:var(--ember);margin-bottom:var(--s-3);}
+  .pillar h4{font-family:var(--display);font-size:22px;line-height:1.1;margin-bottom:var(--s-2);}
+  .pillar p{font-size:13px;color:rgba(21,31,40,0.6);line-height:1.6;}
+
+  .voice-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-5);margin-top:var(--s-7);}
+  .voice-col{border-radius:var(--r-md);padding:var(--s-6);}
+  .voice-col.do{background:#ECFDF3;border:1px solid rgba(0,128,0,0.15);}
+  .voice-col.dont{background:#FEF3F0;border:1px solid rgba(236,56,19,0.15);}
+  .voice-col h5{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;
+                text-transform:uppercase;margin-bottom:var(--s-4);
+                display:flex;align-items:center;gap:var(--s-2);}
+  .voice-col.do h5{color:#14743C;}
+  .voice-col.dont h5{color:var(--ember);}
+  .voice-col h5::before{content:'';width:14px;height:14px;border-radius:50%;display:inline-block;}
+  .voice-col.do h5::before{background:#14743C;}
+  .voice-col.dont h5::before{background:var(--ember);}
+  .voice-col ul{list-style:none;display:flex;flex-direction:column;gap:var(--s-3);}
+  .voice-col li{font-size:14px;line-height:1.55;color:var(--carbon);
+                padding-left:var(--s-5);position:relative;}
+  .voice-col.do li::before{content:'✓';position:absolute;left:0;color:#14743C;font-weight:700;}
+  .voice-col.dont li::before{content:'✕';position:absolute;left:0;color:var(--ember);font-weight:700;}
+
+  .vocab{margin-top:var(--s-7);display:grid;grid-template-columns:repeat(3,1fr);
+         gap:var(--s-4);border:1px solid rgba(21,31,40,0.08);border-radius:var(--r-md);
+         padding:var(--s-6);background:white;}
+  .vocab-col h6{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;
+                color:rgba(21,31,40,0.55);text-transform:uppercase;margin-bottom:var(--s-3);}
+  .vocab-col .item{padding:6px 0;font-size:14px;border-bottom:1px dashed rgba(21,31,40,0.08);}
+  .vocab-col .item:last-child{border-bottom:0;}
+  .vocab-col .item .from{color:rgba(21,31,40,0.5);text-decoration:line-through;font-size:12px;margin-right:8px;}
+  .vocab-col .item .to{color:var(--carbon);font-weight:600;}
+
+  /* LOGO */
+  .logo-hero{background:var(--mist);border-radius:var(--r-lg);padding:var(--s-9) var(--s-7);
+             display:flex;justify-content:center;align-items:center;
+             border:1px solid rgba(21,31,40,0.06);min-height:360px;position:relative;}
+  .logo-hero svg{width:min(560px,80%);color:var(--carbon);}
+  .logo-hero .tag{position:absolute;top:18px;left:22px;font-family:var(--mono);
+                  font-size:10px;letter-spacing:0.16em;color:rgba(21,31,40,0.4);text-transform:uppercase;}
+
+  .logo-versions{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-5);
+                 margin-top:var(--s-6);}
+  .lv-cell{background:var(--paper);border:1px solid rgba(21,31,40,0.08);
+           border-radius:var(--r-md);padding:var(--s-6);min-height:240px;
+           display:flex;flex-direction:column;gap:var(--s-4);position:relative;}
+  .lv-cell .lv-stage{flex:1;display:flex;align-items:center;justify-content:center;}
+  .lv-cell svg{color:var(--carbon);}
+  .lv-cell.imagotipo svg{width:80%;max-width:240px;}
+  .lv-cell.isotipo svg{width:90px;height:90px;}
+  .lv-cell.lockup{display:flex;flex-direction:column;gap:var(--s-4);}
+  .lv-cell.lockup .lv-stage{flex-direction:column;gap:8px;}
+  .lv-cell.lockup .iso{width:80px;height:80px;color:var(--carbon);}
+  .lv-cell.lockup .word{font-family:var(--display);font-size:13px;letter-spacing:0.3em;
+                        color:var(--carbon);text-transform:uppercase;}
+  .lv-cell .lv-meta{display:flex;justify-content:space-between;align-items:center;
+                    font-family:var(--mono);font-size:10px;letter-spacing:0.12em;
+                    color:rgba(21,31,40,0.5);text-transform:uppercase;
+                    border-top:1px solid rgba(21,31,40,0.08);padding-top:var(--s-3);}
+  .lv-cell .lv-meta strong{color:var(--carbon);font-weight:600;}
+
+  /* Construction grid */
+  .construct{display:grid;grid-template-columns:1.2fr 1fr;gap:var(--s-6);margin-top:var(--s-6);}
+  .construct-stage{background:
+      linear-gradient(rgba(21,31,40,0.05) 1px, transparent 1px) 0 0/24px 24px,
+      linear-gradient(90deg, rgba(21,31,40,0.05) 1px, transparent 1px) 0 0/24px 24px,
+      var(--paper);
+      border-radius:var(--r-md);border:1px solid rgba(21,31,40,0.08);
+      padding:var(--s-6);position:relative;min-height:320px;
+      display:flex;align-items:center;justify-content:center;}
+  .construct-frame{position:relative;padding:56px;border:1px dashed var(--ember);}
+  .construct-frame svg{width:280px;color:var(--carbon);}
+  .construct-x{position:absolute;font-family:var(--mono);font-size:11px;color:var(--ember);}
+  .construct-x.t{top:56px;left:50%;transform:translate(-50%,-100%);}
+  .construct-x.b{bottom:56px;left:50%;transform:translate(-50%,100%);}
+  .construct-x.l{left:56px;top:50%;transform:translate(-100%,-50%);}
+  .construct-x.r{right:56px;top:50%;transform:translate(100%,-50%);}
+  .construct-text{display:flex;flex-direction:column;justify-content:center;gap:var(--s-4);}
+  .construct-text h4{font-family:var(--display);font-size:26px;line-height:1.1;}
+  .construct-text p{font-size:14px;color:rgba(21,31,40,0.65);line-height:1.65;}
+  .construct-text .key{display:inline-block;padding:2px 8px;background:var(--carbon);
+                       color:var(--paper);font-family:var(--mono);font-size:12px;border-radius:4px;}
+
+  /* Size scale */
+  .sizes{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--s-4);
+         margin-top:var(--s-5);align-items:end;}
+  .size-cell{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s-3);
+             border:1px solid rgba(21,31,40,0.08);border-radius:var(--r-md);
+             padding:var(--s-4);background:var(--paper);min-height:180px;justify-content:space-between;}
+  .size-cell svg{color:var(--carbon);}
+  .size-cell .sz-meta{font-family:var(--mono);font-size:11px;color:rgba(21,31,40,0.55);
+                      letter-spacing:0.06em;}
+  .size-cell .sz-meta strong{color:var(--carbon);display:block;font-size:14px;}
+
+  /* Color/contrast pairs for logo */
+  .logo-colorways{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s-3);margin-top:var(--s-5);}
+  .lc{border-radius:var(--r-md);padding:var(--s-6) var(--s-4);min-height:160px;
+      display:flex;align-items:center;justify-content:center;position:relative;
+      border:1px solid rgba(21,31,40,0.08);}
+  .lc svg{width:80%;max-width:200px;}
+  .lc .tag{position:absolute;bottom:10px;left:12px;font-family:var(--mono);
+           font-size:10px;letter-spacing:0.1em;text-transform:uppercase;}
+  .lc.paper{background:var(--paper);} .lc.paper svg{color:var(--carbon);} .lc.paper .tag{color:rgba(21,31,40,0.45);}
+  .lc.mist{background:var(--mist);} .lc.mist svg{color:var(--carbon);} .lc.mist .tag{color:rgba(21,31,40,0.45);}
+  .lc.sky{background:var(--sky);} .lc.sky svg{color:var(--carbon);} .lc.sky .tag{color:rgba(21,31,40,0.55);}
+  .lc.coral{background:var(--coral);} .lc.coral svg{color:var(--carbon);} .lc.coral .tag{color:rgba(21,31,40,0.55);}
+  .lc.ember{background:var(--ember);} .lc.ember svg{color:#fff;} .lc.ember .tag{color:rgba(255,255,255,0.7);}
+  .lc.carbon{background:var(--carbon);} .lc.carbon svg{color:var(--paper);} .lc.carbon .tag{color:rgba(255,255,255,0.5);}
+  .lc.deep{background:var(--deep);} .lc.deep svg{color:var(--coral);} .lc.deep .tag{color:rgba(255,255,255,0.5);}
+  .lc.photo{background:linear-gradient(135deg,#3a2e2a,#1c1614);} .lc.photo svg{color:#fff;} .lc.photo .tag{color:rgba(255,255,255,0.6);}
+
+  /* Favicon / icon system */
+  .icon-system{display:grid;grid-template-columns:repeat(6,1fr);gap:var(--s-4);margin-top:var(--s-5);
+               align-items:end;}
+  .icon-cell{display:flex;flex-direction:column;gap:var(--s-3);align-items:center;
+             border:1px solid rgba(21,31,40,0.08);border-radius:var(--r-md);
+             padding:var(--s-4);background:var(--paper);}
+  .icon-box{background:var(--ember);border-radius:8px;color:white;
+            display:flex;align-items:center;justify-content:center;}
+  .icon-box svg{width:60%;color:#fff;}
+  .icon-cell .lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;color:rgba(21,31,40,0.55);}
+  .icon-cell .lbl strong{color:var(--carbon);display:block;font-size:12px;}
+
+  /* Misuse */
+  .misuse-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s-4);margin-top:var(--s-6);}
+  .misuse-cell{border-radius:var(--r-md);background:var(--paper);
+               border:1px solid rgba(21,31,40,0.08);aspect-ratio:1.1;
+               display:flex;align-items:center;justify-content:center;
+               position:relative;overflow:hidden;padding:var(--s-4);}
+  .misuse-cell svg{width:70%;color:var(--carbon);}
+  .misuse-cell .ms-tag{position:absolute;bottom:10px;left:10px;font-family:var(--mono);
+                       font-size:10px;letter-spacing:0.1em;color:var(--ember);text-transform:uppercase;}
+  .misuse-cell .ms-x{position:absolute;top:10px;right:10px;width:22px;height:22px;
+                     border-radius:50%;background:var(--ember);color:white;
+                     display:flex;align-items:center;justify-content:center;
+                     font-size:13px;font-weight:700;}
+  .misuse-cell.distort svg{transform:scaleY(0.5);}
+  .misuse-cell.rotate svg{transform:rotate(-12deg);}
+  .misuse-cell.outline svg{color:transparent;stroke:var(--carbon);stroke-width:8;}
+  .misuse-cell.gradient svg{fill:url(#ms-grad);}
+  .misuse-cell.color{background:linear-gradient(135deg,#FF00FF,#00FFFF);}
+  .misuse-cell.color svg{color:#FFEE00;}
+  .misuse-cell.shadow svg{filter:drop-shadow(0 8px 12px rgba(0,0,0,0.5));}
+  .misuse-cell.lowcontrast{background:var(--coral);}
+  .misuse-cell.lowcontrast svg{color:var(--ember);opacity:0.9;}
+  .misuse-cell.crowded{background:repeating-linear-gradient(45deg,#dec3a8,#dec3a8 10px,#c7ad95 10px,#c7ad95 20px);}
+  .misuse-cell.crowded svg{color:var(--carbon);}
+
+  /* COLOR */
+  .palette-hero{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 1.2fr;
+                border-radius:var(--r-lg);overflow:hidden;height:380px;
+                border:1px solid rgba(21,31,40,0.08);}
+  .swatch{padding:var(--s-5);display:flex;flex-direction:column;
+          justify-content:space-between;position:relative;}
+  .swatch .sw-name{font-family:var(--display);font-size:22px;line-height:1.05;}
+  .swatch .sw-meta{font-family:var(--mono);font-size:11px;line-height:1.6;opacity:0.85;}
+  .swatch .sw-meta .row{display:flex;justify-content:space-between;gap:8px;}
+  .swatch .sw-meta .k{opacity:0.6;}
+  .sw-carbon{background:var(--carbon);color:var(--paper);}
+  .sw-deep{background:var(--deep);color:var(--paper);}
+  .sw-ember{background:var(--ember);color:white;}
+  .sw-coral{background:var(--coral);color:var(--carbon);}
+  .sw-sky{background:var(--sky);color:var(--carbon);}
+  .sw-mist{background:var(--mist);color:var(--carbon);border-right:1px solid rgba(21,31,40,0.08);}
+
+  .palette-table{margin-top:var(--s-7);border:1px solid rgba(21,31,40,0.08);
+                 border-radius:var(--r-md);overflow:hidden;}
+  .palette-row{display:grid;grid-template-columns:64px 1.2fr 1.2fr 1fr 2fr 1fr;
+               align-items:center;padding:var(--s-4) var(--s-5);
+               border-bottom:1px solid rgba(21,31,40,0.06);font-size:14px;}
+  .palette-row:last-child{border-bottom:0;}
+  .palette-row.head{background:var(--mist);font-family:var(--mono);font-size:10px;
+                    letter-spacing:0.12em;text-transform:uppercase;color:rgba(21,31,40,0.55);}
+  .palette-row .chip{width:36px;height:36px;border-radius:8px;border:1px solid rgba(21,31,40,0.08);}
+  .palette-row .name{font-weight:600;}
+  .palette-row .hex{font-family:var(--mono);color:rgba(21,31,40,0.7);}
+  .palette-row .pant{font-family:var(--mono);color:rgba(21,31,40,0.5);font-size:12px;}
+  .palette-row .role{color:rgba(21,31,40,0.7);font-size:13px;}
+  .palette-row .balance{font-family:var(--mono);font-size:12px;color:rgba(21,31,40,0.5);text-align:right;}
+
+  .proportion{display:flex;height:56px;border-radius:var(--r-md);overflow:hidden;
+              margin-top:var(--s-7);border:1px solid rgba(21,31,40,0.08);}
+  .proportion-bar{display:flex;align-items:center;justify-content:center;
+                  font-family:var(--mono);font-size:11px;letter-spacing:0.08em;}
+
+  /* Contrast pairs */
+  .contrast-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s-4);margin-top:var(--s-5);}
+  .contrast-cell{border-radius:var(--r-md);padding:var(--s-5);min-height:170px;
+                 display:flex;flex-direction:column;justify-content:space-between;
+                 border:1px solid rgba(21,31,40,0.06);position:relative;overflow:hidden;}
+  .contrast-cell .lg{font-family:var(--display);font-size:34px;line-height:1;letter-spacing:-0.01em;}
+  .contrast-cell .sm{font-size:13px;line-height:1.5;}
+  .contrast-cell .meta{display:flex;justify-content:space-between;
+                       font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;}
+  .contrast-cell .meta .pill{padding:2px 8px;border-radius:var(--r-pill);}
+  .ct-ok{background:rgba(20,116,60,0.15);color:#14743C;}
+  .ct-warn{background:rgba(236,56,19,0.15);color:var(--ember);}
+  .cc-1{background:var(--paper);color:var(--carbon);}
+  .cc-2{background:var(--carbon);color:var(--paper);}
+  .cc-3{background:var(--ember);color:#fff;}
+  .cc-4{background:var(--deep);color:var(--sky);}
+  .cc-5{background:var(--sky);color:var(--deep);}
+  .cc-6{background:var(--coral);color:var(--carbon);}
+  .cc-7{background:var(--mist);color:var(--carbon);}
+  .cc-8{background:var(--coral);color:#fff;} /* low */
+
+  /* Brand bg combinations */
+  .bg-stack{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s-4);margin-top:var(--s-5);}
+  .bg-card{border-radius:var(--r-md);padding:var(--s-5);min-height:200px;
+           display:flex;flex-direction:column;gap:var(--s-3);position:relative;overflow:hidden;}
+  .bg-card .h{font-family:var(--display);font-size:28px;line-height:1;}
+  .bg-card .p{font-size:13px;line-height:1.5;opacity:0.8;}
+  .bg-card .meta{position:absolute;bottom:14px;left:14px;font-family:var(--mono);
+                 font-size:10px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.55;}
+
+  /* TYPE */
+  .type-hero{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-6);}
+  .type-card{border:1px solid rgba(21,31,40,0.10);border-radius:var(--r-lg);
+             padding:var(--s-7) var(--s-6);background:white;
+             display:flex;flex-direction:column;justify-content:space-between;min-height:360px;}
+  .type-card .type-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;
+                           text-transform:uppercase;color:var(--ember);}
+  .type-card .type-sample-display{font-family:var(--display);font-size:96px;line-height:0.95;
+                                   letter-spacing:-0.01em;color:var(--carbon);}
+  .type-card .type-sample-sans{font-family:var(--sans);font-size:96px;line-height:0.95;
+                                letter-spacing:-0.04em;font-weight:800;color:var(--carbon);}
+  .type-card .type-meta{font-family:var(--mono);font-size:12px;color:rgba(21,31,40,0.5);
+                        display:flex;gap:var(--s-5);flex-wrap:wrap;}
+  .type-card .type-meta strong{color:var(--carbon);font-weight:500;}
+  .type-card .type-name{font-family:var(--display);font-size:28px;margin-bottom:4px;}
+  .type-card .type-purpose{font-size:14px;color:rgba(21,31,40,0.65);line-height:1.55;}
+
+  /* Spécimen */
+  .specimen{margin-top:var(--s-5);border:1px solid rgba(21,31,40,0.08);
+            border-radius:var(--r-lg);overflow:hidden;}
+  .specimen-row{display:grid;grid-template-columns:200px 1fr;gap:var(--s-5);
+                padding:var(--s-5) var(--s-6);border-bottom:1px solid rgba(21,31,40,0.06);
+                align-items:center;}
+  .specimen-row:last-child{border-bottom:0;}
+  .specimen-row.head{background:var(--mist);font-family:var(--mono);font-size:10px;
+                     letter-spacing:0.12em;text-transform:uppercase;color:rgba(21,31,40,0.55);
+                     padding-top:var(--s-3);padding-bottom:var(--s-3);}
+  .specimen-row .sp-meta{font-family:var(--mono);font-size:11px;color:rgba(21,31,40,0.55);line-height:1.6;}
+  .specimen-row .sp-meta strong{color:var(--carbon);display:block;font-size:14px;font-family:var(--sans);font-weight:600;}
+  .specimen-row .sp-sample{color:var(--carbon);}
+  .sp-d1{font-family:var(--display);font-size:64px;line-height:1;letter-spacing:-0.01em;}
+  .sp-h1{font-family:var(--display);font-size:44px;line-height:1.05;}
+  .sp-h2{font-family:var(--sans);font-weight:700;font-size:30px;line-height:1.15;letter-spacing:-0.01em;}
+  .sp-h3{font-family:var(--sans);font-weight:600;font-size:20px;line-height:1.3;}
+  .sp-body{font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.65;max-width:60ch;color:rgba(21,31,40,0.78);}
+  .sp-cap{font-family:var(--mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(21,31,40,0.6);}
+
+  .pairing{margin-top:var(--s-7);background:var(--carbon);color:var(--paper);
+           border-radius:var(--r-lg);padding:var(--s-8) var(--s-7);
+           display:grid;grid-template-columns:1fr 1fr;gap:var(--s-7);align-items:center;}
+  .pairing .p-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;
+                      color:var(--coral);text-transform:uppercase;margin-bottom:var(--s-4);}
+  .pairing .p-h{font-family:var(--display);font-size:60px;line-height:1;letter-spacing:-0.01em;margin-bottom:var(--s-4);}
+  .pairing .p-h em{color:var(--coral);}
+  .pairing .p-body{font-size:15px;color:rgba(240,241,246,0.7);line-height:1.7;}
+
+  /* Charset preview */
+  .charset{margin-top:var(--s-6);border:1px solid rgba(21,31,40,0.08);
+           border-radius:var(--r-lg);padding:var(--s-7) var(--s-6);background:var(--mist);}
+  .charset-row{display:flex;flex-wrap:wrap;gap:var(--s-4);align-items:baseline;}
+  .charset-row.display{font-family:var(--display);font-size:34px;color:var(--carbon);}
+  .charset-row.sans{font-family:var(--sans);font-size:30px;font-weight:600;
+                     color:var(--carbon);margin-top:var(--s-5);}
+  .charset-meta{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;
+                color:rgba(21,31,40,0.5);margin-top:var(--s-3);text-transform:uppercase;}
+
+  /* APPLICATIONS */
+  .apps-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s-5);}
+  .app-card{border-radius:var(--r-lg);overflow:hidden;border:1px solid rgba(21,31,40,0.08);
+            background:white;display:flex;flex-direction:column;}
+  .app-stage{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
+             padding:var(--s-6);position:relative;overflow:hidden;}
+  .app-foot{padding:var(--s-4) var(--s-5);display:flex;justify-content:space-between;
+            align-items:center;border-top:1px solid rgba(21,31,40,0.06);}
+  .app-foot .a-name{font-family:var(--display);font-size:18px;}
+  .app-foot .a-tag{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;
+                   color:rgba(21,31,40,0.5);text-transform:uppercase;}
+
+  /* Stationary: business card */
+  .app-bcard{width:78%;aspect-ratio:1.7;background:var(--paper);border-radius:var(--r-sm);
+             box-shadow:0 18px 40px rgba(21,31,40,0.18);padding:22px;
+             display:flex;flex-direction:column;justify-content:space-between;
+             position:relative;overflow:hidden;}
+  .app-bcard.back{background:var(--ember);color:white;display:flex;align-items:center;justify-content:center;}
+  .app-bcard.back svg{color:white;width:60%;}
+  .app-bcard .bc-name{font-family:var(--display);font-size:18px;}
+  .app-bcard .bc-role{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;
+                      color:rgba(21,31,40,0.5);text-transform:uppercase;}
+  .app-bcard .bc-foot{display:flex;justify-content:space-between;align-items:flex-end;}
+  .app-bcard .bc-logo{color:var(--carbon);width:70px;}
+  .app-bcard .bc-contact{font-family:var(--mono);font-size:10px;line-height:1.6;color:rgba(21,31,40,0.65);text-align:right;}
+  .app-cards-row{display:flex;gap:18px;align-items:center;transform:rotate(-4deg);}
+
+  /* Letterhead */
+  .app-letter-stage{background:var(--mist);}
+  .app-letter{width:60%;aspect-ratio:0.77;background:#fff;
+              box-shadow:0 18px 40px rgba(21,31,40,0.18);padding:30px;
+              display:flex;flex-direction:column;gap:14px;position:relative;}
+  .app-letter .ll{width:60px;color:var(--carbon);}
+  .app-letter .lt{font-family:var(--display);font-size:16px;color:var(--carbon);}
+  .app-letter .lp{font-family:var(--sans);font-size:8px;line-height:1.8;color:rgba(21,31,40,0.75);max-width:90%;}
+  .app-letter .lbar{height:4px;background:var(--ember);width:48px;margin-top:auto;}
+  .app-letter .lfoot{font-family:var(--mono);font-size:7px;letter-spacing:0.12em;
+                     color:rgba(21,31,40,0.45);text-transform:uppercase;}
+
+  /* Envelope */
+  .app-env-stage{background:var(--coral);}
+  .app-env{width:80%;aspect-ratio:2.1;background:var(--paper);border-radius:var(--r-sm);
+           box-shadow:0 18px 40px rgba(21,31,40,0.2);padding:22px;
+           display:flex;justify-content:space-between;align-items:flex-end;}
+  .app-env .env-l{color:var(--carbon);width:80px;}
+  .app-env .env-r{font-family:var(--mono);font-size:9px;line-height:1.6;
+                  color:rgba(21,31,40,0.65);text-align:right;letter-spacing:0.06em;}
+
+  /* Poster */
+  .app-poster-stage{background:var(--sky);}
+  .app-poster{width:70%;aspect-ratio:0.72;background:var(--carbon);color:var(--paper);
+              padding:28px;border-radius:var(--r-sm);box-shadow:0 24px 50px rgba(21,31,40,0.3);
+              display:flex;flex-direction:column;justify-content:space-between;
+              position:relative;overflow:hidden;}
+  .app-poster::before{content:'';position:absolute;right:-60px;bottom:-60px;
+    width:240px;height:240px;border-radius:50%;background:var(--ember);}
+  .app-poster-h{font-family:var(--display);font-size:36px;line-height:0.95;position:relative;z-index:1;}
+  .app-poster-h em{color:var(--coral);}
+  .app-poster-foot{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;}
+  .app-poster-logo{color:var(--paper);width:90px;}
+  .app-poster-meta{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
+                   color:rgba(240,241,246,0.6);text-transform:uppercase;text-align:right;line-height:1.5;}
+
+  /* Social posts */
+  .app-social-stage{background:var(--mist);}
+  .app-social{width:78%;aspect-ratio:1;background:var(--coral);border-radius:var(--r-md);
+              padding:36px;display:flex;flex-direction:column;justify-content:space-between;
+              box-shadow:0 18px 40px rgba(21,31,40,0.18);position:relative;overflow:hidden;}
+  .app-social::after{content:'';position:absolute;top:-40px;left:-40px;
+    width:180px;height:180px;border:2px solid var(--carbon);border-radius:50%;opacity:0.18;}
+  .app-social-tag{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;
+                  text-transform:uppercase;color:var(--carbon);position:relative;}
+  .app-social-h{font-family:var(--display);font-size:38px;line-height:0.98;color:var(--carbon);position:relative;}
+  .app-social-foot{display:flex;justify-content:space-between;align-items:center;position:relative;}
+  .app-social-foot svg{color:var(--carbon);width:70px;}
+
+  /* Story (vertical) */
+  .app-story-stage{background:var(--deep);}
+  .app-story{width:44%;aspect-ratio:9/16;background:var(--ember);border-radius:var(--r-md);
+             padding:22px;display:flex;flex-direction:column;justify-content:space-between;
+             box-shadow:0 18px 40px rgba(0,0,0,0.4);position:relative;overflow:hidden;color:white;}
+  .app-story::before{content:'';position:absolute;inset:auto -40% -40% auto;
+    width:80%;aspect-ratio:1;background:var(--coral);border-radius:50%;}
+  .app-story .sty-tag{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;
+                      text-transform:uppercase;color:rgba(255,255,255,0.7);position:relative;}
+  .app-story .sty-h{font-family:var(--display);font-size:32px;line-height:0.96;position:relative;}
+  .app-story .sty-foot{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;
+                       text-transform:uppercase;color:rgba(255,255,255,0.8);position:relative;}
+
+  /* Merch: tote */
+  .app-tote-stage{background:#f7eddd;}
+  .app-tote{width:60%;aspect-ratio:0.85;background:#e9dcc4;position:relative;}
+  .app-tote::before,.app-tote::after{content:'';position:absolute;width:12px;
+    border:3px solid #e9dcc4;background:transparent;height:80px;top:-70px;border-radius:50px;}
+  .app-tote::before{left:18%;}
+  .app-tote::after{right:18%;}
+  .app-tote .tl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ember);}
+  .app-tote .tl svg{width:60%;}
+
+  /* T-shirt */
+  .app-tee-stage{background:var(--carbon);}
+  .app-tee{width:70%;aspect-ratio:1;background:#f2eee5;clip-path:polygon(20% 8%,28% 0,72% 0,80% 8%,100% 22%,90% 36%,82% 30%,82% 100%,18% 100%,18% 30%,10% 36%,0 22%);
+           position:relative;display:flex;align-items:center;justify-content:center;}
+  .app-tee svg{width:45%;color:var(--carbon);}
+
+  /* Vehicle (van side) */
+  .app-van-stage{background:var(--mist);}
+  .app-van{width:88%;height:60%;background:#fff;border-radius:24px 24px 14px 14px / 60% 60% 14px 14px;
+           position:relative;box-shadow:0 18px 40px rgba(21,31,40,0.18);overflow:hidden;
+           border:1px solid rgba(21,31,40,0.05);}
+  .app-van::before{content:'';position:absolute;left:6%;right:6%;top:18%;height:36%;
+    background:linear-gradient(180deg,#cfe9f5 0%, #a8d5ec 100%);
+    clip-path:polygon(8% 0,92% 0,100% 100%,0 100%);}
+  .app-van .wheel{position:absolute;bottom:-22px;width:64px;height:64px;background:#222;border-radius:50%;
+                  border:8px solid #444;}
+  .app-van .wheel.l{left:14%;} .app-van .wheel.r{right:14%;}
+  .app-van .vl{position:absolute;left:38%;bottom:18%;width:36%;color:var(--ember);}
+
+  /* Signage */
+  .app-sign-stage{background:#1c1614;padding:0 !important;}
+  .app-sign{width:100%;height:100%;background:linear-gradient(180deg,#2a221d 0%, #1a1411 100%);
+            position:relative;display:flex;align-items:center;justify-content:center;}
+  .app-sign-block{background:var(--ember);color:white;padding:32px 40px;display:flex;
+                  align-items:center;justify-content:center;box-shadow:0 0 60px rgba(236,56,19,0.5);}
+  .app-sign-block svg{color:white;width:200px;}
+
+  /* Section banners */
+  .quote-banner{margin-top:var(--s-7);border-radius:var(--r-lg);background:var(--ember);color:white;
+                padding:var(--s-7);display:flex;gap:var(--s-7);align-items:center;
+                overflow:hidden;position:relative;}
+  .quote-banner-h{font-family:var(--display);font-size:56px;line-height:0.95;flex:1;letter-spacing:-0.01em;}
+  .quote-banner-h em{font-style:italic;color:var(--carbon);}
+  .quote-banner-meta{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;
+                     text-transform:uppercase;color:rgba(255,255,255,0.75);max-width:180px;line-height:1.7;}
+
+  /* COLOPHON */
+  .colophon{background:var(--carbon);color:var(--paper);padding:var(--s-8) var(--s-9);
+            display:grid;grid-template-columns:2fr 1fr 1fr;gap:var(--s-7);}
+  .colophon h4{font-family:var(--display);font-size:32px;margin-bottom:var(--s-4);}
+  .colophon p{color:rgba(240,241,246,0.65);font-size:14px;line-height:1.7;max-width:44ch;}
+  .colophon .cf-col h5{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;
+                       color:var(--coral);text-transform:uppercase;margin-bottom:var(--s-3);}
+  .colophon .cf-col a{display:block;font-size:14px;padding:4px 0;color:rgba(240,241,246,0.7);}
+  .colophon .cf-col a:hover{color:var(--paper);}
+  .colophon-bot{grid-column:1/-1;padding-top:var(--s-5);border-top:1px solid rgba(255,255,255,0.08);
+                display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;
+                letter-spacing:0.06em;color:rgba(240,241,246,0.4);}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ====== RAIL ====== -->
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="rail-logo" data-logo="full"></div>
+      <div>
+        <div class="rail-title">Brandbook</div>
+        <div class="rail-meta" style="margin-top:6px;">v 1.0 · 2026</div>
+      </div>
+      <div class="rail-doc-switch">
+        <a href="Cuac Brandbook.html" class="on">Brandbook</a>
+        <a href="Cuac Design System.html">Design System</a>
+      </div>
+    </div>
+
+    <nav class="rail-nav">
+      <div class="rail-nav-label">Manual de marca</div>
+      <a href="#cover"><span>Portada</span><span class="idx">00</span></a>
+      <a href="#essence"><span>Esencia &amp; Voz</span><span class="idx">01</span></a>
+      <a href="#logo"><span>Logotipo</span><span class="idx">02</span></a>
+      <a href="#color"><span>Color</span><span class="idx">03</span></a>
+      <a href="#type"><span>Tipografía</span><span class="idx">04</span></a>
+      <a href="#apps"><span>Aplicaciones</span><span class="idx">05</span></a>
+    </nav>
+
+    <div class="rail-foot">
+      Cuac Design © 2026<br>
+      Bogotá, Colombia<br>
+      brand@cuacdesign.com
+    </div>
+  </aside>
+
+  <!-- ====== MAIN ====== -->
+  <main class="main">
+
+    <!-- COVER -->
+    <section class="page cover" id="cover" data-screen-label="00 Cover">
+      <div class="cover-top">
+        <span class="stamp">Brand book · Edición 2026</span>
+        <span>CUAC / BB / 001</span>
+      </div>
+      <div class="cover-mid">
+        <div class="cover-mark" data-logo="full"></div>
+        <h1 class="cover-h">Damos vida a<br>las <em>ideas</em>.</h1>
+        <p class="cover-sub">Manual de marca de Cuac Design — la fuente única de verdad sobre cómo se ve, suena y se aplica nuestra identidad. Si una pieza lleva nuestro nombre, vive en estas páginas.</p>
+      </div>
+      <div class="cover-bot">
+        <div class="cover-bot-cell"><div class="k">Disciplinas</div><div class="v">Branding · Motion · Web · Editorial · Ilustración</div></div>
+        <div class="cover-bot-cell"><div class="k">Equipo</div><div class="v">Sebastián · Natalia · Nathali</div></div>
+        <div class="cover-bot-cell"><div class="k">Sede</div><div class="v">Bogotá, Colombia</div></div>
+        <div class="cover-bot-cell"><div class="k">Documento</div><div class="v">v 1.0 · Mayo 2026</div></div>
+      </div>
+    </section>
+
+    <!-- ESSENCE -->
+    <section class="page" id="essence" data-screen-label="01 Esencia">
+      <div class="section-eyebrow"><span class="dot"></span><span>01 / Esencia</span><span class="num">— Plataforma de marca</span></div>
+      <h2 class="section-h">No diseñamos cosas.<br>Damos vida a&nbsp;ideas.</h2>
+      <p class="section-lede">Cuac es un estudio creativo donde el diseño tiene <strong>cuerpo, voz y personalidad</strong>. Trabajamos en la frontera entre ilustración, animación y estrategia para construir marcas que la gente recuerda — porque las sintieron, no solo las vieron.</p>
+
+      <div class="essence-grid">
+        <div class="essence-card">
+          <div class="label">Promesa</div>
+          <h3>Marcas que se sienten vivas, no solo bonitas.</h3>
+          <p>Cada proyecto sale con una razón de existir, una manera de hablar y una chispa que lo hace memorable. Lo que para otros es un logo, para nosotros es un personaje.</p>
+        </div>
+        <div class="essence-card dark">
+          <div class="label">Misión</div>
+          <h3>Construir universos visuales que conecten con personas reales.</h3>
+          <p>Ilustramos, animamos y diseñamos sistemas que llevan a cada marca a otro nivel — con calor humano, oficio y un punto de vista propio.</p>
+        </div>
+      </div>
+
+      <div class="pillars">
+        <div class="pillar"><div class="num">01</div><h4>Curiosidad de niño.</h4><p>Nos preguntamos cómo serían las cosas si todo fuera personaje, color y movimiento.</p></div>
+        <div class="pillar"><div class="num">02</div><h4>Oficio de adulto.</h4><p>Procesos claros, archivos impecables, entregas a tiempo. Nada de improvisar lo importante.</p></div>
+        <div class="pillar"><div class="num">03</div><h4>Calor latino.</h4><p>Diseñamos desde Bogotá con humor, calidez y la energía de una conversación cara a cara.</p></div>
+        <div class="pillar"><div class="num">04</div><h4>Punto de vista.</h4><p>Cada proyecto es una postura. Si no aporta una idea, no merece estar firmado por Cuac.</p></div>
+      </div>
+
+      <h3 class="sub-h">Voz de marca.</h3>
+      <p class="sub-l">Hablamos de tú, en español neutro de Colombia. Frases cortas, verbos en presente, tono cálido. El humor es sutil; nunca sarcástico ni a costa de nadie.</p>
+
+      <div class="voice-grid">
+        <div class="voice-col do">
+          <h5>Voz · Sí decimos</h5>
+          <ul>
+            <li>“Le damos vida a tu marca” — directo, con energía.</li>
+            <li>“Cuéntanos qué tienes en la cabeza” — invitación cercana.</li>
+            <li>Frases cortas. Verbos en presente. Tono cálido.</li>
+            <li>Humor sutil, nunca sarcástico ni a costa de nadie.</li>
+            <li>Hablamos de tú, en español neutro de Colombia.</li>
+          </ul>
+        </div>
+        <div class="voice-col dont">
+          <h5>Voz · Evitamos</h5>
+          <ul>
+            <li>“Soluciones disruptivas de alto impacto” — corporativo vacío.</li>
+            <li>“Llamenos hoy mismo!!!” — gritos publicitarios.</li>
+            <li>Adjetivos sin sustento (premium, único, exclusivo).</li>
+            <li>Anglicismos innecesarios cuando hay palabra en español.</li>
+            <li>Tecnicismos de diseño cuando hablamos con clientes.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="vocab">
+        <div class="vocab-col">
+          <h6>Diccionario · No → Sí</h6>
+          <div class="item"><span class="from">Solución</span><span class="to">Idea</span></div>
+          <div class="item"><span class="from">Cliente</span><span class="to">Compañero de viaje</span></div>
+          <div class="item"><span class="from">Brief</span><span class="to">Punto de partida</span></div>
+          <div class="item"><span class="from">Entregable</span><span class="to">Pieza</span></div>
+        </div>
+        <div class="vocab-col">
+          <h6>Verbos que nos representan</h6>
+          <div class="item"><span class="to">Dar vida · Animar · Ilustrar</span></div>
+          <div class="item"><span class="to">Construir · Sistematizar</span></div>
+          <div class="item"><span class="to">Acompañar · Escuchar</span></div>
+          <div class="item"><span class="to">Probar · Iterar · Refinar</span></div>
+        </div>
+        <div class="vocab-col">
+          <h6>Frases ancla</h6>
+          <div class="item"><span class="to">Damos vida a las ideas.</span></div>
+          <div class="item"><span class="to">El estudio donde el diseño tiene voz.</span></div>
+          <div class="item"><span class="to">Cuéntanos qué tienes en la cabeza.</span></div>
+          <div class="item"><span class="to">Hecho a mano, pensado en sistema.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGO -->
+    <section class="page" id="logo" data-screen-label="02 Logo">
+      <div class="section-eyebrow"><span class="dot"></span><span>02 / Logotipo</span><span class="num">— Marca, construcción y usos</span></div>
+      <h2 class="section-h">Cuatro pulsos.<br>Una palabra: <em style="font-style:italic;color:var(--ember)">Cuac</em>.</h2>
+      <p class="section-lede">El logotipo está formado por cuatro letras-pulso conectadas — un guiño al sonido del pato y al ritmo del trabajo creativo. Es <strong>geométrico, generoso en blanco y siempre legible</strong>. Existe como isotipo (las cuatro letras) y como imagotipo (con la firma “Design”).</p>
+
+      <div class="logo-hero">
+        <span class="tag">Marca principal · Imagotipo horizontal</span>
+        <div data-logo="full"></div>
+      </div>
+
+      <h3 class="sub-h">Versiones del logo.</h3>
+      <p class="sub-l">Tres versiones aprobadas según el espacio disponible. Nunca crear una nueva sin consulta al equipo de marca.</p>
+
+      <div class="logo-versions">
+        <div class="lv-cell imagotipo">
+          <div class="lv-stage"><div data-logo="full"></div></div>
+          <div class="lv-meta"><span><strong>01 Imagotipo</strong></span><span>Default · ≥ 80 px</span></div>
+        </div>
+        <div class="lv-cell lockup">
+          <div class="lv-stage">
+            <div class="iso" data-logo="iso"></div>
+            <div class="word">Design</div>
+          </div>
+          <div class="lv-meta"><span><strong>02 Lockup vertical</strong></span><span>Avatar · Stories</span></div>
+        </div>
+        <div class="lv-cell isotipo">
+          <div class="lv-stage"><div data-logo="iso"></div></div>
+          <div class="lv-meta"><span><strong>03 Isotipo</strong></span><span>Favicon · 16–64 px</span></div>
+        </div>
+      </div>
+
+      <h3 class="sub-h">Construcción y área de respeto.</h3>
+      <p class="sub-l">El logo se construye sobre una grilla de 24 unidades. La zona de seguridad equivale a la altura de la C (X) en cada lado — ningún elemento gráfico debe invadirla.</p>
+
+      <div class="construct">
+        <div class="construct-stage">
+          <div class="construct-frame">
+            <span class="construct-x t">X</span><span class="construct-x b">X</span>
+            <span class="construct-x l">X</span><span class="construct-x r">X</span>
+            <div data-logo="full"></div>
+          </div>
+        </div>
+        <div class="construct-text">
+          <h4>Área de respeto = altura de <span class="key">X</span></h4>
+          <p>Donde <strong>X</strong> es la altura de la primera C del logotipo. Aplica en los cuatro lados. Ningún texto, imagen ni borde debe entrar en esta zona — el aire es parte del logo.</p>
+          <p style="border-left:2px solid var(--ember);padding-left:14px;color:var(--carbon)"><strong>Construcción modular:</strong> cada letra ocupa una caja cuadrada de 24 × 24 u. Las uniones internas tienen un radio de 6 u. El grosor de trazo es constante = 6 u.</p>
+        </div>
+      </div>
+
+      <h3 class="sub-h">Tamaños mínimos.</h3>
+      <p class="sub-l">Por debajo de estos umbrales, la legibilidad y los detalles se pierden. Si necesitas usarlo más pequeño, usa el <em>isotipo</em>.</p>
+
+      <div class="sizes">
+        <div class="size-cell"><div style="width:38px" data-logo="full"></div><div class="sz-meta"><strong>Imagotipo 38 px</strong>min. digital · web/UI</div></div>
+        <div class="size-cell"><div style="width:60px" data-logo="full"></div><div class="sz-meta"><strong>Imagotipo 60 px</strong>recomendado · nav</div></div>
+        <div class="size-cell"><div style="width:120px" data-logo="full"></div><div class="sz-meta"><strong>Imagotipo 120 px</strong>óptimo · hero</div></div>
+        <div class="size-cell"><div style="width:24px;height:24px" data-logo="iso"></div><div class="sz-meta"><strong>Isotipo 24 px</strong>favicon · mobile tab</div></div>
+        <div class="size-cell"><div style="width:18mm" data-logo="full"></div><div class="sz-meta"><strong>Imagotipo 18 mm</strong>mín. impresión</div></div>
+      </div>
+
+      <h3 class="sub-h">Versiones cromáticas.</h3>
+      <p class="sub-l">Siete combinaciones aprobadas. Mantenemos siempre el contraste mínimo legible y sólo usamos colores de la paleta oficial. Para fotografía, usar siempre el logo blanco con suficiente blur o color de fondo.</p>
+
+      <div class="logo-colorways">
+        <div class="lc paper"><div data-logo="full"></div><span class="tag">01 · Carbón / Papel</span></div>
+        <div class="lc mist"><div data-logo="full"></div><span class="tag">02 · Carbón / Niebla</span></div>
+        <div class="lc carbon"><div data-logo="full"></div><span class="tag">03 · Papel / Carbón</span></div>
+        <div class="lc ember"><div data-logo="full"></div><span class="tag">04 · Blanco / Brasa</span></div>
+        <div class="lc sky"><div data-logo="full"></div><span class="tag">05 · Carbón / Cielo</span></div>
+        <div class="lc deep"><div data-logo="full"></div><span class="tag">06 · Coral / Profundo</span></div>
+        <div class="lc coral"><div data-logo="full"></div><span class="tag">07 · Carbón / Coral</span></div>
+        <div class="lc photo"><div data-logo="full"></div><span class="tag">08 · Sobre foto oscura</span></div>
+      </div>
+
+      <h3 class="sub-h">Sistema de íconos &amp; favicon.</h3>
+      <p class="sub-l">Para apps, perfiles sociales y favicons, usamos el isotipo dentro de una caja de marca con esquinas redondeadas según la plataforma.</p>
+
+      <div class="icon-system">
+        <div class="icon-cell"><div class="icon-box" style="width:64px;height:64px;border-radius:14px;"><div data-logo="iso"></div></div><div class="lbl"><strong>iOS</strong>r 22%</div></div>
+        <div class="icon-cell"><div class="icon-box" style="width:64px;height:64px;border-radius:50%;"><div data-logo="iso"></div></div><div class="lbl"><strong>Android</strong>circular</div></div>
+        <div class="icon-cell"><div class="icon-box" style="width:48px;height:48px;border-radius:8px;"><div data-logo="iso"></div></div><div class="lbl"><strong>Avatar</strong>48 px</div></div>
+        <div class="icon-cell"><div class="icon-box" style="width:32px;height:32px;border-radius:6px;"><div data-logo="iso"></div></div><div class="lbl"><strong>Touch</strong>32 px</div></div>
+        <div class="icon-cell"><div class="icon-box" style="width:24px;height:24px;border-radius:4px;"><div data-logo="iso"></div></div><div class="lbl"><strong>Tab</strong>24 px</div></div>
+        <div class="icon-cell"><div class="icon-box" style="width:16px;height:16px;border-radius:3px;"><div data-logo="iso"></div></div><div class="lbl"><strong>Favicon</strong>16 px</div></div>
+      </div>
+
+      <h3 class="sub-h">Lo que <em>no</em> hacemos.</h3>
+      <p class="sub-l">Ocho errores comunes que rompen la marca. Nunca, bajo ninguna circunstancia.</p>
+
+      <svg width="0" height="0" style="position:absolute"><defs>
+        <linearGradient id="ms-grad"><stop offset="0" stop-color="#FF00FF"/><stop offset="1" stop-color="#00FFFF"/></linearGradient>
+      </defs></svg>
+
+      <div class="misuse-grid">
+        <div class="misuse-cell distort"><div class="ms-x">×</div><div data-logo="full"></div><div class="ms-tag">No deformes</div></div>
+        <div class="misuse-cell rotate"><div class="ms-x">×</div><div data-logo="full"></div><div class="ms-tag">No rotes</div></div>
+        <div class="misuse-cell color"><div class="ms-x">×</div><div data-logo="full"></div><div class="ms-tag" style="color:white">No salgas de la paleta</div></div>
+        <div class="misuse-cell lowcontrast"><div class="ms-x">×</div><div data-logo="full"></div><div class="ms-tag">No rompas el contraste</div></div>
+        <div class="misuse-cell gradient"><div class="ms-x">×</div><div data-logo="full"></div><div class="ms-tag">No uses degradados</div></div>
+        <div class="misuse-cell outline"><div class="ms-x">×</div><div data-logo="full"></div><div class="ms-tag">No uses sólo contorno</div></div>
+        <div class="misuse-cell shadow"><div class="ms-x">×</div><div data-logo="full"></div><div class="ms-tag">No agregues sombra</div></div>
+        <div class="misuse-cell crowded"><div class="ms-x">×</div><div data-logo="full"></div><div class="ms-tag">No invadas el área de respeto</div></div>
+      </div>
+    </section>
+
+    <!-- COLOR -->
+    <section class="page" id="color" data-screen-label="03 Color">
+      <div class="section-eyebrow"><span class="dot"></span><span>03 / Color</span><span class="num">— Paleta y combinaciones</span></div>
+      <h2 class="section-h">Carbón &amp; brasa.<br>Cielo &amp; coral.</h2>
+      <p class="section-lede">Una paleta corta y temperada, construida sobre el contraste entre <strong>negro carbón</strong> y <strong>brasa</strong>. El azul cielo y el coral aportan calor y aire; el azul profundo aterriza la marca cuando necesita seriedad. Seis colores oficiales — ni uno más.</p>
+
+      <div class="palette-hero">
+        <div class="swatch sw-carbon">
+          <div class="sw-name">Carbón</div>
+          <div class="sw-meta">
+            <div class="row"><span class="k">HEX</span><span>#151F28</span></div>
+            <div class="row"><span class="k">RGB</span><span>21·31·40</span></div>
+            <div class="row"><span class="k">CMYK</span><span>78·64·49·56</span></div>
+            <div class="row"><span class="k">PANT</span><span>Black 6 C</span></div>
+          </div>
+        </div>
+        <div class="swatch sw-deep">
+          <div class="sw-name">Profundo</div>
+          <div class="sw-meta">
+            <div class="row"><span class="k">HEX</span><span>#011E54</span></div>
+            <div class="row"><span class="k">RGB</span><span>1·30·84</span></div>
+            <div class="row"><span class="k">CMYK</span><span>100·90·30·30</span></div>
+            <div class="row"><span class="k">PANT</span><span>2768 C</span></div>
+          </div>
+        </div>
+        <div class="swatch sw-ember">
+          <div class="sw-name">Brasa</div>
+          <div class="sw-meta">
+            <div class="row"><span class="k">HEX</span><span>#EC3813</span></div>
+            <div class="row"><span class="k">RGB</span><span>236·56·19</span></div>
+            <div class="row"><span class="k">CMYK</span><span>0·85·95·0</span></div>
+            <div class="row"><span class="k">PANT</span><span>2347 C</span></div>
+          </div>
+        </div>
+        <div class="swatch sw-coral">
+          <div class="sw-name">Coral</div>
+          <div class="sw-meta">
+            <div class="row"><span class="k">HEX</span><span>#FF8D75</span></div>
+            <div class="row"><span class="k">RGB</span><span>255·141·117</span></div>
+            <div class="row"><span class="k">CMYK</span><span>0·55·50·0</span></div>
+            <div class="row"><span class="k">PANT</span><span>170 C</span></div>
+          </div>
+        </div>
+        <div class="swatch sw-sky">
+          <div class="sw-name">Cielo</div>
+          <div class="sw-meta">
+            <div class="row"><span class="k">HEX</span><span>#C0E8FD</span></div>
+            <div class="row"><span class="k">RGB</span><span>192·232·253</span></div>
+            <div class="row"><span class="k">CMYK</span><span>25·5·0·0</span></div>
+            <div class="row"><span class="k">PANT</span><span>2707 C</span></div>
+          </div>
+        </div>
+        <div class="swatch sw-mist">
+          <div class="sw-name">Niebla</div>
+          <div class="sw-meta">
+            <div class="row"><span class="k">HEX</span><span>#F0F1F6</span></div>
+            <div class="row"><span class="k">RGB</span><span>240·241·246</span></div>
+            <div class="row"><span class="k">CMYK</span><span>3·2·0·0</span></div>
+            <div class="row"><span class="k">PANT</span><span>Cool Gray 1 C</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="sub-h">Roles &amp; balance.</h3>
+      <p class="sub-l">Cada color tiene una función específica y un peso aproximado en cualquier pieza. Respeta los roles para que la marca sea reconocible a 1 cm o a 10 m.</p>
+
+      <div class="palette-table">
+        <div class="palette-row head">
+          <span></span><span>Token</span><span>Hex / Pantone</span><span>Tipo</span><span>Rol</span><span>Balance</span>
+        </div>
+        <div class="palette-row"><span class="chip" style="background:var(--carbon)"></span><span class="name">Carbón</span><span class="hex">#151F28<br><span class="pant">Black 6 C</span></span><span class="pant">Primario · Neutro</span><span class="role">Texto principal, fondos editoriales, base de contraste.</span><span class="balance">35 %</span></div>
+        <div class="palette-row"><span class="chip" style="background:var(--mist)"></span><span class="name">Niebla</span><span class="hex">#F0F1F6<br><span class="pant">Cool Gray 1 C</span></span><span class="pant">Primario · Neutro</span><span class="role">Fondo claro por defecto, contenedores neutros, separaciones.</span><span class="balance">30 %</span></div>
+        <div class="palette-row"><span class="chip" style="background:var(--ember)"></span><span class="name">Brasa</span><span class="hex">#EC3813<br><span class="pant">2347 C</span></span><span class="pant">Primario · Acento</span><span class="role">Acento principal: CTAs, hover, énfasis tipográfico.</span><span class="balance">15 %</span></div>
+        <div class="palette-row"><span class="chip" style="background:var(--sky)"></span><span class="name">Cielo</span><span class="hex">#C0E8FD<br><span class="pant">2707 C</span></span><span class="pant">Secundario</span><span class="role">Fondos suaves, ilustración, soportes editoriales.</span><span class="balance">10 %</span></div>
+        <div class="palette-row"><span class="chip" style="background:var(--coral)"></span><span class="name">Coral</span><span class="hex">#FF8D75<br><span class="pant">170 C</span></span><span class="pant">Secundario</span><span class="role">Acento secundario sobre fondos oscuros, ilustración.</span><span class="balance">7 %</span></div>
+        <div class="palette-row"><span class="chip" style="background:var(--deep)"></span><span class="name">Profundo</span><span class="hex">#011E54<br><span class="pant">2768 C</span></span><span class="pant">Secundario</span><span class="role">Bloques de autoridad, fondos premium, contraste.</span><span class="balance">3 %</span></div>
+      </div>
+
+      <div class="proportion">
+        <div class="proportion-bar" style="background:var(--carbon);color:var(--paper);flex:35;">35</div>
+        <div class="proportion-bar" style="background:var(--mist);color:var(--carbon);flex:30;">30</div>
+        <div class="proportion-bar" style="background:var(--ember);color:white;flex:15;">15</div>
+        <div class="proportion-bar" style="background:var(--sky);color:var(--carbon);flex:10;">10</div>
+        <div class="proportion-bar" style="background:var(--coral);color:var(--carbon);flex:7;">7</div>
+        <div class="proportion-bar" style="background:var(--deep);color:var(--paper);flex:3;">3</div>
+      </div>
+
+      <h3 class="sub-h">Contraste &amp; pares aprobados.</h3>
+      <p class="sub-l">Combinaciones validadas para texto y elementos de UI. Verificadas según <strong>WCAG 2.1 AA</strong> para texto normal (≥ 4.5 : 1) o texto grande (≥ 3 : 1).</p>
+
+      <div class="contrast-grid">
+        <div class="contrast-cell cc-2"><div class="lg">Aa</div><div class="sm">Texto sobre fondo carbón.</div><div class="meta"><span>Carbón / Papel</span><span class="pill ct-ok">AAA · 17.2</span></div></div>
+        <div class="contrast-cell cc-1"><div class="lg">Aa</div><div class="sm">Texto carbón sobre papel.</div><div class="meta"><span>Papel / Carbón</span><span class="pill ct-ok">AAA · 17.2</span></div></div>
+        <div class="contrast-cell cc-3"><div class="lg">Aa</div><div class="sm">Texto blanco sobre brasa.</div><div class="meta"><span>Brasa / Blanco</span><span class="pill ct-ok">AA · 4.8</span></div></div>
+        <div class="contrast-cell cc-4"><div class="lg">Aa</div><div class="sm">Texto cielo sobre profundo.</div><div class="meta"><span>Profundo / Cielo</span><span class="pill ct-ok">AA · 10.1</span></div></div>
+        <div class="contrast-cell cc-5"><div class="lg">Aa</div><div class="sm">Texto profundo sobre cielo.</div><div class="meta"><span>Cielo / Profundo</span><span class="pill ct-ok">AAA · 11.4</span></div></div>
+        <div class="contrast-cell cc-6"><div class="lg">Aa</div><div class="sm">Texto carbón sobre coral.</div><div class="meta"><span>Coral / Carbón</span><span class="pill ct-ok">AA · 7.2</span></div></div>
+        <div class="contrast-cell cc-7"><div class="lg">Aa</div><div class="sm">Texto carbón sobre niebla.</div><div class="meta"><span>Niebla / Carbón</span><span class="pill ct-ok">AAA · 16.3</span></div></div>
+        <div class="contrast-cell cc-8"><div class="lg">Aa</div><div class="sm">Texto blanco sobre coral. Evitar.</div><div class="meta"><span>Coral / Blanco</span><span class="pill ct-warn">⚠ 2.4</span></div></div>
+      </div>
+
+      <h3 class="sub-h">Combinaciones de fondo.</h3>
+      <p class="sub-l">Cuatro atmósferas que se repiten en piezas extensas. Cada una proyecta una temperatura distinta — elige según el momento.</p>
+
+      <div class="bg-stack">
+        <div class="bg-card" style="background:var(--paper);color:var(--carbon);">
+          <div class="h">Día claro.</div>
+          <div class="p">Papel + carbón + brasa de acento. La base por defecto, neutra y legible.</div>
+          <div class="meta">01 · Default</div>
+        </div>
+        <div class="bg-card" style="background:var(--carbon);color:var(--paper);">
+          <div class="h">Noche carbón.</div>
+          <div class="p">Carbón + coral + cielo. Para piezas editoriales y momentos de protagonismo.</div>
+          <div class="meta" style="color:rgba(255,255,255,0.5)">02 · Editorial</div>
+        </div>
+        <div class="bg-card" style="background:var(--sky);color:var(--deep);">
+          <div class="h">Cielo abierto.</div>
+          <div class="p">Cielo + profundo + brasa. Para piezas informativas, blogs, lecturas largas.</div>
+          <div class="meta" style="color:rgba(1,30,84,0.5)">03 · Calmo</div>
+        </div>
+        <div class="bg-card" style="background:var(--ember);color:white;">
+          <div class="h">Brasa viva.</div>
+          <div class="p">Brasa + carbón + coral. Para campañas, CTAs grandes, lanzamientos.</div>
+          <div class="meta" style="color:rgba(255,255,255,0.6)">04 · Energía</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section class="page" id="type" data-screen-label="04 Tipografia">
+      <div class="section-eyebrow"><span class="dot"></span><span>04 / Tipografía</span><span class="num">— Voz visible</span></div>
+      <h2 class="section-h">Manrope habla.<br><em style="font-style:italic;color:var(--ember)">Fauna One</em> firma.</h2>
+      <p class="section-lede">Dos familias, dos funciones. <strong>Manrope</strong> es nuestra voz cotidiana: clara, geométrica, generosa con los espacios. <strong>Fauna One</strong> aparece cuando necesitamos calor, intención editorial o un detalle con pulso humano. JetBrains Mono completa para metadata y código.</p>
+
+      <div class="type-hero">
+        <div class="type-card">
+          <div>
+            <div class="type-eyebrow">Display · Editorial</div>
+            <div class="type-name" style="margin-top:8px;">Fauna One</div>
+            <p class="type-purpose">Serif contemporánea, ligeramente caligráfica. La usamos para títulos, citas y cualquier momento donde la marca quiera <em>respirar</em>.</p>
+          </div>
+          <div class="type-sample-display">Cuac.</div>
+          <div class="type-meta">
+            <span><strong>Regular</strong> 400</span>
+            <span><strong>Origen</strong> Eduardo Tunni</span>
+            <span><strong>Open source</strong> · Google Fonts</span>
+          </div>
+        </div>
+        <div class="type-card">
+          <div>
+            <div class="type-eyebrow">Sans · Sistema</div>
+            <div class="type-name" style="margin-top:8px;">Manrope</div>
+            <p class="type-purpose">Sans-serif moderna y legible para texto, interfaz, datos y todo lo que necesite estructura. Cuatro pesos cubren el 95 % de los casos.</p>
+          </div>
+          <div class="type-sample-sans">Aa</div>
+          <div class="type-meta">
+            <span><strong>Light</strong> 300</span>
+            <span><strong>Regular</strong> 400</span>
+            <span><strong>Semibold</strong> 600</span>
+            <span><strong>Bold</strong> 700</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="sub-h">Espécimen &amp; jerarquía editorial.</h3>
+      <p class="sub-l">Escala de jerarquía para piezas editoriales (afiches, brochures, presentaciones). Para la escala UI ver el <em>Design System</em>.</p>
+
+      <div class="specimen">
+        <div class="specimen-row head"><span>Estilo</span><span>Muestra</span></div>
+        <div class="specimen-row"><div class="sp-meta"><strong>Display</strong>Fauna One · 64/64<br>tracking -0.01em<br>Sólo portadas, hero</div><div class="sp-sample sp-d1">Damos vida a las ideas.</div></div>
+        <div class="specimen-row"><div class="sp-meta"><strong>H1</strong>Fauna One · 44/48<br>Títulos de sección</div><div class="sp-sample sp-h1">Un colectivo creativo.</div></div>
+        <div class="specimen-row"><div class="sp-meta"><strong>H2</strong>Manrope Bold · 30/36<br>Subtítulos</div><div class="sp-sample sp-h2">Branding, motion graphics y diseño web.</div></div>
+        <div class="specimen-row"><div class="sp-meta"><strong>H3</strong>Manrope Semibold · 20/26<br>Bloques de contenido</div><div class="sp-sample sp-h3">Creamos personajes y universos visuales.</div></div>
+        <div class="specimen-row"><div class="sp-meta"><strong>Body</strong>Manrope Regular · 16/26<br>Lectura larga</div><div class="sp-sample sp-body">Trabajamos con marcas que quieren conectar de verdad con las personas. Cada proyecto es un universo: investigamos, conceptualizamos, ilustramos y producimos cada pieza con la misma atención al detalle.</div></div>
+        <div class="specimen-row"><div class="sp-meta"><strong>Caption</strong>JetBrains Mono · 12/16<br>Metadata, etiquetas, código</div><div class="sp-sample sp-cap">CUAC · BB · 002 — Identidad Visual 2026</div></div>
+      </div>
+
+      <div class="pairing">
+        <div>
+          <div class="p-eyebrow">Pareja tipográfica</div>
+          <div class="p-h">Diseñamos cosas <em>que se quedan</em>.</div>
+          <p class="p-body">Manrope sostiene el cuerpo, Fauna One firma el momento. Esta combinación es el ADN tipográfico de Cuac: estructura clara, acento humano. Nunca los uses por separado en piezas largas — siempre conviven.</p>
+        </div>
+        <div style="font-family:var(--mono);font-size:13px;color:rgba(240,241,246,0.55);line-height:2;border-left:1px solid rgba(255,255,255,0.15);padding-left:32px;">
+          <div>display &nbsp;→ Fauna One 400</div>
+          <div>heading &nbsp;→ Manrope 700</div>
+          <div>body &nbsp;&nbsp;&nbsp;&nbsp;→ Manrope 400</div>
+          <div>caption &nbsp;→ JetBrains Mono</div>
+          <div style="margin-top:24px;color:var(--coral);">tracking · -0.01em titulares</div>
+          <div style="color:var(--coral);">leading &nbsp;· 1.5 cuerpo, 1.0 títulos</div>
+        </div>
+      </div>
+
+      <div class="charset">
+        <div class="charset-row display">A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z &amp; á é í ó ú ¿? ¡! 0 1 2 3 4 5 6 7 8 9</div>
+        <div class="charset-meta">Fauna One · Regular · charset latino completo</div>
+        <div class="charset-row sans">A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z &amp; á é í ó ú ¿? ¡! 0 1 2 3 4 5 6 7 8 9</div>
+        <div class="charset-meta">Manrope · Bold 700 · charset latino + cifras tabulares</div>
+      </div>
+    </section>
+
+    <!-- APPLICATIONS -->
+    <section class="page" id="apps" data-screen-label="05 Aplicaciones">
+      <div class="section-eyebrow"><span class="dot"></span><span>05 / Aplicaciones</span><span class="num">— La marca en el mundo físico</span></div>
+      <h2 class="section-h">Lo que se ve<br>cuando todo encaja.</h2>
+      <p class="section-lede">Aplicaciones de la marca en piezas tangibles y digitales: papelería corporativa, afiches, redes sociales, merch y vehículos. Cada pieza respeta los mismos colores, tipografía y voz.</p>
+
+      <div class="apps-grid">
+
+        <div class="app-card">
+          <div class="app-stage" style="background:var(--mist);">
+            <div class="app-cards-row">
+              <div class="app-bcard back"><div data-logo="full"></div></div>
+              <div class="app-bcard">
+                <div>
+                  <div class="bc-name">Sebastián G.</div>
+                  <div class="bc-role">Director creativo</div>
+                </div>
+                <div class="bc-foot">
+                  <div class="bc-logo" data-logo="full"></div>
+                  <div class="bc-contact">+57 310 555 0193<br>hola@cuacdesign.com</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="app-foot"><span class="a-name">Tarjeta de presentación</span><span class="a-tag">85 × 50 mm</span></div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-stage app-letter-stage">
+            <div class="app-letter">
+              <div class="ll" data-logo="full"></div>
+              <div class="lt">Estimada Marcela,</div>
+              <div class="lp">Te compartimos la propuesta inicial para el rebranding de tu marca de café. En las próximas páginas encontrarás el concepto, la dirección de arte propuesta y un primer acercamiento al sistema visual. Cualquier comentario es bienvenido — esto es una conversación.</div>
+              <div class="lp" style="margin-top:auto;">Un abrazo,<br>Equipo Cuac</div>
+              <div class="lbar"></div>
+              <div class="lfoot">Cuac Design · Cra 7 # 32-15 · Bogotá · cuacdesign.com</div>
+            </div>
+          </div>
+          <div class="app-foot"><span class="a-name">Carta membretada</span><span class="a-tag">A4 · 210 × 297 mm</span></div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-stage app-env-stage">
+            <div class="app-env">
+              <div class="env-l" data-logo="full"></div>
+              <div class="env-r">Cuac Design<br>Cra 7 # 32-15<br>Bogotá · Colombia</div>
+            </div>
+          </div>
+          <div class="app-foot"><span class="a-name">Sobre DL</span><span class="a-tag">220 × 110 mm</span></div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-stage app-poster-stage">
+            <div class="app-poster">
+              <div class="app-poster-h">Damos vida<br>a las <em>ideas</em>.</div>
+              <div class="app-poster-foot">
+                <div class="app-poster-logo" data-logo="full"></div>
+                <div class="app-poster-meta">Cuac Design<br>Bogotá · 2026</div>
+              </div>
+            </div>
+          </div>
+          <div class="app-foot"><span class="a-name">Afiche</span><span class="a-tag">A2 · Editorial</span></div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-stage app-social-stage">
+            <div class="app-social">
+              <div class="app-social-tag">— Nuevo proyecto · 2026</div>
+              <div class="app-social-h">Le dimos voz<br>a una marca<br>que estaba<br>callada.</div>
+              <div class="app-social-foot">
+                <div data-logo="full" style="width:70px"></div>
+                <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--carbon);text-transform:uppercase;">@cuacdesign</div>
+              </div>
+            </div>
+          </div>
+          <div class="app-foot"><span class="a-name">Post de Instagram</span><span class="a-tag">1 : 1 · 1080 px</span></div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-stage app-story-stage">
+            <div class="app-story">
+              <div class="sty-tag">Cuaqui-Tip · 03</div>
+              <div class="sty-h">El sistema sirve a la idea, no al revés.</div>
+              <div class="sty-foot">@cuacdesign · desliza ↑</div>
+            </div>
+          </div>
+          <div class="app-foot"><span class="a-name">Story / Reel</span><span class="a-tag">9 : 16 · 1080 × 1920</span></div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-stage app-tote-stage">
+            <div class="app-tote"><div class="tl"><div data-logo="full"></div></div></div>
+          </div>
+          <div class="app-foot"><span class="a-name">Tote bag</span><span class="a-tag">Algodón crudo · serigrafía</span></div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-stage app-tee-stage">
+            <div class="app-tee"><div data-logo="full"></div></div>
+          </div>
+          <div class="app-foot"><span class="a-name">Camiseta de equipo</span><span class="a-tag">Algodón · estampado central</span></div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-stage app-van-stage">
+            <div class="app-van">
+              <div class="wheel l"></div>
+              <div class="wheel r"></div>
+              <div class="vl" data-logo="full"></div>
+            </div>
+          </div>
+          <div class="app-foot"><span class="a-name">Vehículo</span><span class="a-tag">Vinilo · costado</span></div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-stage app-sign-stage">
+            <div class="app-sign">
+              <div class="app-sign-block"><div data-logo="full"></div></div>
+            </div>
+          </div>
+          <div class="app-foot"><span class="a-name">Señalética estudio</span><span class="a-tag">Acrílico iluminado</span></div>
+        </div>
+      </div>
+
+      <div class="quote-banner">
+        <div class="quote-banner-h">El sistema sirve a&nbsp;la idea, <em>no al revés</em>.</div>
+        <div class="quote-banner-meta">Si una pieza necesita romper el sistema para vivir, escríbele al equipo de marca.<br><br>brand@cuacdesign.com</div>
+      </div>
+    </section>
+
+    <!-- COLOPHON -->
+    <div class="colophon">
+      <div>
+        <h4>Cuac · Brandbook 2026</h4>
+        <p>Manual de marca mantenido por el equipo de identidad. Toda pieza pública debe pasar por aprobación interna antes de salir al mundo. Para la aplicación de marca en producto digital, consulta el <strong>Design System</strong>.</p>
+      </div>
+      <div class="cf-col">
+        <h5>Recursos</h5>
+        <a href="#">Logo · SVG / PNG / EPS</a>
+        <a href="#">Paleta · ASE / CSS / SCSS</a>
+        <a href="#">Tipografías · OTF</a>
+        <a href="#">Plantillas · Figma</a>
+      </div>
+      <div class="cf-col">
+        <h5>Contacto de marca</h5>
+        <a href="#">brand@cuacdesign.com</a>
+        <a href="#">@cuacdesign · Instagram</a>
+        <a href="#">Bogotá, Colombia</a>
+      </div>
+      <div class="colophon-bot">
+        <span>Cuac · Brand book v 1.0 · Mayo 2026</span>
+        <span>Hecho con Manrope, Fauna One y mucho café</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Logo SVG injected once, reused across the doc via [data-logo]
+  const LOGO_FULL = `<svg viewBox="0 0 805.42 186.8" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;">
+    <path fill="currentColor" d="M88.93,3.01c-6.81.03-13.63.39-20.38,1.12C34.86,7.77,12.18,27.29,4.07,60.16c-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.66c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02l-14.65-.02c-4.27-.02-8.59-.15-12.81-.8-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.57,0-67.52-.07-97.89.05h0Z"/>
+    <path fill="currentColor" d="M209.21,97.89c.03,6.81.39,13.63,1.12,20.38,3.64,33.69,23.15,56.35,56.01,64.46,22.7,5.6,45.59,5.43,68.19-.56,27.07-7.18,44.85-24.36,51.69-51.72,2.3-9.17,3.54-18.82,3.67-28.28.44-32.51-.05-100.55-.19-102.03h-36.66c-13.9,0-25.16,11.26-25.16,25.16,0,16.91,0,39.23-.02,56.98v14.65c-.02,4.27-.15,8.59-.8,12.81-1.45,9.43-5.9,16.83-15.21,20.5-19.58,7.69-37.11-2.48-39.9-23.24-.46-3.45-.61-6.98-.61-10.48-.03-18.24-.03-49.37-.03-71.35C271.3,11.28,260.04.02,246.14.02h-36.99c0,2.55-.07,67.51.05,97.87h0Z"/>
+    <path fill="currentColor" d="M596.2,88.93c-.03-6.81-.39-13.63-1.12-20.38-3.64-33.69-23.15-56.35-56.01-64.46-22.71-5.61-45.61-5.44-68.2.54-27.07,7.18-44.85,24.36-51.69,51.72-2.3,9.17-3.54,18.82-3.67,28.28-.44,32.51.05,100.55.19,102.03h36.66c13.9,0,25.16-11.26,25.16-25.16,0-11.64,0-26.9,0-26.9h27.65c11.97,0,21.68-11.41,21.68-23.38,0-3.92,0-7.17,0-8.4h-67.52c-6.18,0-11.18-3.3-11.18-9.47h29.36v-3.47c.02-4.27.15-8.59.8-12.81,1.45-9.43,5.9-16.83,15.21-20.48,19.58-7.69,37.11,2.48,39.9,23.24.46,3.45.61,6.98.61,10.48.03,18.24.03,49.37.03,71.35,0,13.9,11.27,25.16,25.16,25.16h36.99c.02-2.55.09-67.51-.03-97.87h0Z"/>
+    <path fill="currentColor" d="M707.51,3.01c-6.81.03-13.63.39-20.38,1.12-33.69,3.64-56.35,23.15-64.46,56.01-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.65c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02,0,0-23.24-.17-27.46-.82-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.59,0-67.54-.07-97.91.05h0Z"/>
+  </svg>`;
+  // Isotipo = only the first "C" pulse of the Cuac mark
+  const LOGO_ISO = `<svg viewBox="0 0 200 186.8" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;">
+    <path fill="currentColor" d="M88.93,3.01c-6.81.03-13.63.39-20.38,1.12C34.86,7.77,12.18,27.29,4.07,60.16c-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.66c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02l-14.65-.02c-4.27-.02-8.59-.15-12.81-.8-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.57,0-67.52-.07-97.89.05h0Z"/>
+  </svg>`;
+  document.querySelectorAll('[data-logo="full"]').forEach(el => el.innerHTML = LOGO_FULL);
+  document.querySelectorAll('[data-logo="iso"]').forEach(el => el.innerHTML = LOGO_ISO);
+
+  // Active nav highlight on scroll
+  (() => {
+    const links = document.querySelectorAll('.rail-nav a');
+    const sections = ['cover','essence','logo','color','type','apps']
+      .map(id => document.getElementById(id)).filter(Boolean);
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const id = e.target.id;
+          links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+    sections.forEach(s => obs.observe(s));
+  })();
+</script>
+
+</body>
+</html>

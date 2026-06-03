@@ -1,0 +1,223 @@
+<style>
+  .split-compare { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; max-width: 960px; margin: 0 auto; }
+
+  .pid-card {
+    border: 2px solid transparent;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .pid-card:hover { transform: translateY(-2px); }
+  .pid-card.selected { border-color: #EC3813; }
+
+  .pid-preview {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: #222;
+  }
+
+  /* Cuac hero — shared across all options */
+  .hero-cuac {
+    background: #151F28;
+    padding: 18px;
+    min-height: 80px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .hero-cuac .eye { font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase; color: #EC3813; margin-bottom: 4px; }
+  .hero-cuac h4 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #F0F1F6; margin: 0; }
+  .hero-cuac .role { font-size: 9px; color: rgba(240,241,246,0.45); margin-top: 2px; }
+
+  /* Option A: same structure, only accent changes */
+  .hero-nat-a {
+    background: #151F28;
+    padding: 18px;
+    min-height: 80px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    border-top: 1px solid #333;
+  }
+  .hero-nat-a .eye { font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase; color: #E87A89; margin-bottom: 4px; }
+  .hero-nat-a h4 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #F0F1F6; margin: 0; }
+  .hero-nat-a .role { font-size: 9px; color: rgba(240,241,246,0.45); margin-top: 2px; }
+
+  .hero-nat2-a {
+    background: #151F28;
+    padding: 18px;
+    min-height: 80px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    border-top: 1px solid #333;
+  }
+  .hero-nat2-a .eye { font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase; color: #8B9ED9; margin-bottom: 4px; }
+  .hero-nat2-a h4 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #F0F1F6; margin: 0; }
+  .hero-nat2-a .role { font-size: 9px; color: rgba(240,241,246,0.45); margin-top: 2px; }
+
+  /* Option B: each has own mood */
+  .hero-nat-b {
+    background: #1a0f12;
+    padding: 18px;
+    min-height: 80px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid #333;
+  }
+  .hero-nat-b::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 90% 70% at 80% 30%, rgba(232,122,137,0.3) 0%, transparent 65%);
+  }
+  .hero-nat-b .eye { font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase; color: #E87A89; margin-bottom: 4px; position: relative; }
+  .hero-nat-b h4 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #F0F1F6; margin: 0; position: relative; }
+  .hero-nat-b .role { font-size: 9px; color: rgba(240,241,246,0.45); margin-top: 2px; position: relative; }
+
+  .hero-nat2-b {
+    background: #0d0f1c;
+    padding: 18px;
+    min-height: 80px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid #333;
+  }
+  .hero-nat2-b::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 90% 70% at 80% 30%, rgba(139,158,217,0.25) 0%, transparent 65%);
+  }
+  .hero-nat2-b .eye { font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase; color: #8B9ED9; margin-bottom: 4px; position: relative; }
+  .hero-nat2-b h4 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #F0F1F6; margin: 0; position: relative; }
+  .hero-nat2-b .role { font-size: 9px; color: rgba(240,241,246,0.45); margin-top: 2px; position: relative; }
+
+  /* Option C: light/paper background for personal */
+  .hero-nat-c {
+    background: #F8F4F0;
+    padding: 18px;
+    min-height: 80px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    border-top: 1px solid #ddd;
+  }
+  .hero-nat-c .eye { font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase; color: #C4556A; margin-bottom: 4px; }
+  .hero-nat-c h4 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #151F28; margin: 0; }
+  .hero-nat-c .role { font-size: 9px; color: rgba(21,31,40,0.45); margin-top: 2px; }
+
+  .hero-nat2-c {
+    background: #F1F2FA;
+    padding: 18px;
+    min-height: 80px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    border-top: 1px solid #ddd;
+  }
+  .hero-nat2-c .eye { font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase; color: #5C6FC7; margin-bottom: 4px; }
+  .hero-nat2-c h4 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #151F28; margin: 0; }
+  .hero-nat2-c .role { font-size: 9px; color: rgba(21,31,40,0.45); margin-top: 2px; }
+
+  .cuac-label {
+    padding: 4px 10px;
+    background: rgba(236,56,19,0.1);
+    font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #EC3813; text-align: center;
+  }
+  .nat-label {
+    padding: 3px 10px;
+    background: rgba(255,255,255,0.04);
+    font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.25); text-align: center;
+  }
+
+  .pid-info {
+    padding: 14px 16px;
+    background: #1a1a1a;
+  }
+  .pid-label { font-size: 14px; font-weight: 600; color: #f0f0f0; margin: 0 0 4px; }
+  .pid-desc  { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.5; }
+</style>
+
+<h2>¿Qué tan propias son las páginas de Natalia y Nathali?</h2>
+<p class="subtitle">La cohesión de marca versus la personalidad individual. Las tres filas muestran: Cuac (arriba), Natalia (medio), Nathali (abajo).</p>
+
+<div class="split-compare">
+
+  <div class="pid-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="pid-preview">
+      <div class="cuac-label">Cuac Design</div>
+      <div class="hero-cuac">
+        <div class="eye">● Estudio · Cuac Design</div>
+        <h4>Nuestro trabajo</h4>
+        <div class="role">Cuac Design · Bogotá</div>
+      </div>
+      <div class="nat-label">Natalia</div>
+      <div class="hero-nat-a">
+        <div class="eye">● Portafolio personal</div>
+        <h4>Natalia Castañeda</h4>
+        <div class="role">Diseño editorial e ilustración</div>
+      </div>
+      <div class="nat-label">Nathali</div>
+      <div class="hero-nat2-a">
+        <div class="eye">● Portafolio personal</div>
+        <h4>Nathali Ramírez</h4>
+        <div class="role">Diseño UI/UX e ilustración</div>
+      </div>
+    </div>
+    <div class="pid-info">
+      <p class="pid-label">A — Mismo template, acento propio</p>
+      <p class="pid-desc">Misma estructura y fondo oscuro para las tres. Solo cambia el color de acento. Cohesión máxima, se leen como parte de la misma familia.</p>
+    </div>
+  </div>
+
+  <div class="pid-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="pid-preview">
+      <div class="cuac-label">Cuac Design</div>
+      <div class="hero-cuac">
+        <div class="eye">● Estudio · Cuac Design</div>
+        <h4>Nuestro trabajo</h4>
+        <div class="role">Cuac Design · Bogotá</div>
+      </div>
+      <div class="nat-label">Natalia</div>
+      <div class="hero-nat-b">
+        <div class="eye">● Portafolio personal</div>
+        <h4>Natalia Castañeda</h4>
+        <div class="role">Diseño editorial e ilustración</div>
+      </div>
+      <div class="nat-label">Nathali</div>
+      <div class="hero-nat2-b">
+        <div class="eye">● Portafolio personal</div>
+        <h4>Nathali Ramírez</h4>
+        <div class="role">Diseño UI/UX e ilustración</div>
+      </div>
+    </div>
+    <div class="pid-info">
+      <p class="pid-label">B — Dark con shader propio por persona</p>
+      <p class="pid-desc">Cada una tiene su shader con su paleta: rosa cálido para Natalia, azul frío para Nathali. Misma estructura, mood diferente. Equilibrio entre familia e identidad.</p>
+    </div>
+  </div>
+
+  <div class="pid-card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="pid-preview">
+      <div class="cuac-label">Cuac Design</div>
+      <div class="hero-cuac">
+        <div class="eye">● Estudio · Cuac Design</div>
+        <h4>Nuestro trabajo</h4>
+        <div class="role">Cuac Design · Bogotá</div>
+      </div>
+      <div class="nat-label">Natalia</div>
+      <div class="hero-nat-c">
+        <div class="eye">● Portafolio personal</div>
+        <h4>Natalia Castañeda</h4>
+        <div class="role">Diseño editorial e ilustración</div>
+      </div>
+      <div class="nat-label">Nathali</div>
+      <div class="hero-nat2-c">
+        <div class="eye">● Portafolio personal</div>
+        <h4>Nathali Ramírez</h4>
+        <div class="role">Diseño UI/UX e ilustración</div>
+      </div>
+    </div>
+    <div class="pid-info">
+      <p class="pid-label">C — Cuac oscuro, personales en claro</p>
+      <p class="pid-desc">Cuac mantiene el dark. Natalia y Nathali tienen fondos claros con su acento. Contraste claro/oscuro marca la diferencia entre estudio y persona.</p>
+    </div>
+  </div>
+
+</div>

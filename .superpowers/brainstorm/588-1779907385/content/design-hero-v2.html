@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero v2 — Light + Mouse Reactive</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #222; font-family: system-ui, sans-serif; }
+
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+
+  .section-divider {
+    padding: 10px 24px;
+    background: #1e1e1e;
+    border-top: 1px solid #333;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    display: flex;
+    justify-content: space-between;
+  }
+  .section-divider span { color: rgba(255,255,255,0.5); }
+
+  /* ── Hero base ─────────────────────────────────────── */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 560px;
+    max-height: 800px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 64px 72px;
+    cursor: crosshair;
+  }
+
+  .hero canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* noise */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 300px 300px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── Cuac — #F0F1F6 ─────────────────────────────── */
+  .hero-cuac    { background: #F0F1F6; }
+
+  /* ── Natalia — warm cream ─────────────────────────── */
+  .hero-natalia { background: #FBF8F4; }
+
+  /* ── Nathali — cool lavender ─────────────────────── */
+  .hero-nathali { background: #EEF2FD; }
+
+  /* ── Nav ──────────────────────────────────────────── */
+  .hero-nav {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 26px 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+  }
+  .nav-logo {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(21,31,40,0.8);
+  }
+  .nav-back {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(21,31,40,0.35);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: rgba(21,31,40,0.7); }
+
+  /* ── Content ──────────────────────────────────────── */
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 1280px;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .hero-eyebrow .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: blink 2.5s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.3; transform:scale(0.5); }
+  }
+
+  .hero-h1 {
+    font-family: 'Manrope', sans-serif;
+    font-size: clamp(52px, 7vw, 100px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 0.9;
+    margin-bottom: 28px;
+    color: #151F28;
+  }
+  .hero-h1 em {
+    font-style: italic;
+    font-weight: 700;
+    font-size: 0.7em;
+    display: block;
+    margin-top: 4px;
+    letter-spacing: -0.02em;
+    opacity: 0.4;
+  }
+
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  .hero-role {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    color: rgba(21,31,40,0.45);
+    letter-spacing: 0.02em;
+  }
+  .hero-disciplines {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(21,31,40,0.25);
+    padding-left: 28px;
+    border-left: 1px solid rgba(21,31,40,0.12);
+  }
+
+  /* ── Scroll hint ──────────────────────────────────── */
+  .scroll-hint {
+    position: absolute;
+    bottom: 28px;
+    right: 64px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(21,31,40,0.2);
+  }
+  .scroll-line {
+    width: 36px;
+    height: 1px;
+    background: rgba(21,31,40,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .scroll-line::after {
+    content: '';
+    position: absolute;
+    left: -100%; top: 0;
+    width: 100%; height: 100%;
+    animation: scan 2.8s ease-in-out infinite;
+  }
+  @keyframes scan {
+    0%   { left:-100%; }
+    100% { left: 100%; }
+  }
+
+  /* Accent color on scroll line per theme */
+  .hero-cuac    .scroll-line::after { background: rgba(236,56,19,0.6); }
+  .hero-natalia .scroll-line::after { background: rgba(196,85,106,0.6); }
+  .hero-nathali .scroll-line::after { background: rgba(92,111,199,0.6); }
+
+  /* Eyebrow accent per theme */
+  .hero-cuac    .hero-eyebrow { color: rgba(180,60,20,0.8); }
+  .hero-cuac    .dot          { background: #EC3813; }
+  .hero-natalia .hero-eyebrow { color: rgba(196,85,106,0.8); }
+  .hero-natalia .dot          { background: #C4556A; }
+  .hero-nathali .hero-eyebrow { color: rgba(92,111,199,0.8); }
+  .hero-nathali .dot          { background: #5C6FC7; }
+
+  /* ── Feedback bar ─────────────────────────────────── */
+  .feedback-bar {
+    padding: 18px 24px;
+    background: #181818;
+    border-top: 1px solid #333;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .fb-btn {
+    padding: 9px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border: none;
+    font-family: 'Manrope', sans-serif;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .fb-btn:active { transform: scale(0.97); }
+  .fb-approve { background: #EC3813; color: #fff; }
+  .fb-approve:hover { background: #d42f0e; }
+  .fb-change  { background: #2a2a2a; color: rgba(255,255,255,0.65); border: 1px solid #444; }
+  .fb-change:hover  { background: #333; }
+  .fb-note {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    font-style: italic;
+    margin-left: auto;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ CUAC ══════════════════════════════════════════════ -->
+<div class="section-divider">
+  <span>Portafolio Cuac Design</span>
+  <span>Light #F0F1F6 · Shader Ember/Naranja · Mouse reactive ↑</span>
+</div>
+<div class="hero hero-cuac" id="hero-cuac">
+  <canvas id="canvas-cuac"></canvas>
+
+  <nav class="hero-nav">
+    <span class="nav-logo">Cuac Design</span>
+    <a class="nav-back" href="#">← Inicio</a>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Estudio · Cuac Design
+    </div>
+    <h1 class="hero-h1">
+      Nuestro
+      <em>trabajo</em>
+    </h1>
+    <div class="hero-meta">
+      <span class="hero-role">Cuac Design · Bogotá</span>
+      <span class="hero-disciplines">Branding · Editorial · Ilustración · Web</span>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Explorar
+  </div>
+</div>
+
+<!-- ══ NATALIA ════════════════════════════════════════════ -->
+<div class="section-divider">
+  <span>Natalia Castañeda Caicedo</span>
+  <span>Warm cream · Shader Rosa · Mouse reactive ↑</span>
+</div>
+<div class="hero hero-natalia" id="hero-natalia">
+  <canvas id="canvas-natalia"></canvas>
+
+  <nav class="hero-nav">
+    <span class="nav-logo">Cuac Design</span>
+    <a class="nav-back" href="#">← Portafolio Cuac</a>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Portafolio personal
+    </div>
+    <h1 class="hero-h1">
+      Natalia
+      <em>Castañeda Caicedo</em>
+    </h1>
+    <div class="hero-meta">
+      <span class="hero-role">Diseño editorial, ilustración y branding</span>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Ver proyectos
+  </div>
+</div>
+
+<!-- ══ NATHALI ════════════════════════════════════════════ -->
+<div class="section-divider">
+  <span>Nathali Ramírez Ortiz</span>
+  <span>Light lavender · Shader Azul #C0E8FD · Mouse reactive ↑</span>
+</div>
+<div class="hero hero-nathali" id="hero-nathali">
+  <canvas id="canvas-nathali"></canvas>
+
+  <nav class="hero-nav">
+    <span class="nav-logo">Cuac Design</span>
+    <a class="nav-back" href="#">← Portafolio Cuac</a>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Portafolio personal
+    </div>
+    <h1 class="hero-h1">
+      Nathali
+      <em>Ramírez Ortiz</em>
+    </h1>
+    <div class="hero-meta">
+      <span class="hero-role">Diseño UI/UX, ilustración y branding</span>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Ver proyectos
+  </div>
+</div>
+
+<div class="feedback-bar">
+  <button class="fb-btn fb-approve" id="btn-approve">Apruebo el hero — ver galería</button>
+  <button class="fb-btn fb-change"  id="btn-change">Quiero ajustes</button>
+  <span class="fb-note">Mueve el cursor sobre cada hero para ver la reactividad · El shader Three.js real usará GLSL vertex displacement</span>
+</div>
+
+<script>
+// ── Mouse-reactive shader simulation ──────────────────────────────────────────
+// Each hero has its own canvas + palette. The "blobs" drift on their own and
+// additionally follow the mouse when it's over that hero.
+
+function makeShader(canvasId, heroId, blobs) {
+  const canvas = document.getElementById(canvasId);
+  const hero   = document.getElementById(heroId);
+  const ctx    = canvas.getContext('2d');
+
+  let W, H, mouse = { x: 0.5, y: 0.35 }, target = { x: 0.5, y: 0.35 };
+  let isHovered = false;
+
+  function resize() {
+    W = canvas.width  = hero.offsetWidth;
+    H = canvas.height = hero.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  hero.addEventListener('mousemove', e => {
+    const r = hero.getBoundingClientRect();
+    target.x = (e.clientX - r.left) / r.width;
+    target.y = (e.clientY - r.top)  / r.height;
+    isHovered = true;
+  });
+  hero.addEventListener('mouseleave', () => { isHovered = false; });
+
+  // Internal blob state
+  blobs.forEach(b => {
+    b.px = b.baseX; b.py = b.baseY;
+    b.phase = Math.random() * Math.PI * 2;
+    b.speed = 0.0006 + Math.random() * 0.0004;
+  });
+
+  let t = 0;
+  function draw() {
+    t++;
+
+    // Smooth mouse lerp
+    const lerpSpeed = isHovered ? 0.045 : 0.01;
+    mouse.x += (target.x - mouse.x) * lerpSpeed;
+    mouse.y += (target.y - mouse.y) * lerpSpeed;
+
+    ctx.clearRect(0, 0, W, H);
+
+    blobs.forEach(b => {
+      // Drift + mouse influence
+      const drift_x = Math.sin(t * b.speed + b.phase) * 0.18;
+      const drift_y = Math.cos(t * b.speed * 0.7 + b.phase) * 0.14;
+      const mx = isHovered ? (mouse.x - b.baseX) * b.mouseInfluence : 0;
+      const my = isHovered ? (mouse.y - b.baseY) * b.mouseInfluence : 0;
+
+      b.px += ((b.baseX + drift_x + mx) - b.px) * 0.025;
+      b.py += ((b.baseY + drift_y + my) - b.py) * 0.025;
+
+      const x  = b.px * W;
+      const y  = b.py * H;
+      const rx = b.radiusX * W;
+      const ry = b.radiusY * H;
+
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, Math.max(rx, ry));
+      grad.addColorStop(0,   b.colorInner);
+      grad.addColorStop(0.5, b.colorMid);
+      grad.addColorStop(1,   'rgba(0,0,0,0)');
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.filter = `blur(${b.blur}px)`;
+      ctx.scale(rx / Math.max(rx, ry), ry / Math.max(rx, ry));
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x / (rx / Math.max(rx, ry)), y / (ry / Math.max(rx, ry)), Math.max(rx, ry), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// Wait for fonts / layout
+window.addEventListener('load', () => {
+
+  // ── CUAC: ember + warm orange on #F0F1F6 ──────────────────────────────────
+  makeShader('canvas-cuac', 'hero-cuac', [
+    { baseX:0.82, baseY:0.28, radiusX:0.55, radiusY:0.65, blur:0,
+      colorInner:'rgba(236,56,19,0.38)', colorMid:'rgba(220,80,30,0.16)', mouseInfluence:0.22 },
+    { baseX:0.18, baseY:0.75, radiusX:0.40, radiusY:0.45, blur:0,
+      colorInner:'rgba(255,130,60,0.22)', colorMid:'rgba(240,100,40,0.08)', mouseInfluence:0.15 },
+    { baseX:0.55, baseY:0.20, radiusX:0.35, radiusY:0.30, blur:0,
+      colorInner:'rgba(200,40,10,0.12)', colorMid:'rgba(180,30,5,0.04)',  mouseInfluence:0.30 },
+  ]);
+
+  // ── NATALIA: warm rose on cream ────────────────────────────────────────────
+  makeShader('canvas-natalia', 'hero-natalia', [
+    { baseX:0.78, baseY:0.32, radiusX:0.52, radiusY:0.60, blur:0,
+      colorInner:'rgba(232,122,137,0.40)', colorMid:'rgba(210,90,110,0.14)', mouseInfluence:0.22 },
+    { baseX:0.20, baseY:0.70, radiusX:0.38, radiusY:0.42, blur:0,
+      colorInner:'rgba(255,180,170,0.25)', colorMid:'rgba(240,140,140,0.08)', mouseInfluence:0.18 },
+    { baseX:0.50, baseY:0.15, radiusX:0.30, radiusY:0.28, blur:0,
+      colorInner:'rgba(200,80,100,0.14)', colorMid:'rgba(180,60,80,0.04)',   mouseInfluence:0.28 },
+  ]);
+
+  // ── NATHALI: #C0E8FD blue on #EEF2FD ──────────────────────────────────────
+  makeShader('canvas-nathali', 'hero-nathali', [
+    { baseX:0.80, baseY:0.30, radiusX:0.55, radiusY:0.62, blur:0,
+      colorInner:'rgba(100,180,240,0.42)', colorMid:'rgba(80,150,220,0.15)', mouseInfluence:0.22 },
+    { baseX:0.15, baseY:0.72, radiusX:0.40, radiusY:0.44, blur:0,
+      colorInner:'rgba(160,210,255,0.28)', colorMid:'rgba(130,190,240,0.09)', mouseInfluence:0.18 },
+    { baseX:0.52, baseY:0.18, radiusX:0.32, radiusY:0.28, blur:0,
+      colorInner:'rgba(70,140,220,0.14)', colorMid:'rgba(50,110,200,0.04)',  mouseInfluence:0.30 },
+  ]);
+
+});
+
+// Feedback buttons
+document.getElementById('btn-approve').addEventListener('click', () => {
+  if (window.postSelection) window.postSelection('approve', 'Apruebo el hero');
+});
+document.getElementById('btn-change').addEventListener('click', () => {
+  if (window.postSelection) window.postSelection('change', 'Quiero ajustes');
+});
+</script>
+</body>
+</html>

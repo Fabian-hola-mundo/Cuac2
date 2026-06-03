@@ -1,0 +1,191 @@
+<style>
+  body { font-family: 'Manrope', system-ui, sans-serif; }
+  .sub { color: #6b7280; font-size: 0.88rem; margin-bottom: 24px; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card {
+    border: 2px solid #e5e7eb; border-radius: 16px; padding: 18px;
+    cursor: pointer; transition: all 0.18s; background: #fff; position: relative;
+  }
+  .card:hover { border-color: #EC3813; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(236,56,19,0.1); }
+  .card.selected { border-color: #EC3813; background: #fff8f6; }
+  .card.selected::after { content: '✓'; position: absolute; top: 12px; right: 14px; background: #EC3813; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .card h3 { font-size: 0.92rem; font-weight: 700; color: #151F28; margin: 0 0 5px; }
+  .card p { font-size: 0.79rem; color: #6b7280; margin: 0 0 12px; line-height: 1.5; }
+
+  .tag-rec { background: #EC3813; color: white; font-size: 0.57rem; font-weight: 700; padding: 2px 6px; border-radius: 20px; margin-left: 5px; vertical-align: middle; }
+
+  /* shared mock frame */
+  .mock { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: white; font-size: 0.65rem; }
+  .mock-head { background: #151F28; padding: 8px 12px; }
+  .mock-eyebrow { color: #EC3813; font-size: 0.57rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .mock-h { color: white; font-weight: 700; font-size: 0.75rem; }
+  .mock-body { padding: 10px 12px; }
+
+  /* label */
+  .lbl { font-size: 0.58rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+
+  /* chips */
+  .chips { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 5px; padding: 2px 6px; font-size: 0.58rem; color: #374151; }
+  .chip.sel { background: #fff0ed; border-color: #EC3813; color: #EC3813; font-weight: 700; }
+
+  /* result bar */
+  .result-bar { background: #151F28; color: white; border-radius: 7px; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .result-label { font-size: 0.6rem; color: #9ca3af; }
+  .result-price { font-weight: 700; font-size: 0.78rem; }
+  .result-note { font-size: 0.57rem; color: #9ca3af; text-align: right; }
+
+  /* scope pills */
+  .scope-pills { display: flex; gap: 3px; margin-bottom: 6px; }
+  .scope-pill { flex:1; text-align: center; border: 1px solid #e5e7eb; border-radius: 6px; padding: 3px 2px; font-size: 0.57rem; color: #6b7280; cursor: default; }
+  .scope-pill.sel { background: #151F28; color: white; border-color: #151F28; font-weight: 600; }
+
+  /* arma tu pato rows */
+  .atp-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
+  .atp-row:last-child { border-bottom: none; }
+  .atp-item { font-size: 0.6rem; color: #374151; }
+  .atp-price { font-size: 0.6rem; color: #6b7280; }
+  .atp-check { width: 13px; height: 13px; border-radius: 3px; border: 1.5px solid #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; }
+  .atp-check.on { background: #EC3813; border-color: #EC3813; color: white; }
+  .atp-total { margin-top: 6px; border-top: 2px solid #151F28; padding-top: 5px; display: flex; justify-content: space-between; font-weight: 700; font-size: 0.65rem; }
+
+  .pros-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
+  .pro { background: #d1fae5; color: #065f46; border-radius: 4px; padding: 2px 6px; font-size: 0.62rem; }
+  .con { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 2px 6px; font-size: 0.62rem; }
+</style>
+
+<h2>¿Cómo funciona el estimador rápido?</h2>
+<p class="sub">El cliente selecciona opciones y ve un rango de precio al instante. ¿Cuántas variables le mostramos?</p>
+
+<div class="cards">
+
+  <!-- A: Servicio + tamaño -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <h3>A — Servicio + escala <span class="tag-rec">Recomendado</span></h3>
+    <p>Dos preguntas: ¿qué necesitas? y ¿qué tamaño tiene tu proyecto? El rango se actualiza en tiempo real.</p>
+    <div class="mock">
+      <div class="mock-head">
+        <div class="mock-eyebrow">⚡ Estimador rápido</div>
+        <div class="mock-h">¿Cuánto cuesta tu proyecto?</div>
+      </div>
+      <div class="mock-body">
+        <div class="lbl">1. ¿Qué necesitas?</div>
+        <div class="chips">
+          <span class="chip sel">Branding</span>
+          <span class="chip">Editorial</span>
+          <span class="chip">Web</span>
+          <span class="chip">Ilustración</span>
+          <span class="chip">Video</span>
+        </div>
+        <div class="lbl">2. Escala del proyecto</div>
+        <div class="scope-pills">
+          <div class="scope-pill">Básico</div>
+          <div class="scope-pill sel">Estándar</div>
+          <div class="scope-pill">Completo</div>
+        </div>
+        <div class="result-bar">
+          <div>
+            <div class="result-label">Rango estimado</div>
+            <div class="result-price">$4.500.000 – $9.000.000</div>
+          </div>
+          <div class="result-note">Branding · Estándar<br>COP · sin IVA</div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-row">
+      <span class="pro">Simple</span>
+      <span class="pro">Rápido</span>
+      <span class="pro">Claro</span>
+    </div>
+  </div>
+
+  <!-- B: Solo servicio -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <h3>B — Solo el servicio</h3>
+    <p>Una sola pregunta: ¿qué necesitas? El precio muestra el rango más amplio del servicio. Muy simple, menos preciso.</p>
+    <div class="mock">
+      <div class="mock-head">
+        <div class="mock-eyebrow">⚡ Estimador rápido</div>
+        <div class="mock-h">Selecciona un servicio</div>
+      </div>
+      <div class="mock-body">
+        <div class="chips" style="flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#fff0ed;border:1.5px solid #EC3813;border-radius:7px;padding:5px 8px">
+            <span style="font-weight:700;color:#EC3813;font-size:0.65rem">Branding & Identidad</span>
+            <span style="font-size:0.65rem;color:#151F28;font-weight:700">$3M – $15M</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border:1px solid #e5e7eb;border-radius:7px;padding:5px 8px">
+            <span style="color:#374151;font-size:0.65rem">Diseño Editorial</span>
+            <span style="font-size:0.65rem;color:#6b7280">$2M – $8M</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border:1px solid #e5e7eb;border-radius:7px;padding:5px 8px">
+            <span style="color:#374151;font-size:0.65rem">Diseño Web</span>
+            <span style="font-size:0.65rem;color:#6b7280">$2M – $12M</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border:1px solid #e5e7eb;border-radius:7px;padding:5px 8px">
+            <span style="color:#374151;font-size:0.65rem">Ilustración</span>
+            <span style="font-size:0.65rem;color:#6b7280">$800K – $4M</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-row">
+      <span class="pro">Muy rápido</span>
+      <span class="pro">Cero fricción</span>
+      <span class="con">Rangos muy amplios</span>
+    </div>
+  </div>
+
+  <!-- C: Arma tu pato -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <h3>C — "Arma tu pato" por ítems</h3>
+    <p>El cliente marca exactamente qué entregables quiere y el total se calcula ítem por ítem. Más preciso, más tiempo.</p>
+    <div class="mock">
+      <div class="mock-head">
+        <div class="mock-eyebrow">🦆 Arma tu pato</div>
+        <div class="mock-h">Elige tus entregables</div>
+      </div>
+      <div class="mock-body">
+        <div class="lbl" style="margin-bottom:5px">Branding</div>
+        <div class="atp-row">
+          <span class="atp-item">Estrategia de marca</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="atp-price">$800K</span>
+            <div class="atp-check on">✓</div>
+          </div>
+        </div>
+        <div class="atp-row">
+          <span class="atp-item">Logotipo + variantes</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="atp-price">$1.200K</span>
+            <div class="atp-check on">✓</div>
+          </div>
+        </div>
+        <div class="atp-row">
+          <span class="atp-item">Manual de marca</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="atp-price">$600K</span>
+            <div class="atp-check"></div>
+          </div>
+        </div>
+        <div class="atp-row">
+          <span class="atp-item">Plantillas RRSS (×6)</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="atp-price">$400K</span>
+            <div class="atp-check on">✓</div>
+          </div>
+        </div>
+        <div class="atp-total">
+          <span>Total estimado</span>
+          <span>$2.400.000</span>
+        </div>
+      </div>
+    </div>
+    <div class="pros-row">
+      <span class="pro">Muy preciso</span>
+      <span class="con">Más pasos</span>
+      <span class="con">Requiere lista completa de precios</span>
+    </div>
+  </div>
+
+</div>

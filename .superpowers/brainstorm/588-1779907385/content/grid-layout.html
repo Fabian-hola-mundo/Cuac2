@@ -1,0 +1,177 @@
+<style>
+  .grid-options { display: flex; flex-direction: column; gap: 24px; max-width: 960px; margin: 0 auto; }
+
+  .grid-card {
+    border: 2px solid transparent;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+    background: #111;
+  }
+  .grid-card:hover { transform: translateY(-2px); }
+  .grid-card.selected { border-color: #EC3813; }
+
+  .grid-preview {
+    padding: 20px 20px 16px;
+    background: #f5f5f3;
+    min-height: 200px;
+  }
+
+  /* A — Masonry editorial */
+  .grid-a {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 130px 80px;
+    gap: 6px;
+  }
+  .ga1 { grid-row: span 2; background: #c8c4be; border-radius: 6px; position: relative; overflow: hidden; }
+  .ga2 { background: #e0dbd4; border-radius: 6px; }
+  .ga3 { background: #d4cfc8; border-radius: 6px; }
+  .ga4 { background: #b8b2aa; border-radius: 6px; }
+  .ga5 { background: #ccc8c0; border-radius: 6px; }
+  .ga1::after { content: 'Proyecto destacado'; position: absolute; bottom: 10px; left: 12px;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #151F28; font-weight: 600; }
+  .ga2::after { content: 'Branding'; position: absolute; bottom: 8px; left: 10px;
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #151F28; opacity: 0.6; }
+
+  /* B — Grid uniforme 3 col */
+  .grid-b {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .gb { background: #d4cfc8; border-radius: 6px; aspect-ratio: 4/3; position: relative; overflow: hidden; }
+  .gb:nth-child(2) { background: #c0bbb3; }
+  .gb:nth-child(3) { background: #e0dbd4; }
+  .gb::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+    background: linear-gradient(transparent, rgba(21,31,40,0.5)); }
+
+  /* C — Lista editorial horizontal */
+  .grid-c {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .gc-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 0;
+    background: #ede9e3;
+    border-radius: 6px;
+    overflow: hidden;
+    height: 70px;
+  }
+  .gc-row:nth-child(2) { background: #e0dbd4; }
+  .gc-row:nth-child(3) { background: #d4cfc8; }
+  .gc-img { background: #b8b2aa; }
+  .gc-row:nth-child(2) .gc-img { background: #c8c4be; }
+  .gc-row:nth-child(3) .gc-img { background: #a8a39a; }
+  .gc-text { padding: 0 20px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+  .gc-num { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #EC3813; font-weight: 600; }
+  .gc-title { font-size: 14px; font-weight: 700; color: #151F28; letter-spacing: -0.01em; }
+  .gc-cat { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(21,31,40,0.45); }
+
+  .grid-info {
+    padding: 16px 20px;
+    background: #1a1a1a;
+    display: flex; justify-content: space-between; align-items: start; gap: 20px;
+  }
+  .grid-label { font-size: 15px; font-weight: 600; color: #f0f0f0; margin: 0 0 4px; }
+  .grid-desc  { font-size: 13px; color: rgba(255,255,255,0.5); margin: 0; line-height: 1.5; }
+  .grid-pros  { font-size: 12px; color: #6bcb8b; white-space: nowrap; line-height: 1.9; }
+  .grid-cons  { font-size: 12px; color: rgba(255,255,255,0.3); white-space: nowrap; line-height: 1.9; }
+</style>
+
+<h2>¿Cómo se organiza la galería de proyectos?</h2>
+<p class="subtitle">La rejilla define cómo respira el trabajo. Para portafolios gráficos el espacio y la jerarquía son tan importantes como las imágenes mismas.</p>
+
+<div class="grid-options">
+
+  <div class="grid-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="grid-preview">
+      <div class="grid-a">
+        <div class="ga1"></div>
+        <div class="ga2"></div>
+        <div class="ga3"></div>
+        <div class="ga4"></div>
+        <div class="ga5"></div>
+      </div>
+    </div>
+    <div class="grid-info">
+      <div>
+        <p class="grid-label">A — Masonry editorial</p>
+        <p class="grid-desc">Proyectos destacados ocupan más espacio. El featured dobla en tamaño. Ritmo orgánico, cada proyecto respira distinto según su peso visual.</p>
+      </div>
+      <div>
+        <div class="grid-pros">✓ Muestra jerarquía<br>✓ Más editorial, menos template<br>✓ El trabajo featured domina</div>
+        <div class="grid-cons">✗ Requiere curación del orden</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="grid-preview">
+      <div class="grid-b">
+        <div class="gb"></div>
+        <div class="gb"></div>
+        <div class="gb"></div>
+        <div class="gb"></div>
+        <div class="gb"></div>
+        <div class="gb"></div>
+      </div>
+    </div>
+    <div class="grid-info">
+      <div>
+        <p class="grid-label">B — Grid limpio 3 columnas</p>
+        <p class="grid-desc">Todos los proyectos en igualdad. Foco total en la imagen. Clean, casi invisible como estructura — deja que el trabajo hable solo.</p>
+      </div>
+      <div>
+        <div class="grid-pros">✓ Máxima limpieza<br>✓ Foco total en imagen<br>✓ Escala sin curación</div>
+        <div class="grid-cons">✗ Sin jerarquía visual<br>✗ Puede volverse catálogo</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="grid-preview">
+      <div class="grid-c">
+        <div class="gc-row">
+          <div class="gc-img"></div>
+          <div class="gc-text">
+            <span class="gc-num">01</span>
+            <span class="gc-title">Rebranding Empresa XYZ</span>
+            <span class="gc-cat">Branding</span>
+          </div>
+        </div>
+        <div class="gc-row">
+          <div class="gc-img"></div>
+          <div class="gc-text">
+            <span class="gc-num">02</span>
+            <span class="gc-title">Identidad Editorial</span>
+            <span class="gc-cat">Editorial</span>
+          </div>
+        </div>
+        <div class="gc-row">
+          <div class="gc-img"></div>
+          <div class="gc-text">
+            <span class="gc-num">03</span>
+            <span class="gc-title">Sistema de Packaging</span>
+            <span class="gc-cat">Packaging</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-info">
+      <div>
+        <p class="grid-label">C — Lista editorial horizontal</p>
+        <p class="grid-desc">Cada proyecto como una fila con número, thumbnail, título y categoría. Muy tipográfico. Transmite confianza y orden, más cercano a un estudio senior.</p>
+      </div>
+      <div>
+        <div class="grid-pros">✓ Muy tipográfico y editorial<br>✓ Toda la info de un vistazo<br>✓ Escala muy bien</div>
+        <div class="grid-cons">✗ Thumbnail pequeño<br>✗ Menos impacto visual</div>
+      </div>
+    </div>
+  </div>
+
+</div>

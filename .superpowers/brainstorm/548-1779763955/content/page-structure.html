@@ -1,0 +1,224 @@
+<style>
+  body { font-family: 'Manrope', system-ui, sans-serif; }
+  .q { font-size: 1.05rem; font-weight: 600; color: #151F28; margin-bottom: 4px; }
+  .sub { color: #6b7280; font-size: 0.88rem; margin-bottom: 24px; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card {
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: #fff;
+    position: relative;
+  }
+  .card:hover { border-color: #EC3813; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(236,56,19,0.1); }
+  .card.selected { border-color: #EC3813; background: #fff8f6; }
+  .card.selected::after { content: '✓'; position: absolute; top: 12px; right: 14px; background: #EC3813; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+
+  .card h3 { font-size: 0.95rem; font-weight: 700; color: #151F28; margin: 0 0 5px; }
+  .card p { font-size: 0.8rem; color: #6b7280; margin: 0 0 14px; line-height: 1.5; }
+
+  /* Shared mini-browser chrome */
+  .browser { border: 1px solid #d1d5db; border-radius: 10px; overflow: hidden; font-size: 0.65rem; background: #f9fafb; }
+  .browser-bar { background: #e5e7eb; padding: 5px 10px; display: flex; gap: 4px; align-items: center; }
+  .browser-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .browser-url { background: white; border-radius: 4px; flex: 1; padding: 2px 8px; color: #9ca3af; font-size: 0.6rem; }
+
+  /* Mockup A: scroll único */
+  .mock-scroll { padding: 0; }
+  .ms-hero { background: #151F28; padding: 10px 12px; color: white; }
+  .ms-hero-tag { background: #EC3813; color: white; border-radius: 20px; display: inline-block; padding: 1px 7px; font-size: 0.58rem; font-weight: 700; margin-bottom: 4px; }
+  .ms-hero-h { font-weight: 700; font-size: 0.78rem; }
+  .ms-hero-sub { color: #9ca3af; font-size: 0.6rem; margin-top: 2px; }
+  .ms-est { background: white; padding: 10px 12px; }
+  .ms-est-label { font-size: 0.6rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .ms-chips { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 5px; }
+  .ms-chip { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 5px; padding: 2px 6px; font-size: 0.58rem; }
+  .ms-chip.sel { background: #fff0ed; border-color: #EC3813; color: #EC3813; font-weight: 600; }
+  .ms-result { background: #151F28; color: white; border-radius: 6px; padding: 6px 8px; display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+  .ms-price { font-weight: 700; font-size: 0.75rem; }
+  .ms-div { background: #f0f1f6; padding: 8px 12px; text-align: center; }
+  .ms-div-text { font-size: 0.62rem; color: #6b7280; }
+  .ms-div-arrow { font-size: 0.7rem; color: #EC3813; font-weight: 700; }
+  .ms-form { background: white; padding: 10px 12px; border-top: 2px solid #EC3813; }
+  .ms-form-h { font-weight: 700; font-size: 0.7rem; color: #151F28; margin-bottom: 5px; }
+  .ms-inp { background: #f3f4f6; border-radius: 5px; height: 14px; margin-bottom: 4px; }
+  .ms-inp.wide { width: 100%; }
+  .ms-inp.half { width: 48%; display: inline-block; }
+  .ms-cta { background: #EC3813; color: white; border-radius: 6px; padding: 5px; text-align: center; font-weight: 700; font-size: 0.62rem; margin-top: 5px; }
+
+  /* Mockup B: tabs */
+  .mock-tabs-nav { background: white; border-bottom: 2px solid #e5e7eb; padding: 0 12px; display: flex; gap: 2px; }
+  .mock-tab { padding: 7px 10px; font-size: 0.62rem; color: #9ca3af; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .mock-tab.active { color: #EC3813; border-color: #EC3813; font-weight: 700; }
+  .mock-tabs-body { background: white; padding: 10px 12px; }
+
+  /* Mockup C: wizard */
+  .mock-wiz { }
+  .wiz-steps { background: #f0f1f6; padding: 8px 12px; display: flex; align-items: center; gap: 0; }
+  .wiz-step { display: flex; align-items: center; gap: 4px; font-size: 0.58rem; }
+  .wiz-step-num { width: 16px; height: 16px; border-radius: 50%; background: #e5e7eb; color: #9ca3af; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.55rem; flex-shrink: 0; }
+  .wiz-step-num.done { background: #EC3813; color: white; }
+  .wiz-step-num.current { background: #151F28; color: white; }
+  .wiz-step-label { color: #6b7280; }
+  .wiz-step-label.current { color: #151F28; font-weight: 600; }
+  .wiz-line { flex: 1; height: 1px; background: #e5e7eb; margin: 0 4px; }
+  .wiz-body { background: white; padding: 10px 12px; }
+  .wiz-h { font-weight: 700; font-size: 0.72rem; margin-bottom: 6px; }
+  .wiz-nav { display: flex; justify-content: space-between; margin-top: 8px; }
+  .wiz-back { background: #f3f4f6; border-radius: 5px; padding: 3px 8px; font-size: 0.6rem; color: #6b7280; }
+  .wiz-next { background: #EC3813; color: white; border-radius: 5px; padding: 3px 8px; font-size: 0.6rem; font-weight: 700; }
+
+  .tag-rec { background: #EC3813; color: white; font-size: 0.58rem; font-weight: 700; padding: 2px 6px; border-radius: 20px; margin-left: 5px; vertical-align: middle; }
+  .pros-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
+  .pro { background: #d1fae5; color: #065f46; border-radius: 4px; padding: 2px 6px; font-size: 0.62rem; }
+  .con { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 2px 6px; font-size: 0.62rem; }
+</style>
+
+<h2>¿Cómo se organiza la página <code>/cotizar</code>?</h2>
+<p class="sub">La página tiene dos partes: el estimador rápido y el formulario detallado. ¿Cómo las presentamos?</p>
+
+<div class="cards">
+
+  <!-- OPCIÓN A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <h3>A — Scroll único <span class="tag-rec">Recomendado</span></h3>
+    <p>Todo en una sola página vertical. El estimador está arriba y el formulario detallado abajo, separados por un bloque de transición.</p>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="browser-dot" style="background:#ff5f57"></div>
+        <div class="browser-dot" style="background:#febc2e"></div>
+        <div class="browser-dot" style="background:#28c840"></div>
+        <div class="browser-url">cuacdesign.com/cotizar</div>
+      </div>
+      <div class="mock-scroll">
+        <div class="ms-hero">
+          <span class="ms-hero-tag">Estimador rápido</span>
+          <div class="ms-hero-h">¿Cuánto cuesta tu proyecto?</div>
+          <div class="ms-hero-sub">Selecciona lo que necesitas y ve un rango al instante.</div>
+        </div>
+        <div class="ms-est">
+          <div class="ms-est-label">1. Servicio</div>
+          <div class="ms-chips">
+            <span class="ms-chip sel">Branding</span>
+            <span class="ms-chip">Editorial</span>
+            <span class="ms-chip">Web</span>
+            <span class="ms-chip">Ilustración</span>
+          </div>
+          <div class="ms-result">
+            <span>Estimado:</span>
+            <span class="ms-price">$4.000.000 – $8.000.000</span>
+          </div>
+        </div>
+        <div class="ms-div">
+          <div class="ms-div-text">¿Quieres una cotización personalizada al 100%?</div>
+          <div class="ms-div-arrow">↓ Cuéntanos más ↓</div>
+        </div>
+        <div class="ms-form">
+          <div class="ms-form-h">Formulario de cotización detallada</div>
+          <div class="ms-inp wide"></div>
+          <div class="ms-inp wide"></div>
+          <div class="ms-cta">Enviar solicitud →</div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-row">
+      <span class="pro">Simple</span>
+      <span class="pro">Sin clics extra</span>
+      <span class="pro">Flujo natural</span>
+    </div>
+  </div>
+
+  <!-- OPCIÓN B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <h3>B — Dos pestañas</h3>
+    <p>Una pestaña para el estimador rápido y otra para el formulario detallado. El usuario elige su camino desde el inicio.</p>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="browser-dot" style="background:#ff5f57"></div>
+        <div class="browser-dot" style="background:#febc2e"></div>
+        <div class="browser-dot" style="background:#28c840"></div>
+        <div class="browser-url">cuacdesign.com/cotizar</div>
+      </div>
+      <div class="mock-tabs-nav">
+        <div class="mock-tab active">⚡ Estimador rápido</div>
+        <div class="mock-tab">📋 Cotización detallada</div>
+      </div>
+      <div class="mock-tabs-body">
+        <div class="ms-est-label" style="margin-bottom:5px">Servicio principal</div>
+        <div class="ms-chips">
+          <span class="ms-chip sel">Branding</span>
+          <span class="ms-chip">Editorial</span>
+          <span class="ms-chip">Web</span>
+          <span class="ms-chip">Ilustración</span>
+        </div>
+        <div class="ms-result" style="margin-top:6px">
+          <span>Estimado:</span>
+          <span class="ms-price">$4M – $8M COP</span>
+        </div>
+        <div style="text-align:center;margin-top:8px;font-size:0.6rem;color:#9ca3af">
+          ¿Necesitas más detalle? → pestaña "Cotización"
+        </div>
+      </div>
+    </div>
+    <div class="pros-row">
+      <span class="pro">Claro</span>
+      <span class="pro">Caminos separados</span>
+      <span class="con">Un clic extra</span>
+    </div>
+  </div>
+
+  <!-- OPCIÓN C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <h3>C — Wizard paso a paso</h3>
+    <p>El usuario avanza por pasos: elige servicio → ve el estimado → decide si quiere más detalle → llena el formulario.</p>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="browser-dot" style="background:#ff5f57"></div>
+        <div class="browser-dot" style="background:#febc2e"></div>
+        <div class="browser-dot" style="background:#28c840"></div>
+        <div class="browser-url">cuacdesign.com/cotizar</div>
+      </div>
+      <div class="mock-wiz">
+        <div class="wiz-steps">
+          <div class="wiz-step">
+            <div class="wiz-step-num done">✓</div>
+            <span class="wiz-step-label">Servicio</span>
+          </div>
+          <div class="wiz-line"></div>
+          <div class="wiz-step">
+            <div class="wiz-step-num current">2</div>
+            <span class="wiz-step-label current">Estimado</span>
+          </div>
+          <div class="wiz-line"></div>
+          <div class="wiz-step">
+            <div class="wiz-step-num">3</div>
+            <span class="wiz-step-label">Detalles</span>
+          </div>
+          <div class="wiz-line"></div>
+          <div class="wiz-step">
+            <div class="wiz-step-num">4</div>
+            <span class="wiz-step-label">Envío</span>
+          </div>
+        </div>
+        <div class="wiz-body">
+          <div class="wiz-h">Tu estimado: $4.000.000 – $8.000.000</div>
+          <div style="font-size:0.6rem;color:#6b7280;margin-bottom:6px">Identidad visual completa · Pequeña empresa</div>
+          <div style="font-size:0.6rem;color:#374151">¿Quieres que te enviemos una cotización más precisa?</div>
+          <div class="wiz-nav">
+            <div class="wiz-back">← Volver</div>
+            <div class="wiz-next">Sí, quiero más detalle →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-row">
+      <span class="pro">Muy guiado</span>
+      <span class="con">Más pasos</span>
+      <span class="con">Más complejo de construir</span>
+    </div>
+  </div>
+
+</div>

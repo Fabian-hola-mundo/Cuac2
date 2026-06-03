@@ -1,0 +1,217 @@
+<style>
+  .approaches { display: flex; flex-direction: column; gap: 28px; max-width: 980px; margin: 0 auto; }
+
+  .app-card {
+    border: 2px solid transparent;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .app-card:hover { transform: translateY(-2px); }
+  .app-card.selected { border-color: #EC3813; }
+
+  .app-preview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    background: #333;
+  }
+
+  /* ── APPROACH 1: Tipografía + shader sutil ────────────── */
+  .a1-hero {
+    background: #0D1219;
+    padding: 22px 24px 18px;
+    position: relative; overflow: hidden;
+  }
+  .a1-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 75% 60%, rgba(236,56,19,0.12) 0%, transparent 70%);
+    filter: blur(20px);
+  }
+  .a1-hero .label { font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: #EC3813; margin-bottom: 8px; position: relative; }
+  .a1-hero h4 { font-size: 28px; font-weight: 800; letter-spacing: -0.025em; line-height: 1; color: #F0F1F6; margin: 0 0 8px; position: relative; }
+  .a1-hero .sub { font-size: 11px; color: rgba(240,241,246,0.4); position: relative; }
+  .a1-grid {
+    background: #F5F4F1;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 70px 44px;
+    gap: 4px;
+  }
+  .a1g1 { background: #C8C3BB; border-radius: 4px; grid-row: span 2; }
+  .a1g2 { background: #DDD9D2; border-radius: 4px; }
+  .a1g3 { background: #E8E4DC; border-radius: 4px; }
+
+  /* ── APPROACH 2: Shader immersivo + grid breathing ───────── */
+  .a2-hero {
+    background: #080C10;
+    padding: 22px 24px 18px;
+    position: relative; overflow: hidden;
+    min-height: 130px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .a2-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 100% 80% at 80% 40%, rgba(236,56,19,0.35) 0%, rgba(150,20,5,0.15) 40%, transparent 70%),
+      radial-gradient(ellipse 60% 50% at 20% 80%, rgba(80,10,60,0.2) 0%, transparent 55%);
+    filter: blur(16px);
+    animation: pulse-a2 6s ease-in-out infinite alternate;
+  }
+  @keyframes pulse-a2 {
+    from { opacity: 0.8; transform: scale(1); }
+    to   { opacity: 1;   transform: scale(1.04); }
+  }
+  .a2-hero .label { font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(236,56,19,0.9); margin-bottom: 8px; position: relative; }
+  .a2-hero h4 { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; color: #F0F1F6; margin: 0 0 8px; position: relative; text-shadow: 0 2px 30px rgba(0,0,0,0.5); }
+  .a2-grid {
+    background: #F2F0EC;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 55px 55px;
+    gap: 6px;
+  }
+  .a2g1 { background: #C0BAB0; border-radius: 6px; grid-row: span 2; position: relative; overflow: hidden; }
+  .a2g1::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(21,31,40,0.4)); }
+  .a2g2 { background: #D8D3CA; border-radius: 6px; }
+  .a2g3 { background: #E4DFD6; border-radius: 6px; }
+
+  /* ── APPROACH 3: Split hero + numbered editorial ──────────── */
+  .a3-hero {
+    background: #151F28;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 130px;
+  }
+  .a3-left {
+    padding: 22px 20px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    position: relative; overflow: hidden;
+    background: #0D1219;
+  }
+  .a3-left::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 80% at 50% 60%, rgba(236,56,19,0.28) 0%, transparent 65%);
+    filter: blur(18px);
+  }
+  .a3-left .label { font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: #EC3813; margin-bottom: 6px; position: relative; }
+  .a3-left h4 { font-size: 24px; font-weight: 800; letter-spacing: -0.025em; line-height: 1; color: #F0F1F6; margin: 0; position: relative; }
+  .a3-right {
+    padding: 12px 14px;
+    background: #F5F4F1;
+    display: flex; flex-direction: column; gap: 5px; justify-content: center;
+  }
+  .a3-item { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: center; }
+  .a3-num { font-size: 8px; letter-spacing: 0.1em; color: #EC3813; font-weight: 700; }
+  .a3-bar { height: 28px; background: #D8D3CA; border-radius: 3px; }
+  .a3-item:nth-child(2) .a3-bar { background: #C8C3BB; height: 22px; }
+  .a3-item:nth-child(3) .a3-bar { background: #E4DFD6; height: 18px; }
+  .a3-grid {
+    background: #F2F0EC;
+    padding: 14px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .a3-row { display: grid; grid-template-columns: 50px 1fr; gap: 8px; align-items: center; }
+  .a3-img { height: 32px; background: #C8C3BB; border-radius: 3px; }
+  .a3-row:nth-child(2) .a3-img { background: #B8B2AA; }
+  .a3-row:nth-child(3) .a3-img { background: #D4CFC8; height: 28px; }
+  .a3-meta { display: flex; flex-direction: column; gap: 2px; }
+  .a3-title { font-size: 9px; font-weight: 700; color: #151F28; letter-spacing: -0.01em; }
+  .a3-cat   { font-size: 7px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(21,31,40,0.4); }
+
+  .app-info {
+    padding: 16px 20px;
+    background: #181818;
+    display: flex; justify-content: space-between; align-items: start; gap: 20px;
+  }
+  .app-label { font-size: 15px; font-weight: 700; color: #f2f2f2; margin: 0 0 4px; }
+  .app-desc  { font-size: 13px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.55; max-width: 500px; }
+  .app-tag   { display: inline-block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+               padding: 3px 8px; border-radius: 20px; background: rgba(236,56,19,0.15);
+               color: #EC3813; margin-bottom: 6px; }
+</style>
+
+<h2>Elige el enfoque global del rediseño</h2>
+<p class="subtitle">Cada enfoque define una relación distinta entre el hero, el shader y la galería. La vista izquierda es el hero; la derecha es la rejilla de proyectos.</p>
+
+<div class="approaches">
+
+  <div class="app-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="app-preview">
+      <div class="a1-hero">
+        <div class="label">● Estudio · Cuac Design</div>
+        <h4>Nuestro trabajo</h4>
+        <div class="sub">Branding, editorial, ilustración y web</div>
+      </div>
+      <div class="a1-grid">
+        <div class="a1g1"></div>
+        <div class="a1g2"></div>
+        <div class="a1g3"></div>
+      </div>
+    </div>
+    <div class="app-info">
+      <div>
+        <div class="app-tag">Tipografía primero</div>
+        <p class="app-label">A — Shader de fondo, tipo como protagonista</p>
+        <p class="app-desc">El shader es un detalle atmosférico muy sutil — el heading gigante domina el hero. La rejilla es limpia, casi invisible. El trabajo hace todo el trabajo. Menos riesgo, más atemporal.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="app-preview">
+      <div class="a2-hero">
+        <div class="label">● Estudio · Cuac Design</div>
+        <h4>Nuestro trabajo</h4>
+      </div>
+      <div class="a2-grid">
+        <div class="a2g1"></div>
+        <div class="a2g2"></div>
+        <div class="a2g3"></div>
+      </div>
+    </div>
+    <div class="app-info">
+      <div>
+        <div class="app-tag" style="background:rgba(236,56,19,0.25);font-weight:700;">★ Recomendado</div>
+        <p class="app-label">B — Shader inmersivo + galería que respira</p>
+        <p class="app-desc">El shader llena el hero con presencia sin abrumar — reacciona al cursor. La galería tiene generoso espacio en blanco y las tarjetas revelan texto al hover. Moderno, fluido, distinto. El punto de equilibrio entre impacto y limpieza.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="app-preview">
+      <div class="a3-hero">
+        <div class="a3-left">
+          <div class="label">● Cuac Design</div>
+          <h4>Nuestro<br>trabajo</h4>
+        </div>
+        <div class="a3-right">
+          <div class="a3-item"><span class="a3-num">01</span><div class="a3-bar"></div></div>
+          <div class="a3-item"><span class="a3-num">02</span><div class="a3-bar"></div></div>
+          <div class="a3-item"><span class="a3-num">03</span><div class="a3-bar"></div></div>
+        </div>
+      </div>
+      <div class="a3-grid">
+        <div class="a3-row"><div class="a3-img"></div><div class="a3-meta"><span class="a3-title">Proyecto destacado</span><span class="a3-cat">Branding</span></div></div>
+        <div class="a3-row"><div class="a3-img"></div><div class="a3-meta"><span class="a3-title">Identidad editorial</span><span class="a3-cat">Editorial</span></div></div>
+        <div class="a3-row"><div class="a3-img"></div><div class="a3-meta"><span class="a3-title">Sistema packaging</span><span class="a3-cat">Packaging</span></div></div>
+      </div>
+    </div>
+    <div class="app-info">
+      <div>
+        <div class="app-tag">Editorial numérico</div>
+        <p class="app-label">C — Hero split + lista numerada editorial</p>
+        <p class="app-desc">El hero divide shader y preview de proyectos. La galería es lista con número, thumbnail horizontal y metadata. Muy estudio senior, muy editorial. Menos visual, más narrativo. Funciona mejor si hay muchos proyectos.</p>
+      </div>
+    </div>
+  </div>
+
+</div>

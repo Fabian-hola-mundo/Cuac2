@@ -1,0 +1,179 @@
+<h2>Propuesta: 7 subsecciones de Configuración</h2>
+<p class="subtitle">¿Esto cubre lo que necesitas, o cambiarías algo?</p>
+
+<style>
+.sections-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 24px;
+}
+.sec-card {
+  background: #f8f6f2;
+  border: 1.5px solid #e2ddd6;
+  border-radius: 12px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.sec-card:hover { border-color: #c9b99a; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+.sec-card.selected { border-color: #2A6FDB; background: #f0f5ff; box-shadow: 0 0 0 2px #2A6FDB33; }
+.sec-num {
+  font-family: monospace;
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 6px;
+}
+.sec-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #151F28;
+  margin-bottom: 8px;
+}
+.sec-desc {
+  font-size: 12.5px;
+  color: #6b6460;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.sec-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sec-items li {
+  font-size: 12px;
+  color: #444;
+  padding: 4px 8px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e8e3db;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sec-items li::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c9b99a;
+  flex-shrink: 0;
+}
+.sec-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.tag-form { background: #d7ebdd; color: #1F8A5B; }
+.tag-list { background: #C9D9F6; color: #2A6FDB; }
+.tag-crud { background: #FCEFC2; color: #B07820; }
+.tag-rich { background: #e5ddf7; color: #8B6FD8; }
+.tag-status { background: #FBE0D5; color: #E8623D; }
+</style>
+
+<div class="sections-grid">
+
+  <div class="sec-card">
+    <div class="sec-num">01</div>
+    <div class="sec-title">Negocio</div>
+    <span class="sec-tag tag-form">Formulario</span>
+    <div class="sec-desc">Datos fiscales y de contacto de la tienda. Aparecen en facturas y correos.</div>
+    <ul class="sec-items">
+      <li>Razón social, NIT, régimen tributario</li>
+      <li>Email, teléfono, dirección fiscal</li>
+      <li>Moneda y zona horaria</li>
+      <li>Logo de la tienda (upload)</li>
+    </ul>
+  </div>
+
+  <div class="sec-card">
+    <div class="sec-num">02</div>
+    <div class="sec-title">Impuestos</div>
+    <span class="sec-tag tag-list">Lista</span>
+    <div class="sec-desc">Configuración de IVA y otros impuestos aplicables a los productos.</div>
+    <ul class="sec-items">
+      <li>IVA general (19% — Colombia)</li>
+      <li>Exenciones por categoría (ej. libretas sin IVA)</li>
+      <li>Incluir/excluir impuesto del precio mostrado</li>
+      <li>Tabla editable de tasas</li>
+    </ul>
+  </div>
+
+  <div class="sec-card">
+    <div class="sec-num">03</div>
+    <div class="sec-title">Envíos y tarifas</div>
+    <span class="sec-tag tag-crud">CRUD</span>
+    <div class="sec-desc">Transportadoras, zonas de cobertura y rangos de precio por peso/destino.</div>
+    <ul class="sec-items">
+      <li>Transportadoras activas (Servientrega, Coordinadora…)</li>
+      <li>Zonas: Bogotá, principales ciudades, resto del país</li>
+      <li>Tarifas por peso (ej. hasta 500g: $12.000)</li>
+      <li>Envío gratis a partir de monto</li>
+    </ul>
+  </div>
+
+  <div class="sec-card">
+    <div class="sec-num">04</div>
+    <div class="sec-title">Plantillas de correo</div>
+    <span class="sec-tag tag-rich">Editor</span>
+    <div class="sec-desc">Correos automáticos que recibe el cliente en cada etapa del pedido.</div>
+    <ul class="sec-items">
+      <li>Confirmación de pedido</li>
+      <li>Pago recibido</li>
+      <li>Pedido despachado (con tracking)</li>
+      <li>Pedido entregado</li>
+    </ul>
+  </div>
+
+  <div class="sec-card">
+    <div class="sec-num">05</div>
+    <div class="sec-title">Equipo y permisos</div>
+    <span class="sec-tag tag-crud">CRUD</span>
+    <div class="sec-desc">Miembros del equipo con acceso al admin y sus roles.</div>
+    <ul class="sec-items">
+      <li>Owner / Operaciones / Contenido / Solo lectura</li>
+      <li>Invitar por email (Supabase Auth)</li>
+      <li>Revocar acceso</li>
+      <li>Registro de último acceso</li>
+    </ul>
+  </div>
+
+  <div class="sec-card">
+    <div class="sec-num">06</div>
+    <div class="sec-title">Integraciones</div>
+    <span class="sec-tag tag-status">Estado</span>
+    <div class="sec-desc">Pasarelas de pago, logística y servicios externos conectados.</div>
+    <ul class="sec-items">
+      <li>Bold, PSE, Nequi — credenciales API</li>
+      <li>Servientrega / Coordinadora — cuenta de despacho</li>
+      <li>Mailchimp / Brevo — newsletter</li>
+      <li>Google Analytics, Meta Pixel</li>
+    </ul>
+  </div>
+
+  <div class="sec-card">
+    <div class="sec-num">07</div>
+    <div class="sec-title">Dominios</div>
+    <span class="sec-tag tag-status">Estado</span>
+    <div class="sec-desc">Dominios conectados a la tienda y estado de SSL.</div>
+    <ul class="sec-items">
+      <li>Dominio principal (cuaquiverso.co)</li>
+      <li>Estado DNS y SSL</li>
+      <li>Redireccionamientos (www → apex)</li>
+      <li>Dominio personalizado para el admin</li>
+    </ul>
+  </div>
+
+</div>

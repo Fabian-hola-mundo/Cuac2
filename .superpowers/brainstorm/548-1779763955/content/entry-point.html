@@ -1,0 +1,185 @@
+<style>
+  body { font-family: 'Manrope', system-ui, sans-serif; }
+  .q { font-size: 1.1rem; font-weight: 600; color: #151F28; margin-bottom: 6px; }
+  .sub { color: #6b7280; font-size: 0.9rem; margin-bottom: 28px; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  .card {
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover { border-color: #EC3813; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(236,56,19,0.1); }
+  .card.selected { border-color: #EC3813; background: #fff8f6; }
+  .card.selected::after { content: '✓'; position: absolute; top: 12px; right: 14px; background: #EC3813; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+
+  .card-icon { font-size: 2rem; margin-bottom: 10px; }
+  .card h3 { font-size: 1rem; font-weight: 700; color: #151F28; margin: 0 0 6px; }
+  .card p { font-size: 0.82rem; color: #6b7280; margin: 0 0 14px; line-height: 1.5; }
+
+  .card-mockup {
+    background: #f3f4f6;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    font-size: 0.7rem;
+  }
+
+  /* Mockup A: full page */
+  .mock-a-nav { background: #151F28; padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .mock-a-logo { color: white; font-weight: 700; font-size: 0.75rem; }
+  .mock-a-btn { background: #EC3813; color: white; border-radius: 20px; padding: 3px 10px; font-size: 0.65rem; font-weight: 600; }
+  .mock-a-body { padding: 14px; }
+  .mock-a-tag { background: #EC3813; color: white; border-radius: 20px; display: inline-block; padding: 2px 8px; font-size: 0.6rem; font-weight: 600; margin-bottom: 6px; }
+  .mock-a-h { font-weight: 700; color: #151F28; font-size: 0.8rem; margin-bottom: 8px; }
+  .mock-a-steps { display: flex; gap: 4px; margin-bottom: 8px; }
+  .mock-a-step { flex: 1; background: #e5e7eb; border-radius: 4px; height: 4px; }
+  .mock-a-step.active { background: #EC3813; }
+  .mock-a-content { background: white; border-radius: 8px; padding: 10px; border: 1px solid #e5e7eb; }
+  .mock-a-row { display: flex; gap: 6px; margin-bottom: 6px; }
+  .mock-a-chip { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px 8px; font-size: 0.65rem; color: #374151; }
+  .mock-a-chip.sel { background: #fff0ed; border-color: #EC3813; color: #EC3813; font-weight: 600; }
+
+  /* Mockup B: modal */
+  .mock-b-outer { position: relative; }
+  .mock-b-bg { padding: 14px; filter: blur(1px) brightness(0.85); font-size: 0.65rem; color: #9ca3af; }
+  .mock-b-overlay { position: absolute; inset: 0; background: rgba(21,31,40,0.55); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .mock-b-modal { background: white; border-radius: 12px; padding: 16px; width: 80%; box-shadow: 0 20px 40px rgba(0,0,0,0.25); }
+  .mock-b-title { font-weight: 700; font-size: 0.8rem; color: #151F28; margin-bottom: 10px; }
+  .mock-b-tag { background: #fff0ed; color: #EC3813; border-radius: 20px; display: inline-block; padding: 2px 8px; font-size: 0.6rem; font-weight: 600; margin-bottom: 6px; }
+  .mock-b-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+  .mock-b-chip { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding: 3px 7px; font-size: 0.62rem; }
+  .mock-b-chip.sel { background: #fff0ed; border-color: #EC3813; color: #EC3813; }
+  .mock-b-cta { background: #EC3813; color: white; border-radius: 8px; text-align: center; padding: 6px; font-size: 0.65rem; font-weight: 700; margin-top: 8px; }
+
+  /* Mockup C: drawer */
+  .mock-c-layout { display: flex; height: 120px; }
+  .mock-c-main { flex: 1; padding: 10px; }
+  .mock-c-blur { filter: blur(1px) brightness(0.85); font-size: 0.65rem; color: #9ca3af; line-height: 2; }
+  .mock-c-drawer { width: 55%; background: white; border-left: 2px solid #e5e7eb; padding: 10px; box-shadow: -8px 0 20px rgba(0,0,0,0.1); }
+  .mock-c-head { font-weight: 700; font-size: 0.72rem; color: #151F28; margin-bottom: 6px; }
+  .mock-c-tag { background: #fff0ed; color: #EC3813; border-radius: 20px; display: inline-block; padding: 2px 8px; font-size: 0.58rem; font-weight: 600; margin-bottom: 6px; }
+  .mock-c-items { display: flex; flex-direction: column; gap: 4px; }
+  .mock-c-item { background: #f3f4f6; border-radius: 5px; padding: 4px 7px; font-size: 0.6rem; }
+  .mock-c-item.sel { background: #fff0ed; color: #EC3813; font-weight: 600; }
+
+  .tag-rec { background: #EC3813; color: white; font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-left: 6px; vertical-align: middle; }
+  .pros-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+  .pro { background: #d1fae5; color: #065f46; border-radius: 4px; padding: 2px 6px; font-size: 0.65rem; }
+  .con { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 2px 6px; font-size: 0.65rem; }
+</style>
+
+<h2>¿Cómo se abre el cotizador?</h2>
+<p class="sub">Cuando el cliente hace clic en "Cotiza tu proyecto" — ¿qué experiencia quieres darle?</p>
+
+<div class="cards">
+
+  <!-- OPCIÓN A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-icon">📄</div>
+    <h3>Página dedicada <span class="tag-rec">Recomendado</span></h3>
+    <p>Una ruta propia <code>/cotizar</code> con su propio scroll. Más espacio para respirar, SEO-indexable, fácil de compartir por link.</p>
+    <div class="card-mockup">
+      <div class="mock-a-nav">
+        <span class="mock-a-logo">CUAC</span>
+        <span class="mock-a-btn">Cotiza tu proyecto</span>
+      </div>
+      <div class="mock-a-body">
+        <span class="mock-a-tag">Estimador rápido</span>
+        <div class="mock-a-h">¿Qué necesitas?</div>
+        <div class="mock-a-steps">
+          <div class="mock-a-step active"></div>
+          <div class="mock-a-step"></div>
+          <div class="mock-a-step"></div>
+        </div>
+        <div class="mock-a-content">
+          <div class="mock-a-row">
+            <div class="mock-a-chip sel">Branding</div>
+            <div class="mock-a-chip">Editorial</div>
+            <div class="mock-a-chip">Web</div>
+          </div>
+          <div class="mock-a-row">
+            <div class="mock-a-chip">Ilustración</div>
+            <div class="mock-a-chip">Video</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-row">
+      <span class="pro">Máximo espacio</span>
+      <span class="pro">Linkeable</span>
+      <span class="pro">SEO</span>
+    </div>
+  </div>
+
+  <!-- OPCIÓN B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-icon">🪟</div>
+    <h3>Modal / overlay</h3>
+    <p>Se abre encima de la página actual. Más rápido visualmente. El usuario no pierde contexto de dónde estaba.</p>
+    <div class="card-mockup mock-b-outer">
+      <div class="mock-b-bg">
+        <div style="height:10px;background:#e5e7eb;border-radius:4px;margin-bottom:5px;width:60%"></div>
+        <div style="height:8px;background:#e5e7eb;border-radius:4px;margin-bottom:4px;width:80%"></div>
+        <div style="height:8px;background:#e5e7eb;border-radius:4px;width:40%"></div>
+      </div>
+      <div class="mock-b-overlay">
+        <div class="mock-b-modal">
+          <span class="mock-b-tag">Estimador</span>
+          <div class="mock-b-title">¿Qué necesitas?</div>
+          <div class="mock-b-chips">
+            <span class="mock-b-chip sel">Branding</span>
+            <span class="mock-b-chip">Editorial</span>
+            <span class="mock-b-chip">Web</span>
+            <span class="mock-b-chip">Ilustración</span>
+          </div>
+          <div class="mock-b-cta">Ver estimado →</div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-row">
+      <span class="pro">Sin navegación</span>
+      <span class="pro">Fluido</span>
+      <span class="con">Menos espacio</span>
+    </div>
+  </div>
+
+  <!-- OPCIÓN C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-icon">📐</div>
+    <h3>Panel lateral (drawer)</h3>
+    <p>Se desliza desde la derecha. El usuario ve la página de fondo. Ideal si el cotizador es corto y no necesita mucho espacio.</p>
+    <div class="card-mockup">
+      <div class="mock-c-layout">
+        <div class="mock-c-main">
+          <div class="mock-c-blur">
+            <div style="height:8px;background:#e5e7eb;border-radius:4px;margin-bottom:5px;width:70%"></div>
+            <div style="height:8px;background:#e5e7eb;border-radius:4px;margin-bottom:5px;width:50%"></div>
+            <div style="height:8px;background:#e5e7eb;border-radius:4px;width:60%"></div>
+          </div>
+        </div>
+        <div class="mock-c-drawer">
+          <span class="mock-c-tag">Estimador</span>
+          <div class="mock-c-head">¿Qué necesitas?</div>
+          <div class="mock-c-items">
+            <div class="mock-c-item sel">✓ Branding</div>
+            <div class="mock-c-item">Editorial</div>
+            <div class="mock-c-item">Web</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-row">
+      <span class="pro">Ligero</span>
+      <span class="con">Espacio limitado</span>
+      <span class="con">Complejo en móvil</span>
+    </div>
+  </div>
+
+</div>

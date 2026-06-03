@@ -1,0 +1,28 @@
+<h2>Arquitectura del módulo de Ajustes</h2>
+<p class="subtitle">¿Cómo organizar el código para las 7 secciones con backend Supabase?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Componente dedicado <span style="font-size:11px;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:4px;margin-left:6px;font-weight:600">Recomendado</span></h3>
+      <p>Extraer a <code>admin-ajustes.component.ts</code> con su propio route <code>/admin/ajustes</code>, un <code>AjustesService</code> con Supabase, y tab routing interno via signals. El @case en admin-home queda reemplazado por <code>&lt;app-admin-ajustes /&gt;</code>.</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Pros</h4><ul><li>Archivo admin-home más liviano</li><li>Service y estado bien encapsulados</li><li>Más fácil de testear</li></ul></div>
+        <div class="cons"><h4>Contras</h4><ul><li>Un componente nuevo para crear</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>En admin-home (actual)</h3>
+      <p>Expandir el @case('ajustes') existente en <code>admin-home.component.html</code> con todos los tabs, y agregar el AjustesService como dependencia inyectada en el mismo componente.</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Pros</h4><ul><li>Sin refactor de routing</li><li>Consistente con otras views del home</li></ul></div>
+        <div class="cons"><h4>Contras</h4><ul><li>admin-home.component.html ya tiene ~550 líneas</li><li>Estado de ajustes mezclado con dashboard/pedidos</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

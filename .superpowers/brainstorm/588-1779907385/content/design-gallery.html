@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery Design</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #e8e8e8; font-family: system-ui, sans-serif; }
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+
+  .section-label {
+    padding: 10px 24px;
+    background: #1e1e1e;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    display: flex; justify-content: space-between;
+  }
+  .section-label span { color: rgba(255,255,255,0.5); }
+
+  /* ── Page shell ───────────────────────────────────── */
+  .page { background: #F0F1F6; min-height: 100vh; }
+
+  /* ── Filter bar ───────────────────────────────────── */
+  .filter-bar {
+    padding: 0 64px;
+    border-bottom: 1px solid rgba(21,31,40,0.07);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+
+  .filter-item {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(21,31,40,0.35);
+    padding: 18px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+  .filter-item:hover { color: rgba(21,31,40,0.7); }
+  .filter-item.active {
+    color: #151F28;
+    border-bottom-color: #EC3813;
+    font-weight: 700;
+  }
+  .filter-count {
+    font-size: 9px;
+    color: rgba(21,31,40,0.2);
+    margin-left: 5px;
+    font-weight: 400;
+  }
+
+  /* ── Grid container ───────────────────────────────── */
+  .grid-wrap {
+    padding: 48px 64px 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .port-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+  }
+
+  /* ── Card base ────────────────────────────────────── */
+  .port-card {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #DDD9D2;
+  }
+
+  /* Span patterns */
+  .col-8  { grid-column: span 8; }
+  .col-4  { grid-column: span 4; }
+  .col-6  { grid-column: span 6; }
+  .col-5  { grid-column: span 5; }
+  .col-7  { grid-column: span 7; }
+
+  .ar-landscape { aspect-ratio: 4/3; }
+  .ar-portrait  { aspect-ratio: 3/4; }
+  .ar-square    { aspect-ratio: 1/1; }
+  .ar-wide      { aspect-ratio: 16/9; }
+
+  /* placeholder bg colors simulating images */
+  .bg-1 { background: #B8B0A4; }
+  .bg-2 { background: #C8C3BC; }
+  .bg-3 { background: #9E9890; }
+  .bg-4 { background: #D4CFC8; }
+  .bg-5 { background: #A8A298; }
+  .bg-6 { background: #BDB8B0; }
+  .bg-7 { background: #CAC5BC; }
+
+  /* inner texture */
+  .port-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%);
+    z-index: 0;
+  }
+
+  /* ── Card overlay (always visible bottom strip, full on hover) ─ */
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(21,31,40,0.72) 0%, rgba(21,31,40,0.0) 45%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 24px;
+    z-index: 2;
+  }
+  .port-card:hover .card-overlay { opacity: 1; }
+
+  /* Always-visible minimal label at bottom */
+  .card-label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 20px 22px 18px;
+    background: linear-gradient(transparent, rgba(21,31,40,0.48));
+    z-index: 3;
+    transform: translateY(0);
+    transition: opacity 0.25s;
+  }
+  .port-card:hover .card-label { opacity: 0; }
+
+  .card-cat {
+    font-family: 'Manrope', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(240,241,246,0.7);
+    margin-bottom: 4px;
+  }
+  .card-title-sm {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #F0F1F6;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  /* Hover overlay content */
+  .overlay-cat {
+    font-family: 'Manrope', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(236,56,19,0.9);
+    margin-bottom: 8px;
+  }
+  .overlay-title {
+    font-family: 'Manrope', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #F0F1F6;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .overlay-cta {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(240,241,246,0.5);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .overlay-cta::after {
+    content: '→';
+    color: #EC3813;
+    font-size: 14px;
+    transition: transform 0.2s;
+  }
+  .port-card:hover .overlay-cta::after { transform: translateX(4px); }
+
+  /* Scale on hover */
+  .port-card img, .port-card .card-bg {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: block;
+  }
+  .card-bg {
+    position: absolute;
+    inset: 0;
+  }
+  .port-card:hover .card-bg { transform: scale(1.04); }
+
+  /* ── Personal footer ──────────────────────────────── */
+  .personal-section {
+    padding: 72px 64px 80px;
+    border-top: 1px solid rgba(21,31,40,0.08);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .personal-eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(21,31,40,0.3);
+    margin-bottom: 32px;
+  }
+  .personal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .personal-card {
+    padding: 36px 40px;
+    border-radius: 12px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .personal-card:hover { transform: translateY(-3px); }
+  .pcard-natalia {
+    background: #FBF3F5;
+  }
+  .pcard-nathali {
+    background: #F0F2FC;
+  }
+
+  /* shader tint on hover */
+  .personal-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .pcard-natalia::before {
+    background: radial-gradient(ellipse 80% 70% at 90% 20%, rgba(232,122,137,0.25) 0%, transparent 60%);
+  }
+  .pcard-nathali::before {
+    background: radial-gradient(ellipse 80% 70% at 90% 20%, rgba(139,158,217,0.25) 0%, transparent 60%);
+  }
+  .personal-card:hover::before { opacity: 1; }
+
+  .pcard-tag {
+    font-family: 'Manrope', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .pcard-natalia .pcard-tag { color: #C4556A; }
+  .pcard-nathali .pcard-tag { color: #5C6FC7; }
+
+  .pcard-name {
+    font-family: 'Manrope', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: #151F28;
+    line-height: 1.1;
+    position: relative;
+  }
+  .pcard-role {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    color: rgba(21,31,40,0.45);
+    position: relative;
+  }
+  .pcard-cta {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-top: 12px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pcard-natalia .pcard-cta { color: #C4556A; }
+  .pcard-nathali .pcard-cta { color: #5C6FC7; }
+  .pcard-cta::after { content: '→'; }
+
+  /* ── Feedback ─────────────────────────────────────── */
+  .feedback-bar {
+    padding: 18px 24px;
+    background: #181818;
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    border-top: 1px solid #333;
+  }
+  .fb-btn {
+    padding: 9px 20px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+    cursor: pointer; border: none; font-family: 'Manrope', sans-serif;
+    transition: background 0.15s;
+  }
+  .fb-approve { background: #EC3813; color: #fff; }
+  .fb-approve:hover { background: #d42f0e; }
+  .fb-change  { background: #2a2a2a; color: rgba(255,255,255,0.65); border: 1px solid #444; }
+  .fb-change:hover { background: #333; }
+  .fb-note { font-size: 11px; color: rgba(255,255,255,0.25); font-style: italic; margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="section-label">
+  <span>Galería — Filtros + Masonry + Footer personal</span>
+  <span>Hover sobre las tarjetas para ver el overlay</span>
+</div>
+
+<div class="page">
+
+  <!-- ── Filter bar ──────────────────────────────────── -->
+  <div class="filter-bar">
+    <div class="filter-item active">Todos <span class="filter-count">24</span></div>
+    <div class="filter-item">Branding <span class="filter-count">8</span></div>
+    <div class="filter-item">Identidad <span class="filter-count">5</span></div>
+    <div class="filter-item">Editorial <span class="filter-count">4</span></div>
+    <div class="filter-item">Packaging <span class="filter-count">3</span></div>
+    <div class="filter-item">Ilustración <span class="filter-count">6</span></div>
+    <div class="filter-item">Web <span class="filter-count">2</span></div>
+    <div class="filter-item">Motion <span class="filter-count">2</span></div>
+    <div class="filter-item">UX/UI <span class="filter-count">3</span></div>
+  </div>
+
+  <!-- ── Masonry grid ────────────────────────────────── -->
+  <div class="grid-wrap">
+    <div class="port-grid">
+
+      <!-- Row 1: featured (8) + tall (4) -->
+      <div class="port-card col-8 ar-landscape bg-1">
+        <div class="card-bg bg-1" style="background: linear-gradient(135deg,#B5AFA8,#9E9890);"></div>
+        <div class="card-label">
+          <div class="card-cat">Branding</div>
+          <div class="card-title-sm">Rebranding Empresa XYZ</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-cat">Branding</div>
+          <div class="overlay-title">Rebranding<br>Empresa XYZ</div>
+          <div class="overlay-cta">Ver proyecto</div>
+        </div>
+      </div>
+      <div class="port-card col-4 ar-portrait bg-2">
+        <div class="card-bg" style="background: linear-gradient(160deg,#C5BFBA,#AAA49E); aspect-ratio:3/4;"></div>
+        <div class="card-label">
+          <div class="card-cat">Ilustración</div>
+          <div class="card-title-sm">Serie Botánica</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-cat">Ilustración</div>
+          <div class="overlay-title">Serie<br>Botánica</div>
+          <div class="overlay-cta">Ver proyecto</div>
+        </div>
+      </div>
+
+      <!-- Row 2: 3 medios -->
+      <div class="port-card col-4 ar-square bg-3">
+        <div class="card-bg" style="background: linear-gradient(120deg,#A09890,#8E8880);"></div>
+        <div class="card-label">
+          <div class="card-cat">Packaging</div>
+          <div class="card-title-sm">Línea Orgánica</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-cat">Packaging</div>
+          <div class="overlay-title">Línea<br>Orgánica</div>
+          <div class="overlay-cta">Ver proyecto</div>
+        </div>
+      </div>
+      <div class="port-card col-4 ar-square bg-5">
+        <div class="card-bg" style="background: linear-gradient(140deg,#A8A59E,#929088);"></div>
+        <div class="card-label">
+          <div class="card-cat">Editorial</div>
+          <div class="card-title-sm">Revista Trimestral</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-cat">Editorial</div>
+          <div class="overlay-title">Revista<br>Trimestral</div>
+          <div class="overlay-cta">Ver proyecto</div>
+        </div>
+      </div>
+      <div class="port-card col-4 ar-square bg-4">
+        <div class="card-bg" style="background: linear-gradient(110deg,#D0CAC2,#BCB6AE);"></div>
+        <div class="card-label">
+          <div class="card-cat">Web</div>
+          <div class="card-title-sm">Sitio Portafolio</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-cat">Web</div>
+          <div class="overlay-title">Sitio<br>Portafolio</div>
+          <div class="overlay-cta">Ver proyecto</div>
+        </div>
+      </div>
+
+      <!-- Row 3: wide (7) + medium (5) -->
+      <div class="port-card col-5 ar-portrait bg-6">
+        <div class="card-bg" style="background: linear-gradient(125deg,#BAB5AE,#A8A39C);"></div>
+        <div class="card-label">
+          <div class="card-cat">Identidad</div>
+          <div class="card-title-sm">Marca Gastronómica</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-cat">Identidad</div>
+          <div class="overlay-title">Marca<br>Gastronómica</div>
+          <div class="overlay-cta">Ver proyecto</div>
+        </div>
+      </div>
+      <div class="port-card col-7 ar-landscape bg-7">
+        <div class="card-bg" style="background: linear-gradient(145deg,#C8C3BC,#B0AB9F);"></div>
+        <div class="card-label">
+          <div class="card-cat">Branding</div>
+          <div class="card-title-sm">Sistema Visual Corporativo</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-cat">Branding</div>
+          <div class="overlay-title">Sistema Visual<br>Corporativo</div>
+          <div class="overlay-cta">Ver proyecto</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Personal footer ────────────────────────────── -->
+  <div class="personal-section">
+    <div class="personal-eyebrow">El equipo también tiene voz propia</div>
+    <div class="personal-grid">
+      <a class="personal-card pcard-natalia" href="#">
+        <span class="pcard-tag">Portafolio personal</span>
+        <span class="pcard-name">Natalia Castañeda<br>Caicedo</span>
+        <span class="pcard-role">Diseño editorial, ilustración y branding</span>
+        <span class="pcard-cta">Ver portafolio</span>
+      </a>
+      <a class="personal-card pcard-nathali" href="#">
+        <span class="pcard-tag">Portafolio personal</span>
+        <span class="pcard-name">Nathali Ramírez<br>Ortiz</span>
+        <span class="pcard-role">Diseño UI/UX, ilustración y branding</span>
+        <span class="pcard-cta">Ver portafolio</span>
+      </a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- ── Filter interaction ──────────────────────────────── -->
+<script>
+document.querySelectorAll('.filter-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+</script>
+
+<div class="feedback-bar">
+  <button class="fb-btn fb-approve" id="btn-approve">Apruebo la galería — ver detail page</button>
+  <button class="fb-btn fb-change"  id="btn-change">Quiero ajustes</button>
+  <span class="fb-note">Hover sobre las tarjetas · Haz clic en los filtros para ver la interacción</span>
+</div>
+
+<script>
+document.getElementById('btn-approve').addEventListener('click', () => {
+  if (window.postSelection) window.postSelection('approve', 'Apruebo la galería');
+});
+document.getElementById('btn-change').addEventListener('click', () => {
+  if (window.postSelection) window.postSelection('change', 'Quiero ajustes galería');
+});
+</script>
+</body>
+</html>

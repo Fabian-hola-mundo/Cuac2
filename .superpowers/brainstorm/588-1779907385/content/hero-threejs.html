@@ -1,0 +1,195 @@
+<style>
+  .hero-options { display: flex; flex-direction: column; gap: 20px; max-width: 900px; margin: 0 auto; }
+
+  .hero-card {
+    border: 2px solid transparent;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .hero-card:hover { transform: translateY(-2px); }
+  .hero-card.selected { border-color: #EC3813; }
+
+  .hero-preview {
+    height: 220px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 28px 32px;
+    overflow: hidden;
+  }
+
+  /* Option A — Particle field */
+  .preview-a {
+    background: #151F28;
+  }
+  .preview-a .particles {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1.5px 1.5px at 12% 25%, rgba(240,241,246,0.55) 0%, transparent 100%),
+      radial-gradient(1px 1px at 34% 60%, rgba(240,241,246,0.35) 0%, transparent 100%),
+      radial-gradient(2px 2px at 55% 15%, rgba(236,56,19,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 78% 70%, rgba(240,241,246,0.4) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 90% 30%, rgba(240,241,246,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 22% 85%, rgba(236,56,19,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 45%, rgba(240,241,246,0.25) 0%, transparent 100%),
+      radial-gradient(2px 2px at 67% 88%, rgba(240,241,246,0.45) 0%, transparent 100%),
+      radial-gradient(1px 1px at 8% 55%, rgba(236,56,19,0.3) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 85% 50%, rgba(240,241,246,0.5) 0%, transparent 100%);
+    background-size: 100% 100%;
+    animation: drift 12s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    from { background-position: 0 0; }
+    to   { background-position: 4px -6px; }
+  }
+  .preview-a h3 {
+    font-size: 38px; font-weight: 700; letter-spacing: -0.02em;
+    color: #F0F1F6; position: relative; z-index: 1; margin: 0; line-height: 1;
+  }
+  .preview-a .tag {
+    position: absolute; top: 28px; right: 32px;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(236,56,19,0.9); font-family: monospace;
+  }
+
+  /* Option B — Floating frames / planes */
+  .preview-b {
+    background: #0D1219;
+  }
+  .preview-b .frames {
+    position: absolute; inset: 0;
+  }
+  .frame-block {
+    position: absolute;
+    border-radius: 4px;
+    background: rgba(240,241,246,0.06);
+    border: 1px solid rgba(240,241,246,0.08);
+    animation: float-b 8s ease-in-out infinite alternate;
+  }
+  .frame-block:nth-child(1) { width: 160px; height: 110px; top: 20px; right: 80px; transform: rotate(-8deg); animation-delay: 0s; background: rgba(236,56,19,0.12); }
+  .frame-block:nth-child(2) { width: 110px; height: 75px;  top: 60px; right: 260px; transform: rotate(5deg);  animation-delay: -2s; }
+  .frame-block:nth-child(3) { width: 75px;  height: 100px; top: 10px; right: 190px; transform: rotate(-3deg); animation-delay: -4s; background: rgba(240,241,246,0.04); }
+  .frame-block:nth-child(4) { width: 50px;  height: 50px;  top: 130px; right: 100px; transform: rotate(12deg); animation-delay: -1s; }
+  @keyframes float-b {
+    from { transform: rotate(var(--r, -8deg)) translateY(0px); }
+    to   { transform: rotate(var(--r, -8deg)) translateY(-12px); }
+  }
+  .preview-b h3 {
+    font-size: 38px; font-weight: 700; letter-spacing: -0.02em;
+    color: #F0F1F6; position: relative; z-index: 1; margin: 0; line-height: 1;
+  }
+  .preview-b .tag {
+    position: absolute; top: 28px; right: 32px;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(240,241,246,0.35); font-family: monospace;
+  }
+
+  /* Option C — Shader / fluid */
+  .preview-c {
+    background: #0a0e14;
+  }
+  .preview-c .fluid {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 70% 40%,
+      rgba(236,56,19,0.25) 0%,
+      rgba(180,30,10,0.15) 30%,
+      rgba(10,14,20,0.0) 70%),
+      radial-gradient(ellipse 50% 40% at 30% 70%,
+      rgba(60,20,100,0.15) 0%,
+      transparent 60%);
+    animation: fluid-move 10s ease-in-out infinite alternate;
+  }
+  @keyframes fluid-move {
+    from { filter: blur(24px) saturate(1.2); transform: scale(1.05) translate(0,0); }
+    to   { filter: blur(28px) saturate(1.5); transform: scale(1.05) translate(-20px, 10px); }
+  }
+  .preview-c h3 {
+    font-size: 38px; font-weight: 700; letter-spacing: -0.02em;
+    color: #F0F1F6; position: relative; z-index: 1; margin: 0; line-height: 1;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.6);
+  }
+  .preview-c .tag {
+    position: absolute; top: 28px; right: 32px;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(236,56,19,0.8); font-family: monospace;
+  }
+
+  .hero-info {
+    padding: 16px 20px;
+    background: #1a1a1a;
+    display: flex; justify-content: space-between; align-items: start;
+    gap: 20px;
+  }
+  .hero-label { font-size: 15px; font-weight: 600; color: #f0f0f0; margin: 0 0 4px; }
+  .hero-desc  { font-size: 13px; color: rgba(255,255,255,0.5); margin: 0; line-height: 1.5; }
+  .hero-pros  { font-size: 12px; color: #6bcb8b; white-space: nowrap; line-height: 1.8; }
+  .hero-cons  { font-size: 12px; color: rgba(255,255,255,0.3); white-space: nowrap; line-height: 1.8; }
+</style>
+
+<h2>¿Qué tipo de interacción Three.js para el hero?</h2>
+<p class="subtitle">El hero es lo primero que ve el visitante — define el tono de todo el portafolio. Las tres opciones son distintas en energía y costo técnico.</p>
+
+<div class="hero-options">
+
+  <div class="hero-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="hero-preview preview-a">
+      <div class="particles"></div>
+      <span class="tag">Mouse reactive</span>
+      <h3>Nuestro trabajo</h3>
+    </div>
+    <div class="hero-info">
+      <div>
+        <p class="hero-label">A — Campo de partículas</p>
+        <p class="hero-desc">Puntos finos dispersos en 3D que reaccionan al movimiento del cursor. Algunas partículas en ember, el resto en paper. Muy sutil, no compite con el trabajo.</p>
+      </div>
+      <div>
+        <div class="hero-pros">✓ No distrae del contenido<br>✓ Funciona en todos los dispositivos<br>✓ Código ligero</div>
+        <div class="hero-cons">✗ Menos impactante</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="hero-preview preview-b">
+      <div class="frames">
+        <div class="frame-block"></div>
+        <div class="frame-block"></div>
+        <div class="frame-block"></div>
+        <div class="frame-block"></div>
+      </div>
+      <span class="tag">3D Parallax</span>
+      <h3>Nuestro trabajo</h3>
+    </div>
+    <div class="hero-info">
+      <div>
+        <p class="hero-label">B — Planos flotantes en 3D</p>
+        <p class="hero-desc">Rectángulos en perspectiva que flotan y rotan suavemente en el espacio 3D. Pueden llevar imágenes reales de proyectos. El cursor inclina la escena (parallax 3D).</p>
+      </div>
+      <div>
+        <div class="hero-pros">✓ Muestra el trabajo desde el hero<br>✓ Efecto editorial único<br>✓ Muy memorable</div>
+        <div class="hero-cons">✗ Necesita imágenes de proyectos<br>✗ Más complejo de mantener</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="hero-preview preview-c">
+      <div class="fluid"></div>
+      <span class="tag">GLSL Shader</span>
+      <h3>Nuestro trabajo</h3>
+    </div>
+    <div class="hero-info">
+      <div>
+        <p class="hero-label">C — Shader fluido / orgánico</p>
+        <p class="hero-desc">Shader GLSL con colores ember que fluyen como tinta o calor. El cursor distorsiona el fluido. Muy de autor, muy de marca. Diferencial total.</p>
+      </div>
+      <div>
+        <div class="hero-pros">✓ Altamente distintivo<br>✓ Color = identidad de marca<br>✓ GPU-only, muy fluido</div>
+        <div class="hero-cons">✗ Puede ser demasiado para portafolio<br>✗ Mayor costo técnico</div>
+      </div>
+    </div>
+  </div>
+
+</div>

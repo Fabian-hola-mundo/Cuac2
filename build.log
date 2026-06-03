@@ -1,0 +1,46 @@
+
+> cuac-design@0.0.0 build
+> ng build
+
+Node.js version v25.8.2 detected.
+Odd numbered Node.js versions will not enter LTS status and should not be used for production. For more information, please see https://nodejs.org/en/about/previous-releases/.
+[33m❯[39m Building...
+[32m✔[39m Building...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                         [2m | [22m [1mRaw size[22m[2m | [22m[1mEstimated transfer size[22m
+[32mstyles-63RAOPGA.css[39m[2m | [22m[2mstyles[22m                        [2m | [22m[36m147.37 kB[39m[2m | [22m               [36m14.41 kB[39m
+[32mchunk-DYDDYGOJ.js[39m  [2m | [22m[2m-[22m                             [2m | [22m[36m144.93 kB[39m[2m | [22m               [36m43.16 kB[39m
+[32mchunk-5ABK7CRW.js[39m  [2m | [22m[2m-[22m                             [2m | [22m [36m87.03 kB[39m[2m | [22m               [36m22.14 kB[39m
+[32mchunk-EFIHZNNF.js[39m  [2m | [22m[2m-[22m                             [2m | [22m  [36m5.83 kB[39m[2m | [22m                [36m1.67 kB[39m
+[32mmain-7SEMQAU4.js[39m   [2m | [22m[2mmain[22m                          [2m | [22m  [36m3.00 kB[39m[2m | [22m              [36m771 bytes[39m
+[32mchunk-7CGTOI24.js[39m  [2m | [22m[2m-[22m                             [2m | [22m[36m618 bytes[39m[2m | [22m              [36m618 bytes[39m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m                 [2m | [22m[1m388.77 kB[22m[2m | [22m               [1m82.77 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                         [2m | [22m [1mRaw size[22m[2m | [22m[1mEstimated transfer size[22m
+[32mchunk-SDB4UKM7.js[39m  [2m | [22m[2mthree-module[22m                  [2m | [22m[36m728.15 kB[39m[2m | [22m              [36m153.41 kB[39m
+[32mchunk-26TJQJMU.js[39m  [2m | [22m[2m-[22m                             [2m | [22m[36m206.76 kB[39m[2m | [22m               [36m45.80 kB[39m
+[32mchunk-CLVDP2EY.js[39m  [2m | [22m[2mdesignsystem-component[22m        [2m | [22m[36m122.77 kB[39m[2m | [22m               [36m24.78 kB[39m
+[32mchunk-7LXSEE4V.js[39m  [2m | [22m[2midentidadcorporativa-component[22m[2m | [22m [36m90.41 kB[39m[2m | [22m               [36m17.57 kB[39m
+[32mchunk-5XILWUVN.js[39m  [2m | [22m[2madmin-home-component[22m          [2m | [22m [36m74.67 kB[39m[2m | [22m               [36m17.26 kB[39m
+[32mchunk-FWYOOGZC.js[39m  [2m | [22m[2mindex[22m                         [2m | [22m [36m70.51 kB[39m[2m | [22m               [36m25.06 kB[39m
+[32mchunk-OS74YUAA.js[39m  [2m | [22m[2mhome-component[22m                [2m | [22m [36m68.63 kB[39m[2m | [22m               [36m13.96 kB[39m
+[32mchunk-PJBBJNAT.js[39m  [2m | [22m[2mcuaquiverso-component[22m         [2m | [22m [36m49.37 kB[39m[2m | [22m               [36m11.25 kB[39m
+[32mchunk-NNO3WDLR.js[39m  [2m | [22m[2muniverso-component[22m            [2m | [22m [36m45.58 kB[39m[2m | [22m                [36m9.60 kB[39m
+[32mchunk-JYV5QJSK.js[39m  [2m | [22m[2mtienda-component[22m              [2m | [22m [36m45.27 kB[39m[2m | [22m                [36m9.90 kB[39m
+[32mchunk-WLMIQER7.js[39m  [2m | [22m[2m-[22m                             [2m | [22m [36m45.22 kB[39m[2m | [22m                [36m9.40 kB[39m
+[32mchunk-IVMBJJDU.js[39m  [2m | [22m[2mcotizador-component[22m           [2m | [22m [36m22.33 kB[39m[2m | [22m                [36m5.76 kB[39m
+[32mchunk-XBNPRS63.js[39m  [2m | [22m[2mportafolio-detail-component[22m   [2m | [22m [36m18.00 kB[39m[2m | [22m                [36m4.53 kB[39m
+[32mchunk-EJSQVD5L.js[39m  [2m | [22m[2mportafolio-shell-component[22m    [2m | [22m [36m17.65 kB[39m[2m | [22m                [36m5.16 kB[39m
+[32mchunk-YWMZM36G.js[39m  [2m | [22m[2mproductos-list-component[22m      [2m | [22m [36m16.35 kB[39m[2m | [22m                [36m4.58 kB[39m
+[2m...and 13 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [7.126 seconds] - 2026-05-27T23:34:12.074Z
+
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/pages/designsystem/designsystem.component.scss exceeded maximum budget. Budget 20.00 kB was not met by 23.64 kB with a total of 43.64 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/pages/identidadcorporativa/identidadcorporativa.component.scss exceeded maximum budget. Budget 20.00 kB was not met by 14.04 kB with a total of 34.03 kB.[0m
+
+[39m[22m
+Output location: C:\Users\Usuario\Desktop\Documentos\CUAC\rebrand\cuac-design\dist\cuac-design
+

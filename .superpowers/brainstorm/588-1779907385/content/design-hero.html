@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Preview — Hero</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; font-family: system-ui, sans-serif; color: #f0f0f0; }
+
+  /* ─── Frame wrapper ─────────────────────────────────── */
+  .preview-label {
+    padding: 10px 20px;
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .preview-label strong { color: #EC3813; }
+
+  /* ─── Fonts sim ─────────────────────────────────────── */
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+
+  /* ─── CUAC HERO ──────────────────────────────────────── */
+  .hero-cuac {
+    position: relative;
+    height: 100vh;
+    min-height: 600px;
+    background: #06090D;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 60px 72px;
+  }
+
+  /* Shader simulado con CSS */
+  .shader-canvas {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 110% 90% at 85% 35%,
+        rgba(236,56,19,0.55) 0%,
+        rgba(180,28,8,0.25) 28%,
+        transparent 58%),
+      radial-gradient(ellipse 70% 60% at 15% 75%,
+        rgba(100,10,70,0.3) 0%,
+        transparent 55%),
+      radial-gradient(ellipse 50% 40% at 55% 15%,
+        rgba(236,56,19,0.12) 0%,
+        transparent 50%);
+    animation: shader-drift 12s ease-in-out infinite alternate;
+  }
+  @keyframes shader-drift {
+    0%   { transform: scale(1)    translate(0px, 0px);   filter: blur(60px) saturate(1.1); }
+    33%  { transform: scale(1.04) translate(-18px, 8px);  filter: blur(55px) saturate(1.3); }
+    66%  { transform: scale(1.02) translate(12px, -12px); filter: blur(65px) saturate(1.0); }
+    100% { transform: scale(1.05) translate(-8px, 16px);  filter: blur(58px) saturate(1.2); }
+  }
+
+  /* Vignette sutil */
+  .shader-canvas::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(6,9,13,0.7) 100%);
+  }
+
+  /* Noise texture overlay */
+  .hero-noise {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* Topbar sim */
+  .hero-nav {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 24px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+  }
+  .nav-logo {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(240,241,246,0.9);
+  }
+  .nav-back {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(240,241,246,0.35);
+    text-decoration: none;
+    font-family: 'Manrope', sans-serif;
+  }
+  .nav-back:hover { color: rgba(240,241,246,0.7); }
+
+  /* Hero content */
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 1280px;
+    width: 100%;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(236,56,19,0.85);
+    margin-bottom: 20px;
+  }
+  .hero-eyebrow .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #EC3813;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(0.6); }
+  }
+
+  .hero-h1 {
+    font-family: 'Manrope', sans-serif;
+    font-size: clamp(56px, 7.5vw, 108px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 0.92;
+    color: #F0F1F6;
+    margin-bottom: 32px;
+  }
+  .hero-h1 em {
+    font-style: italic;
+    font-weight: 700;
+    color: rgba(240,241,246,0.55);
+    font-size: 0.72em;
+    display: block;
+    letter-spacing: -0.02em;
+    margin-top: 6px;
+  }
+
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+  .hero-role {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    color: rgba(240,241,246,0.45);
+    letter-spacing: 0.04em;
+  }
+  .hero-count {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(240,241,246,0.25);
+    padding-left: 32px;
+    border-left: 1px solid rgba(240,241,246,0.12);
+  }
+
+  /* Scroll indicator */
+  .scroll-hint {
+    position: absolute;
+    bottom: 28px;
+    right: 60px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(240,241,246,0.2);
+  }
+  .scroll-line {
+    width: 32px;
+    height: 1px;
+    background: rgba(240,241,246,0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .scroll-line::after {
+    content: '';
+    position: absolute;
+    left: -100%;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(236,56,19,0.7);
+    animation: scan 2.5s ease-in-out infinite;
+  }
+  @keyframes scan {
+    0%   { left: -100%; }
+    100% { left: 100%;  }
+  }
+
+  /* ─── NATALIA HERO (light) ───────────────────────────── */
+  .hero-natalia {
+    position: relative;
+    height: 70vh;
+    min-height: 480px;
+    background: #FBF8F4;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 60px 60px;
+  }
+  .shader-natalia {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 100% 80% at 80% 30%,
+        rgba(232,122,137,0.4) 0%,
+        rgba(200,80,100,0.15) 35%,
+        transparent 60%),
+      radial-gradient(ellipse 60% 50% at 20% 80%,
+        rgba(255,190,180,0.25) 0%,
+        transparent 55%);
+    animation: shader-drift 14s ease-in-out infinite alternate;
+    filter: blur(50px) saturate(1.2);
+  }
+  .hero-natalia .hero-eyebrow { color: rgba(196,85,106,0.9); }
+  .hero-natalia .hero-eyebrow .dot { background: #C4556A; }
+  .hero-natalia .hero-h1 { color: #151F28; }
+  .hero-natalia .hero-h1 em { color: rgba(21,31,40,0.4); }
+  .hero-natalia .hero-role { color: rgba(21,31,40,0.45); }
+  .hero-natalia .hero-count { color: rgba(21,31,40,0.25); border-color: rgba(21,31,40,0.1); }
+  .hero-natalia .scroll-hint { color: rgba(21,31,40,0.2); }
+  .hero-natalia .scroll-line { background: rgba(21,31,40,0.1); }
+  .hero-natalia .nav-logo, .hero-natalia .nav-back { color: rgba(21,31,40,0.7); }
+  .hero-natalia .nav-back { color: rgba(21,31,40,0.35); }
+
+  /* ─── NATHALI HERO (light, cool) ─────────────────────── */
+  .hero-nathali {
+    position: relative;
+    height: 70vh;
+    min-height: 480px;
+    background: #F4F5FC;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 60px 60px;
+  }
+  .shader-nathali {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 100% 80% at 80% 30%,
+        rgba(139,158,217,0.45) 0%,
+        rgba(80,100,190,0.15) 35%,
+        transparent 60%),
+      radial-gradient(ellipse 60% 50% at 20% 80%,
+        rgba(180,190,240,0.2) 0%,
+        transparent 55%);
+    animation: shader-drift 16s ease-in-out infinite alternate-reverse;
+    filter: blur(50px) saturate(1.2);
+  }
+  .hero-nathali .hero-eyebrow { color: rgba(92,111,199,0.9); }
+  .hero-nathali .hero-eyebrow .dot { background: #5C6FC7; }
+  .hero-nathali .hero-h1 { color: #151F28; }
+  .hero-nathali .hero-h1 em { color: rgba(21,31,40,0.4); }
+  .hero-nathali .hero-role { color: rgba(21,31,40,0.45); }
+  .hero-nathali .hero-count { color: rgba(21,31,40,0.25); border-color: rgba(21,31,40,0.1); }
+  .hero-nathali .scroll-hint { color: rgba(21,31,40,0.2); }
+  .hero-nathali .scroll-line { background: rgba(21,31,40,0.1); }
+  .hero-nathali .nav-logo, .hero-nathali .nav-back { color: rgba(21,31,40,0.7); }
+  .hero-nathali .nav-back { color: rgba(21,31,40,0.35); }
+
+  /* ─── Labels between sections ───────────────────────── */
+  .section-divider {
+    padding: 12px 24px;
+    background: #222;
+    border-top: 1px solid #333;
+    border-bottom: 1px solid #333;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    display: flex;
+    justify-content: space-between;
+  }
+  .section-divider span { color: rgba(255,255,255,0.5); }
+
+  /* ─── Feedback bar ───────────────────────────────────── */
+  .feedback-bar {
+    padding: 20px 24px;
+    background: #1a1a1a;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .fb-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .fb-approve { background: #EC3813; color: #fff; }
+  .fb-approve:hover { background: #d42f0e; }
+  .fb-change  { background: #2a2a2a; color: rgba(255,255,255,0.7); border: 1px solid #444; }
+  .fb-change:hover  { background: #333; }
+  .fb-note {
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    align-self: center;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div class="preview-label">
+  <span>Diseño del Hero — Sección 1 de 3</span>
+  <strong>Cuac / Natalia / Nathali</strong>
+</div>
+
+<!-- CUAC -->
+<div class="section-divider">
+  <span>Portafolio Cuac Design</span>
+  <span>Dark · Shader Ember</span>
+</div>
+<div class="hero-cuac">
+  <div class="shader-canvas"></div>
+  <div class="hero-noise"></div>
+
+  <nav class="hero-nav">
+    <span class="nav-logo">Cuac Design</span>
+    <a class="nav-back" href="#">← Inicio</a>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Estudio · Cuac Design
+    </div>
+    <h1 class="hero-h1">
+      Nuestro
+      <em>trabajo</em>
+    </h1>
+    <div class="hero-meta">
+      <span class="hero-role">Cuac Design · Bogotá</span>
+      <span class="hero-count">Branding · Editorial · Ilustración · Web</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Explorar
+  </div>
+</div>
+
+<!-- NATALIA -->
+<div class="section-divider">
+  <span>Portafolio Natalia Castañeda Caicedo</span>
+  <span>Light · Shader Rosa Cálido</span>
+</div>
+<div class="hero-natalia">
+  <div class="shader-natalia"></div>
+  <div class="hero-noise"></div>
+
+  <nav class="hero-nav">
+    <span class="nav-logo">Cuac Design</span>
+    <a class="nav-back" href="#">← Portafolio Cuac</a>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Portafolio personal
+    </div>
+    <h1 class="hero-h1">
+      Natalia
+      <em>Castañeda Caicedo</em>
+    </h1>
+    <div class="hero-meta">
+      <span class="hero-role">Diseño editorial, ilustración y branding</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Ver proyectos
+  </div>
+</div>
+
+<!-- NATHALI -->
+<div class="section-divider">
+  <span>Portafolio Nathali Ramírez Ortiz</span>
+  <span>Light · Shader Azul Frío</span>
+</div>
+<div class="hero-nathali">
+  <div class="shader-nathali"></div>
+  <div class="hero-noise"></div>
+
+  <nav class="hero-nav">
+    <span class="nav-logo">Cuac Design</span>
+    <a class="nav-back" href="#">← Portafolio Cuac</a>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Portafolio personal
+    </div>
+    <h1 class="hero-h1">
+      Nathali
+      <em>Ramírez Ortiz</em>
+    </h1>
+    <div class="hero-meta">
+      <span class="hero-role">Diseño UI/UX, ilustración y branding</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Ver proyectos
+  </div>
+</div>
+
+<div class="feedback-bar">
+  <button class="fb-btn fb-approve" onclick="window.recordFeedback && window.recordFeedback('approve-hero')">Apruebo este hero — siguiente sección</button>
+  <button class="fb-btn fb-change" onclick="window.recordFeedback && window.recordFeedback('change-hero')">Quiero cambios</button>
+  <span class="fb-note">El shader real en Three.js será más orgánico y fluido que esta simulación CSS</span>
+</div>
+
+<script>
+function recordFeedback(val) {
+  if (window.postSelection) window.postSelection(val, document.querySelector('.fb-btn.fb-approve')?.textContent || val);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<style>
+  body { font-family: 'Manrope', system-ui, sans-serif; background: #f0f1f6; }
+
+  .layout { display: grid; grid-template-columns: 1fr 360px; gap: 20px; align-items: start; }
+  .col-main {}
+  .col-side { position: sticky; top: 20px; }
+
+  h2 { font-size: 1.1rem; }
+  .sub { color: #6b7280; font-size: 0.88rem; margin-bottom: 20px; }
+
+  /* Browser shell */
+  .browser { border: 1px solid #d1d5db; border-radius: 12px; overflow: hidden; background: white; font-size: 0.72rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .browser-bar { background: #e5e7eb; padding: 6px 12px; display: flex; gap: 5px; align-items: center; }
+  .bd { width: 8px; height: 8px; border-radius: 50%; }
+  .browser-url { background: white; border-radius: 4px; flex: 1; padding: 2px 10px; color: #9ca3af; font-size: 0.62rem; }
+
+  /* Topbar */
+  .topbar { background: #151F28; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .topbar-logo { color: white; font-weight: 800; font-size: 0.9rem; letter-spacing: -0.02em; }
+  .topbar-cta { background: #EC3813; color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.65rem; font-weight: 700; }
+
+  /* Hero */
+  .hero { background: #151F28; padding: 24px 20px 20px; }
+  .hero-eyebrow { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .hero-dot { width: 7px; height: 7px; border-radius: 50%; background: #EC3813; }
+  .hero-eyebrow-text { color: #9ca3af; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.07em; }
+  .hero-h { color: white; font-weight: 800; font-size: 1.1rem; line-height: 1.25; margin-bottom: 6px; }
+  .hero-h em { color: #EC3813; font-style: normal; }
+  .hero-sub { color: #9ca3af; font-size: 0.68rem; line-height: 1.5; }
+
+  /* Section */
+  .section { padding: 16px 20px; }
+  .section-eyebrow { font-size: 0.58rem; font-weight: 700; color: #EC3813; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+  .section-h { font-weight: 700; font-size: 0.82rem; color: #151F28; margin-bottom: 12px; }
+
+  /* Estimator */
+  .est-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .est-block {}
+  .est-lbl { font-size: 0.58rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .chip { background: #f3f4f6; border: 1.5px solid #e5e7eb; border-radius: 6px; padding: 3px 8px; font-size: 0.62rem; color: #374151; }
+  .chip.sel { background: #fff0ed; border-color: #EC3813; color: #EC3813; font-weight: 700; }
+
+  .scope-row { display: flex; gap: 4px; }
+  .scope-btn { flex: 1; text-align: center; border: 1.5px solid #e5e7eb; border-radius: 6px; padding: 4px 2px; font-size: 0.6rem; color: #6b7280; }
+  .scope-btn.sel { background: #151F28; color: white; border-color: #151F28; font-weight: 600; }
+
+  .result-card { background: #151F28; border-radius: 10px; padding: 12px 16px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .result-left {}
+  .result-eyebrow { font-size: 0.58rem; color: #9ca3af; margin-bottom: 2px; }
+  .result-price { color: white; font-weight: 800; font-size: 1rem; }
+  .result-sub { font-size: 0.58rem; color: #9ca3af; margin-top: 1px; }
+  .result-right { text-align: right; }
+  .result-tag { background: rgba(255,255,255,0.1); border-radius: 5px; padding: 2px 7px; font-size: 0.57rem; color: #9ca3af; }
+
+  /* Includes list */
+  .includes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 10px; }
+  .inc-item { display: flex; gap: 5px; align-items: flex-start; font-size: 0.6rem; color: #374151; }
+  .inc-dot { color: #EC3813; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  /* Divider */
+  .divider { background: #f0f1f6; padding: 14px 20px; text-align: center; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+  .div-badge { display: inline-flex; align-items: center; gap: 8px; background: white; border: 1.5px solid #e5e7eb; border-radius: 20px; padding: 5px 14px; margin-bottom: 6px; }
+  .div-badge-text { font-size: 0.65rem; font-weight: 600; color: #151F28; }
+  .div-p { font-size: 0.62rem; color: #6b7280; max-width: 280px; margin: 0 auto; line-height: 1.5; }
+  .div-arrow { font-size: 0.75rem; color: #EC3813; font-weight: 700; margin-top: 4px; }
+
+  /* Form */
+  .form-section { background: white; border-top: 3px solid #EC3813; }
+  .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .form-field { margin-bottom: 8px; }
+  .form-lbl { font-size: 0.58rem; font-weight: 700; color: #151F28; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .form-inp { background: #f3f4f6; border: 1.5px solid #e5e7eb; border-radius: 7px; padding: 6px 10px; width: 100%; box-sizing: border-box; font-size: 0.65rem; color: #374151; }
+  .form-inp.tall { height: 44px; }
+  .form-chips { display: flex; gap: 3px; flex-wrap: wrap; }
+  .form-chip { background: #f3f4f6; border: 1.5px solid #e5e7eb; border-radius: 5px; padding: 2px 7px; font-size: 0.58rem; }
+  .form-chip.sel { background: #fff0ed; border-color: #EC3813; color: #EC3813; font-weight: 600; }
+  .form-cta { background: #EC3813; color: white; border-radius: 8px; padding: 8px; text-align: center; font-weight: 700; font-size: 0.7rem; margin-top: 8px; }
+  .form-note { text-align: center; font-size: 0.58rem; color: #9ca3af; margin-top: 5px; }
+
+  /* Sidebar legend */
+  .legend { background: white; border-radius: 12px; padding: 16px; border: 1px solid #e5e7eb; margin-bottom: 14px; }
+  .legend h4 { font-size: 0.75rem; font-weight: 700; color: #151F28; margin: 0 0 10px; }
+  .legend-item { display: flex; gap: 8px; margin-bottom: 7px; align-items: flex-start; }
+  .legend-num { width: 18px; height: 18px; border-radius: 50%; background: #EC3813; color: white; font-size: 0.55rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .legend-text { font-size: 0.65rem; color: #374151; line-height: 1.4; }
+  .legend-text strong { color: #151F28; }
+
+  .flow { background: white; border-radius: 12px; padding: 14px; border: 1px solid #e5e7eb; }
+  .flow h4 { font-size: 0.75rem; font-weight: 700; color: #151F28; margin: 0 0 10px; }
+  .flow-step { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 6px; }
+  .flow-icon { font-size: 0.9rem; flex-shrink: 0; }
+  .flow-desc { font-size: 0.62rem; color: #374151; line-height: 1.4; }
+  .flow-arrow { text-align: center; color: #e5e7eb; font-size: 0.7rem; margin: 2px 0; }
+</style>
+
+<h2>Diseño de la página <code>/cotizar</code></h2>
+<p class="sub">Revisa el mockup completo. A la derecha está la leyenda con la lógica de cada sección.</p>
+
+<div class="layout">
+  <div class="col-main">
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="bd" style="background:#ff5f57"></div>
+        <div class="bd" style="background:#febc2e"></div>
+        <div class="bd" style="background:#28c840"></div>
+        <div class="browser-url">cuacdesign.com/cotizar</div>
+      </div>
+
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-logo">CUAC</div>
+        <div class="topbar-cta">Cotiza tu proyecto</div>
+      </div>
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-eyebrow">
+          <div class="hero-dot"></div>
+          <span class="hero-eyebrow-text">Estimador · Cuac Design</span>
+        </div>
+        <div class="hero-h">¿Cuánto cuesta<br><em>tu proyecto</em>?</div>
+        <div class="hero-sub">Selecciona el servicio y la escala para ver un rango al instante.<br>Sin compromiso · Cotización en menos de 48 h hábiles.</div>
+      </div>
+
+      <!-- Estimator -->
+      <div class="section" style="background:white;border-bottom:1px solid #e5e7eb">
+        <div class="section-eyebrow">
+          <span>⚡</span> 01 — Estimador rápido
+        </div>
+        <div class="est-grid">
+          <div class="est-block">
+            <div class="est-lbl">¿Qué necesitas?</div>
+            <div class="chips">
+              <span class="chip sel">Branding</span>
+              <span class="chip">Editorial</span>
+              <span class="chip">Web</span>
+              <span class="chip">Ilustración</span>
+              <span class="chip">Video</span>
+            </div>
+          </div>
+          <div class="est-block">
+            <div class="est-lbl">Escala del proyecto</div>
+            <div class="scope-row">
+              <div class="scope-btn">Básico</div>
+              <div class="scope-btn sel">Estándar</div>
+              <div class="scope-btn">Completo</div>
+            </div>
+          </div>
+        </div>
+        <div class="result-card">
+          <div class="result-left">
+            <div class="result-eyebrow">Rango estimado</div>
+            <div class="result-price">$4.000.000 – $8.000.000</div>
+            <div class="result-sub">COP · sin IVA · Branding estándar</div>
+          </div>
+          <div class="result-right">
+            <div class="result-tag">4 – 6 semanas</div>
+          </div>
+        </div>
+        <div class="includes" style="margin-top:10px">
+          <div class="inc-item"><span class="inc-dot">→</span>Estrategia de marca</div>
+          <div class="inc-item"><span class="inc-dot">→</span>Logotipo + variantes</div>
+          <div class="inc-item"><span class="inc-dot">→</span>Paleta y tipografía</div>
+          <div class="inc-item"><span class="inc-dot">→</span>Manual de marca</div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider">
+        <div class="div-badge">
+          <span>✉️</span>
+          <span class="div-badge-text">¿Quieres una cotización 100% personalizada?</span>
+        </div>
+        <div class="div-p">Cuéntanos los detalles de tu proyecto y te respondemos en <strong>2 días hábiles</strong> con una propuesta a tu medida.</div>
+        <div class="div-arrow">↓ Completa el formulario ↓</div>
+      </div>
+
+      <!-- Form -->
+      <div class="section form-section">
+        <div class="section-eyebrow">
+          <span>📋</span> 02 — Cotización personalizada
+        </div>
+        <div class="section-h">Cuéntanos sobre tu proyecto</div>
+        <div class="form-grid-2">
+          <div class="form-field">
+            <div class="form-lbl">Nombre</div>
+            <div class="form-inp">María García</div>
+          </div>
+          <div class="form-field">
+            <div class="form-lbl">Correo electrónico</div>
+            <div class="form-inp">maria@empresa.co</div>
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-field">
+            <div class="form-lbl">Empresa / Marca</div>
+            <div class="form-inp">Mi Empresa S.A.S.</div>
+          </div>
+          <div class="form-field">
+            <div class="form-lbl">Teléfono / WhatsApp</div>
+            <div class="form-inp">+57 300 000 0000</div>
+          </div>
+        </div>
+        <div class="form-field">
+          <div class="form-lbl">Servicio(s) que necesitas</div>
+          <div class="form-chips">
+            <span class="form-chip sel">Branding</span>
+            <span class="form-chip">Editorial</span>
+            <span class="form-chip">Web</span>
+            <span class="form-chip">Ilustración</span>
+            <span class="form-chip">Video</span>
+          </div>
+        </div>
+        <div class="form-field">
+          <div class="form-lbl">Cuéntanos sobre tu proyecto</div>
+          <div class="form-inp tall" style="color:#9ca3af">¿Qué quieres lograr? ¿Tienes referentes? ¿Cuál es tu timeline?</div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-field">
+            <div class="form-lbl">Presupuesto aproximado</div>
+            <div class="form-inp">$4.000.000 – $8.000.000</div>
+          </div>
+          <div class="form-field">
+            <div class="form-lbl">¿Cuándo necesitas empezar?</div>
+            <div class="form-inp">En el próximo mes</div>
+          </div>
+        </div>
+        <div class="form-cta">Enviar solicitud de cotización →</div>
+        <div class="form-note">Respondemos en 2 días hábiles · Bogotá GMT−5 · hola@cuacdesign.com</div>
+      </div>
+
+    </div><!-- /browser -->
+  </div><!-- /col-main -->
+
+  <!-- Sidebar -->
+  <div class="col-side">
+    <div class="legend">
+      <h4>Lógica del estimador</h4>
+      <div class="legend-item">
+        <div class="legend-num">1</div>
+        <div class="legend-text"><strong>Servicio:</strong> Branding, Editorial, Web, Ilustración, Video — un chip seleccionable a la vez</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-num">2</div>
+        <div class="legend-text"><strong>Escala:</strong> Básico / Estándar / Completo — afecta el rango de precio y el tiempo estimado</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-num">3</div>
+        <div class="legend-text"><strong>Resultado reactivo:</strong> precio + duración + lista de qué incluye, todo actualizado al instante con señales de Angular</div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <h4>Flujo de envío del formulario</h4>
+      <div class="flow-step">
+        <div class="flow-icon">👤</div>
+        <div class="flow-desc">Cliente llena y envía el formulario</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="flow-icon">⚡</div>
+        <div class="flow-desc"><strong>Supabase Edge Function</strong> recibe la solicitud</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="flow-icon">🗄️</div>
+        <div class="flow-desc">Inserta en tabla <code>cotizaciones</code> en Supabase</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="flow-icon">📧</div>
+        <div class="flow-desc">Envía email a <code>hola@cuacdesign.com</code> vía <strong>Resend</strong></div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="flow-icon">✅</div>
+        <div class="flow-desc">Cliente ve mensaje de confirmación en pantalla</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="flow-icon">🔧</div>
+        <div class="flow-desc">Tú revisas en <code>/admin/cotizaciones</code> y respondes</div>
+      </div>
+    </div>
+  </div>
+
+</div>
