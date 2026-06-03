@@ -84,8 +84,8 @@
     li { color: rgba(240, 241, 246, 0.75); }
   }
 
-  // Editorial — sky blue background
-  &.editorial {
+  // Web — sky blue background
+  &.web {
     grid-column: span 6;
     background: var(--sky);
     border-color: transparent;
@@ -178,13 +178,13 @@
 @media (max-width: 1024px) {
   .services-grid { grid-template-columns: repeat(6, 1fr); }
   .svc.lead { grid-column: span 6; }
-  .svc.editorial { grid-column: span 6; }
+  .svc.web { grid-column: span 6; }
   .svc-row { grid-column: span 6; grid-template-columns: 1fr; }
   .svc-minor { border-right: 0; border-bottom: 1px solid rgba(21, 31, 40, 0.08); &:last-child { border-bottom: 0; } }
 }
 
 @media (max-width: 640px) {
   .services-grid { grid-template-columns: 1fr; }
-  .svc.lead, .svc.editorial { grid-column: span 1; }
+  .svc.lead, .svc.web { grid-column: span 1; }
   .svc-row { grid-column: span 1; }
 }
