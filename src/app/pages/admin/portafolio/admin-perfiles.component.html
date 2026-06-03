@@ -1,0 +1,92 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Estudio · Cuac Design</div>
+    <h1>Perfiles del <em>portafolio</em>.</h1>
+    <p class="sub">Descripción del colectivo y de cada integrante, con foto y hoja de vida.</p>
+  </div>
+</div>
+
+<nav class="tabs">
+  <a class="tab" routerLink="/admin/portafolio" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: true }">Proyectos</a>
+  <a class="tab" routerLink="/admin/portafolio/logros" routerLinkActive="on">Reconocimientos</a>
+  <a class="tab" routerLink="/admin/portafolio/perfiles" routerLinkActive="on">Perfiles</a>
+</nav>
+
+@if (errorMsg()) {
+  <p style="color:var(--terra);font-size:13px;padding:8px 0">{{ errorMsg() }}</p>
+}
+
+@if (cargando()) {
+  <p style="color:rgba(21,31,40,0.5);font-size:14px;padding:12px 0">Cargando perfiles…</p>
+}
+
+@if (!cargando()) {
+  <div class="perfiles-grid">
+    @for (o of owners; track o.id) {
+      <div class="panel">
+
+        <div class="panel-h">
+          <h3><span class="owner-dot" [style.background]="o.color"></span> {{ ownerLabel(o.id) }}</h3>
+          @if (savedId() === o.id) { <span class="saved-flag">Guardado ✓</span> }
+        </div>
+
+        <div class="panel-b">
+
+          <!-- Fila 1: descripción / bio -->
+          <div class="field" style="margin-bottom:var(--s-4)">
+            <label>{{ bioLabel(o.id) }}</label>
+            <textarea class="input" rows="5"
+              [ngModel]="models()[o.id].bio"
+              (ngModelChange)="setBio(o.id, $event)"
+              [placeholder]="isCuac(o.id) ? 'Quiénes somos, qué hacemos y desde dónde…' : 'Trayectoria, enfoque y disciplinas…'"></textarea>
+          </div>
+
+          <!-- Fila 2: foto + CV (solo personal) y guardar -->
+          <div class="profile-media-row">
+
+            @if (!isCuac(o.id)) {
+              <div class="field">
+                <label>Foto de perfil</label>
+                @if (models()[o.id].photo_url) {
+                  <div class="photo-preview">
+                    <img [src]="models()[o.id].photo_url" [alt]="'Foto de ' + ownerLabel(o.id)" />
+                  </div>
+                }
+                <label class="upload-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  {{ models()[o.id].photo_url ? 'Cambiar foto' : 'Subir foto' }}
+                  <input type="file" accept="image/*" (change)="onPhoto(o.id, $event)" hidden />
+                </label>
+                <span class="help">JPG o PNG · mín 600 × 800 px · proporción 3/4</span>
+              </div>
+
+              <div class="field">
+                <label>Hoja de vida (PDF)</label>
+                @if (models()[o.id].cvName) {
+                  <div class="cv-current">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>{{ models()[o.id].cvName }}</span>
+                  </div>
+                }
+                <label class="upload-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  {{ models()[o.id].cv_url || models()[o.id].cvName ? 'Cambiar CV' : 'Subir CV (PDF)' }}
+                  <input type="file" accept="application/pdf,.pdf" (change)="onCv(o.id, $event)" hidden />
+                </label>
+                <span class="help">Formato PDF · se mostrará para ver y descargar</span>
+              </div>
+            }
+
+            <div class="profile-save">
+              <button class="btn-sm solid" [disabled]="savingId() === o.id" (click)="guardar($any(o.id))">
+                {{ savingId() === o.id ? 'Guardando…' : 'Guardar' }}
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    }
+  </div>
+}

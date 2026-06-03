@@ -9,6 +9,7 @@ import { ProcessComponent } from './sections/process/process.component';
 import { CaseStudyComponent } from './sections/case-study/case-study.component';
 import { TestimonialsComponent } from './sections/testimonials/testimonials.component';
 import { CtaComponent } from './sections/cta/cta.component';
+import { CursorGradientComponent } from '../../shared/cursor-gradient/cursor-gradient.component';
 
 @Component({
   selector: 'app-home',
@@ -24,6 +25,7 @@ import { CtaComponent } from './sections/cta/cta.component';
     CaseStudyComponent,
     TestimonialsComponent,
     CtaComponent,
+    CursorGradientComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',

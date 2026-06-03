@@ -4,13 +4,17 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 import {
   PortfolioService,
   PortfolioProject,
+  Achievement,
+  PortfolioProfile,
+  PortfolioOwner,
+  ACHIEVEMENT_TYPES,
   PORTFOLIO_CATEGORIES,
 } from '../../core/services/portfolio.service';
 import { PortfolioShaderComponent } from './shader/portfolio-shader.component';
 
 type Theme = 'cuac' | 'natalia' | 'nathali';
 
-const THEME_AUTHOR: Record<Theme, string> = {
+const THEME_AUTHOR: Record<Theme, PortfolioOwner> = {
   cuac:    'cuac',
   natalia: 'natalia',
   nathali: 'nathali',
@@ -20,8 +24,9 @@ interface HeroData {
   eyebrow:     string;
   h1Main:      string;
   h1Sub:       string;
+  lede:        string;
   rol:         string;
-  disciplinas: string;
+  disciplinas: string[];
   height:      string;
 }
 
@@ -30,25 +35,28 @@ const HERO_DATA: Record<Theme, HeroData> = {
     eyebrow:     'Estudio · Cuac Design',
     h1Main:      'Nuestro',
     h1Sub:       'trabajo',
-    rol:         'Cuac Design · Bogotá',
-    disciplinas: 'Branding · Editorial · Ilustración · Web',
-    height:      '100vh',
+    lede:        'Diseño que defiende un punto de vista.',
+    rol:         'Bogotá · desde 2024',
+    disciplinas: ['Branding', 'Editorial', 'Ilustración', 'Web'],
+    height:      '88vh',
   },
   natalia: {
     eyebrow:     'Portafolio personal',
     h1Main:      'Natalia',
     h1Sub:       'Castañeda Caicedo',
+    lede:        '',
     rol:         'Diseño editorial, ilustración y branding',
-    disciplinas: '',
-    height:      '80vh',
+    disciplinas: [],
+    height:      '76vh',
   },
   nathali: {
     eyebrow:     'Portafolio personal',
     h1Main:      'Nathali',
     h1Sub:       'Ramírez Ortiz',
+    lede:        '',
     rol:         'Diseño UI/UX, ilustración y branding',
-    disciplinas: '',
-    height:      '80vh',
+    disciplinas: [],
+    height:      '76vh',
   },
 };
 
@@ -93,14 +101,31 @@ export class PortafolioShellComponent implements OnInit {
   private portfolioSvc = inject(PortfolioService);
   private route        = inject(ActivatedRoute);
 
-  readonly theme      = signal<Theme>('cuac');
-  readonly categorias = PORTFOLIO_CATEGORIES;
-  readonly cargando   = signal(false);
-  readonly projects   = signal<PortfolioProject[]>([]);
-  readonly catFiltro  = signal<string>('all');
+  readonly theme        = signal<Theme>('cuac');
+  readonly categorias   = PORTFOLIO_CATEGORIES;
+  readonly cargando     = signal(false);
+  readonly projects     = signal<PortfolioProject[]>([]);
+  readonly catFiltro    = signal<string>('all');
+  readonly profile      = signal<PortfolioProfile | null>(null);
+  readonly achievements = signal<Achievement[]>([]);
+  readonly bioExpanded  = signal(false);
+
+  get bioNeedsExpand(): boolean {
+    return (this.profile()?.bio?.length ?? 0) > 280;
+  }
 
   get hero(): HeroData  { return HERO_DATA[this.theme()]; }
   get isCuac(): boolean { return this.theme() === 'cuac'; }
+
+  get aboutKicker(): string { return this.isCuac ? 'El colectivo' : 'El perfil'; }
+  get aboutName(): string {
+    const h = this.hero;
+    return this.isCuac ? 'Cuac Design' : `${h.h1Main} ${h.h1Sub}`;
+  }
+
+  achTypeLabel(type: string): string {
+    return ACHIEVEMENT_TYPES.find(t => t.id === type)?.label ?? type;
+  }
 
   readonly filteredProjects = computed<SpanProject[]>(() => {
     const cat      = this.catFiltro();
@@ -134,10 +159,17 @@ export class PortafolioShellComponent implements OnInit {
 
   async ngOnInit() {
     this.theme.set((this.route.snapshot.data['theme'] as Theme) ?? 'cuac');
+    const owner = THEME_AUTHOR[this.theme()];
     this.cargando.set(true);
     try {
-      const data = await this.portfolioSvc.getPublished(THEME_AUTHOR[this.theme()]);
+      const [data, profile, achievements] = await Promise.all([
+        this.portfolioSvc.getPublished(owner),
+        this.portfolioSvc.getProfile(owner),
+        this.portfolioSvc.getAchievements(owner, true),
+      ]);
       this.projects.set(data);
+      this.profile.set(profile);
+      this.achievements.set(achievements);
     } finally {
       this.cargando.set(false);
     }

@@ -1,0 +1,109 @@
+:host { display: block; }
+
+.tabs .tab { text-decoration: none; cursor: pointer; }
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  strong { font-size: 14px; color: var(--carbon, #151F28); }
+}
+
+.ach-org-sm {
+  font-size: 12px;
+  color: rgba(21, 31, 40, 0.5);
+}
+
+.author-chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+// Owner multi-select
+.owner-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.owner-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1.5px solid rgba(21, 31, 40, 0.14);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--carbon, #151F28);
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+
+  &:hover { border-color: rgba(21, 31, 40, 0.3); }
+
+  &.on {
+    border-color: var(--ember, #EC3813);
+    background: rgba(236, 56, 19, 0.06);
+    font-weight: 600;
+  }
+}
+
+.owner-check-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+// Toggle (mirrors the admin form toggle, scoped locally)
+.inv-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 240px;
+}
+
+.inv-toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  cursor: pointer;
+
+  input { opacity: 0; width: 0; height: 0; }
+
+  .inv-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--r-pill);
+    background: rgba(21, 31, 40, 0.18);
+    transition: background 0.2s;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  }
+
+  input:checked + .inv-slider { background: var(--ember, #EC3813); }
+  input:checked + .inv-slider::before { transform: translateX(18px); }
+}

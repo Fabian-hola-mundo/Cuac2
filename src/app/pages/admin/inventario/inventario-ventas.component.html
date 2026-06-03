@@ -1,6 +1,6 @@
 <div class="ph">
   <div class="ph-l">
-    <div class="eyebrow"><span class="dot"></span> Inventario · sofa-2026</div>
+    <div class="eyebrow"><span class="dot"></span> Evento · {{ eventoActivo }}</div>
     <h1>Log de <em>ventas</em>.</h1>
     <p class="sub">{{ ventas().length }} registros en el período seleccionado.</p>
   </div>
@@ -9,34 +9,47 @@
   </div>
 </div>
 
-<div class="ventas-filter">
-  <label>Desde
-    <input class="input" type="date" [(ngModel)]="desde" />
-  </label>
-  <label>Hasta
-    <input class="input" type="date" [(ngModel)]="hasta" />
-  </label>
+<div class="tlb" style="margin-bottom:var(--s-5)">
+  <div class="inv-date-field">
+    <label>Desde</label>
+    <input class="input" type="date" [(ngModel)]="desde" style="width:160px" />
+  </div>
+  <div class="inv-date-field">
+    <label>Hasta</label>
+    <input class="input" type="date" [(ngModel)]="hasta" style="width:160px" />
+  </div>
   <button class="btn-sm solid" (click)="cargar()">Filtrar</button>
+  <div class="spacer"></div>
+  @if (ventas().length > 0) {
+    <span class="badge ok"><span class="pdot"></span>{{ totalUnidades() }} unidades vendidas</span>
+  }
 </div>
 
-@if (cargando()) { <p style="color:var(--mid);font-size:14px;padding:12px 0">Cargando…</p> }
-@if (errorMsg()) { <p style="color:var(--terra);font-size:14px;padding:12px 0">Error: {{ errorMsg() }}</p> }
+@if (cargando()) { <p style="color:var(--carbon-50);font-size:14px;padding:12px 0">Cargando ventas…</p> }
+@if (errorMsg()) { <p style="color:var(--terra);font-size:14px;padding:12px 0">{{ errorMsg() }}</p> }
 
 @if (!cargando()) {
-<div class="ventas-grid">
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--s-4);align-items:start">
 
   <div class="panel">
-    <div class="panel-h"><h3>Detalle de ventas</h3></div>
+    <div class="panel-h">
+      <h3>Detalle de ventas</h3>
+      <span class="sub">{{ ventas().length }} registros</span>
+    </div>
     @if (ventas().length === 0) {
-      <p style="padding:24px;color:var(--mid);font-size:14px">Sin ventas en este período.</p>
+      <div style="padding:48px 32px;text-align:center">
+        <p style="font-family:var(--display);font-size:20px;letter-spacing:-0.01em;margin-bottom:6px">Sin ventas en este período.</p>
+        <p style="color:var(--carbon-50);font-size:14px">Ajusta el rango de fechas o regresa cuando haya actividad en el POS.</p>
+      </div>
     }
     @if (ventas().length > 0) {
-    <table class="ventas-table">
+    <div class="tbl-wrap">
+    <table class="tbl">
       <thead>
         <tr>
           <th>Fecha / Hora</th>
           <th>Producto</th>
-          <th>Cant.</th>
+          <th class="num">Cant.</th>
           <th>Dispositivo</th>
           <th>Sync</th>
         </tr>
@@ -44,31 +57,32 @@
       <tbody>
         @for (v of ventas(); track v.id) {
         <tr>
-          <td class="ventas-fecha">{{ fmtFecha(v.vendido_en) }}</td>
-          <td>{{ v.productos_evento?.nombre ?? '—' }}</td>
-          <td><strong>{{ v.cantidad }}</strong></td>
-          <td class="ventas-device">{{ v.dispositivo ?? '—' }}</td>
+          <td class="id">{{ fmtFecha(v.vendido_en) }}</td>
+          <td><strong>{{ v.productos_evento?.nombre ?? '—' }}</strong></td>
+          <td class="num">{{ v.cantidad }}</td>
+          <td class="id">{{ v.dispositivo ?? '—' }}</td>
           <td>
-            @if (v.sincronizado) { <span class="ventas-sync ok">✓</span> }
-            @else { <span class="ventas-sync warn">Pendiente</span> }
+            @if (v.sincronizado) { <span class="badge ok"><span class="pdot"></span>Sync</span> }
+            @else { <span class="badge warn"><span class="pdot"></span>Pendiente</span> }
           </td>
         </tr>
         }
       </tbody>
     </table>
+    </div>
     }
   </div>
 
-  <div class="panel">
-    <div class="panel-h"><h3>Totales por producto</h3></div>
+  <div class="panel" style="position:sticky;top:80px">
+    <div class="panel-h"><h3>Por producto</h3></div>
     <div class="panel-b">
       @if (totalesPorProducto().length === 0) {
-        <p style="color:var(--mid);font-size:14px">Sin datos.</p>
+        <p style="color:var(--carbon-50);font-size:14px">Sin datos en el período.</p>
       }
       @for (t of totalesPorProducto(); track t.nombre) {
-      <div class="ventas-total-row">
-        <span>{{ t.nombre }}</span>
-        <strong>{{ t.total }} ud.</strong>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--carbon-08)">
+        <span style="font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px">{{ t.nombre }}</span>
+        <strong style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;flex-shrink:0">{{ t.total }} ud.</strong>
       </div>
       }
     </div>

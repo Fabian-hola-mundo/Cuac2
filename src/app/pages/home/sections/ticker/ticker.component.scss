@@ -36,3 +36,7 @@
     font-size: 14px;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-inner { animation: none; }
+}

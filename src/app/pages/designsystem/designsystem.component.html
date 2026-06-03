@@ -1,0 +1,885 @@
+<a href="#main-content" class="skip-link">Saltar al contenido</a>
+<div class="shell">
+
+  <!-- ====== RAIL ====== -->
+  <aside class="rail" aria-label="Navegación Design System">
+    <div class="rail-brand">
+      <div class="rail-logo" [innerHTML]="logoFull"></div>
+      <div>
+        <div class="rail-title">Design System</div>
+        <div class="rail-meta">Web &amp; Mobile · v 1.0</div>
+      </div>
+      <div class="rail-doc-switch">
+        <a routerLink="/identidadcorporativa">Brandbook</a>
+        <a routerLink="/designsystem" class="on">Design System</a>
+      </div>
+    </div>
+
+    <nav class="rail-nav" aria-label="Secciones">
+      <div class="rail-nav-label">Foundations</div>
+      <a href="#cover"><span>Portada</span><span class="idx" aria-hidden="true">00</span></a>
+      <a href="#colors"><span>Color · UI</span><span class="idx" aria-hidden="true">01</span></a>
+      <a href="#typography"><span>Tipografía · UI</span><span class="idx" aria-hidden="true">02</span></a>
+      <a href="#layout"><span>Layout &amp; espacio</span><span class="idx" aria-hidden="true">03</span></a>
+      <a href="#elevation"><span>Elevación &amp; radios</span><span class="idx" aria-hidden="true">04</span></a>
+      <a href="#iconography"><span>Iconografía</span><span class="idx" aria-hidden="true">05</span></a>
+
+      <div class="rail-nav-label">Componentes</div>
+      <a href="#buttons"><span>Botones</span><span class="idx" aria-hidden="true">06</span></a>
+      <a href="#forms"><span>Formularios</span><span class="idx" aria-hidden="true">07</span></a>
+      <a href="#feedback"><span>Feedback</span><span class="idx" aria-hidden="true">08</span></a>
+      <a href="#navigation"><span>Navegación</span><span class="idx" aria-hidden="true">09</span></a>
+      <a href="#data"><span>Datos &amp; listas</span><span class="idx" aria-hidden="true">10</span></a>
+
+      <div class="rail-nav-label">Patrones</div>
+      <a href="#mobile"><span>Mobile screens</span><span class="idx" aria-hidden="true">11</span></a>
+      <a href="#web"><span>Web layouts</span><span class="idx" aria-hidden="true">12</span></a>
+    </nav>
+
+    <div class="rail-foot">
+      <a class="rail-back" routerLink="/">Sitio de Cuac Design <span aria-hidden="true">→</span></a>
+      <span>product&#64;cuacdesign.com</span>
+    </div>
+  </aside>
+
+  <!-- ====== MAIN ====== -->
+  <main class="main" id="main-content">
+
+    <!-- COVER -->
+    <section class="page cover" id="cover">
+      <div class="cover-top">
+        <span class="stamp">Design system · Web &amp; Mobile</span>
+        <span>CUAC / DS / 001</span>
+      </div>
+      <div class="cover-mid">
+        <div class="cover-mark" [innerHTML]="logoFull"></div>
+        <h1 class="cover-h">El sistema<br>para <em>producto</em>.</h1>
+        <p class="cover-sub">Foundations, tokens y componentes para la aplicación web y la app móvil de Cuac. Cada elemento aquí está pensado para escalar: cómo se llama, cómo se usa, dónde aparece, qué estados tiene y cuándo no usarlo. La identidad vive en el <strong>Brandbook</strong>; aquí vive el producto.</p>
+      </div>
+      <div class="cover-bot">
+        <div class="cover-bot-cell"><div class="k">Plataformas</div><div class="v">Web · iOS · Android</div></div>
+        <div class="cover-bot-cell"><div class="k">Tokens</div><div class="v">Semánticos · 4 pt grid</div></div>
+        <div class="cover-bot-cell"><div class="k">Accesibilidad</div><div class="v">WCAG 2.1 AA</div></div>
+        <div class="cover-bot-cell"><div class="k">Documento</div><div class="v">v 1.0 · Mayo 2026</div></div>
+      </div>
+    </section>
+
+    <!-- COLORS -->
+    <section class="page" id="colors">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>01 / Color · UI</span><span class="num" aria-hidden="true">— Tokens semánticos</span></div>
+      <h2 class="section-h">Tokens, no colores.</h2>
+      <p class="section-lede">En producto nunca usamos un color directamente. Usamos <strong>tokens semánticos</strong> — <code>--bg</code>, <code>--surface</code>, <code>--action</code> — para que el sistema pueda cambiar (dark mode, alto contraste, accesibilidad) sin tocar componentes. Cada token tiene un único propósito.</p>
+
+      <h3 class="sub-h first">Superficies y texto.</h3>
+      <p class="sub-l">Cuatro niveles de superficie + tres de texto cubren cualquier layout web o móvil sin ambigüedad.</p>
+
+      <div class="tok-table">
+        <div class="tok-row head"><span></span><span>Token</span><span>Valor</span><span>Uso</span><span>Contraste</span></div>
+        <div class="tok-row"><span class="ch ch-bg"></span><span class="nm">--bg</span><span class="tk">#FAFAFB</span><span class="us">Fondo general de la app (web body, mobile screen).</span><span class="vl">vs text-1 17.1</span></div>
+        <div class="tok-row"><span class="ch ch-surface"></span><span class="nm">--surface</span><span class="tk">#FFFFFF</span><span class="us">Cards, modales, contenedores sobre <code>--bg</code>.</span><span class="vl">vs text-1 17.6</span></div>
+        <div class="tok-row"><span class="ch ch-bg-sunken"></span><span class="nm">--bg-sunken</span><span class="tk">#F0F1F6</span><span class="us">Estados hover de filas, separadores, fondos sutiles.</span><span class="vl">vs text-1 15.9</span></div>
+        <div class="tok-row"><span class="ch ch-surface-2"></span><span class="nm">--surface-2</span><span class="tk">#F5F6FA</span><span class="us">Secciones internas, headers de tabla.</span><span class="vl">vs text-1 16.4</span></div>
+        <div class="tok-row"><span class="ch ch-text-1"></span><span class="nm">--text-1</span><span class="tk">#151F28</span><span class="us">Texto principal, títulos.</span><span class="vl">on bg AAA</span></div>
+        <div class="tok-row"><span class="ch ch-text-2"></span><span class="nm">--text-2</span><span class="tk">rgba 72%</span><span class="us">Texto secundario, descripciones.</span><span class="vl">on bg AA</span></div>
+        <div class="tok-row"><span class="ch ch-text-3"></span><span class="nm">--text-3</span><span class="tk">rgba 50%</span><span class="us">Captions, metadata, placeholders.</span><span class="vl">on bg AA · 18pt+</span></div>
+        <div class="tok-row"><span class="ch ch-border"></span><span class="nm">--border</span><span class="tk">rgba 10%</span><span class="us">Bordes sutiles entre superficies.</span><span class="vl">decorativo</span></div>
+        <div class="tok-row"><span class="ch ch-border-strong"></span><span class="nm">--border-strong</span><span class="tk">rgba 18%</span><span class="us">Bordes de inputs, botones ghost, divisores fuertes.</span><span class="vl">decorativo</span></div>
+      </div>
+
+      <h3 class="sub-h">Acción, estado y feedback.</h3>
+      <p class="sub-l">Brasa es nuestro color de acción. Nunca lo usamos para texto largo — sólo CTAs, énfasis y elementos interactivos. Los colores de estado tienen variantes <em>soft</em> para fondos de alertas.</p>
+
+      <div class="tok-table">
+        <div class="tok-row head"><span></span><span>Token</span><span>Valor</span><span>Uso</span><span>Estado</span></div>
+        <div class="tok-row"><span class="ch ch-action"></span><span class="nm">--action</span><span class="tk">#EC3813</span><span class="us">Botones primarios, links, foco, indicadores de selección.</span><span class="vl">default</span></div>
+        <div class="tok-row"><span class="ch ch-action-hover"></span><span class="nm">--action-hover</span><span class="tk">#D33010</span><span class="us">Botón primario en hover.</span><span class="vl">hover</span></div>
+        <div class="tok-row"><span class="ch ch-action-press"></span><span class="nm">--action-press</span><span class="tk">#B8290A</span><span class="us">Botón primario en active/pressed.</span><span class="vl">pressed</span></div>
+        <div class="tok-row"><span class="ch ch-focus"></span><span class="nm">--focus-ring</span><span class="tk">rgba 35%</span><span class="us">Anillo de foco accesible para teclado.</span><span class="vl">focus</span></div>
+        <div class="tok-row"><span class="ch ch-success"></span><span class="nm">--success</span><span class="tk">#14743C</span><span class="us">Confirmaciones, toasts de éxito, validación OK.</span><span class="vl">positivo</span></div>
+        <div class="tok-row"><span class="ch ch-warning"></span><span class="nm">--warning</span><span class="tk">#C57400</span><span class="us">Avisos preventivos, advertencias no críticas.</span><span class="vl">precaución</span></div>
+        <div class="tok-row"><span class="ch ch-danger"></span><span class="nm">--danger</span><span class="tk">#C62828</span><span class="us">Errores, eliminaciones, validación crítica.</span><span class="vl">negativo</span></div>
+        <div class="tok-row"><span class="ch ch-info"></span><span class="nm">--info</span><span class="tk">#011E54</span><span class="us">Notas informativas, tooltips densos.</span><span class="vl">neutral</span></div>
+      </div>
+
+      <h3 class="sub-h">Cuándo NO usar color.</h3>
+      <p class="sub-l">El color es un acento. Lo usamos para guiar la atención — no para decorar. Estas reglas son no-negociables:</p>
+      <ul class="rules-list">
+        <li>· Nunca uses <code>--action</code> para texto de párrafo. Sólo CTAs, links, énfasis.</li>
+        <li>· Nunca uses más de un acento por pantalla en mobile. En web, máximo dos.</li>
+        <li>· Nunca codifiques significado únicamente por color — siempre acompaña con ícono o texto.</li>
+        <li>· Nunca uses colores de marca (<code>--ember</code>, <code>--coral</code>, <code>--sky</code>) directamente sobre <code>--bg</code> para texto de cuerpo. Usa siempre los tokens semánticos de texto.</li>
+      </ul>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section class="page" id="typography">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>02 / Tipografía · UI</span><span class="num" aria-hidden="true">— Escala para producto</span></div>
+      <h2 class="section-h">Una escala<br>para producto.</h2>
+      <p class="section-lede">Para producto usamos una escala <strong>más comprimida</strong> que la editorial: necesitamos densidad y legibilidad a 14–16 px. Fauna One se reserva sólo para display y momentos editoriales dentro de la app (hero de marketing, headlines de campaña).</p>
+
+      <div class="type-scale">
+        <div class="type-row head"><span>Token</span><span>Muestra</span></div>
+        <div class="type-row"><div class="tm"><strong>Display</strong>Fauna One · 56/56<br>-0.015em · w400<br>Hero marketing</div><div class="ts-display">Damos vida a las ideas.</div></div>
+        <div class="type-row"><div class="tm"><strong>H1</strong>Manrope · 32/38<br>-0.01em · w700<br>Page title</div><div class="ts-h1">Diseñamos producto con personalidad.</div></div>
+        <div class="type-row"><div class="tm"><strong>H2</strong>Manrope · 24/30<br>-0.005em · w700<br>Section title</div><div class="ts-h2">Branding, motion graphics y diseño web.</div></div>
+        <div class="type-row"><div class="tm"><strong>H3</strong>Manrope · 20/26<br>w600<br>Card title, subsection</div><div class="ts-h3">Personajes y universos visuales.</div></div>
+        <div class="type-row"><div class="tm"><strong>Body</strong>Manrope · 16/26<br>w400<br>Texto base web/mobile</div><div class="ts-body">Texto largo en web y mobile. Esta es la base de lectura — todo lo demás se mide contra esto. Cuerpo cómodo con interlineado generoso.</div></div>
+        <div class="type-row"><div class="tm"><strong>Body sm</strong>Manrope · 14/21<br>w400<br>Texto en componentes</div><div class="ts-bodysm">Etiquetas de campo, texto secundario en cards, descripciones cortas. El tamaño por defecto para botones y badges.</div></div>
+        <div class="type-row"><div class="tm"><strong>Caption</strong>Manrope · 12/17<br>w500<br>Metadata, tooltips</div><div class="ts-caption">Metadata · 12 px · usado en chips y tooltips.</div></div>
+        <div class="type-row"><div class="tm"><strong>Overline</strong>Manrope · 11<br>0.14em · uppercase<br>Eyebrows, tags, labels</div><div class="ts-overline">Sección · categoría · estado</div></div>
+      </div>
+
+      <h3 class="sub-h">Reglas de aplicación.</h3>
+      <p class="sub-l">No mezcles más de tres niveles tipográficos en una misma pantalla mobile. En web puedes llegar a cinco, pero no más.</p>
+      <ul class="rules-list">
+        <li>· Cuerpo base mobile = 16 px (nunca menos para texto leíble).</li>
+        <li>· Touch target mínimo = 44 × 44 px. Aplica a botones, links interactivos, items de lista.</li>
+        <li>· Display (Fauna One) sólo en hero o portadas. En cards usar H3 con Manrope.</li>
+        <li>· Tabular numbers (<code>font-feature-settings: "tnum"</code>) en tablas y montos.</li>
+      </ul>
+    </section>
+
+    <!-- LAYOUT -->
+    <section class="page" id="layout">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>03 / Layout</span><span class="num" aria-hidden="true">— Espacio, grid, breakpoints</span></div>
+      <h2 class="section-h">Todo cae<br>en una grilla de 4.</h2>
+      <p class="section-lede">Toda separación, padding y margen respeta una escala de <strong>4 pt</strong>. Los componentes tienen padding mínimo predefinido y nunca se "ajustan a ojo". Si necesitas un valor que no está en la escala, hay un error de diseño antes que un error de spacing.</p>
+
+      <h3 class="sub-h first">Escala de espaciado.</h3>
+      <p class="sub-l">9 escalones cubren cualquier caso. Tokens <code>--s-1</code> a <code>--s-9</code>.</p>
+
+      <div class="space-vis">
+        <div class="space-c"><div class="space-bar w-4"></div><div class="lbl"><strong>4</strong>--s-1</div></div>
+        <div class="space-c"><div class="space-bar w-8"></div><div class="lbl"><strong>8</strong>--s-2</div></div>
+        <div class="space-c"><div class="space-bar w-12"></div><div class="lbl"><strong>12</strong>--s-3</div></div>
+        <div class="space-c"><div class="space-bar w-16"></div><div class="lbl"><strong>16</strong>--s-4</div></div>
+        <div class="space-c"><div class="space-bar w-24"></div><div class="lbl"><strong>24</strong>--s-5</div></div>
+        <div class="space-c"><div class="space-bar w-32"></div><div class="lbl"><strong>32</strong>--s-6</div></div>
+        <div class="space-c"><div class="space-bar w-48"></div><div class="lbl"><strong>48</strong>--s-7</div></div>
+        <div class="space-c"><div class="space-bar w-64"></div><div class="lbl"><strong>64</strong>--s-8</div></div>
+        <div class="space-c"><div class="space-bar w-96"></div><div class="lbl"><strong>96</strong>--s-9</div></div>
+      </div>
+
+      <h3 class="sub-h">Aplicación por contexto.</h3>
+      <p class="sub-l">Cada componente usa el spacing que corresponde a su densidad. Memorízalos:</p>
+
+      <div class="tok-table ctx-table">
+        <div class="tok-row head"><span>Contexto</span><span>Token</span><span>Uso</span></div>
+        <div class="tok-row"><span class="nm">Padding interno de input</span><span class="tk">12 px → 14 px</span><span class="us">Padding vertical 12 · horizontal 14. Garantiza 44 px de altura.</span></div>
+        <div class="tok-row"><span class="nm">Gap dentro de card</span><span class="tk">--s-3 (12)</span><span class="us">Entre header de card, contenido y CTA.</span></div>
+        <div class="tok-row"><span class="nm">Padding interno de card</span><span class="tk">--s-5 (24)</span><span class="us">Card en web · 20 px en mobile.</span></div>
+        <div class="tok-row"><span class="nm">Gap entre cards</span><span class="tk">--s-4 a --s-5</span><span class="us">16 px mobile · 24 px web.</span></div>
+        <div class="tok-row"><span class="nm">Margen entre secciones</span><span class="tk">--s-7 a --s-9</span><span class="us">48 mobile · 96 web.</span></div>
+        <div class="tok-row"><span class="nm">Container max</span><span class="tk">1280 px</span><span class="us">Ancho máximo de contenido en web; 80 % en pantallas &lt; 1400.</span></div>
+      </div>
+
+      <h3 class="sub-h">Breakpoints.</h3>
+      <p class="sub-l">Cuatro breakpoints. <code>sm</code> tablet vertical, <code>md</code> tablet horizontal / laptop pequeña, <code>lg</code> laptop, <code>xl</code> desktop.</p>
+
+      <div class="bp-wrap">
+        <div class="bp-bar"></div>
+        <div class="bp-marks">
+          <div><strong>sm · 640 px</strong>Mobile → tablet</div>
+          <div><strong>md · 960 px</strong>Tablet → laptop</div>
+          <div><strong>lg · 1280 px</strong>Laptop estándar</div>
+          <div><strong>xl · 1536 px</strong>Desktop wide</div>
+        </div>
+      </div>
+
+      <h3 class="sub-h">Grid de columnas.</h3>
+      <p class="sub-l">En web: 12 columnas, gutter 24 px, container max 1280 px. En mobile: 4 columnas, gutter 16 px, margen lateral 16 px.</p>
+
+      <div class="grid-vis">
+        <div class="grid-card">
+          <div class="grid-label">Web · 12 columnas</div>
+          <div class="grid-cols web">
+            <div></div><div></div><div></div><div></div><div></div><div></div>
+            <div></div><div></div><div></div><div></div><div></div><div></div>
+          </div>
+          <div class="grid-meta">gutter 24 · margin 80 · max 1280</div>
+        </div>
+        <div class="grid-card">
+          <div class="grid-label">Mobile · 4 columnas</div>
+          <div class="grid-cols mob">
+            <div></div><div></div><div></div><div></div>
+          </div>
+          <div class="grid-meta">gutter 16 · margin 16 · fluid</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ELEVATION & RADII -->
+    <section class="page" id="elevation">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>04 / Elevación &amp; radios</span><span class="num" aria-hidden="true">— Profundidad y esquinas</span></div>
+      <h2 class="section-h">5 niveles<br>de elevación.</h2>
+      <p class="section-lede">La sombra comunica jerarquía espacial: una card sobre el fondo, un menú sobre una card, un modal sobre todo. Cuac usa <strong>5 niveles</strong> — más que eso es ruido.</p>
+
+      <div class="elev-vis">
+        <div class="elev-c el-0"><div><strong>el-0</strong>flat · separadores</div></div>
+        <div class="elev-c el-1"><div><strong>el-1</strong>cards default</div></div>
+        <div class="elev-c el-2"><div><strong>el-2</strong>cards hover, sticky</div></div>
+        <div class="elev-c el-3"><div><strong>el-3</strong>menús, popovers</div></div>
+        <div class="elev-c el-4"><div><strong>el-4</strong>modales, sheets</div></div>
+      </div>
+
+      <h3 class="sub-h">Radios de esquina.</h3>
+      <p class="sub-l">Seis radios estándar. <code>--r-pill</code> para botones y badges; <code>--r-md</code> es el default para cards y inputs.</p>
+
+      <div class="radii-vis">
+        <div class="radii-c r-0"><strong>--r-0</strong>0 · separadores rectos</div>
+        <div class="radii-c r-xs"><strong>--r-xs</strong>4 · tags pequeños, code</div>
+        <div class="radii-c r-sm"><strong>--r-sm</strong>6 · inputs, alerts</div>
+        <div class="radii-c r-md"><strong>--r-md</strong>12 · cards default</div>
+        <div class="radii-c r-lg"><strong>--r-lg</strong>20 · modales, sheets</div>
+        <div class="radii-c r-pill"><strong>--r-pill</strong>999 · botones, badges</div>
+      </div>
+    </section>
+
+    <!-- ICONOGRAPHY -->
+    <section class="page" id="iconography">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>05 / Iconografía</span><span class="num" aria-hidden="true">— Set de UI</span></div>
+      <h2 class="section-h">Iconos finos<br>y consistentes.</h2>
+      <p class="section-lede">Set de íconos en trazo <strong>1.8 px</strong> sobre lienzo de 24 px. Esquinas redondeadas, terminaciones suaves. Usamos íconos sólo cuando aportan claridad — nunca como adorno. Para íconos personalizados, consultar a producto.</p>
+
+      <div class="icon-grid">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg><span class="nm">menu</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg><span class="nm">close</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg><span class="nm">search</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 5h18l-2 12H5L3 5z"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg><span class="nm">cart</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3v-9z"/><path d="M9 20v-6h6v6"/></svg><span class="nm">home</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span class="nm">user</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M21 12c0 4-4 8-9 8s-9-4-9-8 4-8 9-8 9 4 9 8z"/><path d="M3 12h18M12 3v18"/></svg><span class="nm">globe</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg><span class="nm">plus</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="nm">arrow-right</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6L5 12l6 6"/></svg><span class="nm">arrow-left</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg><span class="nm">chevron</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21l-1.5-1.4C5.4 14.6 2 11.5 2 7.7 2 4.4 4.4 2 7.7 2c1.8 0 3.6.9 4.3 2.2C12.7 2.9 14.5 2 16.3 2 19.6 2 22 4.4 22 7.7c0 3.8-3.4 6.9-8.5 11.9L12 21z"/></svg><span class="nm">heart</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/><path d="M9 9l6 6M15 9l-6 6"/></svg><span class="nm">image</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4-8 4-8-4zM4 8v8l8 4 8-4V8M12 12v8"/></svg><span class="nm">layers</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span class="nm">clock</span></div>
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 12c3-7 15-7 18 0-3 7-15 7-18 0z"/><circle cx="12" cy="12" r="3"/></svg><span class="nm">eye</span></div>
+      </div>
+    </section>
+
+    <!-- BUTTONS -->
+    <section class="page" id="buttons">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>06 / Botones</span><span class="num" aria-hidden="true">— Acción</span></div>
+      <h2 class="section-h">El componente<br>más usado.</h2>
+      <p class="section-lede">Una pantalla bien diseñada tiene <strong>un solo botón primario</strong>. Todos los demás son secundarios. La jerarquía visual debe corresponder a la jerarquía de tareas.</p>
+
+      <div class="comp-grid">
+        <div class="comp-card">
+          <div class="comp-head"><h4>Variantes</h4><span class="ct">.btn-*</span></div>
+          <div class="comp-stage">
+            <button class="ds-btn btn-primary btn-md">Cotizar →</button>
+            <button class="ds-btn btn-secondary btn-md">Ver más</button>
+            <button class="ds-btn btn-ghost btn-md">Cancelar</button>
+            <button class="ds-btn btn-tonal btn-md">Suscribirme</button>
+            <button class="ds-btn btn-danger btn-md">Eliminar</button>
+            <button class="ds-btn btn-link btn-md">Saber más</button>
+          </div>
+          <div class="comp-notes"><span>Primary · Secondary · Ghost · Tonal · Danger · Link</span><span>1 primary por vista</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Tamaños</h4><span class="ct">.btn-sm/md/lg</span></div>
+          <div class="comp-stage">
+            <button class="ds-btn btn-primary btn-sm">SM · 32 px</button>
+            <button class="ds-btn btn-primary btn-md">MD · 40 px</button>
+            <button class="ds-btn btn-primary btn-lg">LG · 48 px</button>
+          </div>
+          <div class="comp-notes"><span>Mobile usa <code>lg</code> por touch target.</span><span>min 44 × 44 px</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Estados</h4><span class="ct">:hover :focus :disabled</span></div>
+          <div class="comp-stage">
+            <button class="ds-btn btn-primary btn-md">Default</button>
+            <button class="ds-btn btn-primary btn-md is-hover">Hover</button>
+            <button class="ds-btn btn-primary btn-md is-focus">Focus</button>
+            <button class="ds-btn btn-primary btn-md" disabled>Disabled</button>
+          </div>
+          <div class="comp-notes"><span>Foco siempre visible para teclado</span><span>--focus-ring</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Icon button</h4><span class="ct">.btn-icon</span></div>
+          <div class="comp-stage">
+            <button class="btn-icon" aria-label="Buscar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg></button>
+            <button class="btn-icon" aria-label="Favorito"><svg viewBox="0 0 24 24"><path d="M12 21l-1.5-1.4C5.4 14.6 2 11.5 2 7.7 2 4.4 4.4 2 7.7 2c1.8 0 3.6.9 4.3 2.2C12.7 2.9 14.5 2 16.3 2 19.6 2 22 4.4 22 7.7c0 3.8-3.4 6.9-8.5 11.9L12 21z"/></svg></button>
+            <button class="ds-btn btn-primary btn-md"><svg class="ico-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nuevo proyecto</button>
+            <button class="ds-btn btn-ghost btn-md">Descargar<svg class="ico-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 12l6 6 6-6M4 20h16"/></svg></button>
+          </div>
+          <div class="comp-notes"><span>Icon-only requiere <code>aria-label</code></span><span>iconos 16–18 px</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMS -->
+    <section class="page" id="forms">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>07 / Formularios</span><span class="num" aria-hidden="true">— Inputs &amp; campos</span></div>
+      <h2 class="section-h">Entrada<br>sin fricción.</h2>
+      <p class="section-lede">Inputs altos, labels visibles siempre arriba del campo, hints opcionales abajo, errores con mensaje específico. Nunca usamos <em>placeholder</em> como label — es un patrón roto para accesibilidad.</p>
+
+      <div class="comp-grid">
+        <div class="comp-card">
+          <div class="comp-head"><h4>Input · estados</h4><span class="ct">.input</span></div>
+          <div class="comp-stage col">
+            <div class="field"><label for="ds-name">Nombre completo</label><input id="ds-name" class="input" type="text" value="Sebastián Gutiérrez"><span class="hint">Como aparece en tu documento.</span></div>
+            <div class="field"><label for="ds-email">Email</label><input id="ds-email" class="input" type="email" placeholder="hola@cuacdesign.com"></div>
+            <div class="field"><label for="ds-tel">Teléfono</label><input id="ds-tel" class="input error" type="tel" value="abc123"><span class="err">Formato inválido — usa solo dígitos.</span></div>
+            <div class="field"><label for="ds-blocked">Bloqueado</label><input id="ds-blocked" class="input" type="text" value="Read-only" disabled></div>
+          </div>
+          <div class="comp-notes"><span>Label arriba · hint o error abajo</span><span>focus ring AA</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Textarea &amp; select</h4><span class="ct">.textarea .select</span></div>
+          <div class="comp-stage col">
+            <div class="field"><label for="ds-textarea">Cuéntanos tu idea</label><textarea id="ds-textarea" class="textarea" placeholder="Estoy lanzando una marca de café…">Estoy lanzando una marca de café especial — necesitamos identidad, empaque y un primer drop digital para 6 SKUs.</textarea></div>
+            <div class="field"><label for="ds-select">Servicio principal</label><select id="ds-select" class="select"><option>Branding completo</option><option>Motion graphics</option><option>Diseño web</option></select></div>
+          </div>
+          <div class="comp-notes"><span>Textarea mínimo 3 líneas</span><span>resize:vertical</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Checkbox &amp; radio</h4><span class="ct">.check .check.radio</span></div>
+          <div class="comp-stage col left">
+            <label class="check"><input type="checkbox" checked>Acepto recibir el newsletter mensual.</label>
+            <label class="check"><input type="checkbox">Quiero información sobre talleres y eventos.</label>
+            <hr class="hr">
+            <label class="check radio"><input type="radio" name="bdg" checked>Proyecto puntual</label>
+            <label class="check radio"><input type="radio" name="bdg">Retainer mensual</label>
+            <label class="check radio"><input type="radio" name="bdg">No estoy seguro/a aún</label>
+          </div>
+          <div class="comp-notes"><span>Checkbox = elección múltiple</span><span>Radio = una sola opción</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Toggle &amp; chips</h4><span class="ct">.toggle .chip</span></div>
+          <div class="comp-stage col left toggle-stage">
+            <div class="toggle-rows">
+              <div class="toggle-row"><span>Notificaciones push</span><div class="toggle on"></div></div>
+              <div class="toggle-row"><span>Modo oscuro automático</span><div class="toggle"></div></div>
+              <div class="toggle-row"><span>Compartir analytics</span><div class="toggle on"></div></div>
+            </div>
+            <div class="chips-row">
+              <span class="chip active">Branding<span class="x">×</span></span>
+              <span class="chip active">Motion<span class="x">×</span></span>
+              <span class="chip">Web</span>
+              <span class="chip">Editorial</span>
+              <span class="chip">Ilustración</span>
+            </div>
+          </div>
+          <div class="comp-notes"><span>Toggle = acción inmediata</span><span>Chip = filtro/tag removible</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEEDBACK -->
+    <section class="page" id="feedback">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>08 / Feedback</span><span class="num" aria-hidden="true">— Alertas, modales, estados</span></div>
+      <h2 class="section-h">Comunica lo que<br>está pasando.</h2>
+      <p class="section-lede">El usuario siempre debe saber qué pasó después de su acción. Toasts para confirmaciones rápidas, alerts inline para validación de formulario, modales sólo cuando se requiere decisión.</p>
+
+      <div class="comp-grid">
+        <div class="comp-card">
+          <div class="comp-head"><h4>Alerts</h4><span class="ct">.alert</span></div>
+          <div class="comp-stage col stretch">
+            <div class="alert success"><div class="ai" aria-hidden="true">✓</div><div class="ac"><strong>Listo</strong><span>Tu mensaje fue enviado. Te respondemos en menos de 24 h.</span></div></div>
+            <div class="alert info"><div class="ai" aria-hidden="true">i</div><div class="ac"><strong>Nueva versión disponible</strong><span>Tu app se actualizará al volver a abrirla.</span></div></div>
+            <div class="alert warn"><div class="ai" aria-hidden="true">!</div><div class="ac"><strong>Conexión inestable</strong><span>Algunos cambios podrían no haberse guardado.</span></div></div>
+            <div class="alert danger"><div class="ai" aria-hidden="true">×</div><div class="ac"><strong>No pudimos procesar el pago</strong><span>Revisa los datos de tu tarjeta o intenta con otro método.</span></div></div>
+          </div>
+          <div class="comp-notes"><span>Título + descripción · evita texto largo</span><span>4 tipos</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Tooltip &amp; badges</h4><span class="ct">.tt .badge</span></div>
+          <div class="comp-stage col">
+            <div class="tt-wrap"><div class="tt">Copiado al portapapeles</div><button class="ds-btn btn-ghost btn-sm">Copiar enlace</button></div>
+            <div class="badge-row">
+              <span class="badge badge-success">Activo</span>
+              <span class="badge badge-ember">Nuevo</span>
+              <span class="badge badge-warning">En revisión</span>
+              <span class="badge badge-neutral">Borrador</span>
+              <span class="badge badge-coral">Beta</span>
+              <span class="badge badge-sky">Public</span>
+            </div>
+          </div>
+          <div class="comp-notes"><span>Tooltip: 12 px max</span><span>Badge: estado de objeto</span></div>
+        </div>
+
+        <div class="comp-card full">
+          <div class="comp-head"><h4>Modal</h4><span class="ct">.modal</span></div>
+          <div class="modal-stage" role="img" aria-label="Demo de componente modal: confirmación de eliminación">
+            <div class="modal">
+              <div class="modal-head"><h5>¿Eliminar este proyecto?</h5><button class="close" aria-label="Cerrar">×</button></div>
+              <div class="modal-body"><p>Esta acción no se puede deshacer. Se eliminarán <strong>El Cuaquiverso · Identidad</strong> y todos sus archivos asociados. Si querés conservarlos, podés archivarlo en su lugar.</p></div>
+              <div class="modal-foot">
+                <button class="ds-btn btn-ghost btn-md">Cancelar</button>
+                <button class="ds-btn btn-danger btn-md">Eliminar</button>
+              </div>
+            </div>
+          </div>
+          <div class="comp-notes"><span>Sólo para decisiones destructivas o irreversibles</span><span>el-4 · max 440 w</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Empty state</h4><span class="ct">.empty</span></div>
+          <div class="comp-stage empty-stage">
+            <div class="empty">
+              <div class="ec"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 14h3"/></svg></div>
+              <h5>Aún no tienes proyectos.</h5>
+              <p>Cuando arranques un proyecto con nosotros, lo verás aquí. Mientras tanto, contanos qué tenés en la cabeza.</p>
+              <button class="ds-btn btn-primary btn-md">Iniciar un proyecto →</button>
+            </div>
+          </div>
+          <div class="comp-notes"><span>Ilustración + frase corta + acción</span><span>nunca dejar pantalla vacía</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Skeleton loader</h4><span class="ct">.skel</span></div>
+          <div class="comp-stage skel-stage">
+            <div class="skel-row">
+              <div class="skel-card">
+                <div class="skel thumb"></div>
+                <div class="skel line"></div>
+                <div class="skel line s"></div>
+              </div>
+              <div class="skel-card">
+                <div class="skel thumb"></div>
+                <div class="skel line"></div>
+                <div class="skel line s"></div>
+              </div>
+            </div>
+          </div>
+          <div class="comp-notes"><span>Forma del contenido real</span><span>1.5 s loop</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NAVIGATION -->
+    <section class="page" id="navigation">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>09 / Navegación</span><span class="num" aria-hidden="true">— Web &amp; mobile</span></div>
+      <h2 class="section-h">Saber dónde<br>estás, siempre.</h2>
+      <p class="section-lede">Web: nav fijo arriba con logo + secciones + CTA. Mobile: bottom nav con 4–5 destinos primarios y top bar contextual. Los breadcrumbs sólo aparecen en flujos de 3+ niveles.</p>
+
+      <div class="comp-grid full">
+        <div class="comp-card">
+          <div class="comp-head"><h4>Web · Top nav</h4><span class="ct">.web-nav</span></div>
+          <div class="comp-stage nav-stage">
+            <nav class="web-nav">
+              <div class="wnav-l">
+                <div class="wn-logo" [innerHTML]="logoFull"></div>
+                <div class="wn-links">
+                  <a class="active">Estudio</a>
+                  <a>Servicios</a>
+                  <a>Portafolio</a>
+                  <a>Cuaquiverso</a>
+                  <a>Blog</a>
+                </div>
+              </div>
+              <div class="wnav-r">
+                <button class="btn-icon" aria-label="Buscar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg></button>
+                <button class="ds-btn btn-primary btn-sm">Cotizar →</button>
+              </div>
+            </nav>
+          </div>
+          <div class="comp-notes"><span>Sticky en scroll · alto 72 px</span><span>1 CTA primario · 1 acción icon</span></div>
+        </div>
+      </div>
+
+      <div class="comp-grid">
+        <div class="comp-card">
+          <div class="comp-head"><h4>Mobile · Bottom nav</h4><span class="ct">.mob-bnav</span></div>
+          <div class="comp-stage">
+            <div class="mob-bnav">
+              <div class="mbi active"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3v-9z"/><path d="M9 20v-6h6v6"/></svg>Home</div>
+              <div class="mbi"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4-8 4-8-4zM4 8v8l8 4 8-4V8"/></svg>Trabajo</div>
+              <div class="mbi"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Estudio</div>
+              <div class="mbi"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Tú</div>
+            </div>
+          </div>
+          <div class="comp-notes"><span>4–5 destinos primarios</span><span>Label + ícono siempre</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Tabs &amp; breadcrumbs</h4><span class="ct">.tabs .breadcrumb</span></div>
+          <div class="comp-stage col stretch tabs-stage">
+            <div class="tabs">
+              <button class="active">Resumen</button>
+              <button>Archivos</button>
+              <button>Comentarios</button>
+              <button>Actividad</button>
+            </div>
+            <div class="breadcrumb">
+              <a>Estudio</a><span class="sep">/</span>
+              <a>Proyectos</a><span class="sep">/</span>
+              <a>Cuaquiverso</a><span class="sep">/</span>
+              <span class="cur">Identidad v2</span>
+            </div>
+          </div>
+          <div class="comp-notes"><span>Tabs cambian vista al mismo nivel</span><span>Breadcrumb = ubicación</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DATA & LISTS -->
+    <section class="page" id="data">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>10 / Datos &amp; listas</span><span class="num" aria-hidden="true">— Cards, tablas, listas</span></div>
+      <h2 class="section-h">Cómo mostramos<br>la información.</h2>
+      <p class="section-lede">Cards para colecciones visuales, tablas para datos comparables, listas para ítems homogéneos. Cada uno tiene un caso de uso claro — no mezclar.</p>
+
+      <div class="comp-grid">
+        <div class="comp-card">
+          <div class="comp-head"><h4>Content card</h4><span class="ct">.ui-card</span></div>
+          <div class="comp-stage">
+            <div class="ui-card">
+              <div class="uc-thumb">PROYECTO · BRANDING</div>
+              <div class="uc-head">
+                <h5>El Cuaquiverso</h5>
+                <span class="badge badge-success">Activo</span>
+              </div>
+              <p>Identidad y mundo visual para una serie animada de Cuac. Cinco personajes, un sistema, mucho color.</p>
+              <div class="uc-foot">
+                <div class="avatar-group"><div class="avatar sm">SG</div><div class="avatar sm ember">NA</div><div class="avatar sm coral">NM</div></div>
+                <span class="uc-meta">Hace 2 d</span>
+              </div>
+            </div>
+            <div class="ui-card narrow">
+              <div class="uc-head"><h5>Stat</h5></div>
+              <div class="stat-wrap">
+                <div class="stat-card inline"><span class="lbl">Proyectos activos</span><span class="val">12</span><span class="dlt up">↑ 3 este mes</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="comp-notes"><span>Card content vs card métrica</span><span>el-1 default · el-2 hover</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Avatares</h4><span class="ct">.avatar</span></div>
+          <div class="comp-stage">
+            <div class="avatar sm">SG</div>
+            <div class="avatar">NA</div>
+            <div class="avatar lg ember">NM</div>
+            <div class="avatar-group">
+              <div class="avatar">SG</div>
+              <div class="avatar ember">NA</div>
+              <div class="avatar coral">NM</div>
+              <div class="avatar deep">+3</div>
+            </div>
+          </div>
+          <div class="comp-notes"><span>Iniciales fallback · stack máx 4</span><span>sm 28 · md 40 · lg 56</span></div>
+        </div>
+      </div>
+
+      <div class="comp-grid full">
+        <div class="comp-card">
+          <div class="comp-head"><h4>Tabla de datos</h4><span class="ct">.ds-table</span></div>
+          <div class="table-stage">
+            <div class="ds-table-wrap">
+              <table class="ds-table">
+                <caption class="sr-only">Tabla de proyectos activos — ejemplo</caption>
+                <thead><tr><th>Proyecto</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th>Equipo</th><th class="right">Entrega</th></tr></thead>
+                <tbody>
+                  <tr><td><div class="cell-name"><div class="avatar sm ember">CV</div>El Cuaquiverso</div></td><td>Interno</td><td>Branding</td><td><span class="badge badge-success">Activo</span></td><td><div class="avatar-group"><div class="avatar sm">SG</div><div class="avatar sm coral">NM</div></div></td><td class="right stp">15 / 06 / 26</td></tr>
+                  <tr><td><div class="cell-name"><div class="avatar sm coral">PZ</div>Editorial Pez</div></td><td>Pez</td><td>Editorial</td><td><span class="badge badge-warning">En revisión</span></td><td><div class="avatar-group"><div class="avatar sm">SG</div><div class="avatar sm ember">NA</div></div></td><td class="right stp">28 / 05 / 26</td></tr>
+                  <tr><td><div class="cell-name"><div class="avatar sm deep">CF</div>Café Sereno</div></td><td>Sereno SAS</td><td>Branding + Web</td><td><span class="badge badge-ember">Nuevo</span></td><td><div class="avatar-group"><div class="avatar sm ember">NA</div></div></td><td class="right stp">12 / 07 / 26</td></tr>
+                  <tr><td><div class="cell-name"><div class="avatar sm">LB</div>Lab Botánico</div></td><td>Universidad</td><td>Motion</td><td><span class="badge badge-neutral">Borrador</span></td><td><div class="avatar-group"><div class="avatar sm coral">NM</div></div></td><td class="right stp">04 / 08 / 26</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="comp-notes"><span>Header sticky · row hover</span><span>números tabulares</span></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-head"><h4>Lista</h4><span class="ct">.list-stack</span></div>
+          <div class="comp-stage">
+            <ul class="list-stack">
+              <li class="list-item">
+                <div class="avatar ember">NA</div>
+                <div class="lt"><div class="ti">Natalia agregó comentarios</div><div class="sb">En "Cuaquiverso · Identidad v2"</div></div>
+                <div class="rt">2 min</div>
+              </li>
+              <li class="list-item">
+                <div class="avatar coral">NM</div>
+                <div class="lt"><div class="ti">Nathali aprobó la versión</div><div class="sb">Coverboard final</div></div>
+                <div class="rt">1 h</div>
+              </li>
+              <li class="list-item">
+                <div class="avatar">SG</div>
+                <div class="lt"><div class="ti">Sebastián subió 4 archivos</div><div class="sb">A "Café Sereno"</div></div>
+                <div class="rt">Ayer</div>
+              </li>
+              <li class="list-item">
+                <div class="avatar deep">+</div>
+                <div class="lt"><div class="ti">Nuevo proyecto creado</div><div class="sb">Lab Botánico · Motion</div></div>
+                <div class="rt">3 d</div>
+              </li>
+            </ul>
+          </div>
+          <div class="comp-notes"><span>Avatar + título + sub + meta</span><span>divider entre items</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MOBILE -->
+    <section class="page" id="mobile">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>11 / Mobile screens</span><span class="num" aria-hidden="true">— App nativa</span></div>
+      <h2 class="section-h">El sistema<br>en mobile.</h2>
+      <p class="section-lede">Tres pantallas canónicas de la app de Cuac. Cada una respeta los tokens, la jerarquía tipográfica y los componentes definidos. Si una nueva pantalla necesita un patrón nuevo, primero lo agregamos al sistema.</p>
+
+      <div class="mob-row">
+        <!-- HOME -->
+        <div class="device" role="img" aria-label="Pantalla Home — app móvil Cuac">
+          <div class="scrn home">
+            <div class="sb"><span>9:41</span><span class="ic-row">●●●&nbsp;◐&nbsp;▮</span></div>
+            <div class="scrn-body">
+              <div class="top-bar">
+                <div class="gr">Buenas, Sebas<strong>El estudio · hoy</strong></div>
+                <div class="avatar sm ember">SG</div>
+              </div>
+              <div class="hero-c">
+                <span class="et">— Cuaquiverso · Sprint 04</span>
+                <span class="ht">Le dimos color<br>al <em>capítulo 3</em>.</span>
+                <span class="pb">Ver avances →</span>
+              </div>
+              <div class="scn-row"><span class="ti">Servicios</span><span class="ta">Ver todos</span></div>
+              <div class="svc-row">
+                <div class="svc-tile"><div class="ti-i"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l8-4 8 4-8 4-8-4zM4 8v8l8 4 8-4V8"/></svg></div><span class="nm">Branding</span><span class="dp">Identidad &amp; sistema.</span></div>
+                <div class="svc-tile coral"><div class="ti-i"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h14v14H5z"/><path d="M10 9l5 3-5 3z"/></svg></div><span class="nm">Motion</span><span class="dp">Animación &amp; loops.</span></div>
+                <div class="svc-tile ember"><div class="ti-i"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg></div><span class="nm">Web</span><span class="dp">Diseño + dev.</span></div>
+              </div>
+              <div class="scn-row"><span class="ti">Proyectos</span><span class="ta">Ver todos</span></div>
+              <div class="proj-c">
+                <div class="pt">
+                  <div class="et">Café Sereno</div>
+                  <div class="ht">Identidad + drop digital</div>
+                </div>
+                <div class="arr">→</div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="ti active"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3v-9z"/></svg>Inicio</div>
+              <div class="ti"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4-8 4-8-4zM4 8v8l8 4 8-4V8"/></svg>Trabajo</div>
+              <div class="ti"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>Estudio</div>
+              <div class="ti"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Tú</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DETAIL -->
+        <div class="device" role="img" aria-label="Pantalla Detalle de proyecto — app móvil">
+          <div class="scrn detail">
+            <div class="sb"><span>9:41</span><span class="ic-row">●●●&nbsp;◐&nbsp;▮</span></div>
+            <div class="scrn-body">
+              <div class="det-hero">
+                <div class="det-back">←</div>
+                <div>
+                  <div class="det-tag">— Branding · 2026</div>
+                  <div class="det-h">Café Sereno.<br>Identidad &amp; drop.</div>
+                </div>
+              </div>
+              <div class="det-body">
+                <div class="det-stats">
+                  <div class="det-stat"><div class="v">12</div><div class="k">Piezas</div></div>
+                  <div class="det-stat"><div class="v">6</div><div class="k">SKUs</div></div>
+                  <div class="det-stat"><div class="v">8 sem</div><div class="k">Duración</div></div>
+                </div>
+                <div class="det-section">Equipo</div>
+                <div class="det-list-it"><div class="avatar sm">SG</div><div class="v">Sebastián Gutiérrez<div class="sb">Director creativo</div></div></div>
+                <div class="det-list-it"><div class="avatar sm ember">NA</div><div class="v">Natalia Acosta<div class="sb">Diseñadora líder</div></div></div>
+                <div class="det-list-it"><div class="avatar sm coral">NM</div><div class="v">Nathali Mora<div class="sb">Ilustradora</div></div></div>
+                <div class="det-section">Descripción</div>
+                <div class="det-p">Sistema de marca completo para Café Sereno — un café de origen colombiano con tueste lento. Incluye naming, sistema visual y un primer drop digital de 6 SKUs.</div>
+              </div>
+              <div class="det-cta"><div class="b">Ver proceso completo →</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORM -->
+        <div class="device" role="img" aria-label="Pantalla Formulario de cotización — app móvil">
+          <div class="scrn form">
+            <div class="sb"><span>9:41</span><span class="ic-row">●●●&nbsp;◐&nbsp;▮</span></div>
+            <div class="scrn-body">
+              <div class="form-h">
+                <span class="bk">←</span>
+                <span class="ti">Cuéntanos tu idea</span>
+                <span class="sv">Paso 2/3</span>
+              </div>
+              <div class="form-body">
+                <div>
+                  <div class="form-h2">¿Qué necesitas?</div>
+                  <div class="form-p">Marca los servicios que te interesan. Puedes elegir más de uno.</div>
+                </div>
+                <div class="chips-row">
+                  <span class="chip-mini active">Branding</span>
+                  <span class="chip-mini active">Web</span>
+                  <span class="chip-mini">Motion</span>
+                  <span class="chip-mini">Ilustración</span>
+                  <span class="chip-mini">Editorial</span>
+                  <span class="chip-mini">Packaging</span>
+                </div>
+                <div class="form-field">
+                  <label>Nombre del proyecto</label>
+                  <input type="text" value="Café Sereno · Drop 01">
+                </div>
+                <div class="form-field">
+                  <label>Cuéntanos un poco más</label>
+                  <textarea>Marca de café especial colombiano. Necesitamos identidad y un primer drop con 6 SKUs.</textarea>
+                </div>
+              </div>
+              <div class="form-cta"><div class="b">Siguiente →</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mob-tag">
+        <span>Home · Detail · Form</span>
+        <span>iPhone 14 · 390 × 844</span>
+      </div>
+    </section>
+
+    <!-- WEB -->
+    <section class="page" id="web">
+      <div class="section-eyebrow"><span class="dot" aria-hidden="true"></span><span>12 / Web layouts</span><span class="num" aria-hidden="true">— Patrones aplicados</span></div>
+      <h2 class="section-h">El sistema<br>en web.</h2>
+      <p class="section-lede">Dos patrones canónicos: la <strong>landing</strong> (marketing público) y el <strong>dashboard</strong> (estudio interno para gestionar proyectos). Mismos tokens, distintos contextos.</p>
+
+      <h3 class="sub-h first">Landing · cuacdesign.com</h3>
+      <p class="sub-l">Hero editorial + sección de features. Tipografía display de marca + cuerpo Manrope. CTA primario único.</p>
+
+      <div class="browser" role="img" aria-label="Layout Landing — cuacdesign.com">
+        <div class="browser-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">cuacdesign.com</div></div>
+        <div class="browser-body web-home">
+          <nav class="wh-nav">
+            <div class="wh-logo" [innerHTML]="logoFull"></div>
+            <div class="wh-links"><a class="active">Estudio</a><a>Servicios</a><a>Portafolio</a><a>Cuaquiverso</a><a>Blog</a></div>
+            <div class="wh-cta">
+              <button class="ds-btn btn-ghost btn-sm">Ingresar</button>
+              <button class="ds-btn btn-primary btn-sm">Cotizar →</button>
+            </div>
+          </nav>
+          <div class="wh-hero">
+            <div>
+              <div class="et">Estudio creativo · Bogotá</div>
+              <h1>Damos vida<br>a las <em>ideas</em>.</h1>
+              <p>Branding, ilustración, motion graphics y diseño web para marcas que quieren conectar de verdad con las personas.</p>
+              <div class="ct-row">
+                <button class="ds-btn btn-primary btn-lg">Cotizar gratis →</button>
+                <button class="ds-btn btn-ghost btn-lg">Ver portafolio</button>
+              </div>
+            </div>
+            <div class="wh-vis">
+              <div class="wh-mark" [innerHTML]="logoFull"></div>
+            </div>
+          </div>
+          <div class="wh-feats">
+            <div class="wh-feat">
+              <div class="ic-w"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l8-4 8 4-8 4-8-4zM4 8v8l8 4 8-4V8M12 12v8"/></svg></div>
+              <div class="nm">Branding</div>
+              <div class="ds">Identidades visuales completas — naming, sistema, manual y rollout.</div>
+            </div>
+            <div class="wh-feat">
+              <div class="ic-w"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h14v14H5z"/><path d="M10 9l5 3-5 3z"/></svg></div>
+              <div class="nm">Motion</div>
+              <div class="ds">Animación 2D, loops sociales y bumpers para marcas con energía.</div>
+            </div>
+            <div class="wh-feat">
+              <div class="ic-w"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg></div>
+              <div class="nm">Web</div>
+              <div class="ds">Diseño y desarrollo de sitios — desde landings hasta plataformas a medida.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="sub-h">Dashboard · app.cuacdesign.com</h3>
+      <p class="sub-l">Layout sidebar fija + main scroll. Densidad alta, navegación persistente.</p>
+
+      <div class="browser" role="img" aria-label="Layout Dashboard — app.cuacdesign.com">
+        <div class="browser-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">app.cuacdesign.com / proyectos</div></div>
+        <div class="browser-body">
+          <div class="dash-shell">
+            <aside class="dash-side">
+              <div class="ds-logo" [innerHTML]="logoFull"></div>
+              <nav class="ds-nav">
+                <a class="active"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3v-9z"/></svg>Inicio</a>
+                <a><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l8-4 8 4-8 4-8-4zM4 8v8l8 4 8-4V8"/></svg>Proyectos</a>
+                <a><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Clientes</a>
+                <a><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Tiempo</a>
+                <a><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/></svg>Facturas</a>
+                <a class="settings"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg>Configuración</a>
+              </nav>
+            </aside>
+            <div class="dash-main">
+              <div class="dash-top">
+                <h2>Hola, Sebastián</h2>
+                <div class="dash-actions">
+                  <button class="ds-btn btn-ghost btn-sm">Filtros</button>
+                  <button class="ds-btn btn-primary btn-sm">+ Nuevo proyecto</button>
+                </div>
+              </div>
+              <div class="dash-stats">
+                <div class="stat-card"><span class="lbl">Activos</span><span class="val">12</span><span class="dlt up">↑ 3 este mes</span></div>
+                <div class="stat-card"><span class="lbl">Horas / sem</span><span class="val">38h</span><span class="dlt up">↑ 4h</span></div>
+                <div class="stat-card"><span class="lbl">Por facturar</span><span class="val">$24M</span><span class="dlt down">↓ 8 %</span></div>
+                <div class="stat-card"><span class="lbl">NPS clientes</span><span class="val">68</span><span class="dlt up">↑ 5 pts</span></div>
+              </div>
+              <div class="dash-charts">
+                <div class="dash-card">
+                  <h4>Horas por proyecto · últimos 6 meses</h4>
+                  <div class="bars">
+                    <div class="bar h-60"></div>
+                    <div class="bar alt h-42"></div>
+                    <div class="bar h-78"></div>
+                    <div class="bar alt h-55"></div>
+                    <div class="bar h-88"></div>
+                    <div class="bar alt h-70"></div>
+                  </div>
+                  <div class="bar-labels"><span>Dic</span><span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>May</span></div>
+                </div>
+                <div class="dash-card act">
+                  <h4>Actividad reciente</h4>
+                  <div class="ai"><div class="avatar sm ember">NA</div><div class="lt">Natalia comentó en Cuaquiverso v2</div><div class="rt">2m</div></div>
+                  <div class="ai"><div class="avatar sm coral">NM</div><div class="lt">Nathali aprobó coverboard final</div><div class="rt">1h</div></div>
+                  <div class="ai"><div class="avatar sm">SG</div><div class="lt">Subiste 4 archivos a Sereno</div><div class="rt">3h</div></div>
+                  <div class="ai"><div class="avatar sm deep">+</div><div class="lt">Nuevo: Lab Botánico Motion</div><div class="rt">2d</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLOPHON -->
+    <div class="colophon">
+      <div>
+        <h4>Cuac · Design System 2026</h4>
+        <p>Sistema de diseño para producto digital, mantenido por el equipo de producto. Para identidad de marca (logo, color, papelería, voz), consulta el <strong>Brandbook</strong>.</p>
+      </div>
+      <div class="cf-col">
+        <h5>Recursos</h5>
+        <span>Tokens · CSS / Tailwind / Tokens Studio</span>
+        <span>Componentes · Figma library</span>
+        <span>Componentes · Angular</span>
+        <span>Iconos · SVG sprite</span>
+      </div>
+      <div class="cf-col">
+        <h5>Contacto de producto</h5>
+        <a href="mailto:product&#64;cuacdesign.com">product&#64;cuacdesign.com</a>
+        <a routerLink="/identidadcorporativa">← Ir al Brandbook</a>
+      </div>
+      <div class="colophon-bot">
+        <span>Cuac · Design System v 1.0 · Mayo 2026</span>
+        <span>WCAG 2.1 AA · Web · iOS · Android</span>
+      </div>
+    </div>
+
+  </main>
+</div>

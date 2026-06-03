@@ -1,11 +1,11 @@
 <!-- ── Hero ─────────────────────────────────────────────────────────────────── -->
-<div class="port-hero" [style.min-height]="hero.height">
+<header class="port-hero" [style.min-height]="hero.height">
   <app-portfolio-shader [theme]="theme()"></app-portfolio-shader>
 
-  <nav class="hero-nav" aria-label="Navegación de portafolio">
-    <a class="hero-back" routerLink="/">← Inicio</a>
+  <nav class="hero-nav cuac-breadcrumb" aria-label="Breadcrumb">
+    <a routerLink="/" class="bc-crumb">← Inicio</a>
     @if (!isCuac) {
-      <a class="hero-back" routerLink="/portafolio">← Cuac Design</a>
+      <a routerLink="/portafolio" class="bc-crumb">← Cuac Design</a>
     }
   </nav>
 
@@ -14,45 +14,102 @@
       <span class="pulse" aria-hidden="true"></span>
       {{ hero.eyebrow }}
     </div>
-    <h1 class="hero-h1">
+
+    <h1 class="hero-h1" [class.hero-h1--personal]="!isCuac">
       {{ hero.h1Main }}<br>
       <em class="hero-h1-sub">{{ hero.h1Sub }}</em>
     </h1>
-    <p class="hero-meta">{{ hero.rol }}</p>
-    @if (hero.disciplinas?.trim()) {
-      <p class="hero-disciplinas">{{ hero.disciplinas }}</p>
+
+    @if (hero.lede) {
+      <p class="hero-lede">{{ hero.lede }}</p>
+    }
+
+    <div class="hero-meta">
+      <span class="hero-rol">{{ hero.rol }}</span>
+      <span class="hero-dot" aria-hidden="true">·</span>
+      <span class="hero-count">{{ totalCount() }} {{ totalCount() === 1 ? 'proyecto' : 'proyectos' }}</span>
+    </div>
+
+    @if (hero.disciplinas.length) {
+      <ul class="hero-disciplinas" aria-label="Disciplinas">
+        @for (d of hero.disciplinas; track d) {
+          <li>{{ d }}</li>
+        }
+      </ul>
     }
   </div>
+
+  @if (!isCuac && profile()?.photo_url) {
+    <div class="hero-portrait" aria-hidden="true">
+      <img [src]="profile()!.photo_url" [alt]="aboutName" loading="eager" />
+    </div>
+  }
 
   <div class="scroll-hint" aria-hidden="true">
     <span class="scroll-line"></span>
     <span class="scroll-label">Explorar</span>
   </div>
-</div>
+</header>
 
 <!-- ── Content ───────────────────────────────────────────────────────────────── -->
 <div class="port-content">
 
-  <!-- ── Filter bar ──────────────────────────────────────────────────────────── -->
+  <!-- ── About / bio ───────────────────────────────────────────────────────── -->
+  @if (profile()?.bio) {
+    <section class="about">
+      <p class="about-kicker">{{ aboutKicker }}</p>
+      <div class="about-row">
+
+        <!-- Col 1: bio + leer más -->
+        <div class="about-col-bio">
+          <div class="bio-box" [class.bio-box--open]="bioExpanded()">
+            <p class="bio-text">{{ profile()!.bio }}</p>
+          </div>
+          @if (bioNeedsExpand) {
+            <button class="bio-toggle" (click)="bioExpanded.update(v => !v)" [attr.aria-expanded]="bioExpanded()">
+              @if (bioExpanded()) { <span>Leer menos</span><span class="bio-toggle-icon">↑</span> }
+              @else { <span>Leer más</span><span class="bio-toggle-icon">↓</span> }
+            </button>
+          }
+        </div>
+
+        <!-- Col 2: CV (solo portafolios personales) -->
+        @if (!isCuac && profile()?.cv_url) {
+          <div class="about-col-cv">
+            <a class="cv-btn" [href]="profile()!.cv_url" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Ver CV
+            </a>
+            <a class="cv-link" [href]="profile()!.cv_url" [attr.download]="'CV-' + aboutName + '.pdf'">Descargar PDF</a>
+          </div>
+        }
+
+      </div>
+    </section>
+  }
+
+  <!-- ── Filter bar (sticky) ─────────────────────────────────────────────────── -->
   <nav class="filter-bar" aria-label="Filtrar por categoría">
-    <button
-      class="filter-item"
-      [class.active]="catFiltro() === 'all'"
-      [attr.aria-pressed]="catFiltro() === 'all'"
-      (click)="catFiltro.set('all')">
-      Todos <span class="filter-count">{{ totalCount() }}</span>
-    </button>
-    @for (c of categorias; track c.id) {
-      @if (countFor(c.id) > 0) {
-        <button
-          class="filter-item"
-          [class.active]="catFiltro() === c.id"
-          [attr.aria-pressed]="catFiltro() === c.id"
-          (click)="catFiltro.set(c.id)">
-          {{ c.label }} <span class="filter-count">{{ countFor(c.id) }}</span>
-        </button>
+    <div class="filter-bar-inner">
+      <button
+        class="filter-item"
+        [class.active]="catFiltro() === 'all'"
+        [attr.aria-pressed]="catFiltro() === 'all'"
+        (click)="catFiltro.set('all')">
+        Todos <span class="filter-count">{{ totalCount() }}</span>
+      </button>
+      @for (c of categorias; track c.id) {
+        @if (countFor(c.id) > 0) {
+          <button
+            class="filter-item"
+            [class.active]="catFiltro() === c.id"
+            [attr.aria-pressed]="catFiltro() === c.id"
+            (click)="catFiltro.set(c.id)">
+            {{ c.label }} <span class="filter-count">{{ countFor(c.id) }}</span>
+          </button>
+        }
       }
-    }
+    </div>
   </nav>
 
   <!-- ── Grid ────────────────────────────────────────────────────────────────── -->
@@ -62,24 +119,31 @@
 
   @if (!cargando() && filteredProjects().length > 0) {
     <div class="port-grid">
-      @for (p of filteredProjects(); track p.id) {
+      @for (p of filteredProjects(); track p.id; let i = $index) {
         <a
           class="port-card"
+          [class.is-featured]="p.featured"
           [style.grid-column]="'span ' + p.span"
           [style.aspect-ratio]="p.ar"
+          [style.--i]="i"
           [routerLink]="['/portafolio', p.slug]"
           [attr.aria-label]="p.title + ' · ' + catLabel(p.category)">
+
           @if (p.cover_url) {
             <div class="card-bg" [style.backgroundImage]="safeBg(p.cover_url)"></div>
+            <div class="card-scrim" aria-hidden="true"></div>
           }
-          <div class="card-label" aria-hidden="true">
+
+          <span class="card-go" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M7 17 17 7M9 7h8v8"/></svg>
+          </span>
+
+          <div class="card-caption">
             <span class="card-cat">{{ catLabel(p.category) }}</span>
-            <span class="card-title-sm">{{ p.title }}</span>
-          </div>
-          <div class="card-overlay" aria-hidden="true">
-            <span class="overlay-cat">{{ catLabel(p.category) }}</span>
-            <span class="overlay-title">{{ p.title }}</span>
-            <span class="overlay-cta">Ver proyecto</span>
+            <span class="card-title">{{ p.title }}</span>
+            @if (p.client_name) {
+              <span class="card-client">{{ p.client_name }}</span>
+            }
           </div>
         </a>
       }
@@ -92,9 +156,39 @@
     </div>
   }
 
+  <!-- ── Achievements ────────────────────────────────────────────────────────── -->
+  @if (achievements().length > 0) {
+    <section class="achievements" aria-label="Reconocimientos">
+      <header class="ach-head">
+        <p class="ach-kicker">Trayectoria</p>
+        <h2 class="ach-title">Reconocimientos</h2>
+      </header>
+      <ul class="ach-list">
+        @for (a of achievements(); track a.id) {
+          <li class="ach-row" [class.has-link]="!!a.url">
+            <span class="ach-year">{{ a.year || '' }}</span>
+            <span class="ach-main">
+              <span class="ach-name">{{ a.title }}</span>
+              @if (a.organization) { <span class="ach-org">{{ a.organization }}</span> }
+            </span>
+            <span class="ach-type">{{ achTypeLabel(a.type) }}</span>
+            @if (a.url) {
+              <a class="ach-link" [href]="a.url" target="_blank" rel="noopener noreferrer"
+                 [attr.aria-label]="'Ver ' + a.title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M7 17 17 7M9 7h8v8"/></svg>
+              </a>
+            } @else {
+              <span class="ach-link ach-link--empty" aria-hidden="true"></span>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
   <!-- ── Personal footer (Cuac only) ─────────────────────────────────────────── -->
   @if (isCuac) {
-    <div class="personal-footer">
+    <section class="personal-footer" aria-label="Portafolios del equipo">
       <p class="pf-eyebrow">El equipo también tiene voz propia</p>
       <div class="pf-grid">
         <a class="pf-card pf-natalia" routerLink="/portafolio/natalia">
@@ -110,7 +204,7 @@
           <span class="pf-cta">Ver portafolio <span aria-hidden="true">→</span></span>
         </a>
       </div>
-    </div>
+    </section>
   }
 
 </div>

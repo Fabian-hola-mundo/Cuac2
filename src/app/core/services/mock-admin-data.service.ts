@@ -6,6 +6,7 @@ export interface Customer {
   id: string; nombre: string; email: string; phone: string;
   ciudad: string; direccion: string; tag: string;
   since: string; // ISO date 'YYYY-MM-DD'
+  last: string;  // última actividad, para mostrar en tabla
   orders: number; spent: number;
 }
 
@@ -40,14 +41,14 @@ export interface ToneStyle { bg: string; fg: string; }
 export class MockAdminDataService {
 
   readonly CUSTOMERS: Customer[] = [
-    { id: 'C-401', nombre: 'Mariana Restrepo',     email: 'mariana.r@gmail.com',    phone: '+57 311 444 2891', ciudad: 'Medellín',     direccion: 'Cra 43A # 14-50, Apto 802', since: '2026-03-15', orders: 4, spent: 487000, tag: 'VIP'        },
-    { id: 'C-389', nombre: 'Diana Cárdenas',       email: 'diana@studio.co',        phone: '+57 320 551 0034', ciudad: 'Cali',         direccion: 'Av. 6N # 24-12',             since: '2026-01-10', orders: 7, spent: 982000, tag: 'VIP'        },
-    { id: 'C-377', nombre: 'Jhon Sebastián López', email: 'jslopez@correo.co',      phone: '+57 314 222 8801', ciudad: 'Bogotá',       direccion: 'Cra 15 # 88-64, Apto 301',  since: '2026-04-20', orders: 2, spent: 178000, tag: 'Activo'     },
-    { id: 'C-365', nombre: 'Camilo Henao',         email: 'camihenao@gmail.com',    phone: '+57 316 889 4412', ciudad: 'Manizales',    direccion: 'Cll 54 # 23-10',             since: '2026-02-08', orders: 2, spent: 268000, tag: 'Activo'     },
-    { id: 'C-358', nombre: 'Laura Patiño',         email: 'lpatino@correo.co',      phone: '+57 300 774 1209', ciudad: 'Bogotá',       direccion: 'Cra 7 # 72-41',              since: '2026-05-13', orders: 1, spent: 0,      tag: 'Devolución' },
-    { id: 'C-341', nombre: 'Andrés Quintero',      email: 'a.quintero@gmail.com',   phone: '+57 312 003 5566', ciudad: 'Barranquilla', direccion: 'Cll 72 # 44-50',             since: '2026-02-15', orders: 2, spent: 196000, tag: 'Activo'     },
-    { id: 'C-329', nombre: 'Valentina Ruiz',       email: 'valru@correo.co',        phone: '+57 318 662 9987', ciudad: 'Pereira',      direccion: 'Cra 13 # 15-26',             since: '2026-05-12', orders: 1, spent: 0,      tag: 'Fallido'    },
-    { id: 'C-318', nombre: 'Carolina Mejía',       email: 'caro.mejia@outlook.com', phone: '+57 315 445 7723', ciudad: 'Bucaramanga',  direccion: 'Cll 48 # 35-90, Casa 12',   since: '2025-12-05', orders: 5, spent: 412000, tag: 'Activo'     },
+    { id: 'C-401', nombre: 'Mariana Restrepo',     email: 'mariana.r@gmail.com',    phone: '+57 311 444 2891', ciudad: 'Medellín',     direccion: 'Cra 43A # 14-50, Apto 802', since: '2026-03-15', last: 'Hoy',      orders: 4, spent: 487000, tag: 'VIP'        },
+    { id: 'C-389', nombre: 'Diana Cárdenas',       email: 'diana@studio.co',        phone: '+57 320 551 0034', ciudad: 'Cali',         direccion: 'Av. 6N # 24-12',             since: '2026-01-10', last: 'Ayer',     orders: 7, spent: 982000, tag: 'VIP'        },
+    { id: 'C-377', nombre: 'Jhon Sebastián López', email: 'jslopez@correo.co',      phone: '+57 314 222 8801', ciudad: 'Bogotá',       direccion: 'Cra 15 # 88-64, Apto 301',  since: '2026-04-20', last: 'Hoy',      orders: 2, spent: 178000, tag: 'Activo'     },
+    { id: 'C-365', nombre: 'Camilo Henao',         email: 'camihenao@gmail.com',    phone: '+57 316 889 4412', ciudad: 'Manizales',    direccion: 'Cll 54 # 23-10',             since: '2026-02-08', last: 'Hace 3d',  orders: 2, spent: 268000, tag: 'Activo'     },
+    { id: 'C-358', nombre: 'Laura Patiño',         email: 'lpatino@correo.co',      phone: '+57 300 774 1209', ciudad: 'Bogotá',       direccion: 'Cra 7 # 72-41',              since: '2026-05-13', last: 'Hace 2s',  orders: 1, spent: 0,      tag: 'Devolución' },
+    { id: 'C-341', nombre: 'Andrés Quintero',      email: 'a.quintero@gmail.com',   phone: '+57 312 003 5566', ciudad: 'Barranquilla', direccion: 'Cll 72 # 44-50',             since: '2026-02-15', last: 'Hace 1d',  orders: 2, spent: 196000, tag: 'Activo'     },
+    { id: 'C-329', nombre: 'Valentina Ruiz',       email: 'valru@correo.co',        phone: '+57 318 662 9987', ciudad: 'Pereira',      direccion: 'Cra 13 # 15-26',             since: '2026-05-12', last: 'Hace 4d',  orders: 1, spent: 0,      tag: 'Fallido'    },
+    { id: 'C-318', nombre: 'Carolina Mejía',       email: 'caro.mejia@outlook.com', phone: '+57 315 445 7723', ciudad: 'Bucaramanga',  direccion: 'Cll 48 # 35-90, Casa 12',   since: '2025-12-05', last: 'Hace 1d',  orders: 5, spent: 412000, tag: 'Activo'     },
   ];
 
   readonly ORDERS: Order[] = [

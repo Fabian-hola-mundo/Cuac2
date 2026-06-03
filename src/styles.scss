@@ -1,6 +1,64 @@
 @use 'styles/tokens';
 @use 'styles/reset';
 @use 'styles/typography';
+@use 'styles/breadcrumb';
+@use 'styles/admin';
+
+// ─── Screen reader only utility ───────────────────────────────────────────────
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ─── Skip navigation ──────────────────────────────────────────────────────────
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+
+  &:focus-visible {
+    position: fixed;
+    left: var(--s-5);
+    top: var(--s-5);
+    width: auto;
+    height: auto;
+    background: var(--ember);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--r-pill);
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 14px;
+    z-index: 9999;
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+  }
+}
+
+// ─── Anillo de foco global (WCAG 2.4.7) ─────────────────────────────────────
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.btn:focus-visible { outline-offset: 3px; }
+
 
 .section {
   padding: var(--s-9) var(--s-7);
@@ -46,5 +104,31 @@
     border: 1.5px solid rgba(21, 31, 40, 0.2);
     background: transparent;
     &:hover { border-color: var(--carbon); background: rgba(21, 31, 40, 0.04); }
+  }
+}
+
+/* ─── Cross-page transitions ─────────────────────────────────────────────
+   Soften the default View Transitions cross-fade between routes so that
+   switching between Brandbook and Design System feels gentle, not abrupt. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The dark side rail is visually constant across both documents — give it
+   a shared name so the browser morphs it in place instead of cross-fading. */
+::view-transition-old(cuac-rail),
+::view-transition-new(cuac-rail) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(cuac-rail),
+  ::view-transition-new(cuac-rail) {
+    animation-duration: 1ms;
   }
 }

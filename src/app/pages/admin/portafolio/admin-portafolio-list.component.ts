@@ -1,16 +1,17 @@
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import {
   PortfolioService,
   PortfolioProject,
   PORTFOLIO_CATEGORIES,
+  AUTHORS,
 } from '../../../core/services/portfolio.service';
 
 @Component({
   selector: 'app-admin-portafolio-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './admin-portafolio-list.component.html',
   styleUrl: './admin-portafolio-list.component.scss',
 })
@@ -66,9 +67,11 @@ export class AdminPortafolioListComponent implements OnInit {
   }
 
   authorColor(author: string): string {
-    if (author === 'natalia') return '#7A2A3F'; // dark rose — 9.0:1 on white
-    if (author === 'nathali') return '#2A3B8A'; // deep indigo — 9.6:1 on white
-    return '#011E54';                            // deep navy — 15:1 on white
+    return AUTHORS.find(a => a.id === author)?.textColor ?? '#011E54';
+  }
+
+  authorLabel(author: string): string {
+    return AUTHORS.find(a => a.id === author)?.label ?? author;
   }
 
   catLabel(id: string): string {

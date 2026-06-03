@@ -8,13 +8,15 @@ import { Component } from '@angular/core';
 })
 export class TickerComponent {
   items = [
-    'Startups Series A — D',
-    'Editoriales',
-    'Bancos & Fintech',
-    'Salud & Bienestar',
-    'Retail & Consumo',
-    'Educación',
-    'Tecnología',
-    'Cultura & Eventos',
+    'Branding',
+    'Diseño Editorial',
+    'Ilustración',
+    'Motion Graphics',
+    'Diseño Web',
+    'Identidad Visual',
+    'Tipografía',
+    'Packaging',
+    'UI / UX',
+    'Hecho en Colombia',
   ];
 }

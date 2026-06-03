@@ -53,6 +53,8 @@ export class AdminShellComponent implements OnInit {
     if (url.includes('/ajustes/dominios'))      return ['Sistema', 'Ajustes', 'Dominios'];
     if (url.includes('/ajustes'))              return ['Sistema', 'Ajustes'];
     if (url.includes('/cotizaciones'))                 return ['Diseño', 'Cotizaciones'];
+    if (url.includes('/portafolio/logros'))            return ['Estudio', 'Portafolio', 'Reconocimientos'];
+    if (url.includes('/portafolio/perfiles'))          return ['Estudio', 'Portafolio', 'Perfiles'];
     if (url.includes('/portafolio/nuevo'))             return ['Estudio', 'Portafolio', 'Nuevo proyecto'];
     if (url.match(/\/portafolio\/.+\/editar/))         return ['Estudio', 'Portafolio', 'Editar proyecto'];
     if (url.includes('/portafolio'))                   return ['Estudio', 'Portafolio'];

@@ -1,0 +1,163 @@
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Estudio · Cuac Design</div>
+    <h1>Reconocimientos del <em>portafolio</em>.</h1>
+    <p class="sub">Premios, menciones de honor y selecciones del colectivo y del equipo.</p>
+  </div>
+  <div class="ph-r">
+    <button class="btn-sm solid" (click)="nuevo()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo reconocimiento
+    </button>
+  </div>
+</div>
+
+<nav class="tabs">
+  <a class="tab" routerLink="/admin/portafolio" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: true }">Proyectos</a>
+  <a class="tab" routerLink="/admin/portafolio/logros" routerLinkActive="on">Reconocimientos</a>
+  <a class="tab" routerLink="/admin/portafolio/perfiles" routerLinkActive="on">Perfiles</a>
+</nav>
+
+@if (errorMsg()) {
+  <p style="color:var(--terra);font-size:13px;padding:8px 0">{{ errorMsg() }}</p>
+}
+
+<!-- ── Inline editor ───────────────────────────────────────────────────────── -->
+@if (draft(); as d) {
+  <div class="panel" style="margin-bottom:var(--s-5)">
+    <div class="panel-h"><h3>{{ d.id ? 'Editar reconocimiento' : 'Nuevo reconocimiento' }}</h3></div>
+    <div class="panel-b">
+      <div class="grid-2">
+        <div class="field">
+          <label>Título <span class="opt">*</span></label>
+          <input class="input" [ngModel]="d.title" (ngModelChange)="d.title = $event" placeholder="Ej: Premio Lápiz de Acero" />
+        </div>
+        <div class="field">
+          <label>Otorgado por</label>
+          <input class="input" [ngModel]="d.organization" (ngModelChange)="d.organization = $event" placeholder="Organización o entidad" />
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="field">
+          <label>Pertenece a</label>
+          <div class="owner-checks">
+            @for (o of owners; track o.id) {
+              <label class="owner-check" [class.on]="draftHasOwner(o.id)" (click)="toggleOwner($any(o.id))">
+                <span class="owner-check-dot" [style.background]="o.color"></span>
+                {{ o.label }}
+              </label>
+            }
+          </div>
+        </div>
+        <div class="field">
+          <label>Tipo</label>
+          <select class="input select" [ngModel]="d.type" (ngModelChange)="d.type = $event">
+            @for (t of types; track t.id) { <option [value]="t.id">{{ t.label }}</option> }
+          </select>
+        </div>
+        <div class="field">
+          <label>Año</label>
+          <input class="input" type="number" [ngModel]="d.year" (ngModelChange)="d.year = $event" placeholder="2025" />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Enlace <span class="opt">opcional</span></label>
+          <input class="input" type="url" [ngModel]="d.url" (ngModelChange)="d.url = $event" placeholder="https://…" />
+        </div>
+        <div class="field">
+          <label>Orden</label>
+          <input class="input" type="number" [ngModel]="d.sort_order" (ngModelChange)="d.sort_order = $event" placeholder="0" />
+          <span class="help">Menor número aparece primero.</span>
+        </div>
+      </div>
+
+      <div class="field inv-toggle-row">
+        <label>Publicado</label>
+        <label class="inv-toggle">
+          <input type="checkbox" [ngModel]="d.published" (ngModelChange)="d.published = $event" />
+          <span class="inv-slider"></span>
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:var(--s-4)">
+        <button class="btn-sm solid" [disabled]="guardando()" (click)="guardar()">
+          {{ guardando() ? 'Guardando…' : (d.id ? 'Actualizar' : 'Crear') }}
+        </button>
+        <button class="btn-sm ghost" (click)="cancelar()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="chips" style="margin-bottom:var(--s-5)">
+  <button class="chip" [class.is-on]="ownerFiltro() === 'all'" (click)="ownerFiltro.set('all')">Todos</button>
+  @for (o of owners; track o.id) {
+    <button class="chip" [class.is-on]="ownerFiltro() === o.id" (click)="ownerFiltro.set($any(o.id))">{{ o.label }}</button>
+  }
+</div>
+
+@if (cargando()) {
+  <p style="color:rgba(21,31,40,0.5);font-size:14px;padding:12px 0">Cargando…</p>
+}
+
+@if (!cargando() && filtered().length > 0) {
+  <div class="panel">
+    <table class="tbl">
+      <thead>
+        <tr><th>Reconocimiento</th><th>Pertenece</th><th>Tipo</th><th>Año</th><th>Estado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody>
+        @for (a of filtered(); track a.id) {
+          <tr>
+            <td>
+              <div class="meta">
+                <strong>{{ a.title }}</strong>
+                @if (a.organization) { <span class="ach-org-sm">{{ a.organization }}</span> }
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;flex-wrap:wrap;gap:4px">
+                @for (ow of (a.owners ?? []); track ow) {
+                  <span class="author-chip" [style.background]="ownerColor(ow) + '22'" [style.color]="ownerColor(ow)">{{ ownerLabel(ow) }}</span>
+                }
+              </div>
+            </td>
+            <td class="id">{{ typeLabel(a.type) }}</td>
+            <td class="id">{{ a.year || '—' }}</td>
+            <td>
+              @if (a.published) {
+                <span class="badge ok"><span class="pdot"></span>Publicado</span>
+              } @else {
+                <span class="badge"><span class="pdot"></span>Borrador</span>
+              }
+            </td>
+            <td>
+              <div class="row-actions">
+                @if (confirmId() === a.id) {
+                  <span style="font-size:12px;color:var(--terra)">¿Eliminar?</span>
+                  <button class="btn-sm ghost err" (click)="eliminar(a)">Sí</button>
+                  <button class="btn-sm ghost" (click)="cancelarEliminar()">No</button>
+                } @else {
+                  <button class="btn-sm ghost" (click)="editar(a)">Editar</button>
+                  <button class="btn-sm ghost" (click)="togglePublished(a)">{{ a.published ? 'Despublicar' : 'Publicar' }}</button>
+                  <button class="btn-sm ghost err" (click)="confirmarEliminar(a)">Eliminar</button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (!cargando() && filtered().length === 0 && !draft()) {
+  <div class="panel" style="padding:64px 32px;text-align:center">
+    <p style="font-family:var(--display);font-size:22px;letter-spacing:-0.01em;margin-bottom:8px">Sin reconocimientos aún.</p>
+    <p style="color:rgba(21,31,40,0.5);font-size:14px;margin-bottom:24px">Agrega premios, menciones o selecciones.</p>
+    <button class="btn-sm solid" (click)="nuevo()">Nuevo reconocimiento</button>
+  </div>
+}

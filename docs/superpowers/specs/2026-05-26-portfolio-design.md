@@ -96,7 +96,7 @@ Las rutas `/portafolio/natalia` y `/portafolio/nathali` pasan el tema via `route
 
 - Ruta: `/admin/portafolio`
 - Tabla con columnas: cover thumb, título, categoría, autores (chips de color), estado, fecha
-- Acciones por fila: editar, toggle published, eliminar
+- Acciones por fila: editar, toggle published (inline, sin abrir formulario), eliminar
 - Botón "Nuevo proyecto" → `/admin/portafolio/nuevo`
 - Entrada en el sidebar del admin shell (junto a Inventario y Cotizaciones)
 

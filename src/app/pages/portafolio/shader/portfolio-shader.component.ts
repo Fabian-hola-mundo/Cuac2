@@ -2,87 +2,14 @@ import { Component, Input, afterNextRender, inject, DestroyRef, ElementRef } fro
 
 type ShaderTheme = 'cuac' | 'natalia' | 'nathali';
 
-interface ThemeColors {
-  bg: [number, number, number];
-  b1: [number, number, number];
-  b2: [number, number, number];
-  b3: [number, number, number];
-}
-
-const THEME_COLORS: Record<ShaderTheme, ThemeColors> = {
-  cuac: {
-    bg: [0.941, 0.945, 0.965],
-    b1: [0.925, 0.220, 0.075],
-    b2: [1.000, 0.510, 0.235],
-    b3: [0.784, 0.157, 0.039],
-  },
-  natalia: {
-    bg: [0.984, 0.973, 0.957],
-    b1: [0.910, 0.478, 0.537],
-    b2: [1.000, 0.706, 0.667],
-    b3: [0.784, 0.314, 0.392],
-  },
-  nathali: {
-    bg: [0.933, 0.945, 0.992],
-    b1: [0.392, 0.706, 0.941],
-    b2: [0.627, 0.820, 0.992],
-    b3: [0.275, 0.431, 0.784],
-  },
+// Theme accent (RGB) the dots tint toward near the cursor
+const ACCENT: Record<ShaderTheme, [number, number, number]> = {
+  cuac:    [236, 56, 19],
+  natalia: [196, 85, 106],
+  nathali: [92, 111, 199],
 };
 
-const VERT = /* glsl */`
-  varying vec2 vUv;
-  uniform float uTime;
-  void main() {
-    vUv = uv;
-    vec3 pos = position;
-    pos.z += sin(pos.x * 2.2 + uTime * 0.60) * 0.018;
-    pos.z += cos(pos.y * 1.9 + uTime * 0.45) * 0.015;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-  }
-`;
-
-const FRAG = /* glsl */`
-  uniform float uTime;
-  uniform vec2  uMouse;
-  uniform vec3  uBgColor;
-  uniform vec3  uBlob1Color;
-  uniform vec3  uBlob2Color;
-  uniform vec3  uBlob3Color;
-  varying vec2  vUv;
-
-  float gauss(vec2 uv, vec2 center, float r) {
-    float d = distance(uv, center);
-    return exp(-d * d / (2.0 * r * r));
-  }
-
-  void main() {
-    vec2 uv = vUv;
-
-    vec2 b1 = vec2(0.22, 0.58) + vec2(sin(uTime * 0.30) * 0.11, cos(uTime * 0.24) * 0.09);
-    b1 = mix(b1, uMouse + vec2(-0.14, 0.08), 0.24);
-
-    vec2 b2 = vec2(0.74, 0.36) + vec2(cos(uTime * 0.26) * 0.13, sin(uTime * 0.32) * 0.11);
-    b2 = mix(b2, uMouse + vec2(0.10, -0.07), 0.18);
-
-    vec2 b3 = vec2(0.50, 0.80) + vec2(sin(uTime * 0.18 + 1.4) * 0.15, cos(uTime * 0.21 + 0.7) * 0.12);
-    b3 = mix(b3, uMouse + vec2(0.04, 0.14), 0.14);
-
-    float g1 = gauss(uv, b1, 0.22);
-    float g2 = gauss(uv, b2, 0.26);
-    float g3 = gauss(uv, b3, 0.20);
-
-    vec3 col = uBgColor;
-    col = mix(col, mix(uBgColor, uBlob1Color, 0.40), g1 * 0.60);
-    col = mix(col, mix(uBgColor, uBlob2Color, 0.35), g2 * 0.50);
-    col = mix(col, mix(uBgColor, uBlob3Color, 0.38), g3 * 0.55);
-
-    float vig = distance(uv, vec2(0.5, 0.5));
-    col = mix(col, uBgColor * 0.97, vig * 0.30);
-
-    gl_FragColor = vec4(col, 1.0);
-  }
-`;
+const DOT: [number, number, number] = [21, 31, 40]; // carbon
 
 @Component({
   selector: 'app-portfolio-shader',
@@ -97,90 +24,116 @@ export class PortfolioShaderComponent {
   private el         = inject(ElementRef);
 
   constructor() {
-    afterNextRender(() => { this.initShader(); });
+    afterNextRender(() => this.init());
   }
 
-  private async initShader(): Promise<void> {
-    const canvas   = this.el.nativeElement.querySelector('canvas') as HTMLCanvasElement;
+  private init(): void {
+    const canvas = this.el.nativeElement.querySelector('canvas') as HTMLCanvasElement | null;
     if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     const host     = canvas.parentElement as HTMLElement;
     const noMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const t        = THEME_COLORS[this.theme];
+    const accent   = ACCENT[this.theme];
 
-    const THREE = await import('three');
+    const dpr  = Math.min(window.devicePixelRatio || 1, 2);
+    const GAP  = 34;     // grid spacing (css px)
+    const RINF = 165;    // cursor influence radius
+    const BASE_R = 1.15; // dot radius at rest
+    let w = 0, h = 0;
 
-    const uniforms = {
-      uTime:       { value: 0 },
-      uMouse:      { value: new THREE.Vector2(0.5, 0.35) },
-      uBgColor:    { value: new THREE.Vector3(...t.bg) },
-      uBlob1Color: { value: new THREE.Vector3(...t.b1) },
-      uBlob2Color: { value: new THREE.Vector3(...t.b2) },
-      uBlob3Color: { value: new THREE.Vector3(...t.b3) },
+    // Smoothed cursor: position + intensity (0 = no mouse, 1 = engaged)
+    const cur = { x: 0, y: 0, i: 0 };
+    const tgt = { x: 0, y: 0, i: 0 };
+
+    const resize = () => {
+      w = host.clientWidth;
+      h = host.clientHeight;
+      canvas.width  = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (cur.i === 0) { cur.x = w / 2; cur.y = h * 0.45; tgt.x = cur.x; tgt.y = cur.y; }
     };
+    resize();
 
-    const geo      = new THREE.PlaneGeometry(2, 2, 32, 32);
-    const mat      = new THREE.ShaderMaterial({ uniforms, vertexShader: VERT, fragmentShader: FRAG });
-    const mesh     = new THREE.Mesh(geo, mat);
-    const scene    = new THREE.Scene();
-    scene.add(mesh);
-
-    const camera   = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(host.clientWidth, host.clientHeight, false);
-
-    const targetMouse  = new THREE.Vector2(0.5, 0.35);
-    const currentMouse = new THREE.Vector2(0.5, 0.35);
-    const REST         = new THREE.Vector2(0.5, 0.35);
-    const LERP         = 0.045;
-
+    // Listen on window so pointer-events:none on the canvas host doesn't block it
     const onMove = (e: MouseEvent) => {
-      if (noMotion) return;
       const rect = host.getBoundingClientRect();
-      targetMouse.set(
-        (e.clientX - rect.left) / rect.width,
-        1 - (e.clientY - rect.top) / rect.height,
-      );
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+        tgt.x = x; tgt.y = y; tgt.i = 1;
+      } else {
+        tgt.i = 0;
+      }
     };
-    const onLeave = () => { if (!noMotion) targetMouse.copy(REST); };
-
-    host.addEventListener('mousemove', onMove);
-    host.addEventListener('mouseleave', onLeave);
+    window.addEventListener('mousemove', onMove, { passive: true });
 
     let resizeTimer: ReturnType<typeof setTimeout>;
     const ro = new ResizeObserver(() => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        const w = host.clientWidth;
-        const h = host.clientHeight;
-        if (w && h) renderer.setSize(w, h, false);
-      }, 100);
+      resizeTimer = setTimeout(resize, 120);
     });
     ro.observe(host);
 
-    const clock = new THREE.Clock();
-    let rafId: number;
+    const draw = () => {
+      cur.x += (tgt.x - cur.x) * 0.14;
+      cur.y += (tgt.y - cur.y) * 0.14;
+      cur.i += (tgt.i - cur.i) * 0.07;
 
-    const tick = () => {
-      rafId = requestAnimationFrame(tick);
-      if (!noMotion) {
-        uniforms.uTime.value = clock.getElapsedTime();
-        currentMouse.lerp(targetMouse, LERP);
-        uniforms.uMouse.value.copy(currentMouse);
+      ctx.clearRect(0, 0, w, h);
+
+      // Soft accent glow trailing the cursor
+      if (cur.i > 0.01) {
+        const g = ctx.createRadialGradient(cur.x, cur.y, 0, cur.x, cur.y, RINF * 1.7);
+        g.addColorStop(0, `rgba(${accent[0]},${accent[1]},${accent[2]},${0.09 * cur.i})`);
+        g.addColorStop(1, `rgba(${accent[0]},${accent[1]},${accent[2]},0)`);
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, w, h);
       }
-      renderer.render(scene, camera);
+
+      for (let y = GAP / 2; y < h; y += GAP) {
+        for (let x = GAP / 2; x < w; x += GAP) {
+          let r = BASE_R, a = 0.055;
+          let cr = DOT[0], cg = DOT[1], cb = DOT[2];
+
+          if (cur.i > 0.01) {
+            const dx = x - cur.x, dy = y - cur.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < RINF) {
+              const t = (1 - dist / RINF);
+              const e = t * t * cur.i;
+              r = BASE_R + e * 3.0;
+              a = 0.055 + e * 0.5;
+              cr = DOT[0] + (accent[0] - DOT[0]) * e;
+              cg = DOT[1] + (accent[1] - DOT[1]) * e;
+              cb = DOT[2] + (accent[2] - DOT[2]) * e;
+            }
+          }
+
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${cr | 0},${cg | 0},${cb | 0},${a})`;
+          ctx.fill();
+        }
+      }
     };
-    rafId = requestAnimationFrame(tick);
+
+    if (noMotion) {
+      draw(); // single static grid, no animation
+    } else {
+      let raf = requestAnimationFrame(function loop() {
+        raf = requestAnimationFrame(loop);
+        draw();
+      });
+      this.destroyRef.onDestroy(() => cancelAnimationFrame(raf));
+    }
 
     this.destroyRef.onDestroy(() => {
-      cancelAnimationFrame(rafId);
       ro.disconnect();
       clearTimeout(resizeTimer);
-      host.removeEventListener('mousemove', onMove);
-      host.removeEventListener('mouseleave', onLeave);
-      geo.dispose();
-      mat.dispose();
-      renderer.dispose();
+      window.removeEventListener('mousemove', onMove);
     });
   }
 }

@@ -2,518 +2,512 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>Cuaquiverso POS</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#E8623D" />
+  <meta name="theme-color" content="#ECEFF3" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fauna+One&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
+    /* ===================================================================
+       CUAQUIVERSO POS  ·  child brand of Cuac
+       Editorial light · Fauna One display · Manrope sans
+       Mirrors the Cuaquiverso storefront design system.
+       =================================================================== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0f1117;
-      --card: #1a1f2e;
-      --card-hover: #22293b;
-      --accent: #E8623D;
-      --accent-dim: rgba(232, 98, 61, 0.15);
-      --text: #f0f2f7;
-      --text-muted: #8892a4;
-      --success: #3ecf8e;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --border: rgba(255,255,255,0.08);
-      --radius: 12px;
+      /* ── Core palette (storefront tokens) ── */
+      --carbon:    #151F28;
+      --carbon-2:  #1E2B36;
+      --paper:     #ECEFF3;
+      --paper-2:   #FFFFFF;
+      --bone:      #D4DCE4;
+      --terra:     #E8623D;   /* Cuaquiverso accent */
+      --terra-2:   #d9532f;
+
+      /* ── Ink on light ── */
+      --ink:        #151F28;
+      --ink-soft:   rgba(21, 31, 40, 0.72);
+      --ink-mute:   rgba(21, 31, 40, 0.52);
+      --ink-faint:  rgba(21, 31, 40, 0.30);
+      --line:       rgba(21, 31, 40, 0.12);
+      --line-soft:  rgba(21, 31, 40, 0.07);
+
+      /* ── Playful category palette ── */
+      --selva: #1F8A5B; --selva-soft: #D7EBDD;
+      --rio:   #2A6FDB; --rio-soft:   #C9D9F6;
+      --rosa:  #FF6FA8; --rosa-soft:  #FCE0EC;
+      --sol:   #B07820; --sol-soft:   #FCEFC2;
+      --lila:  #8B6FD8; --lila-soft:  #E5DDF7;
+      --terra-soft: #FBE0D5;
+      --bone-soft:  #DDE3EA;
+
+      /* ── Semantic ── */
+      --ok:    #1F8A5B; --ok-soft:   #D7EBDD;
+      --warn:  #B07820; --warn-soft: #FCEFC2;
+      --err:   #C2381A; --err-soft:  #FBDBD2;
+
+      /* ── Type (matches Cuaquiverso system: "mono" label role IS Manrope, tracked caps) ── */
+      --display: 'Fauna One', Georgia, serif;
+      --sans:    'Manrope', system-ui, -apple-system, sans-serif;
+      --mono:    'Manrope', system-ui, -apple-system, sans-serif;
+
+      /* ── Radii ── */
+      --r-sm: 6px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px; --r-pill: 999px;
+
+      /* ── Motion ── */
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --safe-b: env(safe-area-inset-bottom, 0px);
     }
 
     html, body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-feature-settings: "ss01", "cv11";
       min-height: 100dvh;
       -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* gradiente fijo de fondo — solo en pantallas de auth */
+    body.is-auth::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70vw 60vh at 88% 6%, var(--rio-soft), transparent 58%),
+        radial-gradient(ellipse 65vw 60vh at 6% 92%, var(--selva-soft), transparent 60%);
     }
 
     #app {
-      max-width: 640px;
+      position: relative;
+      max-width: 720px;
       margin: 0 auto;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
     }
 
-    /* ── SCREENS ── */
-    .screen {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-    }
-    .screen.active {
-      display: flex;
-    }
+    ::selection { background: var(--terra-soft); }
+    *:focus-visible { outline: 2px solid var(--terra); outline-offset: 2px; border-radius: 3px; }
 
-    /* ── DEVICE NAME SCREEN ── */
-    #screen-device {
+    .screen { display: none; flex: 1; flex-direction: column; }
+    .screen.active { display: flex; }
+
+    /* ════════ AUTH (device + login) ════════ */
+    #screen-device, #screen-login {
+      position: relative;
+      z-index: 1;
       align-items: center;
       justify-content: center;
-      padding: 32px 24px;
-      gap: 24px;
+      padding: 48px 24px calc(48px + var(--safe-b));
+      gap: 26px;
+      overflow-y: auto;
     }
-    .setup-logo {
-      font-size: 64px;
-      line-height: 1;
-    }
-    .setup-title {
-      font-size: 22px;
-      font-weight: 700;
-      text-align: center;
-    }
-    .setup-sub {
-      font-size: 14px;
-      color: var(--text-muted);
-      text-align: center;
-    }
-    .setup-form {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    #screen-device > *, #screen-login > * { position: relative; z-index: 1; }
 
-    /* ── LOGIN SCREEN ── */
-    #screen-login {
-      align-items: center;
-      justify-content: center;
-      padding: 32px 24px;
-      gap: 24px;
+    .brandmark { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+
+    /* logo real CUAC — sin fondo circular, wide format */
+    .brand-logo {
+      width: min(200px, 56vw);
+      opacity: 0.95;
     }
-    .login-logo {
-      font-size: 64px;
+    .brand-logo svg { width: 100%; height: auto; display: block; }
+
+    .wordmark {
+      font-family: var(--display);
+      font-size: 30px;
       line-height: 1;
+      text-align: center;
+      color: var(--carbon);
     }
-    .login-title {
-      font-size: 22px;
+    .wordmark .dot { color: var(--terra); }
+    .pos-tag {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
       font-weight: 700;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--terra);
+      margin-top: 8px;
+    }
+    .auth-sub {
+      font-size: 14.5px;
+      color: var(--ink-soft);
       text-align: center;
+      max-width: 34ch;
+      line-height: 1.55;
     }
-    .login-sub {
-      font-size: 14px;
-      color: var(--text-muted);
-      text-align: center;
+    .auth-form { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; }
+    .field-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      margin-bottom: -4px;
     }
-    .login-form {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .login-error {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #fca5a5;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 14px;
+    .auth-error {
       display: none;
+      background: var(--err-soft);
+      border: 1px solid rgba(194, 56, 26, 0.30);
+      color: var(--err);
+      border-radius: var(--r-md);
+      padding: 11px 14px;
+      font-size: 14px;
+      font-weight: 500;
     }
-    .login-error.visible { display: block; }
+    .auth-error.visible { display: block; }
 
-    /* ── INPUTS & BUTTONS ── */
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="number"] {
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 10px;
+    /* ════════ INPUTS ════════ */
+    input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      border-radius: var(--r-md);
       padding: 14px 16px;
+      font-family: inherit;
       font-size: 16px;
       width: 100%;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease);
       -webkit-appearance: none;
     }
-    input:focus {
-      border-color: var(--accent);
-    }
+    input::placeholder { color: var(--ink-faint); }
+    input:focus { border-color: var(--carbon); box-shadow: 0 0 0 4px rgba(21, 31, 40, 0.05); }
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
+    /* ════════ BUTTONS ════════ */
     .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
       min-height: 52px;
-      border-radius: 10px;
-      border: none;
-      font-size: 16px;
-      font-weight: 600;
+      border-radius: var(--r-pill);
+      border: 1px solid transparent;
+      font-family: var(--sans);
+      font-size: 15.5px;
+      font-weight: 700;
       cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
       width: 100%;
       -webkit-tap-highlight-color: transparent;
+      transition: background 0.16s var(--ease), color 0.16s var(--ease),
+                  box-shadow 0.16s var(--ease), transform 0.1s var(--ease), border-color 0.16s var(--ease);
     }
-    .btn:active { transform: scale(0.97); opacity: 0.9; }
-    .btn:disabled { opacity: 0.4; pointer-events: none; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-secondary { background: var(--card-hover); color: var(--text); border: 1px solid var(--border); }
-    .btn-danger { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
-    .btn-sm {
-      min-height: 40px;
-      font-size: 14px;
-      border-radius: 8px;
-      padding: 0 16px;
-      width: auto;
+    .btn:active { transform: scale(0.975); }
+    .btn:disabled { opacity: 0.45; pointer-events: none; }
+    .btn-primary {
+      background: var(--carbon); color: var(--paper);
+      box-shadow: 0 6px 22px rgba(21, 31, 40, 0.18);
     }
+    .btn-primary:hover { background: var(--terra); box-shadow: 0 10px 28px rgba(232, 98, 61, 0.34); }
+    .btn-secondary {
+      background: transparent; color: var(--carbon);
+      border-color: var(--line);
+    }
+    .btn-secondary:hover { border-color: var(--carbon); background: rgba(21, 31, 40, 0.04); }
 
-    /* ── CATALOG HEADER ── */
+    /* ════════ TOPBAR ════════ */
     #catalog-header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: rgba(15,17,23,0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(240, 241, 246, 0.82);
+      backdrop-filter: blur(14px) saturate(1.2);
+      -webkit-backdrop-filter: blur(14px) saturate(1.2);
+      border-bottom: 1px solid var(--line-soft);
       padding: 12px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      display: flex; flex-direction: column; gap: 10px;
     }
-    .header-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .header-brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .header-orb {
+      width: 36px; height: 36px; flex: none;
+      border-radius: var(--r-pill);
+      display: grid; place-items: center;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      padding: 7px;
+    }
+    .header-orb svg { width: 100%; height: auto; display: block; }
+    .header-titles { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+    .header-kicker {
+      font-family: var(--mono);
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--terra);
     }
     .header-event {
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      color: var(--accent);
+      font-family: var(--display);
+      font-size: 18px; line-height: 1.05;
+      color: var(--carbon);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    .header-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .header-device {
-      font-size: 13px;
-      color: var(--text-muted);
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12.5px; color: var(--ink-mute); min-width: 0;
     }
+    .header-device svg { flex: none; opacity: 0.7; }
+    .header-device span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
     .connection-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-weight: 500;
-    }
-    .connection-badge.online {
-      background: rgba(62,207,142,0.12);
-      color: var(--success);
-      border: 1px solid rgba(62,207,142,0.25);
-    }
-    .connection-badge.offline {
-      background: rgba(245,158,11,0.12);
-      color: var(--warning);
-      border: 1px solid rgba(245,158,11,0.25);
-    }
-    .connection-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-    .connection-badge.online .connection-dot {
-      animation: pulse-dot 2s infinite;
-    }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    /* ── PRODUCT GRID ── */
-    #catalog-body {
-      flex: 1;
-      padding: 16px;
-      overflow-y: auto;
-    }
-    #product-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .product-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: border-color 0.2s;
-    }
-    .product-card.sold-out {
-      opacity: 0.55;
-    }
-    .product-name {
-      font-size: 15px;
-      font-weight: 600;
-      line-height: 1.3;
-    }
-    .product-category {
-      font-size: 12px;
-      color: var(--text-muted);
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--mono);
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      padding: 5px 11px; border-radius: var(--r-pill);
+      flex: none; white-space: nowrap;
     }
-    .product-price {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--accent);
-    }
-    .product-stock-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 4px;
-    }
-    .stock-info {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-    .badge-low {
-      background: rgba(245,158,11,0.2);
-      color: var(--warning);
-      border: 1px solid rgba(245,158,11,0.35);
-      border-radius: 20px;
-      padding: 2px 8px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .badge-sold {
-      color: var(--danger);
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .btn-sell {
-      margin-top: 4px;
-      min-height: 44px;
-      font-size: 15px;
-      background: var(--accent-dim);
-      color: var(--accent);
-      border: 1px solid rgba(232,98,61,0.3);
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn-sell:active { transform: scale(0.97); background: rgba(232,98,61,0.25); }
-    .btn-sell:disabled { opacity: 0.3; pointer-events: none; }
+    .connection-badge.online { background: var(--ok-soft); color: var(--ok); border: 1px solid rgba(31, 138, 91, 0.28); }
+    .connection-badge.offline { background: var(--warn-soft); color: var(--warn); border: 1px solid rgba(176, 120, 32, 0.30); }
+    .connection-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .connection-badge.online .connection-dot { animation: pulse-dot 2.4s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.82); } }
 
-    /* ── MODAL ── */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 100;
-      align-items: flex-end;
-      justify-content: center;
-      padding: 0;
+    .chips { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+    .tally { display: inline-flex; align-items: baseline; gap: 5px; font-size: 12.5px; color: var(--ink-mute); }
+    .tally b { font-family: var(--display); font-size: 14px; color: var(--carbon); font-weight: 400; }
+    .tally .sep { color: var(--ink-faint); }
+    .pending-chip {
+      display: none; align-items: center; gap: 5px;
+      font-family: var(--mono);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+      padding: 4px 9px; border-radius: var(--r-pill);
+      background: var(--warn-soft); color: var(--warn); border: 1px solid rgba(176, 120, 32, 0.30);
     }
-    .modal-overlay.open {
-      display: flex;
-    }
-    .modal-sheet {
-      background: var(--card);
-      border-radius: 20px 20px 0 0;
-      padding: 24px 20px 40px;
-      width: 100%;
-      max-width: 640px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      animation: slide-up 0.22s ease-out;
-    }
-    @keyframes slide-up {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    .modal-handle {
-      width: 40px;
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      margin: -10px auto 0;
-    }
-    .modal-title {
-      font-size: 18px;
-      font-weight: 700;
-    }
-    .modal-product-info {
-      background: var(--card-hover);
-      border-radius: 10px;
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .modal-product-name {
-      font-size: 16px;
-      font-weight: 600;
-    }
-    .modal-product-stock {
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-    .qty-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .qty-label {
-      font-size: 15px;
-      color: var(--text-muted);
-      flex: 1;
-    }
-    .qty-controls {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      border: 1px solid var(--border);
-      border-radius: 10px;
+    .pending-chip.visible { display: inline-flex; }
+    .pending-chip .connection-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+    /* ════════ CATALOG ════════ */
+    #catalog-body { flex: 1; padding: 16px 16px calc(24px + var(--safe-b)); overflow-y: auto; }
+    #product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
+
+    /* ── Product card (echoes storefront .pcard) ── */
+    .product-card {
+      position: relative;
+      display: flex; flex-direction: column;
+      text-align: left; font-family: inherit;
+      background: var(--paper-2);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--r-lg);
       overflow: hidden;
+      cursor: pointer; color: var(--ink);
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+    }
+    .product-card:hover { transform: translateY(-3px); box-shadow: 0 16px 32px rgba(21, 31, 40, 0.10); border-color: var(--line); }
+    .product-card:active { transform: translateY(-1px) scale(0.99); }
+    .product-card:disabled { cursor: default; }
+    .product-card:disabled:hover { transform: none; box-shadow: none; border-color: var(--line-soft); }
+
+    .card-art {
+      position: relative;
+      min-height: 96px;
+      display: grid; place-items: center;
+      padding: 16px 14px;
+      background: var(--c-soft, var(--bone-soft));
+    }
+    .card-art .art-name {
+      font-family: var(--display);
+      font-size: 21px; line-height: 1.08;
+      text-align: center;
+      color: var(--c, var(--carbon));
+      mix-blend-mode: multiply;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-flag {
+      position: absolute; top: 10px; left: 10px;
+      font-family: var(--mono);
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 4px 8px; border-radius: var(--r-pill);
+    }
+    .card-flag.low { background: var(--warn); color: #fff; }
+    .card-flag.sold { background: var(--carbon); color: var(--paper); }
+    .product-card.sold-out .card-art { filter: grayscale(0.85); opacity: 0.7; }
+
+    .card-info {
+      padding: 11px 13px 13px;
+      border-top: 1px solid var(--line-soft);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .card-cat {
+      font-family: var(--mono);
+      font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--ink-mute);
+    }
+    .card-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding-top: 9px; border-top: 1px dashed var(--line);
+    }
+    .card-price {
+      font-family: var(--display);
+      font-size: 19px; line-height: 1; color: var(--carbon);
+      font-variant-numeric: tabular-nums;
+      transition: color 0.3s var(--ease);
+    }
+    .card-add {
+      width: 34px; height: 34px; flex: none;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--paper); color: var(--carbon);
+      border: 1px solid var(--line);
+      transition: background 0.15s var(--ease), color 0.15s var(--ease), transform 0.15s var(--ease);
+    }
+    .product-card:hover .card-add { background: var(--carbon); color: var(--paper); transform: scale(1.06); }
+    .card-stock { font-size: 11.5px; color: var(--ink-mute); font-variant-numeric: tabular-nums; }
+    .card-stock b { color: var(--ink); font-weight: 700; }
+
+    .product-card.flash { animation: card-flash 0.65s var(--ease); }
+    .product-card.flash .card-price { color: var(--ok); }
+    @keyframes card-flash {
+      0% { box-shadow: 0 0 0 2px var(--ok), 0 16px 32px rgba(31,138,91,0.22); }
+      100% { box-shadow: 0 0 0 2px rgba(31,138,91,0), 0 0 0 rgba(0,0,0,0); }
+    }
+
+    /* ── Skeleton ── */
+    .skel-card { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: var(--r-lg); overflow: hidden; }
+    .skel-art { height: 96px; }
+    .skel-info { padding: 13px; display: flex; flex-direction: column; gap: 10px; }
+    .skel { background: linear-gradient(100deg, var(--surface-3, #E6E8F0) 30%, #f3f4f8 50%, var(--surface-3, #E6E8F0) 70%); background-size: 220% 100%; border-radius: 5px; animation: shimmer 1.3s linear infinite; }
+    .skel.cat { height: 8px; width: 40%; }
+    .skel.price { height: 18px; width: 55%; }
+    @keyframes shimmer { to { background-position: -220% 0; } }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      flex: 1; min-height: 52vh; padding: 60px 28px; gap: 14px; text-align: center;
+    }
+    .empty-orb {
+      width: 76px; height: 76px; border-radius: var(--r-pill);
+      display: grid; place-items: center; font-size: 34px;
+      background: var(--sol-soft); border: 1px solid var(--line-soft);
+    }
+    .empty-title { font-family: var(--display); font-size: 22px; color: var(--carbon); }
+    .empty-sub { font-size: 14px; color: var(--ink-soft); max-width: 34ch; line-height: 1.55; }
+
+    /* ════════ SALE SHEET ════════ */
+    .sheet-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(21, 31, 40, 0.42);
+      backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+      align-items: flex-end; justify-content: center;
+    }
+    .sheet-overlay.open { display: flex; animation: fade-in 0.18s var(--ease); }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    .sheet {
+      background: var(--paper-2);
+      border-radius: var(--r-xl) var(--r-xl) 0 0;
+      padding: 12px 20px calc(28px + var(--safe-b));
+      width: 100%; max-width: 720px;
+      display: flex; flex-direction: column; gap: 18px;
+      box-shadow: 0 -10px 50px rgba(21, 31, 40, 0.22);
+      animation: slide-up 0.26s var(--ease);
+    }
+    @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .sheet-handle { width: 42px; height: 4px; background: var(--line); border-radius: 2px; margin: 0 auto 4px; }
+    .sheet-head { display: flex; flex-direction: column; gap: 4px; }
+    .sheet-kicker {
+      font-family: var(--mono);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--terra);
+    }
+    .sheet-product { font-family: var(--display); font-size: 24px; line-height: 1.1; color: var(--carbon); }
+    .sheet-stock { font-size: 13.5px; color: var(--ink-soft); }
+    .sheet-stock b { color: var(--ink); }
+
+    .qty-block {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: var(--paper); border: 1px solid var(--line-soft);
+      border-radius: var(--r-md); padding: 12px 14px 12px 16px;
+    }
+    .qty-label { font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+    .qty-controls {
+      display: flex; align-items: center;
+      border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden;
+      background: var(--paper-2);
     }
     .qty-btn {
-      background: var(--card-hover);
-      border: none;
-      color: var(--text);
-      font-size: 20px;
-      font-weight: 600;
-      width: 48px;
-      height: 48px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: var(--paper-2); border: none; color: var(--carbon);
+      font-size: 24px; font-weight: 400; width: 52px; height: 52px;
+      cursor: pointer; display: grid; place-items: center;
       -webkit-tap-highlight-color: transparent;
-      transition: background 0.15s;
+      transition: background 0.14s var(--ease), color 0.14s var(--ease);
     }
-    .qty-btn:active { background: var(--accent-dim); }
+    .qty-btn:hover { background: var(--paper); }
+    .qty-btn:active { background: var(--terra-soft); color: var(--terra); }
+    .qty-btn:disabled { opacity: 0.3; pointer-events: none; }
     .qty-value {
-      background: var(--card);
-      color: var(--text);
-      font-size: 18px;
-      font-weight: 700;
-      width: 56px;
-      text-align: center;
-      border: none;
-      height: 48px;
-      padding: 0;
-      pointer-events: none;
+      width: 60px; height: 52px; text-align: center;
+      background: transparent; color: var(--carbon);
+      font-family: var(--display); font-size: 22px; font-weight: 400;
+      border: none; font-variant-numeric: tabular-nums; pointer-events: none;
     }
-    .modal-total {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--card-hover);
-      border-radius: 10px;
-      padding: 12px 16px;
-    }
-    .modal-total-label { font-size: 14px; color: var(--text-muted); }
-    .modal-total-value { font-size: 22px; font-weight: 800; color: var(--accent); }
-    .modal-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .sheet-total { display: flex; align-items: baseline; justify-content: space-between; padding: 2px; }
+    .sheet-total-label { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-mute); }
+    .sheet-total-value { font-family: var(--display); font-size: 32px; line-height: 1; color: var(--carbon); font-variant-numeric: tabular-nums; }
+    .sheet-actions { display: flex; flex-direction: column; gap: 10px; }
 
-    /* ── TOAST ── */
+    /* ════════ TOAST ════════ */
     #toast-container {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 200;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: center;
-      pointer-events: none;
-      width: calc(100% - 32px);
-      max-width: 480px;
+      position: fixed; left: 50%; bottom: calc(20px + var(--safe-b));
+      transform: translateX(-50%); z-index: 200;
+      display: flex; flex-direction: column-reverse; gap: 8px; align-items: center;
+      width: calc(100% - 32px); max-width: 460px; pointer-events: none;
     }
     .toast {
-      background: #2a3244;
-      color: var(--text);
-      padding: 12px 18px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 500;
-      border-left: 3px solid var(--accent);
-      width: 100%;
-      animation: toast-in 0.2s ease-out;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      background: var(--carbon); color: var(--paper);
+      padding: 13px 16px; border-radius: var(--r-md);
+      font-size: 14px; font-weight: 600;
+      box-shadow: 0 12px 34px rgba(21, 31, 40, 0.28);
+      animation: toast-in 0.24s var(--ease);
     }
-    .toast.success { border-left-color: var(--success); }
-    .toast.error { border-left-color: var(--danger); }
-    .toast.warning { border-left-color: var(--warning); }
-    @keyframes toast-in {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .toast::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--bone); flex: none; }
+    .toast.success::before { background: #6FE3A8; }
+    .toast.error::before { background: #FF8A6B; }
+    .toast.warning::before { background: #FFD15C; }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ── LOADING ── */
-    .loading-spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 40px auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    #catalog-loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      padding: 40px;
-      gap: 16px;
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      padding: 60px 24px;
-      gap: 16px;
-      color: var(--text-muted);
-      font-size: 15px;
-      text-align: center;
-    }
-    .empty-icon { font-size: 48px; }
-
-    /* ── LOGOUT BTN ── */
+    /* ════════ LOGOUT ════════ */
+    .logout-wrap { padding: 4px 16px calc(20px + var(--safe-b)); display: flex; }
     #logout-btn {
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 13px;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 6px;
+      align-self: center;
+      background: transparent; border: 1px solid var(--line);
+      color: var(--ink-mute); font-family: var(--sans);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      padding: 9px 18px; border-radius: var(--r-pill);
+      transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
     }
-    #logout-btn:hover { color: var(--text); }
+    #logout-btn:hover { color: var(--carbon); border-color: var(--carbon); }
+
+    /* ════════ LANDSCAPE / SMALL SCREENS ════════ */
+    @media (max-height: 600px) {
+      #screen-device, #screen-login {
+        justify-content: flex-start;
+        padding-top: 20px;
+        gap: 16px;
+      }
+      .brand-logo { width: min(140px, 42vw); }
+      .wordmark { font-size: 22px; }
+      .pos-tag { font-size: 9px; margin-top: 4px; }
+      .auth-sub { display: none; }
+      .auth-form { gap: 9px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important; animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -521,84 +515,131 @@
 
   <!-- SCREEN 0: Device Name -->
   <div id="screen-device" class="screen">
-    <div class="setup-logo">🦆</div>
-    <div class="setup-title">Cuaquiverso POS</div>
-    <div class="setup-sub">Antes de comenzar, asigna un nombre a este dispositivo</div>
-    <div class="setup-form">
-      <input type="text" id="device-name-input" placeholder="Ej: Caja 1, Merch Stand…" maxlength="40" autocomplete="off" />
-      <button class="btn btn-primary" onclick="window.confirmDeviceName()">Confirmar</button>
+    <div class="brandmark">
+      <div class="brand-logo">
+        <svg viewBox="0 0 805.42 190" xmlns="http://www.w3.org/2000/svg" aria-label="Cuac Design" role="img">
+          <path fill="#151F28" d="M88.93,3.01c-6.81.03-13.63.39-20.38,1.12C34.86,7.77,12.18,27.29,4.07,60.16c-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.66c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02l-14.65-.02c-4.27-.02-8.59-.15-12.81-.8-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.57,0-67.52-.07-97.89.05h0Z"/>
+          <path fill="#151F28" d="M209.21,97.89c.03,6.81.39,13.63,1.12,20.38,3.64,33.69,23.15,56.35,56.01,64.46,22.7,5.6,45.59,5.43,68.19-.56,27.07-7.18,44.85-24.36,51.69-51.72,2.3-9.17,3.54-18.82,3.67-28.28.44-32.51-.05-100.55-.19-102.03h-36.66c-13.9,0-25.16,11.26-25.16,25.16,0,16.91,0,39.23-.02,56.98v14.65c-.02,4.27-.15,8.59-.8,12.81-1.45,9.43-5.9,16.83-15.21,20.5-19.58,7.69-37.11-2.48-39.9-23.24-.46-3.45-.61-6.98-.61-10.48-.03-18.24-.03-49.37-.03-71.35C271.3,11.28,260.04.02,246.14.02h-36.99c0,2.55-.07,67.51.05,97.87h0Z"/>
+          <path fill="#E8623D" d="M596.2,88.93c-.03-6.81-.39-13.63-1.12-20.38-3.64-33.69-23.15-56.35-56.01-64.46-22.71-5.61-45.61-5.44-68.2.54-27.07,7.18-44.85,24.36-51.69,51.72-2.3,9.17-3.54,18.82-3.67,28.28-.44,32.51.05,100.55.19,102.03h36.66c13.9,0,25.16-11.26,25.16-25.16,0-11.64,0-26.9,0-26.9h27.65c11.97,0,21.68-11.41,21.68-23.38,0-3.92,0-7.17,0-8.4h-67.52c-6.18,0-11.18-3.3-11.18-9.47h29.36v-3.47c.02-4.27.15-8.59.8-12.81,1.45-9.43,5.9-16.83,15.21-20.48,19.58-7.69,37.11,2.48,39.9,23.24.46,3.45.61,6.98.61,10.48.03,18.24.03,49.37.03,71.35,0,13.9,11.27,25.16,25.16,25.16h36.99c.02-2.55.09-67.51-.03-97.87h0Z"/>
+          <path fill="#151F28" d="M707.51,3.01c-6.81.03-13.63.39-20.38,1.12-33.69,3.64-56.35,23.15-64.46,56.01-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.65c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02,0,0-23.24-.17-27.46-.82-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.59,0-67.54-.07-97.91.05h0Z"/>
+        </svg>
+      </div>
+      <div class="wordmark">Cuaquiverso<span class="dot">.</span><span class="pos-tag">Punto de venta</span></div>
     </div>
+    <p class="auth-sub">Asigna un nombre a este dispositivo para identificar sus ventas durante el evento.</p>
+    <form class="auth-form" onsubmit="event.preventDefault(); window.confirmDeviceName()">
+      <label class="field-label" for="device-name-input">Nombre del dispositivo</label>
+      <input type="text" id="device-name-input" placeholder="Ej: Caja 1, Stand merch…"
+             maxlength="40" autocomplete="off" enterkeyhint="go"
+             inputmode="text" spellcheck="false" autocorrect="off" autocapitalize="words" />
+      <button type="submit" class="btn btn-primary">Continuar</button>
+    </form>
   </div>
 
   <!-- SCREEN 1: Login -->
   <div id="screen-login" class="screen">
-    <div class="login-logo">🦆</div>
-    <div class="login-title">Iniciar sesión</div>
-    <div class="login-sub">Accede con tu cuenta de Cuaquiverso</div>
-    <div class="login-form">
-      <input type="email" id="login-email" value="designcuac@gmail.com" autocomplete="email" />
-      <input type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password" />
-      <div id="login-error" class="login-error"></div>
-      <button class="btn btn-primary" id="login-btn" onclick="window.doLogin()">Entrar</button>
+    <div class="brandmark">
+      <div class="brand-logo">
+        <svg viewBox="0 0 805.42 190" xmlns="http://www.w3.org/2000/svg" aria-label="Cuac Design" role="img">
+          <path fill="#151F28" d="M88.93,3.01c-6.81.03-13.63.39-20.38,1.12C34.86,7.77,12.18,27.29,4.07,60.16c-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.66c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02l-14.65-.02c-4.27-.02-8.59-.15-12.81-.8-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.57,0-67.52-.07-97.89.05h0Z"/>
+          <path fill="#151F28" d="M209.21,97.89c.03,6.81.39,13.63,1.12,20.38,3.64,33.69,23.15,56.35,56.01,64.46,22.7,5.6,45.59,5.43,68.19-.56,27.07-7.18,44.85-24.36,51.69-51.72,2.3-9.17,3.54-18.82,3.67-28.28.44-32.51-.05-100.55-.19-102.03h-36.66c-13.9,0-25.16,11.26-25.16,25.16,0,16.91,0,39.23-.02,56.98v14.65c-.02,4.27-.15,8.59-.8,12.81-1.45,9.43-5.9,16.83-15.21,20.5-19.58,7.69-37.11-2.48-39.9-23.24-.46-3.45-.61-6.98-.61-10.48-.03-18.24-.03-49.37-.03-71.35C271.3,11.28,260.04.02,246.14.02h-36.99c0,2.55-.07,67.51.05,97.87h0Z"/>
+          <path fill="#E8623D" d="M596.2,88.93c-.03-6.81-.39-13.63-1.12-20.38-3.64-33.69-23.15-56.35-56.01-64.46-22.71-5.61-45.61-5.44-68.2.54-27.07,7.18-44.85,24.36-51.69,51.72-2.3,9.17-3.54,18.82-3.67,28.28-.44,32.51.05,100.55.19,102.03h36.66c13.9,0,25.16-11.26,25.16-25.16,0-11.64,0-26.9,0-26.9h27.65c11.97,0,21.68-11.41,21.68-23.38,0-3.92,0-7.17,0-8.4h-67.52c-6.18,0-11.18-3.3-11.18-9.47h29.36v-3.47c.02-4.27.15-8.59.8-12.81,1.45-9.43,5.9-16.83,15.21-20.48,19.58-7.69,37.11,2.48,39.9,23.24.46,3.45.61,6.98.61,10.48.03,18.24.03,49.37.03,71.35,0,13.9,11.27,25.16,25.16,25.16h36.99c.02-2.55.09-67.51-.03-97.87h0Z"/>
+          <path fill="#151F28" d="M707.51,3.01c-6.81.03-13.63.39-20.38,1.12-33.69,3.64-56.35,23.15-64.46,56.01-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.65c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02,0,0-23.24-.17-27.46-.82-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.59,0-67.54-.07-97.91.05h0Z"/>
+        </svg>
+      </div>
+      <div class="wordmark">Cuaquiverso<span class="dot">.</span><span class="pos-tag">Punto de venta</span></div>
     </div>
+    <p class="auth-sub">Inicia sesión con tu cuenta para acceder al catálogo del evento.</p>
+    <form class="auth-form" onsubmit="event.preventDefault(); window.doLogin()" novalidate>
+      <label class="field-label" for="login-email">Correo</label>
+      <input type="email" id="login-email" value="designcuac@gmail.com"
+             autocomplete="email" inputmode="email" enterkeyhint="next"
+             spellcheck="false" autocorrect="off" autocapitalize="off" />
+      <label class="field-label" for="login-password">Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••"
+             autocomplete="current-password" enterkeyhint="go" />
+      <div id="login-error" class="auth-error" role="alert" aria-live="assertive"></div>
+      <button type="submit" class="btn btn-primary" id="login-btn">Entrar</button>
+    </form>
   </div>
 
   <!-- SCREEN 2: Catalog -->
   <div id="screen-catalog" class="screen">
-    <div id="catalog-header">
+    <header id="catalog-header">
       <div class="header-row">
-        <span class="header-event" id="header-event-name">SOFÁ 2026</span>
+        <div class="header-brand">
+          <div class="header-orb" aria-hidden="true">
+            <svg viewBox="0 0 190 190" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#151F28" d="M88.93,3.01c-6.81.03-13.63.39-20.38,1.12C34.86,7.77,12.18,27.29,4.07,60.16c-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.66c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02l-14.65-.02c-4.27-.02-8.59-.15-12.81-.8-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.57,0-67.52-.07-97.89.05h0Z"/>
+            </svg>
+          </div>
+          <div class="header-titles">
+            <span class="header-kicker">Cuaquiverso</span>
+            <span class="header-event" id="header-event-name">Cargando…</span>
+          </div>
+        </div>
         <span id="connection-badge" class="connection-badge online">
           <span class="connection-dot"></span>
           <span id="connection-label">Conectado</span>
         </span>
       </div>
-      <div class="header-row">
-        <span class="header-device" id="header-device-name"></span>
-        <span id="pending-badge" style="display:none; font-size:12px; color:var(--warning);">0 pendientes</span>
+      <div class="header-meta">
+        <span class="header-device">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+          <span id="header-device-name"></span>
+        </span>
+        <div class="chips">
+          <span id="pending-badge" class="pending-chip">
+            <span class="connection-dot"></span>
+            <span id="pending-label">0 pendientes</span>
+          </span>
+          <span class="tally" id="tally" title="Ventas de hoy en este dispositivo">
+            <b id="tally-count">0</b> ventas
+            <span class="sep">·</span>
+            <b id="tally-total">$0</b>
+          </span>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <div id="catalog-loading">
-      <div class="loading-spinner"></div>
-      Cargando productos…
-    </div>
-
-    <div id="catalog-body" style="display:none; flex:1; overflow-y:auto; padding:16px;">
+    <div id="catalog-body">
       <div id="product-grid"></div>
-      <div id="empty-state" class="empty-state" style="display:none;">
-        <span class="empty-icon">📦</span>
-        No hay productos activos para este evento.
+      <div id="empty-state" class="empty-state">
+        <div class="empty-orb">🛰️</div>
+        <div class="empty-title">Sin productos activos</div>
+        <div class="empty-sub">Este evento aún no tiene productos disponibles. Actívalos desde el panel de administración para empezar a vender.</div>
       </div>
     </div>
 
-    <button id="logout-btn" onclick="window.doLogout()" title="Cerrar sesión">Salir</button>
+    <div class="logout-wrap">
+      <button id="logout-btn" onclick="window.doLogout()">Cerrar sesión</button>
+    </div>
   </div>
 
 </div>
 
-<!-- SALE MODAL -->
-<div id="sale-modal" class="modal-overlay">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Registrar venta</div>
-    <div class="modal-product-info">
-      <div class="modal-product-name" id="modal-product-name">—</div>
-      <div class="modal-product-stock" id="modal-product-stock">Stock disponible: —</div>
+<!-- SALE SHEET -->
+<div id="sale-modal" class="sheet-overlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modal-product-name">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <span class="sheet-kicker">Registrar venta</span>
+      <span class="sheet-product" id="modal-product-name">—</span>
+      <span class="sheet-stock" id="modal-product-stock">Stock disponible: —</span>
     </div>
-    <div class="qty-row">
+    <div class="qty-block">
       <span class="qty-label">Cantidad</span>
       <div class="qty-controls">
-        <button class="qty-btn" onclick="window.changeQty(-1)">−</button>
-        <input type="number" class="qty-value" id="modal-qty" value="1" readonly />
-        <button class="qty-btn" onclick="window.changeQty(1)">+</button>
+        <button class="qty-btn" id="qty-minus" onclick="window.changeQty(-1)" aria-label="Restar">−</button>
+        <input type="number" class="qty-value" id="modal-qty" value="1" readonly aria-live="polite" />
+        <button class="qty-btn" id="qty-plus" onclick="window.changeQty(1)" aria-label="Sumar">+</button>
       </div>
     </div>
-    <div class="modal-total">
-      <span class="modal-total-label">Total</span>
-      <span class="modal-total-value" id="modal-total">$0</span>
+    <div class="sheet-total">
+      <span class="sheet-total-label">Total</span>
+      <span class="sheet-total-value" id="modal-total">$0</span>
     </div>
-    <div class="modal-actions">
+    <div class="sheet-actions">
       <button class="btn btn-primary" id="confirm-sale-btn" onclick="window.confirmSale()">Registrar venta</button>
       <button class="btn btn-secondary" onclick="window.closeModal()">Cancelar</button>
     </div>
@@ -611,15 +652,16 @@
 <script type="module">
   const SUPABASE_URL = 'https://ytqcwrjxlnlsjgnjxiiw.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWN3cmp4bG5sc2pnbmp4aWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTE1MzMsImV4cCI6MjA5NDk4NzUzM30.hW01ztylAFWhy3bAjJXPl4Q8wh2YP_DbpR2oaXWHxVs';
-  const EVENTO_ID = 'sofa-2026';
   const OFFLINE_QUEUE_KEY = 'pos_offline_queue';
   const DEVICE_NAME_KEY = 'pos_device_name';
+  const TALLY_KEY = 'pos_session_tally';
 
   const { createClient } = supabase;
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // ── STATE ──
   let products = [];
+  let eventoActivo = null;
   let selectedProduct = null;
   let currentQty = 1;
   let isOnline = navigator.onLine;
@@ -633,6 +675,7 @@
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    document.body.classList.toggle('is-auth', id !== 'screen-catalog');
   }
 
   function getDeviceName() {
@@ -648,15 +691,52 @@
     localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q));
   }
 
+  function todayKey() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  // Deterministic category → palette colour (mirrors storefront per-product tints)
+  const PALETTE = ['rio', 'rosa', 'sol', 'selva', 'terra', 'lila', 'bone'];
+  function colorFor(key) {
+    const s = String(key || 'general');
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return PALETTE[h % PALETTE.length];
+  }
+
   function updatePendingBadge() {
     const q = getOfflineQueue();
     const badge = document.getElementById('pending-badge');
+    const label = document.getElementById('pending-label');
     if (q.length > 0) {
-      badge.style.display = 'inline';
-      badge.textContent = `${q.length} pendiente${q.length > 1 ? 's' : ''}`;
+      badge.classList.add('visible');
+      label.textContent = `${q.length} pendiente${q.length > 1 ? 's' : ''}`;
     } else {
-      badge.style.display = 'none';
+      badge.classList.remove('visible');
     }
+  }
+
+  // ── SESSION TALLY (ventas de hoy en este dispositivo) ──
+  function getTally() {
+    try {
+      const t = JSON.parse(localStorage.getItem(TALLY_KEY) || '{}');
+      if (t.date !== todayKey()) return { date: todayKey(), count: 0, total: 0 };
+      return t;
+    } catch { return { date: todayKey(), count: 0, total: 0 }; }
+  }
+
+  function addTally(count, amount) {
+    const t = getTally();
+    t.count += count;
+    t.total += amount;
+    localStorage.setItem(TALLY_KEY, JSON.stringify(t));
+    renderTally();
+  }
+
+  function renderTally() {
+    const t = getTally();
+    document.getElementById('tally-count').textContent = t.count;
+    document.getElementById('tally-total').textContent = formatCOP(t.total);
   }
 
   // ── TOAST ──
@@ -716,7 +796,8 @@
           cantidad: item.cantidad,
           dispositivo: item.dispositivo,
           vendido_en: item.vendido_en,
-          sincronizado: true
+          sincronizado: true,
+          evento_id: item.evento_id ?? 'Venta-regular'
         });
         if (insertError) throw insertError;
 
@@ -737,7 +818,7 @@
     updatePendingBadge();
 
     if (synced > 0) {
-      showToast(`✓ ${synced} venta${synced > 1 ? 's' : ''} sincronizada${synced > 1 ? 's' : ''}`, 'success', 3500);
+      showToast(`${synced} venta${synced > 1 ? 's' : ''} sincronizada${synced > 1 ? 's' : ''}`, 'success', 3500);
       await loadProducts();
     }
     if (remaining.length > 0) {
@@ -745,7 +826,26 @@
     }
   }
 
+  // ── SKELETON ──
+  function renderSkeleton() {
+    const grid = document.getElementById('product-grid');
+    document.getElementById('empty-state').style.display = 'none';
+    grid.innerHTML = Array.from({ length: 6 }).map(() => `
+      <div class="skel-card">
+        <div class="skel skel-art"></div>
+        <div class="skel-info">
+          <div class="skel cat"></div>
+          <div class="skel price"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
   // ── PRODUCT CARD RENDER ──
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
   function renderProducts() {
     const grid = document.getElementById('product-grid');
     const empty = document.getElementById('empty-state');
@@ -761,43 +861,72 @@
     active.forEach(p => {
       const soldOut = p.stock_actual <= 0;
       const lowStock = p.stock_actual > 0 && p.stock_actual < 3;
+      const c = colorFor(p.categoria);
 
-      const card = document.createElement('div');
+      const card = document.createElement('button');
+      card.type = 'button';
       card.className = `product-card${soldOut ? ' sold-out' : ''}`;
       card.dataset.id = p.id;
+      card.style.setProperty('--c', `var(--${c})`);
+      card.style.setProperty('--c-soft', `var(--${c}-soft)`);
+      if (soldOut) card.disabled = true;
+      else card.onclick = () => window.openSaleModal(p.id);
 
-      let stockBadge = '';
-      if (soldOut) {
-        stockBadge = `<span class="badge-sold">Agotado</span>`;
-      } else if (lowStock) {
-        stockBadge = `<span class="badge-low">⚠ Poco stock</span>`;
-      }
+      let flag = '';
+      if (soldOut) flag = `<span class="card-flag sold">Agotado</span>`;
+      else if (lowStock) flag = `<span class="card-flag low">Quedan ${p.stock_actual}</span>`;
+
+      const trailing = soldOut
+        ? `<span class="card-stock">Sin stock</span>`
+        : `<span class="card-add" aria-hidden="true">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+           </span>`;
 
       card.innerHTML = `
-        <div class="product-category">${p.categoria || '—'}</div>
-        <div class="product-name">${p.nombre}</div>
-        <div class="product-price">${formatCOP(p.precio)}</div>
-        <div class="product-stock-row">
-          <span class="stock-info">Stock: ${p.stock_actual}</span>
-          ${stockBadge}
+        <div class="card-art">
+          ${flag}
+          <div class="art-name">${escapeHtml(p.nombre)}</div>
         </div>
-        <button class="btn-sell" ${soldOut ? 'disabled' : ''} onclick="window.openSaleModal('${p.id}')">− 1</button>
+        <div class="card-info">
+          <div class="card-cat">${escapeHtml(p.categoria || 'General')}</div>
+          <div class="card-row">
+            <div>
+              <div class="card-price">${formatCOP(p.precio)}</div>
+              ${soldOut ? '' : `<div class="card-stock" style="margin-top:4px">Stock <b>${p.stock_actual}</b></div>`}
+            </div>
+            ${trailing}
+          </div>
+        </div>
       `;
       grid.appendChild(card);
     });
   }
 
+  function flashCard(id) {
+    const card = document.querySelector(`.product-card[data-id="${id}"]`);
+    if (!card) return;
+    card.classList.remove('flash');
+    void card.offsetWidth; // restart animation
+    card.classList.add('flash');
+    setTimeout(() => card.classList.remove('flash'), 680);
+  }
+
   // ── LOAD PRODUCTS ──
   async function loadProducts() {
     try {
-      const { data, error } = await sb
+      let query = sb
         .from('productos_evento')
         .select('*')
-        .eq('evento_id', EVENTO_ID)
         .eq('activo', true)
         .order('categoria')
         .order('nombre');
 
+      // Si hay evento activo, filtrar por él (productos creados en /admin para este evento)
+      if (eventoActivo?.id) {
+        query = query.eq('evento_id', eventoActivo.id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       products = data || [];
       renderProducts();
@@ -816,16 +945,19 @@
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'productos_evento',
-        filter: `evento_id=eq.${EVENTO_ID}`
+        table: 'productos_evento'
       }, payload => {
         if (payload.eventType === 'UPDATE' && payload.new) {
-          const idx = products.findIndex(p => p.id === payload.new.id);
-          if (idx !== -1) {
-            products[idx] = { ...products[idx], ...payload.new };
-            renderProducts();
+          const updated = payload.new;
+          if (!updated.activo) {
+            products = products.filter(p => p.id !== updated.id);
+          } else {
+            const idx = products.findIndex(p => p.id === updated.id);
+            if (idx !== -1) products[idx] = { ...products[idx], ...updated };
+            else products.push(updated);
           }
-        } else if (payload.eventType === 'INSERT' && payload.new) {
+          renderProducts();
+        } else if (payload.eventType === 'INSERT' && payload.new?.activo) {
           products.push(payload.new);
           renderProducts();
         } else if (payload.eventType === 'DELETE' && payload.old) {
@@ -836,18 +968,28 @@
       .subscribe();
   }
 
+  // ── EVENTO ACTIVO (from DB) ──
+  async function cargarEvento() {
+    try {
+      const { data } = await sb.from('eventos').select('id, nombre').eq('estado', 'activo').maybeSingle();
+      eventoActivo = data;
+      document.getElementById('header-event-name').textContent =
+        data?.nombre ? data.nombre.toUpperCase() : 'SIN EVENTO';
+    } catch {
+      document.getElementById('header-event-name').textContent = 'SIN EVENTO';
+    }
+  }
+
   // ── SHOW CATALOG ──
   async function showCatalog() {
     showScreen('screen-catalog');
     document.getElementById('header-device-name').textContent = getDeviceName();
-    document.getElementById('catalog-loading').style.display = 'flex';
-    document.getElementById('catalog-body').style.display = 'none';
 
     updateConnectionUI();
+    renderTally();
+    await cargarEvento();
+    renderSkeleton();
     await loadProducts();
-
-    document.getElementById('catalog-loading').style.display = 'none';
-    document.getElementById('catalog-body').style.display = 'block';
 
     subscribeRealtime();
 
@@ -857,16 +999,24 @@
   }
 
   // ── MODAL ──
+  function refreshQtyControls() {
+    if (!selectedProduct) return;
+    document.getElementById('qty-minus').disabled = currentQty <= 1;
+    document.getElementById('qty-plus').disabled = currentQty >= selectedProduct.stock_actual;
+  }
+
   window.openSaleModal = function(productId) {
     selectedProduct = products.find(p => p.id === productId);
     if (!selectedProduct || selectedProduct.stock_actual <= 0) return;
 
     currentQty = 1;
     document.getElementById('modal-product-name').textContent = selectedProduct.nombre;
-    document.getElementById('modal-product-stock').textContent = `Stock disponible: ${selectedProduct.stock_actual}`;
+    document.getElementById('modal-product-stock').innerHTML = `Stock disponible: <b>${selectedProduct.stock_actual}</b>`;
     document.getElementById('modal-qty').value = 1;
     document.getElementById('modal-total').textContent = formatCOP(selectedProduct.precio);
     document.getElementById('confirm-sale-btn').disabled = false;
+    document.getElementById('confirm-sale-btn').textContent = 'Registrar venta';
+    refreshQtyControls();
     document.getElementById('sale-modal').classList.add('open');
   };
 
@@ -882,6 +1032,7 @@
     currentQty = Math.max(1, Math.min(max, currentQty + delta));
     document.getElementById('modal-qty').value = currentQty;
     document.getElementById('modal-total').textContent = formatCOP(selectedProduct.precio * currentQty);
+    refreshQtyControls();
   };
 
   // ── CONFIRM SALE ──
@@ -889,15 +1040,19 @@
     if (!selectedProduct || currentQty < 1) return;
 
     const btn = document.getElementById('confirm-sale-btn');
+    const soldProduct = selectedProduct;
+    const soldQty = currentQty;
+    const lineTotal = soldProduct.precio * soldQty;
     btn.disabled = true;
     btn.textContent = 'Procesando…';
 
     const saleRecord = {
-      producto_id: selectedProduct.id,
-      cantidad: currentQty,
+      producto_id: soldProduct.id,
+      cantidad: soldQty,
       dispositivo: getDeviceName(),
       vendido_en: new Date().toISOString(),
-      sincronizado: isOnline
+      sincronizado: isOnline,
+      evento_id: eventoActivo?.id ?? 'Venta-regular'
     };
 
     if (isOnline) {
@@ -906,44 +1061,46 @@
         if (insertError) throw insertError;
 
         const { error: rpcError } = await sb.rpc('decrementar_stock_seguro', {
-          p_producto_id: selectedProduct.id,
-          p_cantidad: currentQty
+          p_producto_id: soldProduct.id,
+          p_cantidad: soldQty
         });
         if (rpcError) throw rpcError;
 
-        // Optimistic update local
-        const idx = products.findIndex(p => p.id === selectedProduct.id);
+        // Optimistic local update
+        const idx = products.findIndex(p => p.id === soldProduct.id);
         if (idx !== -1) {
-          products[idx].stock_actual = Math.max(0, products[idx].stock_actual - currentQty);
+          products[idx].stock_actual = Math.max(0, products[idx].stock_actual - soldQty);
           renderProducts();
         }
 
-        showToast(`✓ Venta registrada: ${currentQty}× ${selectedProduct.nombre}`, 'success');
+        addTally(soldQty, lineTotal);
+        flashCard(soldProduct.id);
+        showToast(`Venta registrada: ${soldQty}× ${soldProduct.nombre}`, 'success');
         window.closeModal();
       } catch (e) {
         console.error('Sale error:', e);
-        // Fallback to offline
         const q = getOfflineQueue();
         q.push(saleRecord);
         saveOfflineQueue(q);
         updatePendingBadge();
-        showToast('Error online. Venta guardada sin conexión.', 'warning');
+        addTally(soldQty, lineTotal);
+        showToast('Error de conexión. Venta guardada localmente.', 'warning');
         window.closeModal();
       }
     } else {
-      // Offline: save to queue
       const q = getOfflineQueue();
       q.push(saleRecord);
       saveOfflineQueue(q);
 
-      // Optimistic update
-      const idx = products.findIndex(p => p.id === selectedProduct.id);
+      const idx = products.findIndex(p => p.id === soldProduct.id);
       if (idx !== -1) {
-        products[idx].stock_actual = Math.max(0, products[idx].stock_actual - currentQty);
+        products[idx].stock_actual = Math.max(0, products[idx].stock_actual - soldQty);
         renderProducts();
       }
 
       updatePendingBadge();
+      addTally(soldQty, lineTotal);
+      flashCard(soldProduct.id);
       showToast(`Venta guardada sin conexión (${q.length} pendiente${q.length > 1 ? 's' : ''})`, 'warning');
       window.closeModal();
     }
@@ -964,12 +1121,14 @@
 
     if (error) {
       errEl.textContent = error.message === 'Invalid login credentials'
-        ? 'Email o contraseña incorrectos'
+        ? 'Correo o contraseña incorrectos'
         : error.message;
       errEl.classList.add('visible');
       btn.disabled = false;
       btn.textContent = 'Entrar';
     } else {
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
       await showCatalog();
     }
   };
@@ -993,17 +1152,19 @@
     checkSession();
   };
 
-  // Allow Enter key on inputs
-  document.getElementById('device-name-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') window.confirmDeviceName();
-  });
-  document.getElementById('login-password').addEventListener('keydown', e => {
-    if (e.key === 'Enter') window.doLogin();
+  // Enter is handled by the form onsubmit; blur email → focus password for keyboard UX
+  document.getElementById('login-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('login-password').focus(); }
   });
 
-  // Close modal on overlay click
+  // Close sheet on overlay click / Escape
   document.getElementById('sale-modal').addEventListener('click', e => {
     if (e.target === document.getElementById('sale-modal')) window.closeModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('sale-modal').classList.contains('open')) {
+      window.closeModal();
+    }
   });
 
   // ── INIT ──
@@ -1022,6 +1183,7 @@
     }
   }
 
+  document.body.classList.add('is-auth');
   checkSession();
 </script>
 </body>

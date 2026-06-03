@@ -252,9 +252,9 @@
                 @for (c of CUSTOMERS; track c.id) {
                 <tr (click)="openCliente(c.id)" style="cursor:pointer">
                   <td (click)="$event.stopPropagation()"><input type="checkbox" /></td>
-                  <td><div class="pname"><div class="thumb" style="background:var(--cream-2);color:var(--carbon)">{{ initials(c.name) }}</div><div class="meta"><strong>{{ c.name }}</strong><span>{{ c.id }}</span></div></div></td>
+                  <td><div class="pname"><div class="thumb" style="background:var(--cream-2);color:var(--carbon)">{{ initials(c.nombre) }}</div><div class="meta"><strong>{{ c.nombre }}</strong><span>{{ c.id }}</span></div></div></td>
                   <td><span class="id">{{ c.email }}</span></td>
-                  <td>{{ c.city }}</td>
+                  <td>{{ c.ciudad }}</td>
                   <td>
                     @if (c.tag === 'VIP')        { <span class="badge warn"><span class="pdot"></span>★ VIP</span> }
                     @if (c.tag === 'Activo')     { <span class="badge ok"><span class="pdot"></span>Activo</span> }

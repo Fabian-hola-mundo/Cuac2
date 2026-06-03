@@ -1,7 +1,53 @@
-.testi-grid {
+.testi-layout {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1.1fr 0.9fr;
   gap: var(--s-5);
+  align-items: start;
+}
+
+.testi-featured {
+  background: var(--carbon);
+  border-radius: var(--r-lg);
+  padding: var(--s-8) var(--s-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-7);
+
+  .q-featured {
+    font-family: var(--display);
+    font-size: clamp(24px, 2.4vw, 34px);
+    line-height: 1.28;
+    color: var(--paper);
+  }
+
+  .a {
+    display: flex;
+    gap: var(--s-3);
+    align-items: center;
+    padding-top: var(--s-5);
+    border-top: 1px solid rgba(240, 241, 246, 0.12);
+  }
+
+  .av {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .n { font-weight: 600; font-size: 14px; color: var(--paper); }
+  .r { font-family: var(--mono); font-size: 11px; color: rgba(240, 241, 246, 0.5); }
+}
+
+.testi-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
 }
 
 .testi {
@@ -12,24 +58,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-5);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow 0.2s, border-color 0.2s;
 
   &:hover {
-    box-shadow: 0 12px 32px rgba(21, 31, 40, 0.08);
-    transform: translateY(-2px);
-  }
-
-  .q-mark {
-    font-family: var(--display);
-    font-size: 56px;
-    line-height: 0.6;
-    color: var(--ember);
+    box-shadow: 0 8px 24px rgba(21, 31, 40, 0.07);
+    border-color: rgba(21, 31, 40, 0.14);
   }
 
   .q {
     font-family: var(--display);
-    font-size: 19px;
-    line-height: 1.4;
+    font-size: 17px;
+    line-height: 1.45;
     color: var(--carbon);
   }
 
@@ -38,26 +77,32 @@
     gap: var(--s-3);
     align-items: center;
     margin-top: auto;
+    padding-top: var(--s-4);
+    border-top: 1px solid rgba(21, 31, 40, 0.06);
   }
 
   .av {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--display);
-    font-size: 18px;
+    font-size: 17px;
     flex-shrink: 0;
   }
 
   .a-meta {
-    .n { font-weight: 600; font-size: 14px; color: var(--carbon); }
-    .r { font-family: var(--mono); font-size: 11px; color: rgba(21, 31, 40, 0.55); }
+    .n { font-weight: 600; font-size: 13.5px; color: var(--carbon); }
+    .r { font-family: var(--mono); font-size: 10.5px; color: rgba(21, 31, 40, 0.52); }
   }
 }
 
 @media (max-width: 1024px) {
-  .testi-grid { grid-template-columns: 1fr; }
+  .testi-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .testi-featured { padding: var(--s-6); }
 }

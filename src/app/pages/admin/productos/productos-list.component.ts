@@ -2,7 +2,7 @@ import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
 import { Router }       from '@angular/router';
-import { InventarioService, ProductoEvento, CATEGORIAS } from '../../../core/services/inventario.service';
+import { InventarioService, ProductoEvento, CATEGORIAS, CAT_TONES } from '../../../core/services/inventario.service';
 import { EventosService, Evento } from '../../../core/services/eventos.service';
 
 @Component({
@@ -129,10 +129,5 @@ export class ProductosListComponent implements OnInit {
     return this.categorias.find(c => c.id === id)?.label ?? id;
   }
 
-  private readonly CAT_TONES: Record<string, string> = {
-    tote: '#C9D9F6', llavero: '#FCEFC2', gorra: '#D7EBDD',
-    pañoleta: '#FCE0EC', sticker: '#E5DDF7', amigurumi: '#FBE0D5',
-    charm: '#DDE3EA',
-  };
-  toneForCat(cat: string) { return this.CAT_TONES[cat] ?? '#DDE3EA'; }
+  toneForCat(cat: string) { return CAT_TONES[cat] ?? '#DDE3EA'; }
 }

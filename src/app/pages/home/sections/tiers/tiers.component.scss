@@ -85,9 +85,20 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    cursor: pointer;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(4px);
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s, color 0.15s;
 
     &::after { content: '→'; }
+    &:hover { color: var(--deep); }
+  }
+
+  &:hover .t-cta {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 
   .t-time {
@@ -121,7 +132,7 @@
     li { color: rgba(240, 241, 246, 0.78); }
     li::before { background: var(--coral); }
     .t-foot { border-top-color: rgba(240, 241, 246, 0.12); }
-    .t-cta { color: var(--paper); }
+    .t-cta { color: var(--paper); &:hover { color: var(--sky); } }
     .t-time { color: rgba(240, 241, 246, 0.5); }
   }
 }

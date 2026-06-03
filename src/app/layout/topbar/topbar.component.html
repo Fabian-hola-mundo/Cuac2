@@ -1,4 +1,5 @@
 <header class="topbar" [class.menu-open]="menuOpen()">
+  <a href="#main-content" class="skip-link">Saltar al contenido</a>
   <div class="topbar-inner">
 
     <a class="brand" href="#top" (click)="closeMenu()">
@@ -23,11 +24,13 @@
       <a class="universe-link" routerLink="/cuaquiverso" aria-label="Visitar Cuaquiverso">
         <em>Cuaquiverso</em><span aria-hidden="true">↗</span>
       </a>
-      <a class="top-cta" routerLink="/cotizar">Cotiza tu proyecto</a>
+      <a class="top-cta" routerLink="/cotizar">Cotizar tu proyecto</a>
       <button
+        #burgerBtn
         class="burger"
-        [attr.aria-expanded]="menuOpen()"
-        aria-label="Abrir menú"
+        [attr.aria-expanded]="menuOpen() ? 'true' : 'false'"
+        [attr.aria-label]="menuOpen() ? 'Cerrar menú' : 'Abrir menú'"
+        aria-controls="mobile-nav"
         (click)="toggleMenu()">
         <span></span><span></span><span></span>
       </button>
@@ -36,7 +39,7 @@
   </div>
 
   <!-- Mobile nav drawer -->
-  <nav class="mobile-nav" aria-label="Menú móvil" [class.is-open]="menuOpen()">
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Menú móvil" [class.is-open]="menuOpen()">
     <a href="#servicios" (click)="closeMenu()">Servicios</a>
     <a href="#empresas" (click)="closeMenu()">Empresas</a>
     <a href="#proceso" (click)="closeMenu()">Proceso</a>
@@ -44,7 +47,7 @@
     <a routerLink="/portafolio" (click)="closeMenu()">Portafolio</a>
     <a href="#contacto" (click)="closeMenu()">Contacto</a>
     <div class="mobile-nav-foot">
-      <a class="btn btn-primary" routerLink="/cotizar" (click)="closeMenu()">Cotiza tu proyecto</a>
+      <a class="btn btn-primary" routerLink="/cotizar" (click)="closeMenu()">Cotizar tu proyecto</a>
       <a class="mobile-universe" routerLink="/cuaquiverso" (click)="closeMenu()">
         <em>Cuaquiverso</em><span aria-hidden="true">↗</span>
       </a>

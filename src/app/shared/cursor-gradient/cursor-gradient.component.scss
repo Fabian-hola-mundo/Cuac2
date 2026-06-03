@@ -1,0 +1,24 @@
+:host {
+  display: contents;
+}
+
+.cursor-gradient-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9998;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  filter: blur(18px);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-gradient-canvas { display: none; }
+}
+
+@media (pointer: coarse) {
+  .cursor-gradient-canvas { display: none; }
+}

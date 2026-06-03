@@ -89,6 +89,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'portafolio/logros',
+        loadComponent: () =>
+          import('./pages/admin/portafolio/admin-logros.component').then(
+            m => m.AdminLogrosComponent,
+          ),
+      },
+      {
+        path: 'portafolio/perfiles',
+        loadComponent: () =>
+          import('./pages/admin/portafolio/admin-perfiles.component').then(
+            m => m.AdminPerfilesComponent,
+          ),
+      },
+      {
         path: 'portafolio/nuevo',
         loadComponent: () =>
           import('./pages/admin/portafolio/admin-portafolio-form.component').then(

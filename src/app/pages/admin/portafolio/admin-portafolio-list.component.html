@@ -12,6 +12,12 @@
   </div>
 </div>
 
+<nav class="tabs">
+  <a class="tab" routerLink="/admin/portafolio" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: true }">Proyectos</a>
+  <a class="tab" routerLink="/admin/portafolio/logros" routerLinkActive="on">Reconocimientos</a>
+  <a class="tab" routerLink="/admin/portafolio/perfiles" routerLinkActive="on">Perfiles</a>
+</nav>
+
 <div class="chips" style="margin-bottom:var(--s-5)">
   <button class="chip" [class.is-on]="catFiltro() === 'all'" (click)="catFiltro.set('all')">Todas</button>
   @for (c of categorias; track c.id) {
@@ -62,7 +68,7 @@
               <span class="author-chip"
                 [style.background]="authorColor(a) + '22'"
                 [style.color]="authorColor(a)">
-                {{ a === 'cuac' ? 'Cuac' : a === 'natalia' ? 'Natalia' : 'Nathali' }}
+                {{ authorLabel(a) }}
               </span>
             }
           </div>

@@ -64,7 +64,8 @@
       </div>
     }
     @if (ventas().length > 0) {
-    <table class="tbl">
+    <div class="tbl-wrap">
+    <table class="tbl" style="min-width:720px">
       <thead>
         <tr>
           <th>Fecha / Hora</th>
@@ -78,20 +79,20 @@
       <tbody>
         @for (v of ventas(); track v.id) {
         <tr (click)="verDetalle(v)" style="cursor:pointer">
-          <td class="id" style="white-space:nowrap">{{ fmtFecha(v.vendido_en) }}</td>
+          <td class="id">{{ fmtFecha(v.vendido_en) }}</td>
           <td><strong>{{ v.productos_evento?.nombre ?? '—' }}</strong></td>
           <td class="num">{{ v.cantidad }}</td>
           <td>
             @if (v.canal === 'web') {
               <span class="badge">Web</span>
-            } @else if (eventoDeVenta(v.productos_evento?.evento_id); as ev) {
+            } @else if (eventoDeVenta(v.evento_id); as ev) {
               @if (ev.estado === 'activo') {
                 <span class="badge ok"><span class="pdot"></span>{{ ev.nombre }}</span>
               } @else {
                 <span class="badge rio">{{ ev.nombre }}</span>
               }
             } @else {
-              <span class="badge">Regular</span>
+              <span class="badge">{{ v.evento_id === 'Venta-regular' ? 'Regular' : v.evento_id }}</span>
             }
           </td>
           <td class="id">{{ v.canal === 'evento' ? (v.dispositivo ?? '—') : '—' }}</td>
@@ -107,6 +108,7 @@
         }
       </tbody>
     </table>
+    </div>
     }
   </div>
 
@@ -160,14 +162,14 @@
           <span class="v">
             @if (v.canal === 'web') {
               <span class="badge">Web</span>
-            } @else if (eventoDeVenta(v.productos_evento?.evento_id); as ev) {
+            } @else if (eventoDeVenta(v.evento_id); as ev) {
               @if (ev.estado === 'activo') {
                 <span class="badge ok"><span class="pdot"></span>{{ ev.nombre }} <em style="font-weight:400;opacity:.7">· en curso</em></span>
               } @else {
                 <span class="badge rio">{{ ev.nombre }}</span>
               }
             } @else {
-              <span class="badge">Regular</span>
+              <span class="badge">{{ v.evento_id === 'Venta-regular' ? 'Regular' : v.evento_id }}</span>
             }
           </span>
         </div>

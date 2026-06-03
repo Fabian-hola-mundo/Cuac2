@@ -17,8 +17,9 @@ export class InventarioFormComponent implements OnInit {
   private fb     = inject(FormBuilder);
   private inv    = inject(InventarioService);
 
-  readonly categorias = CATEGORIAS;
-  readonly editId     = signal<string | null>(null);
+  readonly categorias   = CATEGORIAS;
+  readonly eventoActivo = EVENTO_ACTIVO;
+  readonly editId       = signal<string | null>(null);
   readonly guardando  = signal(false);
   readonly errorMsg   = signal<string | null>(null);
   readonly isEdit     = computed(() => this.editId() !== null);

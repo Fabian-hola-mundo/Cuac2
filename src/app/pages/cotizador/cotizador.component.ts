@@ -1,6 +1,7 @@
 // src/app/pages/cotizador/cotizador.component.ts
 import { Component, signal, computed, inject, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { environment } from '../../../environments/environment';
 
@@ -50,7 +51,7 @@ const EDGE_URL = `${environment.supabaseUrl}/functions/v1/cotizar`;
 @Component({
   selector: 'app-cotizador',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './cotizador.component.html',
   styleUrl: './cotizador.component.scss',
 })

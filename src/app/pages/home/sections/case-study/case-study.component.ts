@@ -17,8 +17,13 @@ import {
 export class CaseStudyComponent implements OnInit {
   private portfolioSvc = inject(PortfolioService);
 
-  readonly project  = signal<PortfolioProject | null>(null);
-  readonly cargando = signal(true);
+  readonly project      = signal<PortfolioProject | null>(null);
+  readonly cargando     = signal(true);
+  readonly descExpanded = signal(false);
+
+  readonly descNeedsExpand = computed(() =>
+    (this.project()?.description?.length ?? 0) > 280
+  );
 
   readonly collageImages = computed<string[]>(() => {
     const p = this.project();

@@ -2,7 +2,7 @@ import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { Router }         from '@angular/router';
-import { InventarioService, VentaEvento } from '../../../core/services/inventario.service';
+import { InventarioService, VentaEvento, EVENTO_ACTIVO } from '../../../core/services/inventario.service';
 
 @Component({
   selector: 'app-inventario-ventas',
@@ -15,12 +15,18 @@ export class InventarioVentasComponent implements OnInit {
   private router = inject(Router);
   private inv    = inject(InventarioService);
 
+  readonly eventoActivo = EVENTO_ACTIVO;
+
   readonly ventas    = signal<VentaEvento[]>([]);
   readonly cargando  = signal(false);
   readonly errorMsg  = signal<string | null>(null);
 
   desde = '';
   hasta = '';
+
+  totalUnidades = computed(() =>
+    this.ventas().reduce((acc, v) => acc + v.cantidad, 0)
+  );
 
   totalesPorProducto = computed(() => {
     const map = new Map<string, { nombre: string; total: number }>();

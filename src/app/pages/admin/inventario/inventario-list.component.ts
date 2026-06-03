@@ -1,7 +1,7 @@
 import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router }       from '@angular/router';
-import { InventarioService, ProductoEvento, CATEGORIAS } from '../../../core/services/inventario.service';
+import { InventarioService, ProductoEvento, CATEGORIAS, EVENTO_ACTIVO, CAT_TONES } from '../../../core/services/inventario.service';
 
 @Component({
   selector: 'app-inventario-list',
@@ -13,7 +13,8 @@ import { InventarioService, ProductoEvento, CATEGORIAS } from '../../../core/ser
 export class InventarioListComponent implements OnInit {
   private router    = inject(Router);
   readonly inv      = inject(InventarioService);
-  readonly categorias = CATEGORIAS;
+  readonly categorias   = CATEGORIAS;
+  readonly eventoActivo = EVENTO_ACTIVO;
 
   catFiltro = signal<string>('all');
 
@@ -34,4 +35,6 @@ export class InventarioListComponent implements OnInit {
   labelCategoria(id: string) {
     return this.categorias.find(c => c.id === id)?.label ?? id;
   }
+
+  toneForCat(cat: string): string { return CAT_TONES[cat] ?? '#DDE3EA'; }
 }

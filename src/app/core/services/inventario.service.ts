@@ -22,7 +22,8 @@ export interface VentaEvento {
   vendido_en: string;
   sincronizado: boolean;
   canal: 'evento' | 'web';
-  productos_evento?: { nombre: string; categoria: string; precio?: number; evento_id?: string | null };
+  evento_id: string;
+  productos_evento?: { nombre: string; categoria: string; precio?: number };
 }
 
 export const EVENTO_ACTIVO = 'sofa-2026';
@@ -36,6 +37,12 @@ export const CATEGORIAS = [
   { id: 'amigurumi', label: 'Amigurumis' },
   { id: 'charm',     label: 'Charms'     },
 ];
+
+export const CAT_TONES: Record<string, string> = {
+  tote: '#C9D9F6', llavero: '#FCEFC2', gorra: '#D7EBDD',
+  pañoleta: '#FCE0EC', sticker: '#E5DDF7', amigurumi: '#FBE0D5',
+  charm: '#DDE3EA',
+};
 
 export const CHARACTERS = [
   { id: 'cuac',       label: 'Cuac'       },

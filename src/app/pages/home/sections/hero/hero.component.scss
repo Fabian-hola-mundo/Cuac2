@@ -70,6 +70,10 @@
   100% { box-shadow: 0 0 0 0 rgba(255, 141, 117, 0); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .pulse { animation: none; }
+}
+
 h1 {
   font-family: var(--display);
   font-size: clamp(56px, 7.4vw, 116px);
@@ -90,8 +94,8 @@ h1 {
   padding-bottom: 2px;
 
   &:hover {
-    color: var(--ember);
-    border-bottom-color: var(--ember);
+    color: var(--paper);
+    border-bottom-color: var(--paper);
   }
 }
 

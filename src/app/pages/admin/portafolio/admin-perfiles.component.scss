@@ -1,0 +1,86 @@
+:host { display: block; }
+
+.tabs .tab { text-decoration: none; cursor: pointer; }
+
+.perfiles-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.panel-h h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.owner-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.saved-flag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #1F9D55;
+}
+
+// Fila 2: foto · CV · guardar — en horizontal
+.profile-media-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-5);
+  align-items: flex-end;
+}
+
+.profile-save {
+  margin-left: auto;
+  align-self: flex-end;
+}
+
+.photo-preview {
+  width: 96px;
+  height: 120px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--mist, #F0F1F6);
+  margin-bottom: var(--s-3);
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.cv-current {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--carbon, #151F28);
+  background: var(--mist, #F0F1F6);
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  margin-bottom: var(--s-3);
+  max-width: 100%;
+
+  span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1.5px dashed rgba(21, 31, 40, 0.2);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--carbon, #151F28);
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: var(--ember, #EC3813);
+    background: rgba(236, 56, 19, 0.04);
+  }
+}

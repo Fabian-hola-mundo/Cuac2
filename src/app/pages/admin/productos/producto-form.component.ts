@@ -73,12 +73,12 @@ export class ProductoFormComponent implements OnInit {
       };
       result = await this.inv.updateProducto(this.editId()!, editPayload);
     } else {
-      let eventoId: string | null = null;
+      let eventoId: string = 'Venta-regular';
       try {
         const activo = await this.eventos.getEventoActivo();
-        eventoId = activo?.id ?? null;
+        eventoId = activo?.id ?? 'Venta-regular';
       } catch {
-        eventoId = null;
+        eventoId = 'Venta-regular';
       }
       const createPayload: Omit<ProductoEvento, 'id' | 'creado_en' | 'stock_actual'> = {
         evento_id:     eventoId,
