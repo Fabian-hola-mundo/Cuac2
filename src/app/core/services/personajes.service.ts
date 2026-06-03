@@ -120,14 +120,16 @@ export class PersonajesService {
     return { error: null };
   }
 
-  async updateOrder(items: { id: string; sort_order: number }[]): Promise<void> {
+  async updateOrder(items: { id: string; sort_order: number }[]): Promise<{ error: string | null }> {
     for (const item of items) {
-      await this.sb.db
+      const { error } = await this.sb.db
         .from('personajes')
         .update({ sort_order: item.sort_order })
         .eq('id', item.id);
+      if (error) return { error: error.message };
     }
     await this.load();
+    return { error: null };
   }
 
   async toggleActivo(id: string, activo: boolean): Promise<{ error: string | null }> {
