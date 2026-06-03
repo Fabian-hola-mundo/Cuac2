@@ -196,7 +196,7 @@ export class TiendaComponent implements OnInit {
     ev.preventDefault();
     ev.stopPropagation();
     this.cart.add({
-      id:    parseInt(p.id.replace(/-/g, '').substring(0, 8), 16),
+      id:    parseInt(p.id.replace(/-/g, '').substring(0, 12), 16),
       name:  p.nombre,
       sub:   `${this.CAT_SHORT[p.categoria] ?? p.categoria}`,
       price: p.precio,

@@ -82,7 +82,13 @@ export class InventarioService {
       this.cargando.set(false);
       return;
     }
-    this.productos.set(data ?? []);
+    this.productos.set(
+      (data ?? []).map(p => ({
+        ...p,
+        fotos:    p.fotos    ?? [],
+        material: p.material ?? [],
+      }))
+    );
     this.cargando.set(false);
   }
 
