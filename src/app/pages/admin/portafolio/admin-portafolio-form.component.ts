@@ -27,8 +27,9 @@ export class AdminPortafolioFormComponent implements OnInit {
   readonly authors    = AUTHORS;
   readonly editId     = signal<string | null>(null);
   readonly guardando  = signal(false);
-  readonly errorMsg   = signal<string | null>(null);
-  readonly isEdit     = computed(() => this.editId() !== null);
+  readonly errorMsg        = signal<string | null>(null);
+  readonly testimonialError = signal<string | null>(null);
+  readonly isEdit           = computed(() => this.editId() !== null);
 
   readonly coverPreview    = signal<string | null>(null);
   readonly galleryPreviews = signal<string[]>([]);
@@ -114,6 +115,16 @@ export class AdminPortafolioFormComponent implements OnInit {
       if (current.length > 1) this.selectedAuthors.set(current.filter(x => x !== a));
     } else {
       this.selectedAuthors.set([...current, a]);
+    }
+  }
+
+  async onShowTestimonialChange(checked: boolean) {
+    this.testimonialError.set(null);
+    if (!checked) return;
+    const count = await this.portfolio.countActiveTestimonials(this.editId() ?? undefined);
+    if (count >= 3) {
+      this.form.patchValue({ show_testimonial: false });
+      this.testimonialError.set('Ya tienes 3 testimonios activos. Desactiva uno antes de agregar otro.');
     }
   }
 
