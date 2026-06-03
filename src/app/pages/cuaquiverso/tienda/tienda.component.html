@@ -18,18 +18,13 @@
       <span class="b1">Cuaqui</span><span class="dot"></span><span class="b2">verso</span>
     </a>
     <nav class="primary">
-      <a href="/cuaquiverso">Inicio</a>
       <a href="/cuaquiverso/tienda" class="is-active">Tienda</a>
-      <a href="#">Universo</a>
-      <a href="/cuaquiverso#manifiesto">Manifiesto</a>
+      <a href="/cuaquiverso/universo">Universo</a>
     </nav>
     <div class="top-actions">
-      <button class="icon-btn" aria-label="Cuenta">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
-      </button>
-      <button class="icon-btn" aria-label="Carrito">
+      <button class="icon-btn" aria-label="Carrito" (click)="cart.open()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h2l2.5 12.5h11L21 7H7"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
-        <span class="badge">{{ cartCount() }}</span>
+        @if (cart.count() > 0) { <span class="badge">{{ cart.count() }}</span> }
       </button>
     </div>
   </div>
@@ -45,10 +40,10 @@
         <span style="color:var(--carbon)">Tienda</span>
       </div>
       <h1>Toda la tienda, <em>en un solo cuaderno</em>.</h1>
-      <p>42 piezas curadas: camisetas, libretas, posters, stickers, peluches y más. Hechas en lotes pequeños, en talleres de Bogotá y Medellín. Cada compra apoya a los ilustradores del Cuaquiverso.</p>
+      <p>Trabajamos en cantidades pensadas. Algunos productos vuelven, otros son únicos. La mejor forma de no perderte nada es actuar cuando algo te gusta.</p>
     </div>
     <div class="stats">
-      <div><div class="k">Productos</div><div class="v">42</div></div>
+      <div><div class="k">Productos</div><div class="v">{{ activeProducts().length || '—' }}</div></div>
       <div><div class="k">Personajes</div><div class="v">8</div></div>
       <div><div class="k">Envío gratis</div><div class="v">desde $150k</div></div>
     </div>
@@ -110,7 +105,7 @@
         @for (cat of CATEGORIES; track cat.id) {
           <label class="filter-opt" [class.is-on]="selectedCats().has(cat.id)">
             <input type="checkbox" [checked]="selectedCats().has(cat.id)" (change)="toggleCat(cat.id, $event)" />
-            {{ cat.label }} <span class="ct">{{ cat.count }}</span>
+            {{ cat.label }}
           </label>
         }
       </div>
@@ -124,7 +119,7 @@
           <label class="filter-opt" [class.is-on]="selectedChars().has(ch.id)">
             <input type="checkbox" [checked]="selectedChars().has(ch.id)" (change)="toggleChar(ch.id, $event)" />
             <span class="swatch" [style.background]="ch.swatch"></span>
-            {{ ch.label }} <span class="ct">{{ ch.count }}</span>
+            {{ ch.label }}
           </label>
         }
       </div>
@@ -172,30 +167,40 @@
   <!-- PRODUCT GRID -->
   <div>
     <div class="grid" [class.is-dense]="viewMode() === 'dense'">
-      @if (filteredProducts().length === 0) {
+      @if (cargando()) {
+        <div class="empty">
+          <p>Cargando productos…</p>
+        </div>
+      } @else if (filteredProducts().length === 0) {
         <div class="empty">
           <h3>Sin resultados</h3>
-          <p>Intenta con menos filtros o cambia la búsqueda.</p>
-          <button class="btn btn-primary" (click)="clearAll()">Limpiar filtros</button>
+          <p>{{ activeProducts().length === 0 ? 'La tienda está siendo preparada. Vuelve pronto.' : 'Intenta con menos filtros o cambia la búsqueda.' }}</p>
+          @if (activeProducts().length > 0) {
+            <button class="btn btn-primary" (click)="clearAll()">Limpiar filtros</button>
+          }
         </div>
       }
-      @for (p of filteredProducts(); track p.id; let i = $index) {
+      @for (p of filteredProducts(); track p.id) {
         <a class="pcard" [attr.data-color]="p.color" href="#">
           <div class="pcard-img">
             @if (p.flag === 'new')  { <span class="flag new">Nuevo</span> }
             @if (p.flag === 'last') { <span class="flag last">Últimas</span> }
-            <div class="label" [innerHTML]="shortLabel(p)"></div>
+            @if (p.cover_url) {
+              <img [src]="p.cover_url" [alt]="p.nombre" style="width:100%;height:100%;object-fit:cover;display:block;" />
+            } @else {
+              <div class="label" [innerHTML]="shortLabel(p)"></div>
+            }
             <span class="quick">Ver producto →</span>
           </div>
           <div class="pcard-info">
             <div class="meta">
-              <span>{{ p.sub }}</span>
-              <span>{{ LABEL_MAP[p.ch] }}</span>
+              <span>{{ CAT_SHORT[p.categoria] ?? p.categoria }}</span>
+              <span>{{ LABEL_MAP[p.personaje ?? ''] ?? '' }}</span>
             </div>
-            <h4>{{ p.name }}</h4>
+            <h4>{{ p.nombre }}</h4>
             <div class="row">
-              <span class="price">{{ fmtPrice(p.price) }}</span>
-              <span class="add" (click)="addToCart($event)">+</span>
+              <span class="price">{{ fmtPrice(p.precio) }}</span>
+              <span class="add" (click)="addToCart($event, p)">+</span>
             </div>
           </div>
         </a>
@@ -266,3 +271,5 @@
     </div>
   </div>
 </footer>
+
+<app-cart-modal></app-cart-modal>
