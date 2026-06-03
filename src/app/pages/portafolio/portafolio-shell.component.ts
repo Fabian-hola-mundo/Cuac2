@@ -11,6 +11,7 @@ import {
   PORTFOLIO_CATEGORIES,
 } from '../../core/services/portfolio.service';
 import { PortfolioShaderComponent } from './shader/portfolio-shader.component';
+import { SeoService } from '../../core/services/seo.service';
 
 type Theme = 'cuac' | 'natalia' | 'nathali';
 
@@ -100,6 +101,7 @@ function assignSpans(projects: PortfolioProject[]): SpanProject[] {
 export class PortafolioShellComponent implements OnInit {
   private portfolioSvc = inject(PortfolioService);
   private route        = inject(ActivatedRoute);
+  private seo          = inject(SeoService);
 
   readonly theme        = signal<Theme>('cuac');
   readonly categorias   = PORTFOLIO_CATEGORIES;
@@ -159,6 +161,7 @@ export class PortafolioShellComponent implements OnInit {
 
   async ngOnInit() {
     this.theme.set((this.route.snapshot.data['theme'] as Theme) ?? 'cuac');
+    this.applySeo();
     const owner = THEME_AUTHOR[this.theme()];
     this.cargando.set(true);
     try {
@@ -172,6 +175,29 @@ export class PortafolioShellComponent implements OnInit {
       this.achievements.set(achievements);
     } finally {
       this.cargando.set(false);
+    }
+  }
+
+  private applySeo(): void {
+    const t = this.theme();
+    if (t === 'natalia') {
+      this.seo.set({
+        title:       'Portafolio — Natalia Castañeda',
+        description: 'Diseño editorial, ilustración y branding. Portafolio personal de Natalia Castañeda Caicedo.',
+        canonical:   'https://cuacdesign.com/portafolio/natalia',
+      });
+    } else if (t === 'nathali') {
+      this.seo.set({
+        title:       'Portafolio — Nathali Ramírez',
+        description: 'Diseño UI/UX, ilustración y branding. Portafolio personal de Nathali Ramírez Ortiz.',
+        canonical:   'https://cuacdesign.com/portafolio/nathali',
+      });
+    } else {
+      this.seo.set({
+        title:       'Portafolio',
+        description: 'Proyectos de branding, diseño editorial, ilustración y web del estudio Cuac Design en Bogotá.',
+        canonical:   'https://cuacdesign.com/portafolio',
+      });
     }
   }
 }
