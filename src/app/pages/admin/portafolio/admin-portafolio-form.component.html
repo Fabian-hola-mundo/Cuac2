@@ -58,15 +58,28 @@
         </div>
 
         <div class="field">
+          <label>Persona de contacto <span class="opt">opcional</span></label>
+          <input class="input" formControlName="client_person"
+            placeholder="Nombre y apellido" />
+          <span class="help">Nombre que aparece en el testimonio.</span>
+        </div>
+
+        <div class="field">
+          <label>Cargo <span class="opt">opcional</span></label>
+          <input class="input" formControlName="client_role"
+            placeholder="Fundadora · Marca de skincare" />
+        </div>
+
+        <div class="field">
           <label>Autores <span class="opt">*</span></label>
           <div class="author-checks">
-            @for (a of [['cuac','Cuac','#011E54'],['natalia','Natalia','#E87A89'],['nathali','Nathali','#8B9ED9']]; track a[0]) {
+            @for (a of authors; track a.id) {
               <label class="author-opt"
-                [class.is-on]="selectedAuthors().includes(a[0])"
-                [style.border-color]="selectedAuthors().includes(a[0]) ? a[2] : null"
-                (click)="toggleAuthor(a[0])">
-                <span class="author-dot" [style.background]="a[2]"></span>
-                {{ a[1] }}
+                [class.is-on]="selectedAuthors().includes(a.id)"
+                [style.border-color]="selectedAuthors().includes(a.id) ? a.color : null"
+                (click)="toggleAuthor(a.id)">
+                <span class="author-dot" [style.background]="a.color"></span>
+                {{ a.label }}
               </label>
             }
           </div>
@@ -101,6 +114,39 @@
           }
         </div>
 
+        <div class="field">
+          <label>Enlaces externos <span class="opt">opcional</span></label>
+          <span class="help">Hasta {{ MAX_LINKS }} enlaces a trabajo publicado. Aparecen en la sección «Ver en acción».</span>
+          @if (links().length > 0) {
+            <div class="link-rows">
+              @for (link of links(); track $index) {
+                <div class="link-row">
+                  <select class="input select link-type"
+                    [value]="link.type"
+                    (change)="updateLink($index, 'type', $any($event.target).value)">
+                    @for (lt of linkTypes; track lt.id) {
+                      <option [value]="lt.id">{{ lt.label }}</option>
+                    }
+                  </select>
+                  <input class="input link-label-in"
+                    [value]="link.label"
+                    placeholder="Etiqueta (ej: Sitio web publicado)"
+                    (input)="updateLink($index, 'label', $any($event.target).value)" />
+                  <input class="input link-url-in" type="url"
+                    [value]="link.url"
+                    placeholder="https://…"
+                    (input)="updateLink($index, 'url', $any($event.target).value)" />
+                  <button type="button" class="link-del" (click)="removeLink($index)" aria-label="Eliminar enlace">×</button>
+                </div>
+              }
+            </div>
+          }
+          <button type="button" class="btn-sm ghost" style="margin-top:var(--s-3)"
+            [disabled]="links().length >= MAX_LINKS" (click)="addLink()">
+            + Agregar enlace
+          </button>
+        </div>
+
         <div class="grid-2">
           <div class="field inv-toggle-row">
             <label>Destacado</label>
@@ -116,7 +162,20 @@
               <span class="inv-slider"></span>
             </label>
           </div>
+          <div class="field inv-toggle-row">
+            <label>En testimonios</label>
+            <label class="inv-toggle">
+              <input type="checkbox" formControlName="show_testimonial"
+                (change)="onShowTestimonialChange($any($event.target).checked)" />
+              <span class="inv-slider"></span>
+            </label>
+          </div>
         </div>
+        @if (testimonialError()) {
+          <p style="font-size:13px;color:var(--terra);margin-top:calc(var(--s-3)*-1);margin-bottom:var(--s-4)">
+            {{ testimonialError() }}
+          </p>
+        }
 
         @if (errorMsg()) {
           <p style="font-size:13px;color:var(--terra);margin-bottom:var(--s-4)">{{ errorMsg() }}</p>
