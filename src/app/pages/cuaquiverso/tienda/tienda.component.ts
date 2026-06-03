@@ -196,11 +196,11 @@ export class TiendaComponent implements OnInit {
     ev.preventDefault();
     ev.stopPropagation();
     this.cart.add({
-      id:    parseInt(p.id.replace(/-/g, '').substring(0, 12), 16),
+      id:    p.id,
       name:  p.nombre,
-      sub:   `${this.CAT_SHORT[p.categoria] ?? p.categoria}`,
+      sub:   this.CAT_SHORT[p.categoria] ?? p.categoria,
       price: p.precio,
-      color: p.color ?? 'rio',
+      color: p.color ?? '#3D4856',
     });
     this.cart.open();
   }

@@ -1,7 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 
 export interface CartItem {
-  id: number;
+  id: string;
   name: string;
   sub: string;
   price: number;
@@ -31,12 +31,12 @@ export class CartService {
     }
   }
 
-  updateQty(id: number, qty: number) {
+  updateQty(id: string, qty: number) {
     if (qty <= 0) { this.remove(id); return; }
     this._items.set(this._items().map(i => i.id === id ? { ...i, qty } : i));
   }
 
-  remove(id: number) {
+  remove(id: string) {
     this._items.set(this._items().filter(i => i.id !== id));
   }
 

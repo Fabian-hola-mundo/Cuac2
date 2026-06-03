@@ -1,5 +1,7 @@
 import { Component, OnInit, afterNextRender, inject, DestroyRef } from '@angular/core';
 import { SeoService } from '../../core/services/seo.service';
+import { CartService } from './services/cart.service';
+import { CartModalComponent } from './cart-modal/cart-modal.component';
 
 interface Character {
   key: string;
@@ -11,16 +13,24 @@ interface Character {
 @Component({
   selector: 'app-cuaquiverso',
   standalone: true,
-  imports: [],
+  imports: [CartModalComponent],
   templateUrl: './cuaquiverso.component.html',
   styleUrl: './cuaquiverso.component.scss',
 })
 export class CuaquiversoComponent implements OnInit {
-  cartCount = 3;
   newsletterSubmitted = false;
 
+  readonly cart = inject(CartService);
   private destroyRef = inject(DestroyRef);
   private seo        = inject(SeoService);
+
+  readonly previewProducts = [
+    { id:'preview-1', name:'El explorador soñador', sub:'Camiseta · Edición de 200', price:89000,  color:'#2A6FDB' },
+    { id:'preview-2', name:'Kiki la delfín',        sub:'Pin esmaltado',             price:22000,  color:'#FF6FA8' },
+    { id:'preview-3', name:'Yeison al río',          sub:'Tote · Lona reciclada',    price:54000,  color:'#FFC93C' },
+    { id:'preview-4', name:'Diario de páramo',       sub:'Libreta · A5',             price:48000,  color:'#D4DCE4' },
+    { id:'preview-5', name:'Tiburcio el vacilón',    sub:'Peluche · 28cm',           price:148000, color:'#D8DEDE' },
+  ];
 
   ngOnInit(): void {
     this.seo.set({
@@ -36,10 +46,10 @@ export class CuaquiversoComponent implements OnInit {
     });
   }
 
-  addToCart(event: Event): void {
+  addToCart(event: Event, product: { id: string; name: string; sub: string; price: number; color: string }): void {
     event.preventDefault();
     event.stopPropagation();
-    this.cartCount++;
+    this.cart.add(product);
   }
 
   onNewsletterSubmit(event: Event): void {

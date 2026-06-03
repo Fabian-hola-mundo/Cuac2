@@ -60,7 +60,7 @@
           <span class="subtotal-val">{{ cart.fmtPrice(cart.total()) }}</span>
         </div>
         <p class="shipping-note">Envío calculado al finalizar la compra</p>
-        <a class="btn-checkout" href="/cuaquiverso/checkout">
+        <a class="btn-checkout" routerLink="/cuaquiverso/checkout" (click)="cart.close()">
           Ir a pagar <span>→</span>
         </a>
         <button class="btn-continue" (click)="cart.close()">

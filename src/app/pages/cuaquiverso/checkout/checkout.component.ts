@@ -90,6 +90,8 @@ export class CheckoutComponent implements OnInit {
   }
 
   colorHex(key: string): string {
+    if (!key) return '#3D4856';
+    if (key.startsWith('#') || key.startsWith('rgb')) return key;
     return COLOR_MAP[key] ?? '#3D4856';
   }
 
