@@ -5,7 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   PortfolioService,
+  ProjectLink,
   PORTFOLIO_CATEGORIES,
+  AUTHORS,
 } from '../../../core/services/portfolio.service';
 
 @Component({
@@ -22,6 +24,7 @@ export class AdminPortafolioFormComponent implements OnInit {
   private portfolio = inject(PortfolioService);
 
   readonly categorias = PORTFOLIO_CATEGORIES;
+  readonly authors    = AUTHORS;
   readonly editId     = signal<string | null>(null);
   readonly guardando  = signal(false);
   readonly errorMsg   = signal<string | null>(null);
@@ -38,16 +41,29 @@ export class AdminPortafolioFormComponent implements OnInit {
   readonly tags = signal<string[]>([]);
   tagInput      = '';
 
+  readonly links = signal<ProjectLink[]>([]);
+  readonly linkTypes: { id: ProjectLink['type']; label: string }[] = [
+    { id: 'web',       label: 'Sitio web' },
+    { id: 'video',     label: 'Video' },
+    { id: 'behance',   label: 'Behance' },
+    { id: 'instagram', label: 'Instagram' },
+    { id: 'other',     label: 'Otro' },
+  ];
+  readonly MAX_LINKS = 5;
+
   form = this.fb.group({
-    title:          ['', [Validators.required, Validators.minLength(2)]],
-    slug:           ['', [Validators.required]],
-    category:       ['branding', Validators.required],
-    headline:       [''],
-    client_name:    [''],
-    description:    [''],
-    client_comment: [''],
-    featured:       [false],
-    published:      [false],
+    title:            ['', [Validators.required, Validators.minLength(2)]],
+    slug:             ['', [Validators.required]],
+    category:         ['branding', Validators.required],
+    headline:         [''],
+    client_name:      [''],
+    description:      [''],
+    client_comment:   [''],
+    client_person:    [''],
+    client_role:      [''],
+    show_testimonial: [false],
+    featured:         [false],
+    published:        [false],
   });
 
   async ngOnInit() {
@@ -57,18 +73,22 @@ export class AdminPortafolioFormComponent implements OnInit {
       const p = await this.portfolio.getById(id);
       if (p) {
         this.form.patchValue({
-          title:          p.title,
-          slug:           p.slug,
-          category:       p.category,
-          headline:       p.headline ?? '',
-          client_name:    p.client_name ?? '',
-          description:    p.description ?? '',
-          client_comment: p.client_comment ?? '',
-          featured:       p.featured,
-          published:      p.published,
+          title:            p.title,
+          slug:             p.slug,
+          category:         p.category,
+          headline:         p.headline ?? '',
+          client_name:      p.client_name ?? '',
+          description:      p.description ?? '',
+          client_comment:   p.client_comment ?? '',
+          client_person:    p.client_person ?? '',
+          client_role:      p.client_role ?? '',
+          show_testimonial: p.show_testimonial,
+          featured:         p.featured,
+          published:        p.published,
         });
         this.selectedAuthors.set(p.authors);
         this.tags.set(p.tags);
+        this.links.set(Array.isArray(p.links) ? [...p.links] : []);
         this.coverPreview.set(p.cover_url);
         this.galleryPreviews.set(p.images);
         this.existingImages = p.images;
@@ -118,6 +138,27 @@ export class AdminPortafolioFormComponent implements OnInit {
 
   removeTag(t: string) { this.tags.update(list => list.filter(x => x !== t)); }
 
+  addLink() {
+    if (this.links().length >= this.MAX_LINKS) return;
+    this.links.update(list => [...list, { label: '', url: '', type: 'web' }]);
+  }
+
+  removeLink(i: number) {
+    this.links.update(list => list.filter((_, idx) => idx !== i));
+  }
+
+  updateLink(i: number, field: keyof ProjectLink, value: string) {
+    this.links.update(list =>
+      list.map((l, idx) => (idx === i ? { ...l, [field]: value } : l)),
+    );
+  }
+
+  private cleanLinks(): ProjectLink[] {
+    return this.links()
+      .map(l => ({ ...l, label: l.label.trim(), url: l.url.trim() }))
+      .filter(l => l.label && l.url);
+  }
+
   async guardar() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.guardando.set(true);
@@ -154,11 +195,14 @@ export class AdminPortafolioFormComponent implements OnInit {
         headline:       v.headline || null,
         client_name:    v.client_name || null,
         description:    v.description || null,
-        client_comment: v.client_comment || null,
-        cover_url:      coverUrl,
+        client_comment:   v.client_comment || null,
+        client_person:    v.client_person || null,
+        client_role:      v.client_role || null,
+        show_testimonial: v.show_testimonial ?? false,
+        cover_url:        coverUrl,
         images,
         tags:           this.tags(),
-        links:          [],
+        links:          this.cleanLinks(),
         featured:       v.featured ?? false,
         published:      v.published ?? false,
       };
