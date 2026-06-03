@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /identidadcorporativa
+Disallow: /designsystem
+
+Sitemap: https://cuacdesign.com/sitemap.xml

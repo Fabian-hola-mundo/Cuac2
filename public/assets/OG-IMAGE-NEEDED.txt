@@ -1,0 +1,5 @@
+Agregar og-cuac.jpg en este directorio.
+Dimensiones: 1200×630px
+Fondo: Carbon #151F28
+Contenido: Logotipo Cuac Design
+Exportar como JPEG de alta calidad.
