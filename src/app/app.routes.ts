@@ -36,6 +36,12 @@ export const routes: Routes = [
       import('./pages/cuaquiverso/tienda/tienda.component').then(m => m.TiendaComponent),
   },
   {
+    path: 'cuaquiverso/tienda/:id',
+    loadComponent: () =>
+      import('./pages/cuaquiverso/tienda/producto/producto-detail.component')
+        .then(m => m.ProductoDetailComponent),
+  },
+  {
     path: 'cuaquiverso/universo',
     loadComponent: () =>
       import('./pages/cuaquiverso/universo/universo.component').then(m => m.UniversoComponent),

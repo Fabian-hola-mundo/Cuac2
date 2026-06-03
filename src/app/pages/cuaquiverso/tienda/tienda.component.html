@@ -181,7 +181,8 @@
         </div>
       }
       @for (p of filteredProducts(); track p.id) {
-        <a class="pcard" [attr.data-color]="p.color" href="#">
+        <a class="pcard" [attr.data-color]="p.color"
+           [routerLink]="['/cuaquiverso/tienda', p.id]">
           <div class="pcard-img">
             @if (p.flag === 'new')  { <span class="flag new">Nuevo</span> }
             @if (p.flag === 'last') { <span class="flag last">Últimas</span> }

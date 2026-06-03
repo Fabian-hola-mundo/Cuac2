@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../../core/services/seo.service';
 import { CartService } from '../services/cart.service';
@@ -9,7 +9,7 @@ import { InventarioService, ProductoEvento } from '../../../core/services/invent
 @Component({
   selector: 'app-tienda',
   standalone: true,
-  imports: [FormsModule, CartModalComponent],
+  imports: [FormsModule, CartModalComponent, RouterLink],
   templateUrl: './tienda.component.html',
   styleUrl: './tienda.component.scss',
 })
