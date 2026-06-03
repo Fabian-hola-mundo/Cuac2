@@ -75,72 +75,75 @@ export class ProductoFormComponent implements OnInit {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.guardando.set(true);
     this.errorMsg.set(null);
-
-    const v = this.form.getRawValue();
-
-    let coverUrl: string | null = this.coverPreview();
-    if (this.coverFile) {
+    try {
+      const v = this.form.getRawValue();
       const tempId = this.editId() ?? `tmp_${Date.now()}`;
-      const ext = this.coverFile.name.split('.').pop() ?? 'jpg';
-      const { url } = await this.inv.uploadProductoImage(tempId, this.coverFile, `cover.${ext}`);
-      if (url) coverUrl = url;
-    }
 
-    let fotosUrls: string[] = [...this.existingFotos];
-    for (let i = 0; i < this.galleryFiles.length; i++) {
-      const file = this.galleryFiles[i];
-      const tempId = this.editId() ?? `tmp_${Date.now()}`;
-      const ext = file.name.split('.').pop() ?? 'jpg';
-      const { url } = await this.inv.uploadProductoImage(tempId, file, `foto_${i}.${ext}`);
-      if (url) fotosUrls.push(url);
-    }
-
-    let result: { error: string | null };
-
-    if (this.isEdit()) {
-      const editPayload: Partial<Omit<ProductoEvento, 'id' | 'creado_en' | 'stock_actual'>> = {
-        nombre:      v.nombre!,
-        categoria:   v.categoria!,
-        personaje:   v.personaje ?? null,
-        precio:      v.precio!,
-        activo:      v.activo ?? true,
-        cover_url:   coverUrl,
-        fotos:       fotosUrls,
-        material:    this.material(),
-        color:       v.color ?? null,
-        flag:        v.flag ?? null,
-        descripcion: v.descripcion ?? null,
-      };
-      result = await this.inv.updateProducto(this.editId()!, editPayload);
-    } else {
-      let eventoId = 'Venta-regular';
-      try {
-        const activo = await this.eventos.getEventoActivo();
-        eventoId = activo?.id ?? 'Venta-regular';
-      } catch {
-        eventoId = 'Venta-regular';
+      let coverUrl: string | null = this.coverPreview();
+      if (this.coverFile) {
+        const ext = this.coverFile.name.split('.').pop() ?? 'jpg';
+        const { url } = await this.inv.uploadProductoImage(tempId, this.coverFile, `cover.${ext}`);
+        if (url) coverUrl = url;
       }
-      const createPayload: Omit<ProductoEvento, 'id' | 'creado_en' | 'stock_actual'> = {
-        evento_id:     eventoId,
-        nombre:        v.nombre!,
-        categoria:     v.categoria!,
-        personaje:     v.personaje ?? null,
-        precio:        v.precio!,
-        stock_inicial: v.stock_inicial!,
-        activo:        v.activo ?? true,
-        cover_url:     coverUrl,
-        fotos:         fotosUrls,
-        material:      this.material(),
-        color:         v.color ?? null,
-        flag:          v.flag ?? null,
-        descripcion:   v.descripcion ?? null,
-      };
-      result = await this.inv.createProducto(createPayload);
-    }
 
-    this.guardando.set(false);
-    if (result.error) { this.errorMsg.set(result.error); return; }
-    this.router.navigate(['/admin/productos']);
+      let fotosUrls: string[] = [...this.existingFotos];
+      for (let i = 0; i < this.galleryFiles.length; i++) {
+        const file = this.galleryFiles[i];
+        const ext = file.name.split('.').pop() ?? 'jpg';
+        const { url } = await this.inv.uploadProductoImage(tempId, file, `foto_${i}.${ext}`);
+        if (url) fotosUrls.push(url);
+      }
+
+      let result: { error: string | null };
+
+      if (this.isEdit()) {
+        const editPayload: Partial<Omit<ProductoEvento, 'id' | 'creado_en' | 'stock_actual'>> = {
+          nombre:      v.nombre!,
+          categoria:   v.categoria!,
+          personaje:   v.personaje ?? null,
+          precio:      v.precio!,
+          activo:      v.activo ?? true,
+          cover_url:   coverUrl,
+          fotos:       fotosUrls,
+          material:    this.material(),
+          color:       v.color ?? null,
+          flag:        v.flag ?? null,
+          descripcion: v.descripcion || null,
+        };
+        result = await this.inv.updateProducto(this.editId()!, editPayload);
+      } else {
+        let eventoId = 'Venta-regular';
+        try {
+          const activo = await this.eventos.getEventoActivo();
+          eventoId = activo?.id ?? 'Venta-regular';
+        } catch {
+          eventoId = 'Venta-regular';
+        }
+        const createPayload: Omit<ProductoEvento, 'id' | 'creado_en' | 'stock_actual'> = {
+          evento_id:     eventoId,
+          nombre:        v.nombre!,
+          categoria:     v.categoria!,
+          personaje:     v.personaje ?? null,
+          precio:        v.precio!,
+          stock_inicial: v.stock_inicial!,
+          activo:        v.activo ?? true,
+          cover_url:     coverUrl,
+          fotos:         fotosUrls,
+          material:      this.material(),
+          color:         v.color ?? null,
+          flag:          v.flag ?? null,
+          descripcion:   v.descripcion || null,
+        };
+        result = await this.inv.createProducto(createPayload);
+      }
+
+      if (result.error) { this.errorMsg.set(result.error); return; }
+      this.router.navigate(['/admin/productos']);
+    } catch (e: unknown) {
+      this.errorMsg.set(e instanceof Error ? e.message : 'Error inesperado');
+    } finally {
+      this.guardando.set(false);
+    }
   }
 
   cancelar() { this.router.navigate(['/admin/productos']); }
@@ -153,6 +156,8 @@ export class ProductoFormComponent implements OnInit {
   onCoverChange(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+    const prev = this.coverPreview();
+    if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
     this.coverFile = file;
     this.coverPreview.set(URL.createObjectURL(file));
   }
