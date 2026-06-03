@@ -6,6 +6,7 @@ import {
   PortfolioProject,
   PORTFOLIO_CATEGORIES,
 } from '../../core/services/portfolio.service';
+import { SeoService } from '../../core/services/seo.service';
 
 type Theme = 'cuac' | 'natalia' | 'nathali';
 
@@ -21,6 +22,7 @@ export class PortafolioDetailComponent implements OnInit, OnDestroy {
   private portfolioSvc = inject(PortfolioService);
   private route        = inject(ActivatedRoute);
   private router       = inject(Router);
+  private seo          = inject(SeoService);
 
   readonly categorias   = PORTFOLIO_CATEGORIES;
   theme: Theme          = 'cuac';
@@ -138,6 +140,16 @@ export class PortafolioDetailComponent implements OnInit, OnDestroy {
 
     if (!p) { this.notFound.set(true); return; }
     this.project.set(p);
+    this.seo.setProject(p);
+    this.seo.setJsonLd({
+      '@context':   'https://schema.org',
+      '@type':      'CreativeWork',
+      name:         p.title,
+      description:  p.headline ?? p.description ?? '',
+      creator:      { '@type': 'Organization', name: 'Cuac Design' },
+      image:        p.cover_url ?? '',
+      url:          `https://cuacdesign.com/portafolio/${p.slug}`,
+    });
     this.theme = this.deriveTheme(p.authors);
 
     const siblings = await this.portfolioSvc.getPublished(this.theme);
