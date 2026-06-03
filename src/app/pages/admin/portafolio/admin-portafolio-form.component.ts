@@ -121,10 +121,15 @@ export class AdminPortafolioFormComponent implements OnInit {
   async onShowTestimonialChange(checked: boolean) {
     this.testimonialError.set(null);
     if (!checked) return;
-    const count = await this.portfolio.countActiveTestimonials(this.editId() ?? undefined);
-    if (count >= 3) {
+    try {
+      const count = await this.portfolio.countActiveTestimonials(this.editId() ?? undefined);
+      if (count >= 3) {
+        this.form.patchValue({ show_testimonial: false });
+        this.testimonialError.set('Ya tienes 3 testimonios activos. Desactiva uno antes de agregar otro.');
+      }
+    } catch {
       this.form.patchValue({ show_testimonial: false });
-      this.testimonialError.set('Ya tienes 3 testimonios activos. Desactiva uno antes de agregar otro.');
+      this.testimonialError.set('No se pudo validar el límite de testimonios. Intenta de nuevo.');
     }
   }
 
