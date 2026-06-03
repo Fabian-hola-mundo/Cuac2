@@ -1,7 +1,15 @@
-import { Component, OnInit, afterNextRender, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, afterNextRender, inject, DestroyRef, computed } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { SeoService } from '../../core/services/seo.service';
 import { CartService } from './services/cart.service';
 import { CartModalComponent } from './cart-modal/cart-modal.component';
+import { InventarioService, ProductoEvento } from '../../core/services/inventario.service';
+
+const CAT_SHORT: Record<string, string> = {
+  tee:'Camiseta', tote:'Tote bag', libreta:'Libreta', sticker:'Sticker',
+  pin:'Pin', gorra:'Gorra', peluche:'Peluche', print:'Print',
+  llavero:'Llavero', pañoleta:'Pañoleta', amigurumi:'Amigurumi', charm:'Charm',
+};
 
 interface Character {
   key: string;
@@ -13,24 +21,23 @@ interface Character {
 @Component({
   selector: 'app-cuaquiverso',
   standalone: true,
-  imports: [CartModalComponent],
+  imports: [CartModalComponent, RouterLink],
   templateUrl: './cuaquiverso.component.html',
   styleUrl: './cuaquiverso.component.scss',
 })
 export class CuaquiversoComponent implements OnInit {
   newsletterSubmitted = false;
 
-  readonly cart = inject(CartService);
-  private destroyRef = inject(DestroyRef);
-  private seo        = inject(SeoService);
+  readonly cart       = inject(CartService);
+  readonly inv        = inject(InventarioService);
+  private  destroyRef = inject(DestroyRef);
+  private  seo        = inject(SeoService);
 
-  readonly previewProducts = [
-    { id:'preview-1', name:'El explorador soñador', sub:'Camiseta · Edición de 200', price:89000,  color:'#2A6FDB' },
-    { id:'preview-2', name:'Kiki la delfín',        sub:'Pin esmaltado',             price:22000,  color:'#FF6FA8' },
-    { id:'preview-3', name:'Yeison al río',          sub:'Tote · Lona reciclada',    price:54000,  color:'#FFC93C' },
-    { id:'preview-4', name:'Diario de páramo',       sub:'Libreta · A5',             price:48000,  color:'#D4DCE4' },
-    { id:'preview-5', name:'Tiburcio el vacilón',    sub:'Peluche · 28cm',           price:148000, color:'#D8DEDE' },
-  ];
+  readonly showcaseProducts = computed(() => {
+    const activos    = this.inv.productos().filter(p => p.activo);
+    const destacados = activos.filter(p => p.destacado);
+    return (destacados.length > 0 ? destacados : activos).slice(0, 5);
+  });
 
   ngOnInit(): void {
     this.seo.set({
@@ -38,6 +45,7 @@ export class CuaquiversoComponent implements OnInit {
       description: 'Personajes colombianos traducidos a objetos: camisetas, libretas, stickers y más.',
       canonical:   'https://cuacdesign.com/cuaquiverso',
     });
+    this.inv.cargarTodos();
   }
 
   constructor() {
@@ -46,10 +54,20 @@ export class CuaquiversoComponent implements OnInit {
     });
   }
 
-  addToCart(event: Event, product: { id: string; name: string; sub: string; price: number; color: string }): void {
+  catLabel(cat: string): string {
+    return CAT_SHORT[cat] ?? cat;
+  }
+
+  addToCart(event: Event, p: ProductoEvento): void {
     event.preventDefault();
     event.stopPropagation();
-    this.cart.add(product);
+    this.cart.add({
+      id:    p.id,
+      name:  p.nombre,
+      sub:   this.catLabel(p.categoria),
+      price: p.precio,
+      color: p.color ?? '#3D4856',
+    });
   }
 
   onNewsletterSubmit(event: Event): void {

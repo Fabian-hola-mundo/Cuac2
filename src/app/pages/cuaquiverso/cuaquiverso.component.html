@@ -18,21 +18,13 @@
       <span class="b1">Cuaqui</span><span class="dot"></span><span class="b2">verso</span>
     </a>
     <nav class="primary">
-      <a href="/cuaquiverso" class="is-active">Inicio</a>
       <a href="/cuaquiverso/tienda">Tienda</a>
       <a href="/cuaquiverso/universo">Universo</a>
-      <a href="#manifiesto">Manifiesto</a>
     </nav>
     <div class="top-actions">
-      <button class="icon-btn" aria-label="Buscar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-      </button>
-      <button class="icon-btn" aria-label="Cuenta">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
-      </button>
-      <button class="icon-btn" aria-label="Carrito">
+      <button class="icon-btn" aria-label="Carrito" (click)="cart.open()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h2l2.5 12.5h11L21 7H7"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
-        <span class="badge">{{ cartCount }}</span>
+        @if (cart.count() > 0) { <span class="badge">{{ cart.count() }}</span> }
       </button>
     </div>
   </div>
@@ -73,8 +65,8 @@
 <!-- CITIES marquee -->
 <div class="cities-wrap" aria-hidden="true">
   <div class="cities-inner">
-    <span>Bogotá</span><span>Yopal</span><span>Tunja</span><span>Leticia</span><span>Quibdó</span><span>Medellín</span><span>Manizales</span><span>Barranquilla</span>
-    <span>Bogotá</span><span>Yopal</span><span>Tunja</span><span>Leticia</span><span>Quibdó</span><span>Medellín</span><span>Manizales</span><span>Barranquilla</span>
+    <span>Hecho con amor</span><span>100% colombiano</span><span>Arte para llevar</span><span>Ediciones limitadas</span><span>Personajes con historia</span><span>Diseñado en Bogotá</span><span>Sin perder la esencia</span><span>Biodiversidad en tus manos</span><span>Cultura pop colombiana</span><span>Para los que coleccionan momentos</span><span>Ilustración inédita</span><span>Del corazón de Colombia</span><span>Creado por mujeres</span><span>Con mucho corazón</span><span>Pequeñas piezas, grandes historias</span><span>Bogotá presente</span><span>Para regalar o quedártelo</span><span>Fauna colombiana</span><span>Para los curiosos</span>
+    <span>Hecho con amor</span><span>100% colombiano</span><span>Arte para llevar</span><span>Ediciones limitadas</span><span>Personajes con historia</span><span>Diseñado en Bogotá</span><span>Sin perder la esencia</span><span>Biodiversidad en tus manos</span><span>Cultura pop colombiana</span><span>Para los que coleccionan momentos</span><span>Ilustración inédita</span><span>Del corazón de Colombia</span><span>Creado por mujeres</span><span>Con mucho corazón</span><span>Pequeñas piezas, grandes historias</span><span>Bogotá presente</span><span>Para regalar o quedártelo</span><span>Fauna colombiana</span><span>Para los curiosos</span>
   </div>
 </div>
 
@@ -96,73 +88,41 @@
   </div>
 
   <div class="showcase">
-    <a class="pcard feature" data-color="rio" href="#">
-      <div class="pcard-img">
-        <span class="flag new">Drop de la semana</span>
-        <div class="label">Tee Cuac<br>el explorador</div>
-        <span class="quick">Ver producto →</span>
-      </div>
-      <div class="pcard-info">
-        <div class="meta">Camiseta · Edición de 200</div>
-        <h4>El explorador soñador</h4>
-        <div class="row"><span class="price">$89.000 COP</span><span class="add" (click)="addToCart($event)">+</span></div>
-      </div>
-    </a>
-
-    <a class="pcard" data-color="rosa" href="#">
-      <div class="pcard-img">
-        <span class="flag new">Nuevo</span>
-        <div class="label">Pin<br>Kiki</div>
-        <span class="quick">Ver producto →</span>
-      </div>
-      <div class="pcard-info">
-        <div class="meta">Pin esmaltado</div>
-        <h4>Kiki la delfín</h4>
-        <div class="row"><span class="price">$22.000</span><span class="add" (click)="addToCart($event)">+</span></div>
-      </div>
-    </a>
-
-    <a class="pcard" data-color="sol" href="#">
-      <div class="pcard-img">
-        <div class="label">Tote<br>Yeison</div>
-        <span class="quick">Ver producto →</span>
-      </div>
-      <div class="pcard-info">
-        <div class="meta">Tote · Lona reciclada</div>
-        <h4>Yeison al río</h4>
-        <div class="row"><span class="price">$54.000</span><span class="add" (click)="addToCart($event)">+</span></div>
-      </div>
-    </a>
-
-    <a class="pcard" data-color="bone" href="#">
-      <div class="pcard-img">
-        <div class="label">Libreta<br>Roar</div>
-        <span class="quick">Ver producto →</span>
-      </div>
-      <div class="pcard-info">
-        <div class="meta">Libreta · A5</div>
-        <h4>Diario de páramo</h4>
-        <div class="row"><span class="price">$48.000</span><span class="add" (click)="addToCart($event)">+</span></div>
-      </div>
-    </a>
-
-    <a class="pcard" data-color="cream" href="#">
-      <div class="pcard-img">
-        <span class="flag">Edición de 200</span>
-        <div class="label">Peluche<br>Tiburcio</div>
-        <span class="quick">Ver producto →</span>
-      </div>
-      <div class="pcard-info">
-        <div class="meta">Peluche · 28cm</div>
-        <h4>Tiburcio el vacilón</h4>
-        <div class="row"><span class="price">$148.000</span><span class="add" (click)="addToCart($event)">+</span></div>
-      </div>
-    </a>
+    @if (inv.cargando() && showcaseProducts().length === 0) {
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <div class="pcard" style="background:rgba(21,31,40,.05);border-radius:12px;animation:blink 1.4s ease-in-out infinite"></div>
+      }
+    }
+    @for (p of showcaseProducts(); track p.id; let first = $first) {
+      <a class="pcard" [class.feature]="first"
+         [routerLink]="['/cuaquiverso/tienda', p.id]">
+        <div class="pcard-img" [style.background]="p.color ? p.color + '22' : 'var(--cream-2)'">
+          @if (p.flag === 'new')  { <span class="flag new">Nuevo</span> }
+          @if (p.flag === 'last') { <span class="flag">Últimas unidades</span> }
+          <div class="label">{{ catLabel(p.categoria) }}<br>{{ p.personaje ?? '' }}</div>
+          <span class="quick">Ver producto →</span>
+        </div>
+        <div class="pcard-info">
+          <div class="meta">{{ catLabel(p.categoria) }}</div>
+          <h4>{{ p.nombre }}</h4>
+          <div class="row">
+            <span class="price">{{ cart.fmtPrice(p.precio) }}</span>
+            <span class="add" (click)="addToCart($event, p)">+</span>
+          </div>
+        </div>
+      </a>
+    }
   </div>
 
   <div class="tienda-foot">
-    <span class="seen">Mostrando 5 destacados · 42 productos en total</span>
-    <a class="btn btn-primary" href="/cuaquiverso/tienda">Ver toda la tienda →</a>
+    <span class="seen">
+      @if (showcaseProducts().length > 0) {
+        Mostrando {{ showcaseProducts().length }} destacados
+      } @else {
+        Cargando productos...
+      }
+    </span>
+    <a class="btn btn-primary" routerLink="/cuaquiverso/tienda">Ver toda la tienda →</a>
   </div>
 </section>
 
@@ -211,31 +171,6 @@
     </div>
     <div class="right">
       Cada uno representa un rincón de Colombia, una música, una manera de habitar el mundo. No son mascotas — son una excusa para hablar de quiénes somos.
-    </div>
-  </div>
-
-  <div class="names-marquee" aria-hidden="true">
-    <div class="names-track">
-      <span class="names-group">
-        <a href="#" style="--c:var(--rio)">Cuac</a>
-        <a href="#" style="--c:#B07820">Yeison</a>
-        <a href="#" style="--c:var(--carbon)">Roar</a>
-        <a href="#" style="--c:var(--rosa)">Kiki</a>
-        <a href="#" style="--c:var(--terra)">Abejandro</a>
-        <a href="#" style="--c:var(--lila)">Atolita</a>
-        <a href="#" style="--c:var(--selva)">Colibriana</a>
-        <a href="#" style="--c:#2E8FB8">Tiburcio</a>
-      </span>
-      <span class="names-group">
-        <a href="#" style="--c:var(--rio)">Cuac</a>
-        <a href="#" style="--c:#B07820">Yeison</a>
-        <a href="#" style="--c:var(--carbon)">Roar</a>
-        <a href="#" style="--c:var(--rosa)">Kiki</a>
-        <a href="#" style="--c:var(--terra)">Abejandro</a>
-        <a href="#" style="--c:var(--lila)">Atolita</a>
-        <a href="#" style="--c:var(--selva)">Colibriana</a>
-        <a href="#" style="--c:#2E8FB8">Tiburcio</a>
-      </span>
     </div>
   </div>
 
@@ -352,3 +287,5 @@
     </div>
   </div>
 </footer>
+
+<app-cart-modal></app-cart-modal>
