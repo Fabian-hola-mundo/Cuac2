@@ -57,6 +57,13 @@ export const routes: Routes = [
       import('./pages/cuaquiverso/checkout/confirmacion/confirmacion.component').then(m => m.ConfirmacionComponent),
   },
   {
+    path: 'cuaquiverso/personaje/:slug',
+    loadComponent: () =>
+      import('./pages/cuaquiverso/personaje/personaje-page.component').then(
+        m => m.PersonajePageComponent,
+      ),
+  },
+  {
     path: 'portafolio',
     loadComponent: () =>
       import('./pages/portafolio/portafolio-shell.component').then(m => m.PortafolioShellComponent),
@@ -174,6 +181,35 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/admin/eventos/evento-detail.component').then(
             m => m.EventoDetailComponent,
+          ),
+      },
+      // Personajes
+      {
+        path: 'personajes',
+        loadComponent: () =>
+          import('./pages/admin/personajes/personajes-list.component').then(
+            m => m.PersonajesListComponent,
+          ),
+      },
+      {
+        path: 'personajes/nuevo',
+        loadComponent: () =>
+          import('./pages/admin/personajes/personaje-form.component').then(
+            m => m.PersonajeFormComponent,
+          ),
+      },
+      {
+        path: 'personajes/:id',
+        loadComponent: () =>
+          import('./pages/admin/personajes/personaje-detail.component').then(
+            m => m.PersonajeDetailComponent,
+          ),
+      },
+      {
+        path: 'personajes/:id/editar',
+        loadComponent: () =>
+          import('./pages/admin/personajes/personaje-form.component').then(
+            m => m.PersonajeFormComponent,
           ),
       },
       // Ajustes

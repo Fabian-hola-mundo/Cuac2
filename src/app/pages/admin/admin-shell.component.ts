@@ -41,9 +41,14 @@ export class AdminShellComponent implements OnInit {
   isProductosRoute     = computed(() => this.routerUrl().includes('/admin/productos'));
   isEventosRoute       = computed(() => this.routerUrl().includes('/admin/eventos'));
   isAjustesRoute       = computed(() => this.routerUrl().includes('/admin/ajustes'));
+  isPersonajesRoute    = computed(() => this.routerUrl().includes('/admin/personajes'));
 
   crumbs = computed(() => {
     const url = this.routerUrl();
+    if (url.includes('/personajes/nuevo'))        return ['Universo', 'Personajes', 'Nuevo'];
+    if (url.match(/\/personajes\/.+\/editar/))    return ['Universo', 'Personajes', 'Editar'];
+    if (url.match(/\/personajes\/[^/]+$/))        return ['Universo', 'Personajes', 'Detalle'];
+    if (url.includes('/personajes'))              return ['Universo', 'Personajes'];
     if (url.includes('/ajustes/negocio'))       return ['Sistema', 'Ajustes', 'Negocio'];
     if (url.includes('/ajustes/impuestos'))     return ['Sistema', 'Ajustes', 'Impuestos'];
     if (url.includes('/ajustes/envios'))        return ['Sistema', 'Ajustes', 'Envíos y tarifas'];
@@ -98,12 +103,16 @@ export class AdminShellComponent implements OnInit {
       this.router.navigate(['/admin/productos']);
       return;
     }
+    if (id === 'contenido') {
+      this.router.navigate(['/admin/personajes']);
+      return;
+    }
     if (id === 'ajustes') {
       this.router.navigate(['/admin/ajustes']);
       return;
     }
     this.state.view.set(id);
-    if (this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute() || this.isAjustesRoute()) {
+    if (this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute() || this.isAjustesRoute() || this.isPersonajesRoute()) {
       this.router.navigate(['/admin']);
     }
   }
@@ -112,6 +121,7 @@ export class AdminShellComponent implements OnInit {
   goPortafolio() { this.router.navigate(['/admin/portafolio']); }
   goProductos() { this.router.navigate(['/admin/productos']); }
   goEventos()   { this.router.navigate(['/admin/eventos']); }
+  goPersonajes() { this.router.navigate(['/admin/personajes']); }
 
   async loginGoogle() {
     this.loginLoading.set(true);
