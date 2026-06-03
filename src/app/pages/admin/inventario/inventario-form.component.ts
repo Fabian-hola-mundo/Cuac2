@@ -63,6 +63,12 @@ export class InventarioFormComponent implements OnInit {
       precio:        v.precio!,
       stock_inicial: v.stock_inicial!,
       activo:        v.activo ?? true,
+      cover_url:     null as string | null,
+      fotos:         [] as string[],
+      material:      [] as string[],
+      color:         null as string | null,
+      flag:          null as string | null,
+      descripcion:   null as string | null,
     };
 
     const result = this.isEdit()

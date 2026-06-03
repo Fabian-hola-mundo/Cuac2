@@ -12,6 +12,12 @@ export interface ProductoEvento {
   stock_actual: number;
   activo: boolean;
   creado_en: string;
+  cover_url: string | null;
+  fotos: string[];
+  material: string[];
+  color: string | null;
+  flag: string | null;
+  descripcion: string | null;
 }
 
 export interface VentaEvento {
@@ -169,6 +175,23 @@ export class InventarioService {
     const { data, error } = await q;
     if (error) throw error;
     return data ?? [];
+  }
+
+  async uploadProductoImage(
+    productoId: string,
+    file: File,
+    name: string
+  ): Promise<{ url: string | null; error: string | null }> {
+    const safeName = name.replace(/[^a-z0-9._-]/gi, '_');
+    const path = `${productoId}/${safeName}`;
+    const { error } = await this.sb.db.storage
+      .from('productos')
+      .upload(path, file, { upsert: true, contentType: file.type || undefined });
+    if (error) return { url: null, error: error.message };
+    const { data } = this.sb.db.storage
+      .from('productos')
+      .getPublicUrl(path);
+    return { url: data.publicUrl, error: null };
   }
 
 }

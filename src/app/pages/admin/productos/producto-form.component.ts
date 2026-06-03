@@ -88,6 +88,12 @@ export class ProductoFormComponent implements OnInit {
         precio:        v.precio!,
         stock_inicial: v.stock_inicial!,
         activo:        v.activo ?? true,
+        cover_url:     null,
+        fotos:         [],
+        material:      [],
+        color:         null,
+        flag:          null,
+        descripcion:   null,
       };
       result = await this.inv.createProducto(createPayload);
     }
