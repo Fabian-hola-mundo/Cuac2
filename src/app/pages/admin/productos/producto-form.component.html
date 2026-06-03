@@ -79,6 +79,12 @@
           </div>
         </div>
 
+        <label class="field-toggle">
+          <input type="checkbox" formControlName="destacado" />
+          <span class="toggle-track"></span>
+          <span class="toggle-label">Mostrar en home del Cuaquiverso</span>
+        </label>
+
         @if (errorMsg()) {
           <p style="font-size:13px;color:var(--terra);margin-bottom:var(--s-4)">{{ errorMsg() }}</p>
         }

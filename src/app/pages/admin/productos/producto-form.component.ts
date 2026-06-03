@@ -43,6 +43,7 @@ export class ProductoFormComponent implements OnInit {
     color:         [null as string | null],
     flag:          [null as string | null],
     descripcion:   [''],
+    destacado:     [false],
   });
 
   async ngOnInit() {
@@ -60,6 +61,7 @@ export class ProductoFormComponent implements OnInit {
           activo:        p.activo,
           color:         p.color,
           flag:          p.flag,
+          destacado:     p.destacado ?? false,
           descripcion:   p.descripcion ?? '',
         });
         this.form.get('stock_inicial')?.disable();
@@ -108,6 +110,7 @@ export class ProductoFormComponent implements OnInit {
           material:    this.material(),
           color:       v.color ?? null,
           flag:        v.flag ?? null,
+          destacado:   v.destacado ?? false,
           descripcion: v.descripcion || null,
         };
         result = await this.inv.updateProducto(this.editId()!, editPayload);
@@ -132,6 +135,7 @@ export class ProductoFormComponent implements OnInit {
           material:      this.material(),
           color:         v.color ?? null,
           flag:          v.flag ?? null,
+          destacado:     v.destacado ?? false,
           descripcion:   v.descripcion || null,
         };
         result = await this.inv.createProducto(createPayload);

@@ -68,6 +68,7 @@ export class InventarioFormComponent implements OnInit {
       material:      [] as string[],
       color:         null as string | null,
       flag:          null as string | null,
+      destacado:     false,
       descripcion:   null as string | null,
     };
 

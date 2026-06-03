@@ -17,6 +17,7 @@ export interface ProductoEvento {
   material: string[];
   color: string | null;
   flag: string | null;
+  destacado: boolean;
   descripcion: string | null;
 }
 
