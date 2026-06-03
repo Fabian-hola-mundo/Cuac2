@@ -1,6 +1,7 @@
-import { Component, afterNextRender, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, afterNextRender, DestroyRef, inject } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
+import { SeoService } from '../../core/services/seo.service';
 
 const LOGO_FULL = `<svg viewBox="0 0 805.42 186.8" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;">
   <path fill="currentColor" d="M88.93,3.01c-6.81.03-13.63.39-20.38,1.12C34.86,7.77,12.18,27.29,4.07,60.16c-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.66c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02l-14.65-.02c-4.27-.02-8.59-.15-12.81-.8-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.57,0-67.52-.07-97.89.05h0Z"/>
@@ -20,12 +21,22 @@ const LOGO_ISO = `<svg viewBox="0 0 200 186.8" xmlns="http://www.w3.org/2000/svg
   templateUrl: './identidadcorporativa.component.html',
   styleUrl: './identidadcorporativa.component.scss',
 })
-export class IdentidadCorporativaComponent {
+export class IdentidadCorporativaComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
-  private sanitizer = inject(DomSanitizer);
+  private sanitizer  = inject(DomSanitizer);
+  private seo        = inject(SeoService);
 
   readonly logoFull: SafeHtml = this.sanitizer.bypassSecurityTrustHtml(LOGO_FULL);
-  readonly logoIso: SafeHtml = this.sanitizer.bypassSecurityTrustHtml(LOGO_ISO);
+  readonly logoIso: SafeHtml  = this.sanitizer.bypassSecurityTrustHtml(LOGO_ISO);
+
+  ngOnInit(): void {
+    this.seo.set({
+      title:       'Brandbook',
+      description: 'Manual de marca de Cuac Design.',
+      canonical:   'https://cuacdesign.com/identidadcorporativa',
+      noindex:     true,
+    });
+  }
 
   constructor() {
     afterNextRender(() => this.initActiveNav());
