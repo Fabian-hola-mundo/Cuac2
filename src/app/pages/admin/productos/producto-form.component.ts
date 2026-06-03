@@ -26,6 +26,13 @@ export class ProductoFormComponent implements OnInit {
   readonly errorMsg   = signal<string | null>(null);
   readonly isEdit     = computed(() => this.editId() !== null);
 
+  readonly coverPreview    = signal<string | null>(null);
+  readonly galleryPreviews = signal<string[]>([]);
+  readonly material        = signal<string[]>([]);
+  private coverFile?: File;
+  private galleryFiles: File[] = [];
+  private existingFotos: string[] = [];
+
   form = this.fb.group({
     nombre:        ['', [Validators.required, Validators.minLength(2)]],
     categoria:     ['tote', Validators.required],
@@ -33,6 +40,9 @@ export class ProductoFormComponent implements OnInit {
     stock_inicial: [0, [Validators.required, Validators.min(0)]],
     personaje:     [null as string | null],
     activo:        [true],
+    color:         [null as string | null],
+    flag:          [null as string | null],
+    descripcion:   [''],
   });
 
   async ngOnInit() {
@@ -48,9 +58,15 @@ export class ProductoFormComponent implements OnInit {
           stock_inicial: p.stock_inicial,
           personaje:     p.personaje,
           activo:        p.activo,
+          color:         p.color,
+          flag:          p.flag,
+          descripcion:   p.descripcion ?? '',
         });
-        // stock_inicial is read-only in edit mode
         this.form.get('stock_inicial')?.disable();
+        this.coverPreview.set(p.cover_url);
+        this.galleryPreviews.set(p.fotos ?? []);
+        this.existingFotos = [...(p.fotos ?? [])];
+        this.material.set(p.material ?? []);
       }
     }
   }
@@ -61,19 +77,43 @@ export class ProductoFormComponent implements OnInit {
     this.errorMsg.set(null);
 
     const v = this.form.getRawValue();
+
+    let coverUrl: string | null = this.coverPreview();
+    if (this.coverFile) {
+      const tempId = this.editId() ?? `tmp_${Date.now()}`;
+      const ext = this.coverFile.name.split('.').pop() ?? 'jpg';
+      const { url } = await this.inv.uploadProductoImage(tempId, this.coverFile, `cover.${ext}`);
+      if (url) coverUrl = url;
+    }
+
+    let fotosUrls: string[] = [...this.existingFotos];
+    for (let i = 0; i < this.galleryFiles.length; i++) {
+      const file = this.galleryFiles[i];
+      const tempId = this.editId() ?? `tmp_${Date.now()}`;
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const { url } = await this.inv.uploadProductoImage(tempId, file, `foto_${i}.${ext}`);
+      if (url) fotosUrls.push(url);
+    }
+
     let result: { error: string | null };
 
     if (this.isEdit()) {
       const editPayload: Partial<Omit<ProductoEvento, 'id' | 'creado_en' | 'stock_actual'>> = {
-        nombre:    v.nombre!,
-        categoria: v.categoria!,
-        personaje: v.personaje ?? null,
-        precio:    v.precio!,
-        activo:    v.activo ?? true,
+        nombre:      v.nombre!,
+        categoria:   v.categoria!,
+        personaje:   v.personaje ?? null,
+        precio:      v.precio!,
+        activo:      v.activo ?? true,
+        cover_url:   coverUrl,
+        fotos:       fotosUrls,
+        material:    this.material(),
+        color:       v.color ?? null,
+        flag:        v.flag ?? null,
+        descripcion: v.descripcion ?? null,
       };
       result = await this.inv.updateProducto(this.editId()!, editPayload);
     } else {
-      let eventoId: string = 'Venta-regular';
+      let eventoId = 'Venta-regular';
       try {
         const activo = await this.eventos.getEventoActivo();
         eventoId = activo?.id ?? 'Venta-regular';
@@ -88,12 +128,12 @@ export class ProductoFormComponent implements OnInit {
         precio:        v.precio!,
         stock_inicial: v.stock_inicial!,
         activo:        v.activo ?? true,
-        cover_url:     null,
-        fotos:         [],
-        material:      [],
-        color:         null,
-        flag:          null,
-        descripcion:   null,
+        cover_url:     coverUrl,
+        fotos:         fotosUrls,
+        material:      this.material(),
+        color:         v.color ?? null,
+        flag:          v.flag ?? null,
+        descripcion:   v.descripcion ?? null,
       };
       result = await this.inv.createProducto(createPayload);
     }
@@ -109,4 +149,57 @@ export class ProductoFormComponent implements OnInit {
     const c = this.form.get(field);
     return c?.invalid && c?.touched;
   }
+
+  onCoverChange(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.coverFile = file;
+    this.coverPreview.set(URL.createObjectURL(file));
+  }
+
+  onGalleryChange(event: Event) {
+    const files = Array.from((event.target as HTMLInputElement).files ?? []);
+    this.galleryFiles = files;
+    this.galleryPreviews.set([
+      ...this.existingFotos,
+      ...files.map(f => URL.createObjectURL(f)),
+    ]);
+  }
+
+  removeGalleryItem(index: number) {
+    if (index < this.existingFotos.length) {
+      this.existingFotos = this.existingFotos.filter((_, i) => i !== index);
+    } else {
+      const fileIndex = index - this.existingFotos.length;
+      this.galleryFiles = this.galleryFiles.filter((_, i) => i !== fileIndex);
+    }
+    this.galleryPreviews.update(list => list.filter((_, i) => i !== index));
+  }
+
+  toggleMaterial(mat: string, checked: boolean) {
+    const current = this.material();
+    this.material.set(
+      checked ? [...current, mat] : current.filter(m => m !== mat)
+    );
+  }
+
+  readonly COLORES = [
+    { id: 'rio',   label: 'Río (azul)'    },
+    { id: 'rosa',  label: 'Rosa'          },
+    { id: 'sol',   label: 'Sol (amarillo)'},
+    { id: 'bone',  label: 'Bone (gris)'   },
+    { id: 'terra', label: 'Terra (rojo)'  },
+    { id: 'lila',  label: 'Lila'          },
+    { id: 'selva', label: 'Selva (verde)' },
+    { id: 'tibu',  label: 'Tibu (celeste)'},
+    { id: 'cream', label: 'Cream'         },
+  ];
+
+  readonly MATERIALES = [
+    { id: 'algodon', label: 'Algodón orgánico' },
+    { id: 'lona',    label: 'Lona reciclada'   },
+    { id: 'papel',   label: 'Papel reciclado'  },
+    { id: 'vinilo',  label: 'Vinilo mate'       },
+    { id: 'esmalte', label: 'Esmalte / metal'  },
+  ];
 }
