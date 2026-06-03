@@ -41,3 +41,62 @@
   input:checked + .inv-slider { background: var(--terra); }
   input:checked + .inv-slider::before { transform: translateX(20px); }
 }
+
+.section-sep {
+  height: 1px;
+  background: var(--carbon-08);
+  margin: var(--s-5) 0;
+}
+
+.img-preview {
+  margin-bottom: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 200px;
+  img { width: 100%; height: 200px; object-fit: cover; display: block; }
+}
+
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--carbon-16);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover { background: var(--carbon-04); }
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.gallery-thumb {
+  height: 80px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+}
+
+.gallery-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--carbon);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}

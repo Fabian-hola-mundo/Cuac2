@@ -90,6 +90,101 @@
           <button class="btn-sm ghost" type="button" (click)="cancelar()">Cancelar</button>
         </div>
 
+        <!-- ── FOTOS ─────────────────────────────────────────────── -->
+        <div class="section-sep"></div>
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:var(--s-4);color:var(--carbon-60)">Fotos</h4>
+
+        <div class="field">
+          <label>Foto de portada</label>
+          @if (coverPreview()) {
+            <div class="img-preview">
+              <img [src]="coverPreview()!" alt="Portada" />
+            </div>
+          }
+          <label class="upload-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            {{ coverPreview() ? 'Cambiar portada' : 'Subir portada' }}
+            <input type="file" accept="image/*" (change)="onCoverChange($event)" hidden />
+          </label>
+          <span class="help">JPG, PNG o WebP. Proporción 4:3 recomendada.</span>
+        </div>
+
+        <div class="field">
+          <label>Galería de fotos</label>
+          @if (galleryPreviews().length > 0) {
+            <div class="gallery-grid">
+              @for (url of galleryPreviews(); track url; let i = $index) {
+                <div style="position:relative">
+                  <div class="gallery-thumb" [style.backgroundImage]="'url(' + url + ')'"></div>
+                  <button type="button" class="gallery-remove" (click)="removeGalleryItem(i)">×</button>
+                </div>
+              }
+            </div>
+          }
+          <label class="upload-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Agregar fotos
+            <input type="file" accept="image/*" multiple (change)="onGalleryChange($event)" hidden />
+          </label>
+          <span class="help">Hasta 8 imágenes adicionales del producto.</span>
+        </div>
+
+        <!-- ── APARIENCIA ─────────────────────────────────────────── -->
+        <div class="section-sep"></div>
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:var(--s-4);color:var(--carbon-60)">Apariencia en tienda</h4>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Color de tarjeta</label>
+            <select class="input select" formControlName="color">
+              <option [value]="null">Sin color</option>
+              @for (c of COLORES; track c.id) {
+                <option [value]="c.id">{{ c.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label>Etiqueta especial</label>
+            <select class="input select" formControlName="flag">
+              <option [value]="null">Ninguna</option>
+              <option value="new">Nuevo</option>
+              <option value="last">Últimas unidades</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ── DETALLES ───────────────────────────────────────────── -->
+        <div class="section-sep"></div>
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:var(--s-4);color:var(--carbon-60)">Detalles</h4>
+
+        <div class="field">
+          <label>Descripción <span class="opt">opcional</span></label>
+          <textarea class="input" formControlName="descripcion" rows="3"
+            placeholder="Materiales, dimensiones, cuidados…"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Material</label>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+            @for (m of MATERIALES; track m.id) {
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                <input type="checkbox"
+                  [checked]="material().includes(m.id)"
+                  (change)="toggleMaterial(m.id, $any($event.target).checked)" />
+                {{ m.label }}
+              </label>
+            }
+          </div>
+        </div>
+
       </form>
     </div>
   </div>
