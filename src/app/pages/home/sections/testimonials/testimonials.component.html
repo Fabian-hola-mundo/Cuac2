@@ -1,20 +1,36 @@
-<div class="section" id="testi">
-  <div class="eyebrow"><span class="dot"></span> 05 — Lo que dicen</div>
-  <h2 class="h-section">Equipos que <em>volvieron</em> a trabajar con nosotros.</h2>
+@if (!loading() && testimonials().length > 0) {
+  <div class="section" id="testi">
+    <div class="eyebrow"><span class="dot"></span> 05 &mdash; Lo que dicen</div>
+    <h2 class="h-section">Equipos que <em>volvieron</em> a trabajar con nosotros.</h2>
 
-  <div class="testi-grid">
-    @for (t of testimonials; track t.name) {
-      <article class="testi">
-        <div class="q-mark">&ldquo;</div>
-        <p class="q">{{ t.quote }}</p>
-        <div class="a">
-          <div class="av" [style.background]="t.avatarBg" [style.color]="t.avatarColor">{{ t.initials }}</div>
-          <div class="a-meta">
-            <div class="n">{{ t.name }}</div>
-            <div class="r">{{ t.role }}</div>
+    <div class="testi-layout">
+      @if (testimonials()[0]) {
+        <article class="testi-featured">
+          <p class="q-featured">{{ testimonials()[0].quote }}</p>
+          <div class="a">
+            <div class="av" [style.background]="testimonials()[0].avatarBg" [style.color]="testimonials()[0].avatarColor">{{ testimonials()[0].initials }}</div>
+            <div class="a-meta">
+              <div class="n">{{ testimonials()[0].name }}</div>
+              <div class="r">{{ testimonials()[0].role }}</div>
+            </div>
           </div>
-        </div>
-      </article>
-    }
+        </article>
+      }
+
+      <div class="testi-secondary">
+        @for (t of testimonials().slice(1); track t.name) {
+          <article class="testi">
+            <p class="q">{{ t.quote }}</p>
+            <div class="a">
+              <div class="av" [style.background]="t.avatarBg" [style.color]="t.avatarColor">{{ t.initials }}</div>
+              <div class="a-meta">
+                <div class="n">{{ t.name }}</div>
+                <div class="r">{{ t.role }}</div>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
   </div>
-</div>
+}
