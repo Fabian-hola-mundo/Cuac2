@@ -1,9 +1,10 @@
 // src/app/pages/cotizador/cotizador.component.ts
-import { Component, signal, computed, inject, ElementRef, ViewChild } from '@angular/core';
+import { Component, signal, computed, inject, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { environment } from '../../../environments/environment';
+import { SeoService } from '../../core/services/seo.service';
 
 type ServicioId = 'branding' | 'editorial' | 'web' | 'ilustracion' | 'video';
 type EscalaId   = 'basico' | 'estandar' | 'completo';
@@ -55,10 +56,19 @@ const EDGE_URL = `${environment.supabaseUrl}/functions/v1/cotizar`;
   templateUrl: './cotizador.component.html',
   styleUrl: './cotizador.component.scss',
 })
-export class CotizadorComponent {
+export class CotizadorComponent implements OnInit {
   @ViewChild('formSection') formSectionRef!: ElementRef;
 
-  private fb = inject(FormBuilder);
+  private fb  = inject(FormBuilder);
+  private seo = inject(SeoService);
+
+  ngOnInit(): void {
+    this.seo.set({
+      title:       'Cotiza tu proyecto',
+      description: 'Estima el costo de tu proyecto de diseño en segundos. Branding, web, editorial e ilustración desde Bogotá.',
+      canonical:   'https://cuacdesign.com/cotizar',
+    });
+  }
 
   // ── Static data ────────────────────────────────────────────────────────────
   readonly servicios = SERVICIOS;
