@@ -39,19 +39,22 @@ export class TestimonialsComponent implements OnInit {
   readonly testimonials = signal<TestimonialDisplay[]>([]);
 
   async ngOnInit() {
-    const projects = await this.portfolio.getTestimonials();
-    const mapped: TestimonialDisplay[] = projects.map((p: PortfolioProject, i: number) => {
-      const palette = AVATAR_PALETTE[i % AVATAR_PALETTE.length];
-      return {
-        quote:       p.client_comment!,
-        name:        p.client_person ?? p.client_name ?? '',
-        role:        p.client_role ?? '',
-        initials:    toInitials(p.client_person ?? p.client_name),
-        avatarBg:    palette.bg,
-        avatarColor: palette.color,
-      };
-    });
-    this.testimonials.set(mapped);
-    this.loading.set(false);
+    try {
+      const projects = await this.portfolio.getTestimonials();
+      const mapped: TestimonialDisplay[] = projects.map((p: PortfolioProject, i: number) => {
+        const palette = AVATAR_PALETTE[i % AVATAR_PALETTE.length];
+        return {
+          quote:       p.client_comment ?? '',
+          name:        p.client_person ?? p.client_name ?? '',
+          role:        p.client_role ?? '',
+          initials:    toInitials(p.client_person ?? p.client_name),
+          avatarBg:    palette.bg,
+          avatarColor: palette.color,
+        };
+      });
+      this.testimonials.set(mapped);
+    } finally {
+      this.loading.set(false);
+    }
   }
 }
