@@ -69,7 +69,9 @@ async getTestimonials(): Promise<PortfolioProject[]>
 
 ### Validación
 
-Ninguna obligatoria. El toggle `show_testimonial` solo tiene efecto si `client_comment` tiene contenido (sin bloqueo en UI — el admin es responsable).
+- El toggle `show_testimonial` solo tiene efecto si `client_comment` tiene contenido (sin bloqueo en UI — el admin es responsable).
+- **Máximo 3 proyectos con `show_testimonial = true`** simultáneamente. Al intentar activar el toggle en un cuarto proyecto, se muestra un mensaje de error inline: "Ya tienes 3 testimonios activos. Desactiva uno antes de agregar otro." El toggle no se activa.
+- La validación se hace en el frontend al momento del toggle: el form consulta cuántos proyectos tienen `show_testimonial = true` (excluyendo el proyecto actual si es edición) y bloquea si ya hay 3.
 
 ---
 
