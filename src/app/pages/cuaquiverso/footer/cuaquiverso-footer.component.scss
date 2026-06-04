@@ -65,11 +65,19 @@
     flex-direction: column;
     gap: 10px;
   }
-  a {
+  a, .btn-link {
     font-size: 14px;
     color: rgba(236, 239, 243, 0.62);
     transition: color .15s;
     &:hover { color: var(--cream); }
+  }
+  .btn-link {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
   }
 }
 

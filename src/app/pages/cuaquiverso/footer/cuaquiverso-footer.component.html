@@ -32,9 +32,9 @@
       <div class="footer-help-col">
         <h5>Ayuda</h5>
         <ul>
-          <li><a href="#">Envíos</a></li>
-          <li><a href="#">Devoluciones</a></li>
-          <li><a href="#">Guía de tallas</a></li>
+          <li><button class="btn-link" (click)="helpModal.open('envios')">Envíos</button></li>
+          <li><button class="btn-link" (click)="helpModal.open('devoluciones')">Devoluciones</button></li>
+          <li><button class="btn-link" (click)="helpModal.open('tallas')">Guía de tallas</button></li>
           <li><a href="mailto:hola@cuacdesign.com">Contacto</a></li>
         </ul>
       </div>

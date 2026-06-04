@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { HelpModalService } from '../help-modal/help-modal.service';
 
 @Component({
   selector: 'app-cuaquiverso-footer',
@@ -9,5 +10,6 @@ import { RouterLink } from '@angular/router';
   styleUrl: './cuaquiverso-footer.component.scss',
 })
 export class CuaquiversoFooterComponent {
-  readonly year = new Date().getFullYear();
+  readonly year      = new Date().getFullYear();
+  readonly helpModal = inject(HelpModalService);
 }
