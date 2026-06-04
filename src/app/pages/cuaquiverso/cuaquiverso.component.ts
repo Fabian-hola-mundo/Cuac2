@@ -4,6 +4,7 @@ import { SeoService } from '../../core/services/seo.service';
 import { CartService } from './services/cart.service';
 import { CartModalComponent } from './cart-modal/cart-modal.component';
 import { CuaquiversoFooterComponent } from './footer/cuaquiverso-footer.component';
+import { HelpModalComponent } from './help-modal/help-modal.component';
 import { InventarioService, ProductoEvento } from '../../core/services/inventario.service';
 import { PersonajesService } from '../../core/services/personajes.service';
 
@@ -23,7 +24,7 @@ interface Character {
 @Component({
   selector: 'app-cuaquiverso',
   standalone: true,
-  imports: [CartModalComponent, RouterLink, CuaquiversoFooterComponent],
+  imports: [CartModalComponent, RouterLink, CuaquiversoFooterComponent, HelpModalComponent],
   templateUrl: './cuaquiverso.component.html',
   styleUrl: './cuaquiverso.component.scss',
 })
