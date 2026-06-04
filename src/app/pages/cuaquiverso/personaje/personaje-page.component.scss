@@ -5,11 +5,14 @@
   .b1 { color: var(--paper); } .dot { width: 6px; height: 6px; background: var(--coral); border-radius: 50%; } .b2 { color: var(--coral); }
 }
 .primary { display: flex; gap: var(--s-5); margin-left: auto;
-  a { text-decoration: none; font-size: 13px; color: rgba(240,241,246,.55); transition: color .2s; &:hover { color: var(--paper); } }
+  a { text-decoration: none; font-size: 13px; color: rgba(240,241,246,.55); transition: color .2s;
+    &:hover { color: var(--paper); }
+  }
 }
 .top-actions { display: flex; gap: var(--s-3); }
 .icon-btn { background: none; border: none; color: rgba(240,241,246,.7); cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); position: relative;
-  &:hover { color: var(--paper); } svg { width: 18px; height: 18px; }
+  &:hover { color: var(--paper); }
+  svg { width: 18px; height: 18px; }
 }
 .badge { position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; background: var(--coral); color: #fff; border-radius: 8px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
 
@@ -54,7 +57,7 @@ h1 { font-family: var(--display); font-size: clamp(56px,8vw,96px); font-weight: 
 // ─── Gallery ──────────────────────────────────────────────────────────────────
 .gallery-layout { display: grid; grid-template-columns: 1fr 130px; gap: 12px; }
 .gallery-main { border-radius: var(--r-lg); overflow: hidden;
-  img { width: 100%; display: block; object-fit: cover; max-height: 480px; transition: opacity .2s; }
+  img { width: 100%; display: block; object-fit: cover; max-height: 480px; }
 }
 .gallery-thumbs { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 480px; }
 .gallery-thumb { border-radius: var(--r-sm); overflow: hidden; cursor: pointer; border: 2px solid transparent; flex-shrink: 0;
