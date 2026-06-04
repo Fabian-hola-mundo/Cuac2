@@ -1,0 +1,62 @@
+@if (!enviado()) {
+  <section class="mf-section">
+    <div class="mf-inner">
+      <div class="mf-eyebrow"><span class="dot"></span> Escríbenos</div>
+      <h2 class="mf-heading">Lo que sea. <em>En serio.</em></h2>
+      <p class="mf-sub">Una duda, una idea de producto, un comentario — todo llega directo al equipo de Cuac.</p>
+
+      <form (submit)="onSubmit($event)">
+        <div class="mf-chips">
+          @for (chip of CHIPS; track chip.id) {
+            <button
+              type="button"
+              class="mf-chip"
+              [class.active]="tipo() === chip.id"
+              (click)="tipo.set(chip.id)"
+            >
+              {{ chip.emoji }} {{ chip.label }}
+            </button>
+          }
+        </div>
+
+        <textarea
+          class="mf-textarea"
+          [placeholder]="placeholder"
+          [value]="mensaje()"
+          (input)="mensaje.set($any($event.target).value)"
+          required
+        ></textarea>
+
+        <input
+          type="email"
+          class="mf-email"
+          placeholder="tu&#64;correo.co — solo si quieres que te respondamos (opcional)"
+          [value]="correo()"
+          (input)="correo.set($any($event.target).value)"
+        />
+
+        @if (error()) {
+          <p class="mf-error">{{ error() }}</p>
+        }
+
+        <div class="mf-actions">
+          <button
+            type="submit"
+            class="mf-btn"
+            [disabled]="!mensaje().trim() || sending()"
+          >
+            {{ sending() ? 'Enviando…' : 'Enviar →' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+} @else {
+  <section class="mf-section mf-section--success">
+    <div class="mf-inner mf-inner--center">
+      <div class="mf-success-icon">✉️</div>
+      <h3 class="mf-success-h">Mensaje recibido</h3>
+      <p class="mf-success-sub">El equipo de Cuac lo leerá pronto.<br>Si dejaste tu correo, te respondemos.</p>
+    </div>
+  </section>
+}
