@@ -59,8 +59,33 @@ footer {
   color: rgba(240, 241, 246, 0.4);
 }
 
+.footer-legal {
+  display: flex;
+  gap: var(--s-4);
+
+  a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(240, 241, 246, 0.4);
+    transition: color 0.15s;
+    &:hover { color: rgba(240, 241, 246, 0.75); }
+  }
+}
+
 @media (max-width: 1024px) {
   .footer-inner {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-bottom {
+    flex-direction: column;
+    gap: var(--s-3);
+    text-align: center;
+  }
+
+  .footer-legal {
+    order: -1;
   }
 }
