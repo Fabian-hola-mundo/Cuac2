@@ -1,0 +1,40 @@
+<!-- src/app/pages/admin/mensajes/mensajes-admin.component.html -->
+<div class="ma-wrap">
+  <div class="ma-head">
+    <h1>Mensajes</h1>
+    @if (noLeidos() > 0) {
+      <span class="ma-badge">{{ noLeidos() }} sin leer</span>
+    }
+  </div>
+
+  @if (cargando()) {
+    <div class="ma-state">Cargando mensajes…</div>
+  } @else if (error()) {
+    <div class="ma-state ma-state--error">{{ error() }}</div>
+  } @else if (items().length === 0) {
+    <div class="ma-state">Sin mensajes todavía.</div>
+  } @else {
+    <div class="ma-list">
+      @for (m of items(); track m.id) {
+        <div class="ma-row" [class.unread]="!m.leido" (click)="toggle(m)">
+          <div class="ma-row-top">
+            <span class="ma-dot" [class.unread]="!m.leido"></span>
+            <span class="ma-tipo" [attr.data-tipo]="m.tipo">{{ tipoLabel(m.tipo) }}</span>
+            <span class="ma-preview">{{ m.mensaje | slice:0:80 }}{{ m.mensaje.length > 80 ? '…' : '' }}</span>
+            <span class="ma-correo">{{ m.correo ?? 'sin correo' }}</span>
+            <span class="ma-fecha">{{ fechaRelativa(m.created_at) }}</span>
+            <span class="ma-chevron">{{ expandedId() === m.id ? '▲' : '▼' }}</span>
+          </div>
+          @if (expandedId() === m.id) {
+            <div class="ma-body" (click)="$event.stopPropagation()">
+              <p class="ma-msg-full">{{ m.mensaje }}</p>
+              @if (m.correo) {
+                <a class="ma-correo-link" [href]="'mailto:' + m.correo">{{ m.correo }}</a>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

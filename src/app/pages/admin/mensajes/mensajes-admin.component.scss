@@ -1,0 +1,132 @@
+// src/app/pages/admin/mensajes/mensajes-admin.component.scss
+.ma-wrap {
+  padding: 28px 32px;
+  max-width: 960px;
+}
+
+.ma-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--carbon);
+  }
+}
+
+.ma-badge {
+  background: #EC3813;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.ma-state {
+  font-size: 14px;
+  color: rgba(21, 31, 40, 0.45);
+  padding: 48px 0;
+  text-align: center;
+
+  &--error { color: #EC3813; }
+}
+
+.ma-list {
+  border: 1px solid rgba(21, 31, 40, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ma-row {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(21, 31, 40, 0.06);
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:last-child { border-bottom: none; }
+  &:hover      { background: rgba(236, 56, 19, 0.03); }
+  &.unread     { background: rgba(236, 56, 19, 0.04); }
+}
+
+.ma-row-top {
+  display: grid;
+  grid-template-columns: 10px auto 1fr auto auto 12px;
+  gap: 10px;
+  align-items: center;
+}
+
+.ma-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  flex-shrink: 0;
+
+  &.unread { background: #EC3813; }
+}
+
+.ma-tipo {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 12px;
+  white-space: nowrap;
+  background: rgba(236, 56, 19, 0.1);
+  color: #EC3813;
+
+  &[data-tipo="pedido"]   { background: rgba(42, 111, 219, 0.1); color: #2A6FDB; }
+  &[data-tipo="duda"]     { background: rgba(255, 200, 60, 0.15); color: #B8860B; }
+  &[data-tipo="producto"] { background: rgba(50, 180, 100, 0.12); color: #2A7A4A; }
+}
+
+.ma-preview {
+  font-size: 13px;
+  color: rgba(21, 31, 40, 0.65);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ma-correo {
+  font-size: 11px;
+  color: rgba(21, 31, 40, 0.35);
+  white-space: nowrap;
+}
+
+.ma-fecha {
+  font-size: 11px;
+  color: rgba(21, 31, 40, 0.3);
+  white-space: nowrap;
+}
+
+.ma-chevron {
+  font-size: 9px;
+  color: rgba(21, 31, 40, 0.3);
+}
+
+.ma-body {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: rgba(21, 31, 40, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(21, 31, 40, 0.07);
+}
+
+.ma-msg-full {
+  font-size: 14px;
+  color: rgba(21, 31, 40, 0.78);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
+
+.ma-correo-link {
+  font-size: 13px;
+  color: #EC3813;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
