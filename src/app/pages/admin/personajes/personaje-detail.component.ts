@@ -20,6 +20,7 @@ export class PersonajeDetailComponent implements OnInit {
   personaje        = signal<Personaje | null>(null);
   productoCount    = signal(0);
   confirmDelete    = signal(false);
+  deleteError      = signal<string | null>(null);
   selectedGalleryImg = signal<string | null>(null);
 
   async ngOnInit() {
@@ -43,7 +44,12 @@ export class PersonajeDetailComponent implements OnInit {
   async deleteConfirmed() {
     const id = this.personaje()?.id;
     if (!id) return;
-    await this.svc.delete(id);
+    const { error } = await this.svc.delete(id);
+    if (error) {
+      this.confirmDelete.set(false);
+      this.deleteError.set(error);
+      return;
+    }
     this.router.navigate(['/admin/personajes']);
   }
 }

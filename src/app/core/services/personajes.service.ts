@@ -98,7 +98,8 @@ export class PersonajesService {
     let cover_url = payload.cover_url;
     if (coverFile) {
       const ext = coverFile.name.split('.').pop() ?? 'jpg';
-      const { url } = await this.uploadImage(id, coverFile, `cover.${ext}`);
+      const { url, error: uploadErr } = await this.uploadImage(id, coverFile, `cover.${ext}`);
+      if (uploadErr) return { error: `Cover upload failed: ${uploadErr}` };
       if (url) cover_url = url;
     }
 
@@ -106,7 +107,8 @@ export class PersonajesService {
     const newUrls: string[] = [];
     for (let i = 0; i < newGalleryFiles.length; i++) {
       const ext = newGalleryFiles[i].name.split('.').pop() ?? 'jpg';
-      const { url } = await this.uploadImage(id, newGalleryFiles[i], `gallery_${Date.now()}_${i}.${ext}`);
+      const { url, error: uploadErr } = await this.uploadImage(id, newGalleryFiles[i], `gallery_${Date.now()}_${i}.${ext}`);
+      if (uploadErr) return { error: `Gallery upload failed: ${uploadErr}` };
       if (url) newUrls.push(url);
     }
 

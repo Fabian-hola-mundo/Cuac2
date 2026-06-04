@@ -112,7 +112,10 @@ export class CuaquiversoComponent implements OnInit {
 
     // ─── Three.js setup ──────────────────────────────────────────────────────
     const scene = new THREE.Scene();
-    const aspect = () => container.clientWidth / container.clientHeight;
+    const aspect = () => {
+      const h = container.clientHeight;
+      return h > 0 ? container.clientWidth / h : 1;
+    };
     const camera = new THREE.PerspectiveCamera(38, aspect(), 0.1, 100);
     camera.position.set(0, 0, 6.4);
 

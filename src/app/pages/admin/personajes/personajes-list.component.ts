@@ -46,8 +46,7 @@ export class PersonajesListComponent implements OnInit {
     if (!id) return;
     const { error } = await this.svc.delete(id);
     this.confirmDeleteId.set(null);
-    if (error) this.flash('Error al eliminar');
-    else this.flash('Personaje eliminado');
+    this.flash(error ? 'Error: ' + error : 'Personaje eliminado');
   }
 
   cancelDelete() { this.confirmDeleteId.set(null); }

@@ -25,7 +25,7 @@ export class PersonajeFormComponent implements OnInit {
   readonly coverPreview    = signal<string | null>(null);
   readonly galleryPreviews = signal<string[]>([]);
   private coverFile?: File;
-  private newGalleryFiles: File[] = [];
+  private galleryFileMap = new Map<string, File>();
   private removedUrls: string[] = [];
 
   form = this.fb.group({
@@ -95,24 +95,27 @@ export class PersonajeFormComponent implements OnInit {
     const current = this.galleryPreviews().length;
     const remaining = 8 - current;
     const toAdd = files.slice(0, remaining);
-    this.newGalleryFiles.push(...toAdd);
-    toAdd.forEach(file => {
+    toAdd.forEach((file) => {
+      const key = `new_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      this.galleryFileMap.set(key, file);
       const reader = new FileReader();
       reader.onload = e => {
-        this.galleryPreviews.update(prev => [...prev, e.target?.result as string]);
+        this.galleryPreviews.update(prev => [...prev, key + '::' + (e.target?.result as string)]);
       };
       reader.readAsDataURL(file);
     });
   }
 
   removeGalleryImage(index: number) {
-    const url = this.galleryPreviews()[index];
-    if (url && !url.startsWith('data:')) {
-      this.removedUrls.push(url);
+    const entry = this.galleryPreviews()[index];
+    if (!entry) return;
+    if (entry.startsWith('new_')) {
+      // It's a newly added file — extract key and remove from map
+      const key = entry.split('::')[0];
+      this.galleryFileMap.delete(key);
     } else {
-      const dataUrls = this.galleryPreviews().filter(u => u.startsWith('data:'));
-      const fileIndex = dataUrls.indexOf(url);
-      if (fileIndex >= 0) this.newGalleryFiles.splice(fileIndex, 1);
+      // It's an existing URL from Supabase — mark for removal
+      this.removedUrls.push(entry);
     }
     this.galleryPreviews.update(prev => prev.filter((_, i) => i !== index));
   }
@@ -123,7 +126,7 @@ export class PersonajeFormComponent implements OnInit {
     this.errorMsg.set(null);
 
     const v = this.form.getRawValue();
-    const existingGallery = this.galleryPreviews().filter(u => !u.startsWith('data:'));
+    const existingGallery = this.galleryPreviews().filter(u => !u.startsWith('new_'));
 
     try {
       if (this.isEdit()) {
@@ -143,7 +146,7 @@ export class PersonajeFormComponent implements OnInit {
             galeria_urls: existingGallery,
           },
           this.coverFile,
-          this.newGalleryFiles,
+          Array.from(this.galleryFileMap.values()),
           this.removedUrls
         );
         if (error) { this.errorMsg.set(error); return; }
@@ -167,7 +170,7 @@ export class PersonajeFormComponent implements OnInit {
             activo:       v.activo ?? true,
           },
           this.coverFile,
-          this.newGalleryFiles
+          Array.from(this.galleryFileMap.values())
         );
         if (error) { this.errorMsg.set(error); return; }
       }

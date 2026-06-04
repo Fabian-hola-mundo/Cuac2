@@ -113,7 +113,7 @@
           <div class="gallery-grid">
             @for (url of galleryPreviews(); track url; let i = $index) {
               <div class="gallery-thumb">
-                <img [src]="url" alt="Galería {{ i + 1 }}" />
+                <img [src]="url.includes('::') ? url.split('::')[1] : url" alt="Galería {{ i + 1 }}" />
                 <button type="button" class="remove-thumb" (click)="removeGalleryImage(i)">✕</button>
               </div>
             }
