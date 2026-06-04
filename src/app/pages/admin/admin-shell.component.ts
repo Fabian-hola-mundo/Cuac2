@@ -42,6 +42,8 @@ export class AdminShellComponent implements OnInit {
   isEventosRoute       = computed(() => this.routerUrl().includes('/admin/eventos'));
   isAjustesRoute       = computed(() => this.routerUrl().includes('/admin/ajustes'));
   isPersonajesRoute    = computed(() => this.routerUrl().includes('/admin/personajes'));
+  isMensajesRoute      = computed(() => this.routerUrl().includes('/admin/mensajes'));
+  unreadMensajes       = signal(0);
 
   crumbs = computed(() => {
     const url = this.routerUrl();
@@ -49,6 +51,7 @@ export class AdminShellComponent implements OnInit {
     if (url.match(/\/personajes\/.+\/editar/))    return ['Universo', 'Personajes', 'Editar'];
     if (url.match(/\/personajes\/[^/]+$/))        return ['Universo', 'Personajes', 'Detalle'];
     if (url.includes('/personajes'))              return ['Universo', 'Personajes'];
+    if (url.includes('/mensajes')) return ['Tienda', 'Mensajes'];
     if (url.includes('/ajustes/negocio'))       return ['Sistema', 'Ajustes', 'Negocio'];
     if (url.includes('/ajustes/impuestos'))     return ['Sistema', 'Ajustes', 'Impuestos'];
     if (url.includes('/ajustes/envios'))        return ['Sistema', 'Ajustes', 'Envíos y tarifas'];
@@ -96,6 +99,15 @@ export class AdminShellComponent implements OnInit {
 
   ngOnInit() {
     this.sb.db.auth.onAuthStateChange(() => {});
+    this.loadUnreadMensajes();
+  }
+
+  private async loadUnreadMensajes() {
+    const { count } = await this.sb.db
+      .from('mensajes')
+      .select('*', { count: 'exact', head: true })
+      .eq('leido', false);
+    this.unreadMensajes.set(count ?? 0);
   }
 
   goHome(id: ViewId) {
@@ -122,6 +134,7 @@ export class AdminShellComponent implements OnInit {
   goProductos() { this.router.navigate(['/admin/productos']); }
   goEventos()   { this.router.navigate(['/admin/eventos']); }
   goPersonajes() { this.router.navigate(['/admin/personajes']); }
+  goMensajes()   { this.router.navigate(['/admin/mensajes']); }
 
   async loginGoogle() {
     this.loginLoading.set(true);

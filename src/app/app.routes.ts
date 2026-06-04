@@ -198,6 +198,13 @@ export const routes: Routes = [
             m => m.EventoDetailComponent,
           ),
       },
+      {
+        path: 'mensajes',
+        loadComponent: () =>
+          import('./pages/admin/mensajes/mensajes-admin.component').then(
+            m => m.MensajesAdminComponent,
+          ),
+      },
       // Personajes
       {
         path: 'personajes',
