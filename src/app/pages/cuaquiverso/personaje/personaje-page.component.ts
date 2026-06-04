@@ -5,12 +5,13 @@ import { PersonajesService, Personaje } from '../../../core/services/personajes.
 import { InventarioService, ProductoEvento } from '../../../core/services/inventario.service';
 import { CartService } from '../services/cart.service';
 import { CartModalComponent } from '../cart-modal/cart-modal.component';
+import { CuaquiversoFooterComponent } from '../footer/cuaquiverso-footer.component';
 import { SeoService } from '../../../core/services/seo.service';
 
 @Component({
   selector: 'app-personaje-page',
   standalone: true,
-  imports: [CommonModule, CartModalComponent],
+  imports: [CommonModule, CartModalComponent, CuaquiversoFooterComponent],
   templateUrl: './personaje-page.component.html',
   styleUrl: './personaje-page.component.scss',
 })

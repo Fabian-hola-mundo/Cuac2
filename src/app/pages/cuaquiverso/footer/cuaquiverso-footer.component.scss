@@ -1,0 +1,227 @@
+// ─── Wrapper ──────────────────────────────────────────────────────────────────
+.cqv-footer {
+  background: var(--carbon);
+  color: var(--cream);
+  margin-top: var(--s-9);
+}
+
+.footer-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 var(--s-7);
+}
+
+// ─── Cap: claim + ayuda + acciones ───────────────────────────────────────────
+.footer-cap {
+  padding: var(--s-8) 0 var(--s-7);
+  border-bottom: 1px solid rgba(236, 239, 243, 0.09);
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--s-8);
+  align-items: start;
+}
+
+.footer-claim-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.footer-claim {
+  font-family: var(--display);
+  font-size: clamp(28px, 2.8vw, 44px);
+  line-height: 1.0;
+  font-weight: 400;
+  color: rgba(236, 239, 243, 0.72);
+  em {
+    color: var(--terra);
+    font-style: italic;
+  }
+}
+
+.footer-claim-sub {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(236, 239, 243, 0.28);
+}
+
+// ─── Columna de ayuda ─────────────────────────────────────────────────────────
+.footer-help-col {
+  h5 {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(236, 239, 243, 0.35);
+    margin-bottom: var(--s-4);
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  a {
+    font-size: 14px;
+    color: rgba(236, 239, 243, 0.62);
+    transition: color .15s;
+    &:hover { color: var(--cream); }
+  }
+}
+
+// ─── Acciones dentro de footer-claim-col ─────────────────────────────────────
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+
+.foot-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  background: var(--terra);
+  color: var(--cream);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+  transition: filter .2s, transform .15s;
+  &:hover {
+    filter: brightness(1.12);
+    transform: translateY(-2px);
+  }
+}
+
+.footer-socials {
+  display: flex;
+  gap: 8px;
+
+  a {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(236, 239, 243, 0.13);
+    color: rgba(236, 239, 243, 0.45);
+    transition: border-color .15s, color .15s, background .15s;
+
+    svg { width: 16px; height: 16px; }
+
+    &:hover {
+      border-color: rgba(236, 239, 243, 0.55);
+      color: var(--cream);
+      background: rgba(236, 239, 243, 0.05);
+    }
+  }
+}
+
+// ─── Banda de la marca madre ──────────────────────────────────────────────────
+.footer-cuac {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-5);
+  flex-wrap: wrap;
+  padding: var(--s-6) 0;
+  border-bottom: 1px solid rgba(236, 239, 243, 0.09);
+  transition: opacity .2s;
+
+  &:hover {
+    opacity: 1;
+    .footer-cuac-r {
+      background: var(--terra);
+      color: var(--cream);
+      border-color: var(--terra);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.footer-cuac-l {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+
+  .logo {
+    width: 52px;
+    color: rgba(236, 239, 243, 0.6);
+    flex-shrink: 0;
+  }
+
+  .txt {
+    font-size: 13.5px;
+    color: rgba(236, 239, 243, 0.5);
+    line-height: 1.55;
+    strong { color: rgba(236, 239, 243, 0.82); font-weight: 600; }
+  }
+
+  .mono {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 3px;
+  }
+}
+
+.footer-cuac-r {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(236, 239, 243, 0.18);
+  color: rgba(236, 239, 243, 0.75);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .15s, color .15s, border-color .15s, transform .15s;
+  white-space: nowrap;
+}
+
+// ─── Barra legal ──────────────────────────────────────────────────────────────
+.footer-bot {
+  padding: var(--s-5) 0 var(--s-6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(236, 239, 243, 0.28);
+  flex-wrap: wrap;
+  gap: var(--s-4);
+
+  .legals { display: flex; gap: var(--s-5); }
+
+  a {
+    color: inherit;
+    transition: color .15s;
+    &:hover { color: rgba(236, 239, 243, 0.6); }
+  }
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 600px) {
+  .footer-inner { padding-left: var(--s-4); padding-right: var(--s-4); }
+  .footer-cap { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .footer-bot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-3);
+  }
+}

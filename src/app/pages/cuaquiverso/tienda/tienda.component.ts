@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../../core/services/seo.service';
 import { CartService } from '../services/cart.service';
 import { CartModalComponent } from '../cart-modal/cart-modal.component';
+import { CuaquiversoFooterComponent } from '../footer/cuaquiverso-footer.component';
 import { InventarioService, ProductoEvento } from '../../../core/services/inventario.service';
 
 @Component({
   selector: 'app-tienda',
   standalone: true,
-  imports: [FormsModule, CartModalComponent, RouterLink],
+  imports: [FormsModule, CartModalComponent, RouterLink, CuaquiversoFooterComponent],
   templateUrl: './tienda.component.html',
   styleUrl: './tienda.component.scss',
 })

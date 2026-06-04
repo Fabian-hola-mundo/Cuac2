@@ -2,12 +2,13 @@ import { Component, OnInit, afterNextRender, inject, DestroyRef } from '@angular
 import { SeoService } from '../../../core/services/seo.service';
 import { CartService } from '../services/cart.service';
 import { CartModalComponent } from '../cart-modal/cart-modal.component';
+import { CuaquiversoFooterComponent } from '../footer/cuaquiverso-footer.component';
 import { PersonajesService } from '../../../core/services/personajes.service';
 
 @Component({
   selector: 'app-universo',
   standalone: true,
-  imports: [CartModalComponent],
+  imports: [CartModalComponent, CuaquiversoFooterComponent],
   templateUrl: './universo.component.html',
   styleUrl: './universo.component.scss',
 })

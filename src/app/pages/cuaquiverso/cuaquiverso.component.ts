@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { SeoService } from '../../core/services/seo.service';
 import { CartService } from './services/cart.service';
 import { CartModalComponent } from './cart-modal/cart-modal.component';
+import { CuaquiversoFooterComponent } from './footer/cuaquiverso-footer.component';
 import { InventarioService, ProductoEvento } from '../../core/services/inventario.service';
 import { PersonajesService } from '../../core/services/personajes.service';
 
@@ -22,7 +23,7 @@ interface Character {
 @Component({
   selector: 'app-cuaquiverso',
   standalone: true,
-  imports: [CartModalComponent, RouterLink],
+  imports: [CartModalComponent, RouterLink, CuaquiversoFooterComponent],
   templateUrl: './cuaquiverso.component.html',
   styleUrl: './cuaquiverso.component.scss',
 })
