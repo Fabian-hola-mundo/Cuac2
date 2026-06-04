@@ -1,0 +1,151 @@
+@if (personaje(); as p) {
+
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/cuaquiverso">
+      <span class="b1">Cuaqui</span><span class="dot"></span><span class="b2">verso</span>
+    </a>
+    <nav class="primary">
+      <a href="/cuaquiverso/tienda">Tienda</a>
+      <a href="/cuaquiverso/universo">Universo</a>
+    </nav>
+    <div class="top-actions">
+      <button class="icon-btn" aria-label="Carrito" (click)="cart.open()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h2l2.5 12.5h11L21 7H7"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+        @if (cart.count() > 0) { <span class="badge">{{ cart.count() }}</span> }
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="pj-hero" [style.--pj-color]="p.color ?? '#2A6FDB'">
+  <div class="pj-hero-inner">
+    <div class="crumbs">
+      <a href="/cuaquiverso">Inicio</a><span>/</span>
+      <a href="/cuaquiverso/universo">Universo</a><span>/</span>
+      <span>{{ p.nombre }}</span>
+    </div>
+    <div class="pj-num">{{ String(p.sort_order).padStart(2, '0') }}</div>
+    <h1>{{ p.nombre }}</h1>
+    @if (p.slogan) {
+      <p class="pj-slogan">{{ p.slogan }}</p>
+    }
+  </div>
+</section>
+
+<!-- Identity strip -->
+@if (p.region || p.musica || p.personalidad || p.fauna_flora) {
+  <div class="pj-identity">
+    @if (p.region) {
+      <div class="id-cell">
+        <span class="id-lbl">Región</span>
+        <span class="id-val">{{ p.region }}</span>
+      </div>
+    }
+    @if (p.musica) {
+      <div class="id-cell">
+        <span class="id-lbl">Música</span>
+        <span class="id-val">{{ p.musica }}</span>
+      </div>
+    }
+    @if (p.personalidad) {
+      <div class="id-cell">
+        <span class="id-lbl">Carácter</span>
+        <span class="id-val">{{ p.personalidad }}</span>
+      </div>
+    }
+    @if (p.fauna_flora) {
+      <div class="id-cell">
+        <span class="id-lbl">Fauna / flora</span>
+        <span class="id-val">{{ p.fauna_flora }}</span>
+      </div>
+    }
+  </div>
+}
+
+<!-- Bio -->
+@if (p.bio) {
+  <section class="pj-section pj-bio">
+    <div class="pj-section-inner">
+      <div class="eyebrow"><span class="dot-sm"></span> Sobre {{ p.nombre }}</div>
+      <p>{{ p.bio }}</p>
+    </div>
+  </section>
+}
+
+<!-- Gallery -->
+@if (p.galeria_urls.length > 0) {
+  <section class="pj-section pj-gallery">
+    <div class="pj-section-inner">
+      <div class="eyebrow"><span class="dot-sm"></span> Galería</div>
+      <div class="gallery-layout">
+        <div class="gallery-main">
+          <img [src]="selectedImg() ?? p.galeria_urls[0]" [alt]="p.nombre" />
+        </div>
+        @if (p.galeria_urls.length > 1) {
+          <div class="gallery-thumbs">
+            @for (url of p.galeria_urls; track url) {
+              <div
+                class="gallery-thumb"
+                [class.active]="selectedImg() === url"
+                (click)="selectedImg.set(url)">
+                <img [src]="url" [alt]="p.nombre" />
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- Productos -->
+@if (productos().length > 0) {
+  <section class="pj-section pj-productos">
+    <div class="pj-section-inner">
+      <div class="eyebrow"><span class="dot-sm"></span> Objetos de {{ p.nombre }}</div>
+      <div class="productos-scroll">
+        @for (pr of productos(); track pr.id) {
+          <a class="prod-card" href="/cuaquiverso/tienda">
+            <div class="prod-img" [style.background]="pr.color ?? '#eee'">
+              @if (pr.cover_url) { <img [src]="pr.cover_url" [alt]="pr.nombre" /> }
+            </div>
+            <div class="prod-info">
+              <span class="prod-name">{{ pr.nombre }}</span>
+              <span class="prod-sub">{{ pr.categoria }}</span>
+              <span class="prod-price">${{ pr.precio | number:'1.0-0' }}</span>
+            </div>
+            <button class="prod-cart" (click)="addToCart($event, pr)">+ Carrito</button>
+          </a>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- Nav entre personajes -->
+<nav class="pj-nav">
+  @if (prev(); as prevP) {
+    <a class="pj-nav-item prev" [href]="'/cuaquiverso/personaje/' + prevP.key">
+      <span class="nav-dir">← Anterior</span>
+      <span class="nav-name">{{ prevP.nombre }}</span>
+    </a>
+  } @else {
+    <div></div>
+  }
+  <a class="pj-nav-all" href="/cuaquiverso/universo">Ver todos</a>
+  @if (next(); as nextP) {
+    <a class="pj-nav-item next" [href]="'/cuaquiverso/personaje/' + nextP.key">
+      <span class="nav-dir">Siguiente →</span>
+      <span class="nav-name">{{ nextP.nombre }}</span>
+    </a>
+  } @else {
+    <div></div>
+  }
+</nav>
+
+}
+
+<app-cart-modal />

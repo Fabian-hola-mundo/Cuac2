@@ -1,0 +1,93 @@
+@if (personaje(); as p) {
+<div class="detail-page">
+  <div class="detail-header">
+    <button class="back-btn" (click)="goLista()">← Personajes</button>
+    <div class="header-actions">
+      <button (click)="goSitio()">Ver en sitio →</button>
+      <button (click)="goEditar()">Editar</button>
+      <button class="btn-danger" (click)="confirmDelete.set(true)">Eliminar</button>
+    </div>
+  </div>
+
+  <div class="detail-body">
+    <!-- Cover -->
+    <div class="cover-col">
+      @if (p.cover_url) {
+        <img class="cover-img" [src]="p.cover_url" [alt]="p.nombre" />
+      } @else {
+        <div class="cover-placeholder" [style.background]="p.color ?? '#ccc'">
+          <span>{{ p.nombre[0] }}</span>
+        </div>
+      }
+      <div class="status-chip" [class.active]="p.activo">
+        {{ p.activo ? 'Activo' : 'Inactivo' }}
+      </div>
+      <div class="product-count">
+        <strong>{{ productoCount() }}</strong> productos vinculados
+      </div>
+    </div>
+
+    <!-- Data -->
+    <div class="data-col">
+      <div class="name-row">
+        <h2>{{ p.nombre }}</h2>
+        <span class="key-chip">{{ p.key }}</span>
+        <div class="color-dots">
+          <span [style.background]="p.color ?? '#ccc'" title="Color principal"></span>
+          <span [style.background]="p.wire_color ?? '#ccc'" title="Wire color"></span>
+        </div>
+      </div>
+
+      @if (p.slogan) {
+        <p class="slogan">"{{ p.slogan }}"</p>
+      }
+
+      <div class="fields-grid">
+        <div class="field-item"><span class="lbl">Región</span><span class="val">{{ p.region ?? '—' }}</span></div>
+        <div class="field-item"><span class="lbl">Música</span><span class="val">{{ p.musica ?? '—' }}</span></div>
+        <div class="field-item"><span class="lbl">Personalidad</span><span class="val">{{ p.personalidad ?? '—' }}</span></div>
+        <div class="field-item"><span class="lbl">Fauna / flora</span><span class="val">{{ p.fauna_flora ?? '—' }}</span></div>
+        <div class="field-item"><span class="lbl">Orden</span><span class="val">#{{ p.sort_order }}</span></div>
+      </div>
+
+      @if (p.bio) {
+        <div class="bio-block">
+          <span class="lbl">Bio</span>
+          <p>{{ p.bio }}</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Gallery -->
+  @if (p.galeria_urls.length > 0) {
+    <section class="gallery-section">
+      <h3>Galería</h3>
+      <div class="gallery-main-wrap">
+        <div class="gallery-main">
+          <img [src]="selectedGalleryImg() ?? p.galeria_urls[0]" alt="Galería principal" />
+        </div>
+        <div class="gallery-thumbs">
+          @for (url of p.galeria_urls; track url) {
+            <div class="thumb" [class.selected]="selectedGalleryImg() === url" (click)="selectedGalleryImg.set(url)">
+              <img [src]="url" alt="Thumbnail" />
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>
+
+@if (confirmDelete()) {
+  <div class="confirm-overlay">
+    <div class="confirm-box">
+      <p>¿Eliminar a <strong>{{ p.nombre }}</strong>? Esta acción no se puede deshacer.</p>
+      <div class="confirm-actions">
+        <button (click)="confirmDelete.set(false)">Cancelar</button>
+        <button class="btn-danger" (click)="deleteConfirmed()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}
+}

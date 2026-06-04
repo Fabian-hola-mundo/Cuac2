@@ -1,0 +1,88 @@
+.detail-page { max-width: 960px; }
+
+.detail-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--s-6);
+  .header-actions { display: flex; gap: 8px;
+    button {
+      padding: 7px 14px; border-radius: var(--r-md); border: 1px solid var(--carbon-12);
+      background: #fff; font-size: 13px; cursor: pointer;
+      &:hover { background: var(--carbon-04); }
+    }
+    .btn-danger { border-color: #c00; color: #c00;
+      &:hover { background: #fee; }
+    }
+  }
+}
+
+.back-btn { background: none; border: none; color: var(--carbon-50); font-size: 13px; cursor: pointer; padding: 0; }
+
+.detail-body { display: grid; grid-template-columns: 280px 1fr; gap: var(--s-7); margin-bottom: var(--s-8); }
+
+.cover-col {
+  .cover-img { width: 100%; border-radius: var(--r-lg); display: block; }
+  .cover-placeholder {
+    width: 100%; aspect-ratio: 1; border-radius: var(--r-lg);
+    display: flex; align-items: center; justify-content: center;
+    span { font-size: 72px; font-weight: 800; color: rgba(255,255,255,.5); font-family: var(--display); }
+  }
+  .status-chip {
+    display: inline-block; margin-top: 10px; padding: 4px 12px;
+    border-radius: 20px; font-size: 12px; font-weight: 600;
+    background: #f0f0eb; color: var(--carbon-50);
+    &.active { background: #e8f5ee; color: #1F8A5B; }
+  }
+  .product-count { margin-top: 8px; font-size: 13px; color: var(--carbon-60);
+    strong { font-weight: 700; color: var(--carbon); }
+  }
+}
+
+.name-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: var(--s-4);
+  h2 { font-size: 28px; font-weight: 700; margin: 0; }
+  .key-chip { padding: 3px 8px; background: var(--carbon-04); border-radius: 4px; font-size: 11px; font-family: var(--mono); color: var(--carbon-60); }
+  .color-dots { display: flex; gap: 5px;
+    span { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,.08); }
+  }
+}
+
+.slogan { font-style: italic; color: var(--carbon-60); font-size: 15px; margin-bottom: var(--s-5); }
+
+.fields-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-3);
+  margin-bottom: var(--s-5);
+}
+.field-item {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 12px; background: var(--paper); border-radius: var(--r-sm); border: 1px solid var(--carbon-08);
+  .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--carbon-40); }
+  .val { font-size: 14px; font-weight: 600; color: var(--carbon); }
+}
+
+.bio-block {
+  .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--carbon-40); display: block; margin-bottom: 6px; }
+  p { font-size: 14px; color: var(--carbon-70); line-height: 1.65; }
+}
+
+.gallery-section {
+  h3 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--carbon-50); margin-bottom: var(--s-4); }
+}
+
+.gallery-main-wrap { display: grid; grid-template-columns: 1fr 120px; gap: 10px; }
+.gallery-main { border-radius: var(--r-lg); overflow: hidden;
+  img { width: 100%; display: block; object-fit: cover; max-height: 360px; }
+}
+.gallery-thumbs { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+.thumb { border-radius: var(--r-sm); overflow: hidden; cursor: pointer; border: 2px solid transparent;
+  img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+  &.selected { border-color: var(--carbon); }
+}
+
+.confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.confirm-box { background: #fff; border-radius: var(--r-lg); padding: 24px; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,.16);
+  p { font-size: 14px; margin-bottom: 20px; }
+}
+.confirm-actions { display: flex; gap: 10px; justify-content: flex-end;
+  button { padding: 8px 16px; border-radius: var(--r-md); border: 1px solid var(--carbon-12); background: #fff; cursor: pointer; font-size: 13px; }
+  .btn-danger { background: #c00; color: #fff; border-color: #c00; }
+}

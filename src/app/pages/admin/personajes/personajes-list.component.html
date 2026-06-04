@@ -1,0 +1,77 @@
+<div class="list-header">
+  <div>
+    <h2>Personajes</h2>
+    <p class="sub">{{ svc.personajes().length }} personajes · arrastra para reordenar</p>
+  </div>
+  <button class="btn-primary" (click)="goNuevo()">+ Nuevo personaje</button>
+</div>
+
+@if (svc.cargando()) {
+  <div class="loading">Cargando personajes…</div>
+}
+
+<div class="drag-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+  @for (p of svc.personajes(); track p.id) {
+    <div class="drag-row" cdkDrag>
+      <span class="drag-handle" cdkDragHandle title="Arrastrar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <circle cx="5" cy="4" r="1.2"/><circle cx="5" cy="8" r="1.2"/><circle cx="5" cy="12" r="1.2"/>
+          <circle cx="11" cy="4" r="1.2"/><circle cx="11" cy="8" r="1.2"/><circle cx="11" cy="12" r="1.2"/>
+        </svg>
+      </span>
+
+      <div class="row-thumb" [style.background]="p.color ?? '#ccc'">
+        @if (p.cover_url) {
+          <img [src]="p.cover_url" [alt]="p.nombre" />
+        } @else {
+          <span>{{ p.nombre[0] }}</span>
+        }
+      </div>
+
+      <div class="row-info">
+        <strong>{{ p.nombre }}</strong>
+        <span class="region">{{ p.region ?? '—' }}</span>
+      </div>
+
+      <div class="row-order">#{{ p.sort_order }}</div>
+
+      <button
+        class="toggle-btn"
+        [class.active]="p.activo"
+        (click)="toggleActivo(p)"
+        [title]="p.activo ? 'Desactivar' : 'Activar'">
+        {{ p.activo ? 'Activo' : 'Inactivo' }}
+      </button>
+
+      <div class="row-actions">
+        <button (click)="goDetalle(p.id)" title="Ver detalle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button (click)="goEditar(p.id)" title="Editar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+        </button>
+        <button class="delete-btn" (click)="confirmDelete(p.id)" title="Eliminar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </div>
+
+      <div class="drag-preview" *cdkDragPreview>{{ p.nombre }}</div>
+    </div>
+  }
+</div>
+
+@if (confirmDeleteId()) {
+  <div class="confirm-overlay">
+    <div class="confirm-box">
+      <p>¿Eliminar este personaje? Esta acción no se puede deshacer.</p>
+      <div class="confirm-actions">
+        <button (click)="cancelDelete()">Cancelar</button>
+        <button class="btn-danger" (click)="deleteConfirmed()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (toast()) {
+  <div class="toast">{{ toast() }}</div>
+}
