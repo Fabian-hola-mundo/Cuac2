@@ -4,6 +4,7 @@ import { SeoService } from '../../core/services/seo.service';
 import { CartService } from './services/cart.service';
 import { CartModalComponent } from './cart-modal/cart-modal.component';
 import { InventarioService, ProductoEvento } from '../../core/services/inventario.service';
+import { PersonajesService } from '../../core/services/personajes.service';
 
 const CAT_SHORT: Record<string, string> = {
   tee:'Camiseta', tote:'Tote bag', libreta:'Libreta', sticker:'Sticker',
@@ -28,10 +29,12 @@ interface Character {
 export class CuaquiversoComponent implements OnInit {
   newsletterSubmitted = false;
 
-  readonly cart       = inject(CartService);
-  readonly inv        = inject(InventarioService);
-  private  destroyRef = inject(DestroyRef);
-  private  seo        = inject(SeoService);
+  readonly cart          = inject(CartService);
+  readonly inv           = inject(InventarioService);
+  readonly personajesSvc = inject(PersonajesService);
+  readonly String        = String;
+  private  destroyRef    = inject(DestroyRef);
+  private  seo           = inject(SeoService);
 
   readonly showcaseProducts = computed(() => {
     const activos    = this.inv.productos().filter(p => p.activo);
@@ -39,7 +42,8 @@ export class CuaquiversoComponent implements OnInit {
     return (destacados.length > 0 ? destacados : activos).slice(0, 5);
   });
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.personajesSvc.load();
     this.seo.set({
       title:       'Cuaquiverso — División de producto de Cuac',
       description: 'Personajes colombianos traducidos a objetos: camisetas, libretas, stickers y más.',
@@ -87,16 +91,13 @@ export class CuaquiversoComponent implements OnInit {
     const THREE = await import('three');
     const { gsap } = await import('gsap');
 
-    const characters: Character[] = [
-      { key: 'cuac',       name: 'Cuac · El explorador',             color: '#2A6FDB', wire: '#5C95EA' },
-      { key: 'kiki',       name: 'Kiki · La delfín del Amazonas',    color: '#FF6FA8', wire: '#FFB1CF' },
-      { key: 'roar',       name: 'Roar · El oso poeta',              color: '#3D4856', wire: '#7A8694' },
-      { key: 'yeison',     name: 'Yeison · El llanero',              color: '#E8A434', wire: '#FFD27A' },
-      { key: 'abejandro',  name: 'Abejandro · El abejorro',          color: '#E8623D', wire: '#F5957C' },
-      { key: 'atolita',    name: 'Atolita · La tortuga hippie',      color: '#8B6FD8', wire: '#B9A4F0' },
-      { key: 'colibriana', name: 'Colibriana · La paisa cafetera',   color: '#1F8A5B', wire: '#5BB890' },
-      { key: 'tiburcio',   name: 'Tiburcio · El vacilón del Caribe', color: '#2E8FB8', wire: '#7DC1DC' },
-    ];
+    const characters: Character[] = this.personajesSvc.activos().map(p => ({
+      key:   p.key,
+      name:  p.nombre + (p.personalidad ? ` · ${p.personalidad}` : ''),
+      color: p.color  ?? '#2A6FDB',
+      wire:  p.wire_color ?? '#5C95EA',
+    }));
+    if (characters.length === 0) return;
 
     const layout: [number, number, number][] = [
       [ 0.00,  1.55, -0.20],
