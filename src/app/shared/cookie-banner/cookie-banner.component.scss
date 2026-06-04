@@ -1,22 +1,29 @@
 .cookie-banner {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: var(--s-5);
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 9000;
-  background: var(--carbon);
-  border-top: 1px solid rgba(240, 241, 246, 0.12);
-  padding: var(--s-4) var(--s-7);
-  animation: slide-up 0.25s ease-out;
+  width: calc(100% - var(--s-7) * 2);
+  max-width: 720px;
+  background: rgba(21, 31, 40, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(240, 241, 246, 0.1);
+  border-radius: var(--r-lg);
+  padding: var(--s-4) var(--s-5);
+  animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   @media (max-width: 640px) {
-    padding: var(--s-4) var(--s-5);
+    bottom: var(--s-4);
+    width: calc(100% - var(--s-5) * 2);
+    border-radius: var(--r-md);
   }
 }
 
 @keyframes slide-up {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+  from { transform: translateX(-50%) translateY(calc(100% + var(--s-5))); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
 
 .cookie-banner__inner {
