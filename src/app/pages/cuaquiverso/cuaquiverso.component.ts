@@ -7,6 +7,7 @@ import { CuaquiversoFooterComponent } from './footer/cuaquiverso-footer.componen
 import { HelpModalComponent } from './help-modal/help-modal.component';
 import { InventarioService, ProductoEvento } from '../../core/services/inventario.service';
 import { PersonajesService } from '../../core/services/personajes.service';
+import { MensajesFormComponent } from './mensajes-form/mensajes-form.component';
 
 const CAT_SHORT: Record<string, string> = {
   tee:'Camiseta', tote:'Tote bag', libreta:'Libreta', sticker:'Sticker',
@@ -24,13 +25,11 @@ interface Character {
 @Component({
   selector: 'app-cuaquiverso',
   standalone: true,
-  imports: [CartModalComponent, RouterLink, CuaquiversoFooterComponent, HelpModalComponent],
+  imports: [CartModalComponent, RouterLink, CuaquiversoFooterComponent, HelpModalComponent, MensajesFormComponent],
   templateUrl: './cuaquiverso.component.html',
   styleUrl: './cuaquiverso.component.scss',
 })
 export class CuaquiversoComponent implements OnInit {
-  newsletterSubmitted = false;
-
   private  router        = inject(Router);
   readonly cart          = inject(CartService);
   readonly inv           = inject(InventarioService);
@@ -75,11 +74,6 @@ export class CuaquiversoComponent implements OnInit {
       price: p.precio,
       color: p.color ?? '#3D4856',
     });
-  }
-
-  onNewsletterSubmit(event: Event): void {
-    event.preventDefault();
-    this.newsletterSubmitted = true;
   }
 
   onStoreSearch(event: Event, input: HTMLInputElement): void {

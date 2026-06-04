@@ -202,18 +202,7 @@
   </div>
 </section>
 
-<!-- NEWSLETTER -->
-<section class="nl">
-  <div class="nl-inner">
-    <div class="eyebrow"><span class="dot"></span> Carta del Cuaquiverso</div>
-    <h3>Cuéntale a tu correo dónde <em>aterriza Cuac</em> esta semana.</h3>
-    <p>Una carta corta cada quince días: lanzamientos, historias detrás de cada personaje, y descuentos para suscriptores.</p>
-    <form (ngSubmit)="onNewsletterSubmit($event)">
-      <input type="email" placeholder="tu&#64;correo.co" required />
-      <button type="submit">{{ newsletterSubmitted ? '✓ Suscrito' : 'Suscribirme' }}</button>
-    </form>
-  </div>
-</section>
+<app-mensajes-form />
 
 <app-cuaquiverso-footer />
 
