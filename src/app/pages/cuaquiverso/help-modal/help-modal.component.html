@@ -1,0 +1,118 @@
+@if (service.activeModal() !== null) {
+  <div class="hm-overlay" (click)="service.close()" role="dialog" aria-modal="true"
+       [attr.aria-label]="service.activeModal()">
+    <div class="hm-card" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="hm-head">
+        <div class="hm-head-text">
+          @switch (service.activeModal()) {
+            @case ('envios') {
+              <span class="hm-eyebrow">Ayuda</span>
+              <h2>Envíos</h2>
+            }
+            @case ('devoluciones') {
+              <span class="hm-eyebrow">Ayuda</span>
+              <h2>Cambios y devoluciones</h2>
+            }
+            @case ('tallas') {
+              <span class="hm-eyebrow">Camisetas</span>
+              <h2>Guía de tallas</h2>
+            }
+          }
+        </div>
+        <button class="hm-close" (click)="service.close()" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="hm-body">
+        @switch (service.activeModal()) {
+
+          @case ('envios') {
+            <div class="hm-section">
+              <p class="hm-label">Cobertura</p>
+              <p>Todo Colombia vía Coordinadora y Servientrega.</p>
+            </div>
+            <div class="hm-section">
+              <p class="hm-label">Tiempos estimados</p>
+              <ul>
+                <li>Bogotá: <strong>1–2 días hábiles</strong></li>
+                <li>Resto del país: <strong>3–5 días hábiles</strong></li>
+              </ul>
+            </div>
+            <div class="hm-section">
+              <p class="hm-label">Costo</p>
+              <p>Desde <strong>$8.000 COP</strong>, calculado al hacer checkout según el destino.</p>
+            </div>
+            <div class="hm-section">
+              <p class="hm-label">Despacho</p>
+              <p>Tirajes cortos — despachamos dentro de los <strong>5 días hábiles</strong>
+                 siguientes a la confirmación del pago.</p>
+            </div>
+          }
+
+          @case ('devoluciones') {
+            <div class="hm-section">
+              <p class="hm-label">Plazo</p>
+              <p><strong>10 días calendario</strong> desde que recibes el pedido.</p>
+            </div>
+            <div class="hm-section">
+              <p class="hm-label">Condiciones</p>
+              <ul>
+                <li>Producto sin uso y con empaque original.</li>
+                <li>No aplica para productos personalizados ni ediciones especiales.</li>
+              </ul>
+            </div>
+            <div class="hm-section">
+              <p class="hm-label">Proceso</p>
+              <p>Escríbenos a <a href="mailto:hola@cuacdesign.com">hola&#64;cuacdesign.com</a>
+                 con foto del producto y número de pedido.</p>
+            </div>
+            <div class="hm-section">
+              <p class="hm-label">Cambio de talla</p>
+              <p>Sujeto a disponibilidad de stock en el momento del cambio.</p>
+            </div>
+          }
+
+          @case ('tallas') {
+            <p class="hm-note">Medidas del producto plano en centímetros.</p>
+            <table class="hm-table">
+              <thead>
+                <tr>
+                  <th>Talla</th>
+                  <th>Pecho</th>
+                  <th>Largo</th>
+                  <th>Hombro</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>S</td><td>48 cm</td><td>68 cm</td><td>42 cm</td></tr>
+                <tr><td>M</td><td>51 cm</td><td>70 cm</td><td>44 cm</td></tr>
+                <tr><td>L</td><td>54 cm</td><td>72 cm</td><td>46 cm</td></tr>
+                <tr><td>XL</td><td>57 cm</td><td>74 cm</td><td>48 cm</td></tr>
+              </tbody>
+            </table>
+            <p class="hm-note hm-note--tip">
+              ¿Dudas entre dos tallas? Te recomendamos ir una talla arriba para un fit más holgado.
+            </p>
+          }
+
+        }
+      </div>
+
+      <!-- Footer (no aplica en guía de tallas) -->
+      @if (service.activeModal() !== 'tallas') {
+        <div class="hm-footer">
+          <a href="mailto:hola@cuacdesign.com">¿Más preguntas? hola&#64;cuacdesign.com</a>
+        </div>
+      }
+
+    </div>
+  </div>
+}
