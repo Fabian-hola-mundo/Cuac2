@@ -50,14 +50,11 @@ app-evento-detail {
   font-family: var(--sans);
   color: var(--carbon);
   -webkit-font-smoothing: antialiased;
-  height: 100vh;
-  overflow: hidden;
 
   .admin-shell {
     display: grid;
     grid-template-columns: 248px 1fr;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
   }
 
   // ── Sidebar ────────────────────────────────────────────────────────────────
@@ -67,6 +64,8 @@ app-evento-detail {
     padding: var(--s-5) var(--s-4);
     display: flex;
     flex-direction: column;
+    position: sticky;
+    top: 0;
     height: 100vh;
     overflow-y: auto;
     border-right: 1px solid rgba(236,239,243,0.06);
@@ -157,7 +156,7 @@ app-evento-detail {
   }
 
   // ── Main area ──────────────────────────────────────────────────────────────
-  .main { display: flex; flex-direction: column; min-width: 0; height: 100vh; overflow-y: auto; }
+  .main { display: flex; flex-direction: column; min-width: 0; }
 
   .topbar-admin {
     height: 60px; padding: 0 var(--s-6);
@@ -255,7 +254,19 @@ app-evento-detail {
     h3 { font-family: var(--display); font-size: 20px; letter-spacing: -0.005em; }
     .sub { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--carbon-50); }
   }
-  .panel-b { padding: var(--s-5); &.flush { padding: 0; } }
+  .panel-b {
+    padding: var(--s-5);
+    &.flush {
+      padding: 0;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--carbon-12) transparent;
+      &::-webkit-scrollbar        { width: 5px; height: 5px; }
+      &::-webkit-scrollbar-track  { background: transparent; }
+      &::-webkit-scrollbar-thumb  { background: var(--carbon-12); border-radius: 999px; }
+      &::-webkit-scrollbar-thumb:hover { background: var(--carbon-30); }
+    }
+  }
 
   // ── Stat cards ─────────────────────────────────────────────────────────────
   .stat-grid {
@@ -347,8 +358,7 @@ app-evento-detail {
 
   // ── Table scroll wrapper ───────────────────────────────────────────────────
   .tbl-wrap {
-    overflow: auto;
-    max-height: calc(100vh - 260px);
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: var(--carbon-12) transparent;
@@ -370,7 +380,6 @@ app-evento-detail {
       padding: 10px var(--s-5);
       background: var(--cream-2); border-bottom: 1px solid var(--carbon-08);
       white-space: nowrap;
-      position: sticky; top: 0; z-index: 2;
       &.num { text-align: right; }
     }
     tbody td {
@@ -912,7 +921,8 @@ app-evento-detail {
     height: auto; overflow: visible;
     .admin-shell { grid-template-columns: 1fr; height: auto; overflow: visible; }
     .sidebar { position: relative; height: auto; overflow-y: visible; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: var(--s-3); flex-shrink: unset; }
-    .main { height: auto; overflow-y: visible; }
+    .main { height: auto; }
+    .sidebar { position: relative; }
     .sb-brand, .sb-foot { padding: 8px 10px; border: 0; margin: 0; }
     .sb-section { display: none; }
     .stat-grid { grid-template-columns: repeat(2, 1fr); }

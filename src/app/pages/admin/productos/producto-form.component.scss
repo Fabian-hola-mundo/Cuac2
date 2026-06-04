@@ -56,7 +56,13 @@
   img { width: 100%; height: 200px; object-fit: cover; display: block; }
 }
 
-.upload-btn {
+.img-placeholder {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--cream); border: 1px dashed var(--carbon-16);
+  border-radius: 8px; height: 160px; margin-bottom: 10px;
+}
+
+label.upload-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -64,6 +70,11 @@
   border: 1px solid var(--carbon-16);
   border-radius: 6px;
   font-size: 13px;
+  font-family: var(--sans);
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--carbon);
   cursor: pointer;
   transition: background 0.15s;
   &:hover { background: var(--carbon-04); }

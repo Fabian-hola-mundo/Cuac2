@@ -1,5 +1,5 @@
 import { Component, OnInit, afterNextRender, inject, DestroyRef, computed } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { SeoService } from '../../core/services/seo.service';
 import { CartService } from './services/cart.service';
 import { CartModalComponent } from './cart-modal/cart-modal.component';
@@ -29,6 +29,7 @@ interface Character {
 export class CuaquiversoComponent implements OnInit {
   newsletterSubmitted = false;
 
+  private  router        = inject(Router);
   readonly cart          = inject(CartService);
   readonly inv           = inject(InventarioService);
   readonly personajesSvc = inject(PersonajesService);
@@ -81,7 +82,9 @@ export class CuaquiversoComponent implements OnInit {
 
   onStoreSearch(event: Event, input: HTMLInputElement): void {
     event.preventDefault();
-    console.log('Search:', input.value);
+    const q = input.value.trim();
+    if (q) this.router.navigate(['/cuaquiverso/tienda'], { queryParams: { q } });
+    else   this.router.navigate(['/cuaquiverso/tienda']);
   }
 
   private async initHeroScene(): Promise<void> {

@@ -36,11 +36,16 @@ export interface VentaEvento {
 export const EVENTO_ACTIVO = 'sofa-2026';
 
 export const CATEGORIAS = [
+  { id: 'tee',       label: 'Camisetas'  },
   { id: 'tote',      label: 'Tote bags'  },
+  { id: 'libreta',   label: 'Libretas'   },
+  { id: 'sticker',   label: 'Stickers'   },
+  { id: 'pin',       label: 'Pines'      },
   { id: 'llavero',   label: 'Llaveros'   },
   { id: 'gorra',     label: 'Gorras'     },
   { id: 'pañoleta',  label: 'Pañoletas'  },
-  { id: 'sticker',   label: 'Stickers'   },
+  { id: 'peluche',   label: 'Peluches'   },
+  { id: 'print',     label: 'Prints'     },
   { id: 'amigurumi', label: 'Amigurumis' },
   { id: 'charm',     label: 'Charms'     },
 ];

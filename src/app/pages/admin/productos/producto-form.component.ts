@@ -81,10 +81,14 @@ export class ProductoFormComponent implements OnInit {
       const v = this.form.getRawValue();
       const tempId = this.editId() ?? `tmp_${Date.now()}`;
 
-      let coverUrl: string | null = this.coverPreview();
+      // Cover upload — keep existing Supabase URL if no new file selected
+      let coverUrl: string | null = this.coverPreview()?.startsWith('blob:')
+        ? null
+        : (this.coverPreview() ?? null);
       if (this.coverFile) {
         const ext = this.coverFile.name.split('.').pop() ?? 'jpg';
-        const { url } = await this.inv.uploadProductoImage(tempId, this.coverFile, `cover.${ext}`);
+        const { url, error: uploadErr } = await this.inv.uploadProductoImage(tempId, this.coverFile, `cover.${ext}`);
+        if (uploadErr) { this.errorMsg.set(`Error al subir portada: ${uploadErr}`); return; }
         if (url) coverUrl = url;
       }
 
@@ -92,7 +96,8 @@ export class ProductoFormComponent implements OnInit {
       for (let i = 0; i < this.galleryFiles.length; i++) {
         const file = this.galleryFiles[i];
         const ext = file.name.split('.').pop() ?? 'jpg';
-        const { url } = await this.inv.uploadProductoImage(tempId, file, `foto_${i}.${ext}`);
+        const { url, error: uploadErr } = await this.inv.uploadProductoImage(tempId, file, `foto_${i}.${ext}`);
+        if (uploadErr) { this.errorMsg.set(`Error al subir foto ${i + 1}: ${uploadErr}`); return; }
         if (url) fotosUrls.push(url);
       }
 

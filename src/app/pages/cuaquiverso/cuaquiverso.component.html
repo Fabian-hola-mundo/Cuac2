@@ -80,7 +80,7 @@
         Camisetas, libretas, posters, stickers y peluches dibujados por el equipo. Tirajes cortos, hecho aquí.
       </p>
     </div>
-    <form class="tienda-search" (ngSubmit)="onStoreSearch($event, searchInput)">
+    <form class="tienda-search" (submit)="onStoreSearch($event, searchInput)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
       <input #searchInput type="search" placeholder="Busca productos: camiseta, Kiki, sticker…" aria-label="Buscar en la tienda" />
       <button type="submit">Buscar</button>
@@ -99,7 +99,11 @@
         <div class="pcard-img" [style.background]="p.color ? p.color + '22' : 'var(--cream-2)'">
           @if (p.flag === 'new')  { <span class="flag new">Nuevo</span> }
           @if (p.flag === 'last') { <span class="flag">Últimas unidades</span> }
-          <div class="label">{{ catLabel(p.categoria) }}<br>{{ p.personaje ?? '' }}</div>
+          @if (p.cover_url) {
+            <img [src]="p.cover_url" [alt]="p.nombre" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;" />
+          } @else {
+            <div class="label">{{ catLabel(p.categoria) }}<br>{{ p.personaje ?? '' }}</div>
+          }
           <span class="quick">Ver producto →</span>
         </div>
         <div class="pcard-info">
