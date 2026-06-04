@@ -58,6 +58,7 @@
         <div style="padding:32px;text-align:center;color:var(--carbon-50);font-size:14px">Sin ventas en este evento.</div>
       }
       @if (topProductos().length > 0) {
+        <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
             <th>Producto</th>
@@ -74,6 +75,7 @@
             }
           </tbody>
         </table>
+        </div>
       }
     </div>
 
@@ -86,6 +88,7 @@
         <div class="panel-b"><p style="color:var(--carbon-50);font-size:14px">Sin datos.</p></div>
       }
       @if (ventasPorDia().length > 0) {
+        <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
             <th>Fecha</th>
@@ -100,6 +103,7 @@
             }
           </tbody>
         </table>
+        </div>
       }
     </div>
 

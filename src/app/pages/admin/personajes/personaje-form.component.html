@@ -101,10 +101,11 @@
               <label class="upload-area" for="cover-input">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 <span>Subir imagen principal</span>
-                <span class="hint">PNG, JPG, WEBP</span>
+                <span class="hint">PNG, JPG o WebP</span>
               </label>
               <input id="cover-input" type="file" accept="image/*" (change)="onCoverChange($event)" hidden />
             }
+          <span class="hint" style="display:block;margin-top:8px;font-size:11.5px;color:var(--carbon-50)">Fondo transparente recomendado · mín 400 × 400 px · 1:1</span>
           </div>
         </section>
 
@@ -124,6 +125,7 @@
               <input id="gallery-input" type="file" accept="image/*" multiple (change)="onGalleryChange($event)" hidden />
             }
           </div>
+          <span class="hint" style="display:block;margin-top:8px;font-size:11.5px;color:var(--carbon-50)">PNG, JPG o WebP · mín 800 px de ancho · hasta 8 imágenes</span>
         </section>
       </div>
     </div>

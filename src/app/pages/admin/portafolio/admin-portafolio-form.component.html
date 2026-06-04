@@ -206,7 +206,7 @@
           {{ coverPreview() ? 'Cambiar portada' : 'Subir portada' }}
           <input type="file" accept="image/*" (change)="onCoverChange($event)" hidden />
         </label>
-        <span class="help">JPG, PNG o WebP. Proporción 4:3 recomendada.</span>
+        <span class="help">JPG, PNG o WebP · 4:3 recomendado · mín 1200 × 900 px</span>
       </div>
     </div>
 
@@ -225,7 +225,7 @@
           Seleccionar imágenes
           <input type="file" accept="image/*" multiple (change)="onGalleryChange($event)" hidden />
         </label>
-        <span class="help">Selecciona múltiples imágenes a la vez.</span>
+        <span class="help">JPG, PNG o WebP · mín 1200 px de ancho · hasta 8 imágenes</span>
       </div>
     </div>
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { CartService } from '../services/cart.service';
 import { CheckoutService, CheckoutForm } from '../services/checkout.service';
@@ -44,7 +44,7 @@ export class CheckoutComponent implements OnInit {
 
   readonly ENVIO_GRATIS_DESDE = 150_000;
 
-  private ciudadActual = '';
+  private ciudadActual = signal('');
 
   form = new FormGroup({
     nombre:       new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -62,8 +62,9 @@ export class CheckoutComponent implements OnInit {
   });
 
   estimadoTexto = computed(() => {
-    if (!this.ciudadActual) return 'Ingresa tu ciudad para ver el estimado.';
-    const key = this.ciudadActual
+    const ciudad = this.ciudadActual();
+    if (!ciudad) return 'Ingresa tu ciudad para ver el estimado.';
+    const key = ciudad
       .toLowerCase()
       .trim()
       .normalize('NFD')
@@ -86,7 +87,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   onCiudadChange(): void {
-    this.ciudadActual = this.form.get('ciudad')?.value ?? '';
+    this.ciudadActual.set(this.form.get('ciudad')?.value ?? '');
   }
 
   colorHex(key: string): string {

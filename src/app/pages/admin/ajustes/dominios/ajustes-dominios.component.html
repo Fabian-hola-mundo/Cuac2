@@ -76,6 +76,7 @@
     @if (verifState() === 'records') {
     <div style="background:var(--cream-2);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:var(--s-3)">
       <div style="font-weight:600;font-size:13px">Configura estos registros DNS en tu registrador:</div>
+      <div class="tbl-wrap">
       <table class="tbl">
         <thead><tr><th>Tipo</th><th>Host</th><th>Valor</th></tr></thead>
         <tbody>
@@ -88,6 +89,7 @@
           }
         </tbody>
       </table>
+      </div>
       <button class="btn-sm ghost" style="align-self:flex-start" (click)="reVerificar()">Verificar de nuevo</button>
     </div>
     }
