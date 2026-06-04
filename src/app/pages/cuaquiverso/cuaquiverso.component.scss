@@ -517,61 +517,6 @@ nav.primary {
   .meta { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--carbon-50); }
 }
 
-// ─── Newsletter ───────────────────────────────────────────────────────────────
-.nl {
-  padding: var(--s-9) var(--s-7); background: var(--cream);
-}
-
-.nl-inner {
-  max-width: 1100px; margin: 0 auto;
-  background: var(--paper); border: 1px solid var(--carbon-08);
-  border-radius: var(--r-xl); padding: var(--s-8);
-  position: relative; overflow: hidden;
-
-  &::before {
-    content: ''; position: absolute; right: -100px; top: -100px;
-    width: 360px; height: 360px; border-radius: 50%;
-    background: radial-gradient(circle, var(--sol), transparent 60%);
-    opacity: 0.45; pointer-events: none;
-  }
-
-  &::after {
-    content: ''; position: absolute; left: -120px; bottom: -120px;
-    width: 380px; height: 380px; border-radius: 50%;
-    background: radial-gradient(circle, var(--rosa), transparent 60%);
-    opacity: 0.30; pointer-events: none;
-  }
-
-  > * { position: relative; }
-}
-
-.nl h3 {
-  font-family: var(--display); font-size: clamp(36px, 4.4vw, 60px);
-  line-height: 1.0; letter-spacing: -0.015em; max-width: 18ch; margin-bottom: var(--s-4);
-
-  em { color: var(--terra); font-style: italic; }
-}
-
-.nl p { color: var(--carbon-70); max-width: 56ch; margin-bottom: var(--s-6); }
-
-.nl form {
-  display: flex; gap: 8px; padding: 6px;
-  background: var(--cream-2); border: 1px solid var(--carbon-12);
-  border-radius: var(--r-pill); max-width: 520px;
-
-  input {
-    flex: 1; border: 0; background: transparent; padding: 10px 16px;
-    font: inherit; color: var(--carbon); outline: none; font-size: 14.5px;
-  }
-
-  button {
-    padding: 11px 22px; border-radius: var(--r-pill);
-    background: var(--carbon); color: var(--cream); font-weight: 600; font-size: 13.5px;
-
-    &:hover { background: var(--terra); }
-  }
-}
-
 // ─── Responsive ───────────────────────────────────────────────────────────────
 @media (max-width: 1100px) {
   .topbar-inner { padding: 0 var(--s-5) 0 var(--s-5); }
@@ -587,5 +532,5 @@ nav.primary {
   .cast-row { grid-template-columns: repeat(2, 1fr); }
   .showcase { grid-template-columns: 1fr 1fr; }
   .hero { padding: 88px var(--s-4) var(--s-7); }
-  .tienda, .elenco, .nl { padding-left: var(--s-4); padding-right: var(--s-4); }
+  .tienda, .elenco { padding-left: var(--s-4); padding-right: var(--s-4); }
 }
