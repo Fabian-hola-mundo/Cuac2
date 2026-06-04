@@ -94,10 +94,14 @@
       [href]="'/cuaquiverso/personaje/' + p.key"
       data-reveal
       [attr.data-reveal-delay]="i % 3">
-      <div class="art">
+      <div class="art" [class.has-cover]="!!p.cover_url">
+        @if (p.cover_url) {
+          <img [src]="p.cover_url" [alt]="p.nombre" />
+        } @else {
+          <div class="glyph">{{ p.nombre.slice(0, i < 2 ? p.nombre.length : 2) }}</div>
+        }
         <span class="corner">N° {{ String(i + 1).padStart(2, '0') }}</span>
         <span class="badge-region">{{ (p.region ?? '').split('·')[1]?.trim() || p.region }}</span>
-        <div class="glyph">{{ p.nombre.slice(0, i < 2 ? p.nombre.length : 2) }}</div>
       </div>
       <div class="info">
         <h3>{{ p.nombre }}</h3>

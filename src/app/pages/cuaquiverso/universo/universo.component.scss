@@ -303,6 +303,15 @@ nav.primary {
         radial-gradient(circle at 75% 80%, rgba(0, 0, 0, 0.06), transparent 40%);
       mix-blend-mode: overlay; pointer-events: none;
     }
+
+    img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      z-index: 1;
+    }
+
+    .corner, .badge-region { z-index: 2; }
   }
 
   .glyph {

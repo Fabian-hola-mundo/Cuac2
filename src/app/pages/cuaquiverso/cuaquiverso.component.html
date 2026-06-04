@@ -177,7 +177,7 @@
   <div class="cast-row">
     @for (p of personajesSvc.activos(); track p.id) {
       <a class="cast-card" [attr.data-c]="p.key" [href]="'/cuaquiverso/personaje/' + p.key">
-        <div class="face" [class.has-cover]="!!p.cover_url" [style.background]="p.cover_url ? 'transparent' : (p.color ?? '#ccc')">
+        <div class="face" [class.has-cover]="!!p.cover_url" [style.background]="p.color ?? '#ccc'">
           @if (p.cover_url) {
             <img [src]="p.cover_url" [alt]="p.nombre" />
           } @else {
