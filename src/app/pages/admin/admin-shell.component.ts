@@ -6,6 +6,7 @@ import { toSignal }       from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { SupabaseService }        from '../../core/services/supabase.service';
 import { AdminStateService, ViewId } from '../../core/services/admin-state.service';
+import { MensajesUnreadService } from './mensajes/mensajes-unread.service';
 
 @Component({
   selector: 'app-admin-shell',
@@ -43,7 +44,7 @@ export class AdminShellComponent implements OnInit {
   isAjustesRoute       = computed(() => this.routerUrl().includes('/admin/ajustes'));
   isPersonajesRoute    = computed(() => this.routerUrl().includes('/admin/personajes'));
   isMensajesRoute      = computed(() => this.routerUrl().includes('/admin/mensajes'));
-  unreadMensajes       = signal(0);
+  readonly unreadSvc   = inject(MensajesUnreadService);
 
   crumbs = computed(() => {
     const url = this.routerUrl();
@@ -99,15 +100,7 @@ export class AdminShellComponent implements OnInit {
 
   ngOnInit() {
     this.sb.db.auth.onAuthStateChange(() => {});
-    this.loadUnreadMensajes();
-  }
-
-  private async loadUnreadMensajes() {
-    const { count } = await this.sb.db
-      .from('mensajes')
-      .select('*', { count: 'exact', head: true })
-      .eq('leido', false);
-    this.unreadMensajes.set(count ?? 0);
+    this.unreadSvc.load();
   }
 
   goHome(id: ViewId) {

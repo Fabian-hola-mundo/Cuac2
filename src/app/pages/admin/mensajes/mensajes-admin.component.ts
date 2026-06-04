@@ -2,6 +2,7 @@
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupabaseService } from '../../../core/services/supabase.service';
+import { MensajesUnreadService } from './mensajes-unread.service';
 
 interface Mensaje {
   id: string;
@@ -21,6 +22,7 @@ interface Mensaje {
 })
 export class MensajesAdminComponent implements OnInit {
   private sb = inject(SupabaseService);
+  private unreadSvc = inject(MensajesUnreadService);
 
   cargando   = signal(true);
   error      = signal<string | null>(null);
@@ -55,6 +57,7 @@ export class MensajesAdminComponent implements OnInit {
       this.items.update(list =>
         list.map(i => i.id === m.id ? { ...i, leido: true } : i)
       );
+      this.unreadSvc.decrement();
     }
   }
 
