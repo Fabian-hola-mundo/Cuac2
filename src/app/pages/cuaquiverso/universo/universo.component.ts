@@ -18,6 +18,8 @@ export class UniversoComponent implements OnInit {
   readonly personajesSvc = inject(PersonajesService);
   readonly String = String;
 
+  private io?: IntersectionObserver;
+
   async ngOnInit(): Promise<void> {
     await this.personajesSvc.load();
     this.seo.set({
@@ -25,6 +27,8 @@ export class UniversoComponent implements OnInit {
       description: 'Conoce los personajes del Cuaquiverso: Cuac, Kiki, Roar, Yeison y más.',
       canonical:   'https://cuacdesign.com/cuaquiverso/universo',
     });
+    // Después de que Angular re-renderice las cards dinámicas, observarlas
+    setTimeout(() => this.observeNewReveals(), 0);
   }
 
   constructor() {
@@ -32,17 +36,21 @@ export class UniversoComponent implements OnInit {
   }
 
   private initReveal(): void {
-    const io = new IntersectionObserver(
+    this.io = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
           if (e.isIntersecting) {
             (e.target as HTMLElement).classList.add('is-visible');
-            io.unobserve(e.target);
+            this.io!.unobserve(e.target);
           }
         }),
       { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
     );
-    document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
-    this.destroyRef.onDestroy(() => io.disconnect());
+    document.querySelectorAll('[data-reveal]').forEach((el) => this.io!.observe(el));
+    this.destroyRef.onDestroy(() => this.io?.disconnect());
+  }
+
+  private observeNewReveals(): void {
+    document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach(el => this.io?.observe(el));
   }
 }
