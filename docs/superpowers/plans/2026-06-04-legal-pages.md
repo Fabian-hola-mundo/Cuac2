@@ -906,30 +906,35 @@ git commit -m "feat(legal): links legales en footer Cuac"
 
 ## Task 8: Footer Cuaquiverso — conectar links existentes
 
+El footer de Cuaquiverso vive en su propio componente separado, **no** en `cuaquiverso.component`.
+
 **Files:**
-- Modify: `src/app/pages/cuaquiverso/cuaquiverso.component.html`
-- Modify: `src/app/pages/cuaquiverso/cuaquiverso.component.ts`
+- Modify: `src/app/pages/cuaquiverso/footer/cuaquiverso-footer.component.html`
+- Modify: `src/app/pages/cuaquiverso/footer/cuaquiverso-footer.component.ts`
 
-- [ ] **Step 8.1 — Verificar si RouterLink ya está importado**
+- [ ] **Step 8.1 — Añadir RouterLink al componente**
 
-Abre `src/app/pages/cuaquiverso/cuaquiverso.component.ts` y busca si `RouterLink` ya está en el array `imports`. Si ya está, salta al Step 8.3.
-
-- [ ] **Step 8.2 — Añadir RouterLink si falta**
-
-En `src/app/pages/cuaquiverso/cuaquiverso.component.ts`, añadir `RouterLink` al array de imports del decorador `@Component`:
+Reemplazar el contenido de `src/app/pages/cuaquiverso/footer/cuaquiverso-footer.component.ts`:
 
 ```typescript
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-// ...
-imports: [
-  RouterLink,
-  // ...resto de imports existentes
-],
+
+@Component({
+  selector: 'app-cuaquiverso-footer',
+  standalone: true,
+  imports: [RouterLink],
+  templateUrl: './cuaquiverso-footer.component.html',
+  styleUrl: './cuaquiverso-footer.component.scss',
+})
+export class CuaquiversoFooterComponent {
+  readonly year = new Date().getFullYear();
+}
 ```
 
-- [ ] **Step 8.3 — Actualizar los links en el footer de Cuaquiverso**
+- [ ] **Step 8.2 — Actualizar los links en el HTML del footer**
 
-En `src/app/pages/cuaquiverso/cuaquiverso.component.html`, buscar el bloque `.legals` (cerca del final del archivo):
+En `src/app/pages/cuaquiverso/footer/cuaquiverso-footer.component.html`, reemplazar el bloque `.legals`:
 
 ```html
 <!-- ANTES -->
@@ -949,10 +954,10 @@ En `src/app/pages/cuaquiverso/cuaquiverso.component.html`, buscar el bloque `.le
 </div>
 ```
 
-- [ ] **Step 8.4 — Commit**
+- [ ] **Step 8.3 — Commit**
 
 ```bash
-git add src/app/pages/cuaquiverso/cuaquiverso.component.html src/app/pages/cuaquiverso/cuaquiverso.component.ts
+git add src/app/pages/cuaquiverso/footer/cuaquiverso-footer.component.html src/app/pages/cuaquiverso/footer/cuaquiverso-footer.component.ts
 git commit -m "feat(legal): links legales en footer Cuaquiverso"
 ```
 
