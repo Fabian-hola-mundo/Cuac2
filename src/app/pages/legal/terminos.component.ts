@@ -1,5 +1,4 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { FooterComponent } from '../../layout/footer/footer.component';
 import { SeoService } from '../../core/services/seo.service';
@@ -7,7 +6,7 @@ import { SeoService } from '../../core/services/seo.service';
 @Component({
   selector: 'app-terminos',
   standalone: true,
-  imports: [RouterLink, TopbarComponent, FooterComponent],
+  imports: [TopbarComponent, FooterComponent],
   template: `
     <app-topbar />
     <main class="legal-page">
