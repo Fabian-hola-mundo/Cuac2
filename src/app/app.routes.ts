@@ -87,6 +87,21 @@ export const routes: Routes = [
       import('./pages/portafolio/portafolio-detail.component').then(m => m.PortafolioDetailComponent),
   },
   {
+    path: 'terminos',
+    loadComponent: () =>
+      import('./pages/legal/terminos.component').then(m => m.TerminosComponent),
+  },
+  {
+    path: 'privacidad',
+    loadComponent: () =>
+      import('./pages/legal/privacidad.component').then(m => m.PrivacidadComponent),
+  },
+  {
+    path: 'cookies',
+    loadComponent: () =>
+      import('./pages/legal/cookies.component').then(m => m.CookiesComponent),
+  },
+  {
     path: 'admin',
     loadComponent: () =>
       import('./pages/admin/admin-shell.component').then(m => m.AdminShellComponent),
