@@ -2,6 +2,7 @@ import { Component, OnInit, afterNextRender, inject, DestroyRef } from '@angular
 import { SeoService } from '../../../core/services/seo.service';
 import { CartService } from '../services/cart.service';
 import { CartModalComponent } from '../cart-modal/cart-modal.component';
+import { PersonajesService } from '../../../core/services/personajes.service';
 
 @Component({
   selector: 'app-universo',
@@ -14,8 +15,11 @@ export class UniversoComponent implements OnInit {
   readonly cart = inject(CartService);
   private destroyRef = inject(DestroyRef);
   private seo        = inject(SeoService);
+  readonly personajesSvc = inject(PersonajesService);
+  readonly String = String;
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.personajesSvc.load();
     this.seo.set({
       title:       'El universo — Cuaquiverso',
       description: 'Conoce los personajes del Cuaquiverso: Cuac, Kiki, Roar, Yeison y más.',

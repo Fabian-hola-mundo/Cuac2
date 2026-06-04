@@ -42,54 +42,14 @@
       <p>El Cuaquiverso es un mapa emocional de Colombia: ocho amigos, cada uno con su acento, su música, su región, sus mañas. No son mascotas — son una excusa para conversar sobre quiénes somos.</p>
     </div>
     <div class="ch-index" data-reveal data-reveal-delay="1">
-      <a class="ch-index-row" style="--ci: var(--rio)" href="#">
-        <span class="ci-n">01</span>
-        <span class="ci-name">Cuac</span>
-        <span class="ci-region">Bogotá · migratorio</span>
-        <span class="ci-arr">→</span>
-      </a>
-      <a class="ch-index-row" style="--ci: #B07820" href="#">
-        <span class="ci-n">02</span>
-        <span class="ci-name">Yeison</span>
-        <span class="ci-region">Casanare · llanos</span>
-        <span class="ci-arr">→</span>
-      </a>
-      <a class="ch-index-row" style="--ci: var(--carbon)" href="#">
-        <span class="ci-n">03</span>
-        <span class="ci-name">Roar</span>
-        <span class="ci-region">Boyacá · andes</span>
-        <span class="ci-arr">→</span>
-      </a>
-      <a class="ch-index-row" style="--ci: var(--rosa)" href="#">
-        <span class="ci-n">04</span>
-        <span class="ci-name">Kiki</span>
-        <span class="ci-region">Leticia · amazonas</span>
-        <span class="ci-arr">→</span>
-      </a>
-      <a class="ch-index-row" style="--ci: var(--terra)" href="#">
-        <span class="ci-n">05</span>
-        <span class="ci-name">Abejandro</span>
-        <span class="ci-region">Cundinamarca · sabana</span>
-        <span class="ci-arr">→</span>
-      </a>
-      <a class="ch-index-row" style="--ci: var(--lila)" href="#">
-        <span class="ci-n">06</span>
-        <span class="ci-name">Atolita</span>
-        <span class="ci-region">Chocó · pacífico</span>
-        <span class="ci-arr">→</span>
-      </a>
-      <a class="ch-index-row" style="--ci: var(--selva)" href="#">
-        <span class="ci-n">07</span>
-        <span class="ci-name">Colibriana</span>
-        <span class="ci-region">Antioquia · cafetero</span>
-        <span class="ci-arr">→</span>
-      </a>
-      <a class="ch-index-row" style="--ci: #2E8FB8" href="#">
-        <span class="ci-n">08</span>
-        <span class="ci-name">Tiburcio</span>
-        <span class="ci-region">Barranquilla · caribe</span>
-        <span class="ci-arr">→</span>
-      </a>
+      @for (p of personajesSvc.activos(); track p.id; let i = $index) {
+        <a class="ch-index-row" [style.--ci]="p.color" [href]="'/cuaquiverso/personaje/' + p.key">
+          <span class="ci-n">{{ String(i + 1).padStart(2, '0') }}</span>
+          <span class="ci-name">{{ p.nombre }}</span>
+          <span class="ci-region">{{ p.region ?? '' }}</span>
+          <span class="ci-arr">→</span>
+        </a>
+      }
     </div>
   </div>
 </section>
@@ -124,125 +84,34 @@
 
 <!-- CHARACTER GRID -->
 <section class="uni-grid">
-
-  <!-- Cuac — feature (span 6) -->
-  <a class="ch-card feat" data-c="cuac" href="#" data-reveal>
-    <div class="art">
-      <span class="corner">N° 01 · Feb 2024</span>
-      <span class="badge-region">Migratorio</span>
-      <div class="glyph">Cuac</div>
-    </div>
-    <div class="info">
-      <h3>Cuac</h3>
-      <span class="arch">El explorador soñador</span>
-      <p class="tag">Pato canadiense azul con maleta llena de bolsillos. Anota teorías raras en su diario, abraza al saludar, y siempre quiere conocer todo.</p>
-      <div class="meta"><span>Vallenato · Acordeón</span><span class="open">Ficha completa</span></div>
-    </div>
-  </a>
-
-  <!-- Roar — feature (span 6) -->
-  <a class="ch-card feat" data-c="roar" href="#" data-reveal data-reveal-delay="1">
-    <div class="art">
-      <span class="corner">N° 03 · May 2024</span>
-      <span class="badge-region">Andes</span>
-      <div class="glyph">Roar</div>
-    </div>
-    <div class="info">
-      <h3>Roar</h3>
-      <span class="arch">El artista de la montaña</span>
-      <p class="tag">Oso de anteojos con bufanda a rayas. Pinta acuarelas de páramo, recita poesía al viento y necesita "la canción perfecta para el momento".</p>
-      <div class="meta"><span>Indie latino · Andina</span><span class="open">Ficha completa</span></div>
-    </div>
-  </a>
-
-  <!-- Medium row -->
-  <a class="ch-card med" data-c="yeison" href="#" data-reveal>
-    <div class="art">
-      <span class="corner">N° 02 · May 2024</span>
-      <span class="badge-region">Llanos</span>
-      <div class="glyph">Ye</div>
-    </div>
-    <div class="info">
-      <h3>Yeison</h3>
-      <span class="arch">El llanero buena gente</span>
-      <p class="tag">Chigüiro con sombrero que no se cae nadando.</p>
-      <div class="meta"><span>Llanera · Joropo</span><span class="open">Conocer</span></div>
-    </div>
-  </a>
-
-  <a class="ch-card med" data-c="kiki" href="#" data-reveal data-reveal-delay="1">
-    <div class="art">
-      <span class="corner">N° 04 · May 2024</span>
-      <span class="badge-region">Amazonas</span>
-      <div class="glyph">Ki</div>
-    </div>
-    <div class="info">
-      <h3>Kiki</h3>
-      <span class="arch">La delfín del Amazonas</span>
-      <p class="tag">Deportista, musical, siempre en movimiento.</p>
-      <div class="meta"><span>Champeta amazónica</span><span class="open">Conocer</span></div>
-    </div>
-  </a>
-
-  <a class="ch-card med" data-c="abejandro" href="#" data-reveal data-reveal-delay="2">
-    <div class="art">
-      <span class="corner">N° 05 · May 2025</span>
-      <span class="badge-region">Sabana</span>
-      <div class="glyph">Ab</div>
-    </div>
-    <div class="info">
-      <h3>Abejandro</h3>
-      <span class="arch">El artista enojón</span>
-      <p class="tag">"Si fuera fácil, lo haría un colibrí".</p>
-      <div class="meta"><span>Boleros · Jazz</span><span class="open">Conocer</span></div>
-    </div>
-  </a>
-
-  <!-- Small row -->
-  <a class="ch-card sm" data-c="atolita" href="#" data-reveal>
-    <div class="art">
-      <span class="corner">N° 06 · Jun 2025</span>
-      <span class="badge-region">Pacífico</span>
-      <div class="glyph">At</div>
-    </div>
-    <div class="info">
-      <h3>Atolita</h3>
-      <span class="arch">Tortuga hippie</span>
-      <p class="tag">Mantras, mareas y abrazos largos.</p>
-      <div class="meta"><span>Reggae · Andina</span><span class="open">Conocer</span></div>
-    </div>
-  </a>
-
-  <a class="ch-card sm" data-c="colibriana" href="#" data-reveal data-reveal-delay="1">
-    <div class="art">
-      <span class="corner">N° 07 · Jul 2025</span>
-      <span class="badge-region">Cafetero</span>
-      <div class="glyph">Co</div>
-    </div>
-    <div class="info">
-      <h3>Colibriana</h3>
-      <span class="arch">Chispa paisa</span>
-      <p class="tag">Ballet entre flores y aroma a tinto.</p>
-      <div class="meta"><span>Trova paisa</span><span class="open">Conocer</span></div>
-    </div>
-  </a>
-
-  <a class="ch-card sm" data-c="tiburcio" href="#" data-reveal data-reveal-delay="2">
-    <div class="art">
-      <span class="corner">N° 08 · Jul 2025</span>
-      <span class="badge-region">Caribe</span>
-      <div class="glyph">Ti</div>
-    </div>
-    <div class="info">
-      <h3>Tiburcio</h3>
-      <span class="arch">El vacilón del Caribe</span>
-      <p class="tag">Champeta, vallenato y Shakira en bucle.</p>
-      <div class="meta"><span>Picó · Salsa</span><span class="open">Conocer</span></div>
-    </div>
-  </a>
-
-  <!-- Próximamente -->
-  <a class="ch-card sm proxim" href="#" data-reveal data-reveal-delay="3">
+  @for (p of personajesSvc.activos(); track p.id; let i = $index) {
+    <a
+      class="ch-card"
+      [class.feat]="i < 2"
+      [class.med]="i >= 2 && i < 5"
+      [class.sm]="i >= 5"
+      [attr.data-c]="p.key"
+      [href]="'/cuaquiverso/personaje/' + p.key"
+      data-reveal
+      [attr.data-reveal-delay]="i % 3">
+      <div class="art">
+        <span class="corner">N° {{ String(i + 1).padStart(2, '0') }}</span>
+        <span class="badge-region">{{ (p.region ?? '').split('·')[1]?.trim() || p.region }}</span>
+        <div class="glyph">{{ p.nombre.slice(0, i < 2 ? p.nombre.length : 2) }}</div>
+      </div>
+      <div class="info">
+        <h3>{{ p.nombre }}</h3>
+        @if (p.personalidad) { <span class="arch">{{ p.personalidad }}</span> }
+        @if (p.bio) { <p class="tag">{{ p.bio.length > 80 ? p.bio.slice(0, 80) + '…' : p.bio }}</p> }
+        <div class="meta">
+          @if (p.musica) { <span>{{ p.musica }}</span> }
+          <span class="open">{{ i < 2 ? 'Ficha completa' : 'Conocer' }}</span>
+        </div>
+      </div>
+    </a>
+  }
+  <!-- Próximamente — siempre estático al final -->
+  <a class="ch-card sm proxim" href="#" data-reveal>
     <div class="art">
       <span class="corner">2026 · Próximamente</span>
       <div class="glyph proxim-glyph">+</div>
@@ -254,7 +123,6 @@
       <div class="meta"><span>En desarrollo</span><span class="muted">—</span></div>
     </div>
   </a>
-
 </section>
 
 <!-- STORY RAIL -->
