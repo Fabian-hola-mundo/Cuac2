@@ -1,1 +1,217 @@
-// Styles added in Task 4
+// src/app/pages/admin/notifications/notifications-dropdown.component.scss
+
+.nd {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 340px;
+  background: var(--paper);
+  border: 1px solid var(--carbon-12);
+  border-radius: 14px;
+  box-shadow: 0 12px 48px rgba(21, 31, 40, 0.14), 0 2px 8px rgba(21, 31, 40, 0.08);
+  z-index: 50;
+  overflow: hidden;
+  animation: ndIn 0.15s ease;
+}
+
+@keyframes ndIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+.nd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--carbon-08);
+}
+
+.nd-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--carbon);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nd-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--terra);
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+
+.nd-ts {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--carbon-30);
+}
+
+// ── Lista ────────────────────────────────────────────────────────────────────
+.nd-list {
+  max-height: 380px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--carbon-12) transparent;
+
+  &::-webkit-scrollbar        { width: 4px; }
+  &::-webkit-scrollbar-track  { background: transparent; }
+  &::-webkit-scrollbar-thumb  { background: var(--carbon-12); border-radius: 999px; }
+}
+
+// ── Item ─────────────────────────────────────────────────────────────────────
+.nd-item {
+  display: grid;
+  grid-template-columns: 32px 1fr 14px;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--carbon-08);
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  cursor: pointer;
+  transition: background 0.1s;
+  font: inherit;
+  color: inherit;
+
+  &:last-child { border-bottom: 0; }
+  &:hover { background: var(--cream); }
+  &:hover .nd-arrow { opacity: 1; }
+}
+
+// ── Ícono coloreado ───────────────────────────────────────────────────────────
+.nd-ic {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+
+  svg { width: 14px; height: 14px; }
+
+  &.rio   { background: var(--rio-soft);   color: var(--rio);   }
+  &.lila  { background: var(--lila-soft);  color: var(--lila);  }
+  &.sol   { background: var(--sol-soft);   color: #B07820;      }
+  &.rosa  { background: var(--rosa-soft);  color: var(--rosa);  }
+}
+
+// ── Cuerpo del item ───────────────────────────────────────────────────────────
+.nd-body { min-width: 0; }
+
+.nd-t {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--carbon);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.nd-s {
+  font-size: 11.5px;
+  color: var(--carbon-50);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+
+  span { overflow: hidden; text-overflow: ellipsis; }
+  .sep { color: var(--carbon-12); flex-shrink: 0; }
+}
+
+.nd-time {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--carbon-30);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ── Flecha hover ─────────────────────────────────────────────────────────────
+.nd-arrow {
+  color: var(--carbon-30);
+  opacity: 0;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+
+  svg { width: 12px; height: 12px; }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.nd-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--carbon-08);
+  background: var(--cream);
+  display: flex;
+  justify-content: center;
+}
+
+.nd-footer-link {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--carbon-30);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 0.1s;
+  font: inherit;
+
+  &:hover { color: var(--terra); }
+}
+
+// ── Estado vacío ──────────────────────────────────────────────────────────────
+.nd-empty {
+  padding: 36px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.nd-empty-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--selva-soft);
+  display: grid;
+  place-items: center;
+  color: var(--selva);
+
+  svg { width: 20px; height: 20px; }
+}
+
+.nd-empty-t {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--carbon);
+}
+
+.nd-empty-s {
+  font-size: 12px;
+  color: var(--carbon-50);
+  max-width: 22ch;
+  line-height: 1.5;
+}
