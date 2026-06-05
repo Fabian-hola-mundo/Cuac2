@@ -9,7 +9,7 @@
         <span class="nd-badge">{{ items.length }}</span>
       }
     </span>
-    <span class="nd-ts">Hoy</span>
+    <span class="nd-ts">{{ today }}</span>
   </div>
 
   <!-- Lista con items -->
@@ -17,7 +17,7 @@
     <div class="nd-list">
       @for (item of items; track item.id) {
         <button class="nd-item" (click)="navigate(item, $event)">
-          <div class="nd-ic" [class]="item.tone">
+          <div [class]="'nd-ic ' + item.tone">
             @if (item.type === 'mensaje') {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
