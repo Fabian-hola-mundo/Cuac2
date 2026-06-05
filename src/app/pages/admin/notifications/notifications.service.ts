@@ -19,14 +19,14 @@ export class NotificationsService {
   private channel: RealtimeChannel | null = null;
 
   readonly items = signal<AdminNotif[]>([]);
-  readonly unread = computed(() => this.items().length);
+  readonly count = computed(() => this.items().length);
 
   async load(): Promise<void> {
     const [mensajes, cotizaciones, stock, eventos] = await Promise.all([
-      this.fetchMensajes(),
-      this.fetchCotizaciones(),
-      this.fetchStock(),
-      this.fetchEventos(),
+      this.fetchMensajes().catch(() => [] as AdminNotif[]),
+      this.fetchCotizaciones().catch(() => [] as AdminNotif[]),
+      this.fetchStock().catch(() => [] as AdminNotif[]),
+      this.fetchEventos().catch(() => [] as AdminNotif[]),
     ]);
     const all = [...mensajes, ...cotizaciones, ...stock, ...eventos]
       .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
@@ -71,7 +71,6 @@ export class NotificationsService {
   }
 
   private async fetchStock(): Promise<AdminNotif[]> {
-    // La tabla es productos_evento, el campo de stock es stock_actual
     const { data } = await this.sb.db
       .from('productos_evento')
       .select('id, nombre, stock_actual, creado_en')
@@ -84,7 +83,7 @@ export class NotificationsService {
       type: 'stock' as const,
       title: `Stock bajo · ${p.nombre}`,
       sub: `Solo ${p.stock_actual} unidad${p.stock_actual === 1 ? '' : 'es'} disponible${p.stock_actual === 1 ? '' : 's'}`,
-      time: p.creado_en,
+      time: new Date().toISOString(),
       route: ['/admin/productos'],
       tone: 'sol' as const,
     }));
@@ -96,7 +95,7 @@ export class NotificationsService {
     const { data } = await this.sb.db
       .from('eventos')
       .select('id, nombre, fecha_inicio')
-      .neq('estado', 'finalizado')
+      .eq('estado', 'activo')
       .gte('fecha_inicio', now)
       .lte('fecha_inicio', in7days)
       .order('fecha_inicio', { ascending: true })
