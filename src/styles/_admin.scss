@@ -167,6 +167,15 @@ app-evento-detail {
     position: sticky; top: 0; z-index: 20;
   }
 
+  // Topbar breadcrumb — overrides global .cuac-breadcrumb for light admin bg
+  .cuac-breadcrumb--admin {
+    --bc-link:  rgba(21, 31, 40, 0.45);
+    --bc-hover: rgba(21, 31, 40, 0.88);
+    font-family: var(--mono);
+    gap: var(--s-4);
+  }
+
+  // Drawer context indicator (not a nav breadcrumb)
   .crumbs-admin {
     font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
     text-transform: uppercase; color: var(--carbon-50);
@@ -177,19 +186,21 @@ app-evento-detail {
 
   .top-search {
     flex: 1; max-width: 380px;
-    display: flex; align-items: center;
+    display: flex; align-items: center; gap: 8px;
     background: var(--paper); border: 1px solid var(--carbon-12);
-    border-radius: var(--r-pill); padding: 4px 14px; margin-left: auto;
+    border-radius: var(--r-pill); padding: 8px 14px; margin-left: auto;
+    cursor: pointer; transition: border-color .12s, background .12s;
+    font-family: var(--sans);
 
-    svg { width: 14px; height: 14px; color: var(--carbon-50); }
-    input {
-      flex: 1; border: 0; background: transparent; padding: 7px 10px;
-      outline: none; color: var(--carbon); font-size: 13px;
-    }
-    kbd {
+    &:hover { border-color: var(--carbon-30); background: var(--cream); }
+
+    svg  { width: 14px; height: 14px; color: var(--carbon-50); flex-shrink: 0; }
+    span { flex: 1; text-align: left; font-size: 13px; color: var(--carbon-30); }
+    kbd  {
       font-family: var(--mono); font-size: 10px;
       background: var(--cream-2); color: var(--carbon-50);
       padding: 2px 6px; border-radius: 4px; border: 1px solid var(--carbon-08);
+      white-space: nowrap;
     }
   }
 
@@ -207,6 +218,17 @@ app-evento-detail {
         width: 7px; height: 7px; border-radius: 50%; background: var(--terra);
         border: 1.5px solid var(--paper);
       }
+    }
+
+    .notif-wrap {
+      position: relative;
+    }
+
+    .notif-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 49;
+      background: transparent;
     }
   }
 

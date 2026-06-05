@@ -1,21 +1,24 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { Component, computed, signal, inject, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, NavigationEnd } from '@angular/router';
 import { toSignal }       from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { SupabaseService }        from '../../core/services/supabase.service';
 import { AdminStateService, ViewId } from '../../core/services/admin-state.service';
 import { MensajesUnreadService } from './mensajes/mensajes-unread.service';
+import { AdminSearchComponent }  from './search/admin-search.component';
+import { NotificationsService }            from './notifications/notifications.service';
+import { NotificationsDropdownComponent }  from './notifications/notifications-dropdown.component';
 
 @Component({
   selector: 'app-admin-shell',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterOutlet],
+  imports: [CommonModule, FormsModule, RouterOutlet, RouterLink, AdminSearchComponent, NotificationsDropdownComponent],
   templateUrl: './admin-shell.component.html',
   styleUrl: './admin-shell.component.scss',
 })
-export class AdminShellComponent implements OnInit {
+export class AdminShellComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   readonly sb     = inject(SupabaseService);
   readonly state  = inject(AdminStateService);
@@ -25,8 +28,25 @@ export class AdminShellComponent implements OnInit {
   loginError    = signal<string | null>(null);
   loginLoading  = signal(false);
 
+  searchOpen    = signal(false);
+
+  notifOpen     = signal(false);
+  readonly notifSvc = inject(NotificationsService);
+
   toast         = signal<string | null>(null);
   private toastTimer?: ReturnType<typeof setTimeout>;
+
+  @HostListener('document:keydown', ['$event'])
+  onGlobalKey(e: KeyboardEvent) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      if (this.sb.session()) this.searchOpen.update(v => !v);
+    }
+    if (e.key === 'Escape') {
+      this.notifOpen.set(false);
+      this.searchOpen.set(false);
+    }
+  }
 
   private routerUrl = toSignal(
     this.router.events.pipe(
@@ -86,6 +106,23 @@ export class AdminShellComponent implements OnInit {
     return map[this.state.view()] ?? ['—'];
   });
 
+  adminBreadcrumbs = computed<{label: string; route: string}[]>(() => {
+    const url = this.routerUrl();
+    if (url.includes('/personajes/nuevo'))       return [{ label: 'Personajes', route: '/admin/personajes' }];
+    if (url.match(/\/personajes\/.+\/editar/))    return [{ label: 'Personajes', route: '/admin/personajes' }];
+    if (url.match(/\/personajes\/[^/]+$/))        return [{ label: 'Personajes', route: '/admin/personajes' }];
+    if (url.includes('/ajustes/'))                return [{ label: 'Ajustes',    route: '/admin/ajustes'    }];
+    if (url.includes('/portafolio/logros'))       return [{ label: 'Portafolio', route: '/admin/portafolio' }];
+    if (url.includes('/portafolio/perfiles'))     return [{ label: 'Portafolio', route: '/admin/portafolio' }];
+    if (url.includes('/portafolio/nuevo'))        return [{ label: 'Portafolio', route: '/admin/portafolio' }];
+    if (url.match(/\/portafolio\/.+\/editar/))    return [{ label: 'Portafolio', route: '/admin/portafolio' }];
+    if (url.includes('/productos/ventas'))        return [{ label: 'Productos',  route: '/admin/productos'  }];
+    if (url.includes('/productos/nuevo'))         return [{ label: 'Productos',  route: '/admin/productos'  }];
+    if (url.match(/\/productos\/.+\/editar/))     return [{ label: 'Productos',  route: '/admin/productos'  }];
+    if (url.match(/\/eventos\/.+/))               return [{ label: 'Eventos',    route: '/admin/eventos'    }];
+    return [];
+  });
+
   readonly NAV_TIENDA   = ['dashboard','productos','pedidos','clientes','pagos'] as ViewId[];
   readonly NAV_UNIVERSO = ['contenido','ajustes'] as ViewId[];
   readonly NAV_META: Record<string, { label: string; count?: number }> = {
@@ -101,6 +138,12 @@ export class AdminShellComponent implements OnInit {
   ngOnInit() {
     this.sb.db.auth.onAuthStateChange(() => {});
     this.unreadSvc.load();
+    this.notifSvc.load();
+    this.notifSvc.subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.notifSvc.cleanup();
   }
 
   goHome(id: ViewId) {

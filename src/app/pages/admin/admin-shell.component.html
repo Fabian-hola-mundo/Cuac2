@@ -112,22 +112,36 @@
   </aside>
   <main class="main">
     <div class="topbar-admin">
-      <div class="crumbs-admin">
-        <span>Cuaquiverso</span><span class="sep">/</span>
-        @for (c of crumbs().slice(0,-1); track $index) {
-          <span>{{ c }}</span><span class="sep">/</span>
+      <nav class="cuac-breadcrumb cuac-breadcrumb--admin" aria-label="Breadcrumb">
+        <a routerLink="/admin" class="bc-crumb">← Inicio</a>
+        @for (b of adminBreadcrumbs(); track b.route) {
+          <a [routerLink]="b.route" class="bc-crumb">← {{ b.label }}</a>
         }
-        <strong>{{ crumbs()[crumbs().length - 1] }}</strong>
-      </div>
-      <div class="top-search">
+      </nav>
+      <button class="top-search" (click)="searchOpen.set(true)" aria-label="Buscar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-        <input placeholder="Buscar…" />
+        <span>Buscar…</span>
         <kbd>⌘ K</kbd>
-      </div>
+      </button>
       <div class="top-actions-admin">
-        <button class="ib" title="Notificaciones">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16H6a3 3 0 0 0 3-3V9a3 3 0 0 1 6 0v4a3 3 0 0 0 3 3Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
-        </button>
+        <div class="notif-wrap">
+          <button
+            class="ib"
+            title="Notificaciones"
+            (click)="notifOpen.set(!notifOpen()); $event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 16H6a3 3 0 0 0 3-3V9a3 3 0 0 1 6 0v4a3 3 0 0 0 3 3Z"/>
+              <path d="M10 19a2 2 0 0 0 4 0"/>
+            </svg>
+            @if (notifSvc.count() > 0) { <span class="dot"></span> }
+          </button>
+          @if (notifOpen()) {
+            <div class="notif-overlay" (click)="notifOpen.set(false)"></div>
+            <app-notifications-dropdown
+              [items]="notifSvc.items()"
+              (closed)="notifOpen.set(false)" />
+          }
+        </div>
       </div>
     </div>
     <div class="content">
@@ -136,6 +150,9 @@
   </main>
   @if (toast()) {
   <div class="toast-global">{{ toast() }}</div>
+  }
+  @if (searchOpen()) {
+  <app-admin-search (closed)="searchOpen.set(false)" />
   }
 </div>
 }
