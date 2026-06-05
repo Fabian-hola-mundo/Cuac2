@@ -115,6 +115,7 @@ export class NotificationsService {
 
   subscribe(): void {
     if (this.channel) return; // evitar doble suscripción
+    if (!this.sb.session()) return;
     this.channel = this.sb.db
       .channel('admin-notif')
       .on(
@@ -164,7 +165,7 @@ export class NotificationsService {
               route: ['/admin/productos'],
               tone: 'sol',
             };
-            this.items.update(list => [notif, ...list.filter(n => n.id !== notif.id)].slice(0, 20));
+            this.prepend(notif);
           }
         }
       )
