@@ -113,6 +113,72 @@ export class NotificationsService {
     }));
   }
 
-  subscribe(): void { /* stub — implemented in Task 2 */ }
-  cleanup(): void   { /* stub — implemented in Task 2 */ }
+  subscribe(): void {
+    if (this.channel) return; // evitar doble suscripción
+    this.channel = this.sb.db
+      .channel('admin-notif')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'mensajes' },
+        payload => {
+          const m = payload.new as any;
+          this.prepend({
+            id: `msg-${m.id}`,
+            type: 'mensaje',
+            title: `Mensaje de ${m.correo ?? 'visitante'}`,
+            sub: (m.mensaje as string)?.slice(0, 60) ?? '',
+            time: m.created_at,
+            route: ['/admin/mensajes'],
+            tone: 'rio',
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'cotizaciones' },
+        payload => {
+          const c = payload.new as any;
+          this.prepend({
+            id: `cot-${c.id}`,
+            type: 'cotizacion',
+            title: `Cotización de ${c.nombre}`,
+            sub: c.empresa ?? '',
+            time: c.created_at,
+            route: ['/admin/cotizaciones'],
+            tone: 'lila',
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'productos_evento' },
+        payload => {
+          const p = payload.new as any;
+          if (p.activo && p.stock_actual <= 3) {
+            const notif: AdminNotif = {
+              id: `stk-${p.id}`,
+              type: 'stock',
+              title: `Stock bajo · ${p.nombre}`,
+              sub: `Solo ${p.stock_actual} unidad${p.stock_actual === 1 ? '' : 'es'} disponible${p.stock_actual === 1 ? '' : 's'}`,
+              time: new Date().toISOString(),
+              route: ['/admin/productos'],
+              tone: 'sol',
+            };
+            this.items.update(list => [notif, ...list.filter(n => n.id !== notif.id)].slice(0, 20));
+          }
+        }
+      )
+      .subscribe();
+  }
+
+  cleanup(): void {
+    if (this.channel) {
+      this.sb.db.removeChannel(this.channel);
+      this.channel = null;
+    }
+  }
+
+  private prepend(notif: AdminNotif): void {
+    this.items.update(list => [notif, ...list.filter(n => n.id !== notif.id)].slice(0, 20));
+  }
 }
