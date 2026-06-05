@@ -1,5 +1,6 @@
 import { Component, OnInit, afterNextRender, inject, DestroyRef, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { SeoService } from '../../../core/services/seo.service';
 import { CartService } from '../services/cart.service';
 import { CartModalComponent } from '../cart-modal/cart-modal.component';
@@ -9,7 +10,7 @@ import { PersonajesService } from '../../../core/services/personajes.service';
 @Component({
   selector: 'app-universo',
   standalone: true,
-  imports: [CartModalComponent, CuaquiversoFooterComponent],
+  imports: [RouterLink, CartModalComponent, CuaquiversoFooterComponent],
   templateUrl: './universo.component.html',
   styleUrl: './universo.component.scss',
 })

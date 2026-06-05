@@ -53,6 +53,11 @@ export class CotizacionesListComponent implements OnInit {
     return f === 'todos' ? list : list.filter(c => c.estado === f);
   });
 
+  filtrosVisibles = computed(() => {
+    const estados = new Set(this.items().map(c => c.estado));
+    return this.FILTROS.filter(f => f.id === 'todos' || estados.has(f.id as Cotizacion['estado']));
+  });
+
   async ngOnInit() {
     await this.cargar();
   }

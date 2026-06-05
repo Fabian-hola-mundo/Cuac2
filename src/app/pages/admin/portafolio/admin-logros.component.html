@@ -94,7 +94,7 @@
 
 <div class="chips" style="margin-bottom:var(--s-5)">
   <button class="chip" [class.is-on]="ownerFiltro() === 'all'" (click)="ownerFiltro.set('all')">Todos</button>
-  @for (o of owners; track o.id) {
+  @for (o of ownersConLogros(); track o.id) {
     <button class="chip" [class.is-on]="ownerFiltro() === o.id" (click)="ownerFiltro.set($any(o.id))">{{ o.label }}</button>
   }
 </div>

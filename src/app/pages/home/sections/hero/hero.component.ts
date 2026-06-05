@@ -7,7 +7,10 @@ import {
   HostListener,
   signal,
   NgZone,
+  inject,
+  PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -41,9 +44,12 @@ export class HeroComponent implements OnInit, OnDestroy {
 
   private glyphSvcs = ['brand', 'editorial', 'web', 'illu'];
 
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   constructor(private ngZone: NgZone) {}
 
   ngOnInit() {
+    if (!this.isBrowser) return;
     this.ngZone.runOutsideAngular(() => {
       this.idleInterval = setInterval(() => {
         if (!this.rafId) {
@@ -59,7 +65,7 @@ export class HeroComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.idleInterval) clearInterval(this.idleInterval);
-    if (this.rafId) cancelAnimationFrame(this.rafId);
+    if (this.isBrowser && this.rafId) cancelAnimationFrame(this.rafId);
   }
 
   @HostListener('window:mousemove', ['$event'])
@@ -83,6 +89,7 @@ export class HeroComponent implements OnInit, OnDestroy {
   private setTarget(x: number, y: number) {
     this.target.x = x;
     this.target.y = y;
+    if (!this.isBrowser) return;
     if (!this.rafId) this.rafId = requestAnimationFrame(() => this.tick());
   }
 

@@ -20,7 +20,7 @@
 
 <div class="chips" style="margin-bottom:var(--s-5)">
   <button class="chip" [class.is-on]="catFiltro() === 'all'" (click)="catFiltro.set('all')">Todas</button>
-  @for (c of categorias; track c.id) {
+  @for (c of categoriasConProyectos(); track c.id) {
     <button class="chip" [class.is-on]="catFiltro() === c.id" (click)="catFiltro.set(c.id)">{{ c.label }}</button>
   }
 </div>

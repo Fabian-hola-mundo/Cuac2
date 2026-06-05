@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject, PLATFORM_ID, DestroyRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { PersonajesService, Personaje } from '../../../core/services/personajes.service';
 import { InventarioService, ProductoEvento } from '../../../core/services/inventario.service';
 import { CartService } from '../services/cart.service';
@@ -11,7 +11,7 @@ import { SeoService } from '../../../core/services/seo.service';
 @Component({
   selector: 'app-personaje-page',
   standalone: true,
-  imports: [CommonModule, CartModalComponent, CuaquiversoFooterComponent],
+  imports: [CommonModule, RouterLink, CartModalComponent, CuaquiversoFooterComponent],
   templateUrl: './personaje-page.component.html',
   styleUrl: './personaje-page.component.scss',
 })

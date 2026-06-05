@@ -32,6 +32,11 @@ export class AdminPortafolioListComponent implements OnInit {
     return cat === 'all' ? list : list.filter(p => p.category === cat);
   });
 
+  readonly categoriasConProyectos = computed(() => {
+    const usadas = new Set(this.projects().map(p => p.category));
+    return this.categorias.filter(c => usadas.has(c.id));
+  });
+
   async ngOnInit() {
     this.cargando.set(true);
     try {

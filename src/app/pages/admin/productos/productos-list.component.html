@@ -31,7 +31,7 @@
 <div class="tlb">
   <div class="chips">
     <button class="chip" [class.is-on]="catFiltro() === 'all'" (click)="catFiltro.set('all')">Todas</button>
-    @for (c of categorias; track c.id) {
+    @for (c of categoriasConProductos(); track c.id) {
       <button class="chip" [class.is-on]="catFiltro() === c.id" (click)="catFiltro.set(c.id)">{{ c.label }}</button>
     }
   </div>

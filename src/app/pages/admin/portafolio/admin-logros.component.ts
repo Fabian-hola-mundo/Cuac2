@@ -49,6 +49,11 @@ export class AdminLogrosComponent implements OnInit {
     return o === 'all' ? list : list.filter(i => (i.owners ?? []).includes(o as PortfolioOwner));
   });
 
+  readonly ownersConLogros = computed(() => {
+    const usados = new Set(this.items().flatMap(a => a.owners ?? []));
+    return this.owners.filter(o => usados.has(o.id as PortfolioOwner));
+  });
+
   async ngOnInit() { await this.load(); }
 
   async load() {

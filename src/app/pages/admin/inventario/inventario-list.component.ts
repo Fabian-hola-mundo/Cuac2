@@ -18,6 +18,11 @@ export class InventarioListComponent implements OnInit {
 
   catFiltro = signal<string>('all');
 
+  categoriasConProductos = computed(() => {
+    const usadas = new Set(this.inv.productos().map(p => p.categoria));
+    return this.categorias.filter(c => usadas.has(c.id));
+  });
+
   productosFiltrados = computed(() => {
     const cat  = this.catFiltro();
     const list = this.inv.productos();

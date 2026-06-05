@@ -14,7 +14,7 @@
 
 <!-- Filtros -->
 <div class="chips" style="margin-bottom:var(--s-5)">
-  @for (f of FILTROS; track f.id) {
+  @for (f of filtrosVisibles(); track f.id) {
     <button class="chip" [class.is-on]="filtro() === f.id" (click)="filtro.set(f.id)">
       {{ f.label }}
     </button>

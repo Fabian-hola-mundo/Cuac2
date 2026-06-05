@@ -19,6 +19,11 @@ export class ProductosListComponent implements OnInit {
   readonly categorias = CATEGORIAS;
 
   catFiltro  = signal<string>('all');
+
+  categoriasConProductos = computed(() => {
+    const usadas = new Set(this.inv.productos().map(p => p.categoria));
+    return this.categorias.filter(c => usadas.has(c.id));
+  });
   busqueda   = signal('');
   toast      = signal<string | null>(null);
   private toastTimer?: ReturnType<typeof setTimeout>;

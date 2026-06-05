@@ -1,11 +1,13 @@
 // ── Global breadcrumb ─────────────────────────────────────────────────────────
 // Arrow-style back links: ← Inicio   ← Sección
-// Default: on dark hero backgrounds. Override --bc-* for light backgrounds.
+// Default: on dark hero backgrounds. Use --light modifier for light backgrounds.
 
 .cuac-breadcrumb {
   --bc-link:  rgba(255, 255, 255, 0.48);
-  --bc-hover: rgba(255, 255, 255, 0.90);
+  --bc-hover: rgba(255, 255, 255, 0.92);
 
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -26,4 +28,10 @@
       outline: none;
     }
   }
+}
+
+// Light background variant
+.cuac-breadcrumb--light {
+  --bc-link:  rgba(21, 31, 40, 0.45);
+  --bc-hover: rgba(21, 31, 40, 0.88);
 }
