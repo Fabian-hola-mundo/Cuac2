@@ -22,16 +22,13 @@
         <textarea
           class="mf-textarea"
           [placeholder]="placeholder"
-          [value]="mensaje()"
           (input)="mensaje.set($any($event.target).value)"
-          required
         ></textarea>
 
         <input
           type="email"
           class="mf-email"
           placeholder="tu&#64;correo.co — solo si quieres que te respondamos (opcional)"
-          [value]="correo()"
           (input)="correo.set($any($event.target).value)"
         />
 
