@@ -1,0 +1,83 @@
+<!-- src/app/pages/admin/notifications/notifications-dropdown.component.html -->
+<div class="nd" (click)="stopProp($event)">
+
+  <!-- Header -->
+  <div class="nd-header">
+    <span class="nd-title">
+      Notificaciones
+      @if (items.length > 0) {
+        <span class="nd-badge">{{ items.length }}</span>
+      }
+    </span>
+    <span class="nd-ts">Hoy</span>
+  </div>
+
+  <!-- Lista con items -->
+  @if (items.length > 0) {
+    <div class="nd-list">
+      @for (item of items; track item.id) {
+        <button class="nd-item" (click)="navigate(item, $event)">
+          <div class="nd-ic" [class]="item.tone">
+            @if (item.type === 'mensaje') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            }
+            @if (item.type === 'cotizacion') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+              </svg>
+            }
+            @if (item.type === 'stock') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m21 8-9-5-9 5 9 5 9-5Z"/>
+                <path d="m3 8 9 5v8L3 16V8Z"/>
+                <path d="m21 8-9 5v8l9-5V8Z"/>
+              </svg>
+            }
+            @if (item.type === 'evento') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18"/>
+              </svg>
+            }
+          </div>
+          <div class="nd-body">
+            <div class="nd-t">{{ item.title }}</div>
+            <div class="nd-s">
+              <span>{{ item.sub }}</span>
+              <span class="sep">·</span>
+              <span class="nd-time">{{ timeAgo(item.time) }}</span>
+            </div>
+          </div>
+          <div class="nd-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+          </div>
+        </button>
+      }
+    </div>
+
+    <div class="nd-footer">
+      <button class="nd-footer-link" (click)="closed.emit()">Cerrar</button>
+    </div>
+
+  } @else {
+
+    <!-- Estado vacío -->
+    <div class="nd-empty">
+      <div class="nd-empty-ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+      </div>
+      <div class="nd-empty-t">Todo al día</div>
+      <div class="nd-empty-s">No hay actividad nueva en el panel por ahora.</div>
+    </div>
+
+  }
+
+</div>
