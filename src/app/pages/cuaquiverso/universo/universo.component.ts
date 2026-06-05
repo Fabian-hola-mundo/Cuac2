@@ -27,7 +27,16 @@ export class UniversoComponent implements OnInit {
     await this.personajesSvc.load();
 
     if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => this.initHeroScene(), 0);
+      let attempts = 0;
+      const tryInit = () => {
+        const container = document.getElementById('uni-hero-canvas');
+        if (!container || !container.clientHeight) {
+          if (++attempts < 30) requestAnimationFrame(tryInit);
+          return;
+        }
+        this.initHeroScene();
+      };
+      requestAnimationFrame(tryInit);
     }
 
     this.seo.set({
@@ -124,8 +133,8 @@ export class UniversoComponent implements OnInit {
       const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
         map: makeBlobTexture(ch.color ?? '#2A6FDB'),
         transparent: true,
-        opacity: 0.22,
-        blending: THREE.NormalBlending,
+        opacity: 0.45,
+        blending: THREE.AdditiveBlending,
         depthWrite: false,
       }));
       sprite.position.set(bx, by, bz);

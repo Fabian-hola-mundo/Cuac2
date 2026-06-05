@@ -55,7 +55,16 @@ export class PersonajePageComponent implements OnInit {
     if (p.galeria_urls.length > 0) this.selectedImg.set(p.galeria_urls[0]);
 
     if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => this.initHeroScene(p), 0);
+      let attempts = 0;
+      const tryInit = () => {
+        const container = document.getElementById('pj-hero-canvas');
+        if (!container || !container.clientHeight) {
+          if (++attempts < 30) requestAnimationFrame(tryInit);
+          return;
+        }
+        this.initHeroScene(p);
+      };
+      requestAnimationFrame(tryInit);
     }
 
     this.seo.set({
@@ -92,9 +101,9 @@ export class PersonajePageComponent implements OnInit {
     const satColor  = p.wire_color ?? '#5C95EA';
 
     const orbDefs = [
-      { color: mainColor, bx:  1.2, by:  0.5, bz:  0.0, scale: 3.0, opacity: 0.30, sx: 0.28, sy: 0.22, px: 0.0, py: 0.0 },
-      { color: satColor,  bx: -0.6, by: -0.8, bz:  0.3, scale: 1.6, opacity: 0.18, sx: 0.35, sy: 0.30, px: 1.2, py: 0.8 },
-      { color: satColor,  bx:  0.4, by:  1.1, bz: -0.3, scale: 1.2, opacity: 0.15, sx: 0.42, sy: 0.38, px: 2.4, py: 1.6 },
+      { color: mainColor, bx:  1.2, by:  0.5, bz:  0.0, scale: 3.2, opacity: 0.55, sx: 0.28, sy: 0.22, px: 0.0, py: 0.0 },
+      { color: satColor,  bx: -0.6, by: -0.8, bz:  0.3, scale: 1.8, opacity: 0.40, sx: 0.35, sy: 0.30, px: 1.2, py: 0.8 },
+      { color: satColor,  bx:  0.4, by:  1.1, bz: -0.3, scale: 1.4, opacity: 0.35, sx: 0.42, sy: 0.38, px: 2.4, py: 1.6 },
     ];
 
     function makeBlobTexture(hex: string) {
@@ -136,7 +145,7 @@ export class PersonajePageComponent implements OnInit {
         map: makeBlobTexture(def.color),
         transparent: true,
         opacity: def.opacity,
-        blending: THREE.NormalBlending,
+        blending: THREE.AdditiveBlending,
         depthWrite: false,
       }));
       sprite.position.set(def.bx, def.by, def.bz);
