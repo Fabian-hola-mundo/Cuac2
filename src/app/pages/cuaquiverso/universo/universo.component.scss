@@ -142,6 +142,12 @@ nav.primary {
   }
 }
 
+#uni-hero-canvas {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 0;
+  canvas { display: block; width: 100% !important; height: 100% !important; }
+}
+
 .uni-hero-inner {
   position: relative; z-index: 1;
   max-width: 1320px; margin: 0 auto;
