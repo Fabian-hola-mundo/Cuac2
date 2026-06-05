@@ -22,6 +22,7 @@ export class NotificationsService {
   readonly count = computed(() => this.items().length);
 
   async load(): Promise<void> {
+    if (!this.sb.session()) return;
     const [mensajes, cotizaciones, stock, eventos] = await Promise.all([
       this.fetchMensajes().catch(() => [] as AdminNotif[]),
       this.fetchCotizaciones().catch(() => [] as AdminNotif[]),

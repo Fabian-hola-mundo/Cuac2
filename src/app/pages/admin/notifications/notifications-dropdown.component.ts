@@ -40,7 +40,5 @@ export class NotificationsDropdownComponent {
     return days === 1 ? 'ayer' : `hace ${days} d`;
   }
 
-  get today(): string {
-    return new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'short' });
-  }
+  readonly today = new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'short' });
 }
