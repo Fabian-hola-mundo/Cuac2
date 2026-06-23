@@ -33,6 +33,13 @@ export interface VentaEvento {
   productos_evento?: { nombre: string; categoria: string; precio?: number };
 }
 
+export interface MovimientoProducto {
+  tipo: 'creacion' | 'restock' | 'ajuste' | 'venta';
+  cantidad: number;   // positivo = entrada de stock, negativo = salida (venta)
+  nota: string | null;
+  fecha: string;       // ISO timestamp
+}
+
 export const EVENTO_ACTIVO = 'sofa-2026';
 
 export const CATEGORIAS = [
@@ -170,6 +177,54 @@ export class InventarioService {
     if (error) return { error: error.message };
     await this.cargarTodos();
     return { error: null };
+  }
+
+  async restockProducto(
+    productoId: string,
+    cantidad: number,
+    nota?: string
+  ): Promise<{ error: string | null }> {
+    const { error } = await this.sb.db.rpc('registrar_restock', {
+      p_producto_id: productoId,
+      p_cantidad: cantidad,
+      p_nota: nota || null,
+    });
+    if (error) return { error: error.message };
+    await this.cargarTodos();
+    return { error: null };
+  }
+
+  async getHistorialProducto(productoId: string): Promise<MovimientoProducto[]> {
+    const [movRes, ventasRes] = await Promise.all([
+      this.sb.db
+        .from('producto_movimientos')
+        .select('tipo, cantidad, nota, creado_en')
+        .eq('producto_id', productoId),
+      this.sb.db
+        .from('ventas_evento')
+        .select('cantidad, vendido_en')
+        .eq('producto_id', productoId),
+    ]);
+    if (movRes.error) throw movRes.error;
+    if (ventasRes.error) throw ventasRes.error;
+
+    const movimientos: MovimientoProducto[] = (movRes.data ?? []).map(m => ({
+      tipo: m.tipo as MovimientoProducto['tipo'],
+      cantidad: m.cantidad,
+      nota: m.nota ?? null,
+      fecha: m.creado_en,
+    }));
+
+    const ventas: MovimientoProducto[] = (ventasRes.data ?? []).map(v => ({
+      tipo: 'venta' as const,
+      cantidad: -v.cantidad,
+      nota: null,
+      fecha: v.vendido_en,
+    }));
+
+    return [...movimientos, ...ventas].sort(
+      (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+    );
   }
 
   async getVentas(
