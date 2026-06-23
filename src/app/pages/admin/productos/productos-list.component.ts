@@ -2,7 +2,7 @@ import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
 import { Router }       from '@angular/router';
-import { InventarioService, ProductoEvento, CATEGORIAS, CAT_TONES } from '../../../core/services/inventario.service';
+import { InventarioService, ProductoEvento, MovimientoProducto, CATEGORIAS, CAT_TONES } from '../../../core/services/inventario.service';
 import { EventosService, Evento } from '../../../core/services/eventos.service';
 
 @Component({
@@ -46,6 +46,18 @@ export class ProductosListComponent implements OnInit {
   drawerOpen    = signal(false);
   drawerProduct = signal<ProductoEvento | null>(null);
 
+  // Restock
+  restockOpen     = signal(false);
+  restockTarget   = signal<ProductoEvento | null>(null);
+  restockCantidad: number | null = null;
+  restockNota     = '';
+  restockLoading  = signal(false);
+  restockError    = signal<string | null>(null);
+
+  // Historial (drawer)
+  historial          = signal<MovimientoProducto[]>([]);
+  historialCargando  = signal(false);
+
   productosFiltrados = computed(() => {
     const cat  = this.catFiltro();
     const q    = this.busqueda().toLowerCase().trim();
@@ -75,7 +87,15 @@ export class ProductosListComponent implements OnInit {
     event.stopPropagation();
     this.drawerProduct.set(p);
     this.drawerOpen.set(true);
+    this.cargarHistorial(p.id);
   }
+
+  private async cargarHistorial(productoId: string) {
+    this.historialCargando.set(true);
+    this.historial.set(await this.inv.getHistorialProducto(productoId));
+    this.historialCargando.set(false);
+  }
+
   cerrarDrawer() { this.drawerOpen.set(false); }
 
   async duplicar(p: ProductoEvento, event: Event) {
@@ -88,6 +108,35 @@ export class ProductosListComponent implements OnInit {
     event.stopPropagation();
     const { error } = await this.inv.toggleActivo(p.id, !p.activo);
     if (!error) this.flash(p.activo ? 'Producto ocultado.' : 'Producto activado.');
+  }
+
+  abrirRestock(p: ProductoEvento, event: Event) {
+    event.stopPropagation();
+    this.restockTarget.set(p);
+    this.restockCantidad = null;
+    this.restockNota = '';
+    this.restockError.set(null);
+    this.restockOpen.set(true);
+  }
+
+  cerrarRestock() { this.restockOpen.set(false); }
+
+  async confirmarRestock() {
+    const p = this.restockTarget();
+    if (!p) return;
+    const cantidad = this.restockCantidad;
+    if (!cantidad || cantidad <= 0) {
+      this.restockError.set('Ingresa una cantidad mayor a 0.');
+      return;
+    }
+    this.restockLoading.set(true);
+    this.restockError.set(null);
+    const { error } = await this.inv.restockProducto(p.id, cantidad, this.restockNota.trim() || undefined);
+    this.restockLoading.set(false);
+    if (error) { this.restockError.set(error); return; }
+    this.cerrarRestock();
+    this.flash(`+${cantidad} unidades agregadas a "${p.nombre}".`);
+    if (this.drawerProduct()?.id === p.id) this.cargarHistorial(p.id);
   }
 
   flash(msg: string) {
@@ -135,4 +184,16 @@ export class ProductosListComponent implements OnInit {
   }
 
   toneForCat(cat: string) { return CAT_TONES[cat] ?? '#DDE3EA'; }
+
+  historialLabel(tipo: MovimientoProducto['tipo']): string {
+    return { creacion: 'Creación', restock: 'Restock', ajuste: 'Ajuste', venta: 'Venta' }[tipo];
+  }
+
+  historialBadgeClass(tipo: MovimientoProducto['tipo']): string {
+    return { creacion: 'rio', restock: 'ok', ajuste: 'warn', venta: 'lila' }[tipo];
+  }
+
+  fmtFecha(iso: string): string {
+    return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
 }
