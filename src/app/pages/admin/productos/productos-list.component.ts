@@ -92,8 +92,14 @@ export class ProductosListComponent implements OnInit {
 
   private async cargarHistorial(productoId: string) {
     this.historialCargando.set(true);
-    this.historial.set(await this.inv.getHistorialProducto(productoId));
-    this.historialCargando.set(false);
+    try {
+      this.historial.set(await this.inv.getHistorialProducto(productoId));
+    } catch (err) {
+      console.error('Error cargando historial:', err);
+      this.historial.set([]);
+    } finally {
+      this.historialCargando.set(false);
+    }
   }
 
   cerrarDrawer() { this.drawerOpen.set(false); }
