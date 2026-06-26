@@ -3,69 +3,129 @@
 
         <!-- ══ DASHBOARD ══════════════════════════════════════════════════ -->
         @case ('dashboard') {
-        <div class="ph">
+        <div class="ph ph--dash" role="region" aria-label="Resumen del dashboard">
+          <div class="ph-dots" aria-hidden="true"></div>
+          <div class="ph-deco" aria-hidden="true">Cv</div>
           <div class="ph-l">
-            <div class="eyebrow"><span class="dot"></span> Dashboard <span class="num">/ 00</span></div>
-            <h1>Hola, <em>Capitán</em>. Esto pasó en el cuaquiverso.</h1>
+            <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Dashboard <span class="num" aria-hidden="true">/ 00</span></div>
+            <h1>{{ nowGreeting() }}, <em>Capitán</em>. Esto pasó en el cuaquiverso.</h1>
             <p class="sub">Resumen de la semana. Pedidos en aumento, dos productos requieren reposición.</p>
           </div>
           <div class="ph-r">
-            <button class="btn-sm ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg> Exportar reporte</button>
-            <button class="btn-sm solid" (click)="go('productos', { newProduct: true })"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Producto nuevo</button>
+            <button class="btn-sm solid" (click)="openNuevoEvento()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Nuevo evento</button>
+          </div>
+          <div class="ph-meta">
+            <div class="ph-meta-item">
+              <span class="ph-mi-dot live" aria-hidden="true"></span>
+              <span>Sistema en línea</span>
+            </div>
+            <div class="ph-meta-item">
+              <span class="ph-mi-dot warn" aria-hidden="true"></span>
+              <span>2 productos con bajo stock</span>
+            </div>
+            <time class="ph-meta-item ph-meta-time" [attr.datetime]="nowDatetime()">{{ nowTime() }}</time>
           </div>
         </div>
 
-        <div class="kpi-strip">
+        <div class="kpi-strip" role="region" aria-label="Métricas de la semana">
           <div class="kpi-item" data-tone="rio">
-            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Ingresos (7d)</div>
+            <div class="kpi-k"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Ingresos (7d)</div>
             <div class="kpi-n">{{ fmtCOP(kpiIngresos7d()) }}</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+18.4%</span><span>vs semana pasada</span></div>
+            <div class="kpi-delta"><svg aria-hidden="true" focusable="false" class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+18.4%</span><span>vs semana pasada</span></div>
           </div>
           <div class="kpi-item" data-tone="terra">
-            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V5a3 3 0 0 1 6 0v3"/></svg> Pedidos (7d)</div>
+            <div class="kpi-k"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V5a3 3 0 0 1 6 0v3"/></svg> Pedidos (7d)</div>
             <div class="kpi-n">{{ kpiPedidos7d() }}</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+12</span><span>vs 112</span></div>
+            <div class="kpi-delta"><svg aria-hidden="true" focusable="false" class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+12</span><span>vs 112</span></div>
           </div>
           <div class="kpi-item" data-tone="sol">
-            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M21 20c0-2.5-1.9-4.6-4.4-4.95"/></svg> Nuevos clientes</div>
+            <div class="kpi-k"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M21 20c0-2.5-1.9-4.6-4.4-4.95"/></svg> Nuevos clientes</div>
             <div class="kpi-n">{{ kpiClientes7d() }}</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+5</span><span>vs 33</span></div>
+            <div class="kpi-delta"><svg aria-hidden="true" focusable="false" class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+5</span><span>vs 33</span></div>
           </div>
           <div class="kpi-item" data-tone="selva">
-            <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.7 6.4.7-4.8 4.4 1.3 6.2L12 17l-5.5 3 1.3-6.2L3 9.4l6.4-.7L12 3Z"/></svg> Ticket promedio</div>
+            <div class="kpi-k"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.7 6.4.7-4.8 4.4 1.3 6.2L12 17l-5.5 3 1.3-6.2L3 9.4l6.4-.7L12 3Z"/></svg> Ticket promedio</div>
             <div class="kpi-n">{{ fmtCOP(kpiTicket7d()) }}</div>
-            <div class="kpi-delta"><svg class="kpi-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="m5 12 7 7 7-7"/></svg><span class="kpi-down">-3.1%</span><span>$28.980 → $28.080</span></div>
+            <div class="kpi-delta"><svg aria-hidden="true" focusable="false" class="kpi-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="m5 12 7 7 7-7"/></svg><span class="kpi-down">-3.1%</span><span>$28.980 → $28.080</span></div>
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:var(--s-4)">
+        <div class="split-wide">
           <div class="panel">
             <div class="panel-h"><div><h3>Ingresos diarios</h3><div class="sub">Últimos 14 días · COP</div></div><div style="display:flex;gap:6px"><button class="chip is-on">7d</button><button class="chip">14d</button><button class="chip">30d</button></div></div>
             <div class="panel-b">
-              <div class="chart-wrap">
-                @for (b of BARS; track $index; let i = $index) {
-                <div class="chart-bar" [class.hi]="i >= BARS.length - 3" [style.height.%]="barHeight(b)">
-                  @if (i % 2 === 1) { <div class="lbl">{{ DAYS[i] }}</div> }
+              <div class="chart-outer">
+                <div class="chart-y" aria-hidden="true">
+                  <span>$220k</span>
+                  <span>$165k</span>
+                  <span>$110k</span>
+                  <span>$55k</span>
+                  <span>$0</span>
                 </div>
-                }
+                <div class="chart-inner">
+                  <div class="chart-wrap">
+                    @for (b of BARS; track $index; let i = $index) {
+                    <div class="chart-bar"
+                         [class.hi]="i >= BARS.length - 3"
+                         [style.height.%]="barHeight(b)"
+                         [attr.data-val]="'$' + b + 'k'">
+                      @if (i % 2 === 1) { <div class="lbl">{{ DAYS[i] }}</div> }
+                    </div>
+                    }
+                    <svg class="chart-trend" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="chart-fill-grad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" style="stop-color:#2A6FDB;stop-opacity:0.1"/>
+                          <stop offset="100%" style="stop-color:#2A6FDB;stop-opacity:0"/>
+                        </linearGradient>
+                      </defs>
+                      <polygon class="chart-area" [attr.points]="trendArea()"/>
+                      <polyline class="chart-line" [attr.points]="trendPoints()"/>
+                    </svg>
+                  </div>
+                </div>
               </div>
-              <div style="margin-top:var(--s-5);display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-4);padding-top:var(--s-4);border-top:1px solid var(--carbon-08)">
-                <div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Mejor día</div><div style="font-family:var(--display);font-size:22px;margin-top:4px">Domingo · $220k</div></div>
-                <div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Promedio</div><div style="font-family:var(--display);font-size:22px;margin-top:4px">$104k/día</div></div>
-                <div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Conversión</div><div style="font-family:var(--display);font-size:22px;margin-top:4px">3.4%</div></div>
+              <div class="chart-stats">
+                <div class="chart-stat"><span class="cs-k">Mejor día</span><span class="cs-v">Dom · $220k</span></div>
+                <div class="chart-stat"><span class="cs-k">Promedio diario</span><span class="cs-v">$104k</span></div>
+                <div class="chart-stat"><span class="cs-k">Conversión</span><span class="cs-v">3.4%</span></div>
               </div>
             </div>
           </div>
           <div class="panel">
-            <div class="panel-h"><div><h3>Necesita tu mirada</h3><div class="sub">3 alertas activas</div></div></div>
+            <div class="panel-h"><div><h3>Vistas</h3><div class="sub">Últimos 7 días · Google Analytics</div></div></div>
             <div class="panel-b">
-              <div class="feed">
-                <div class="feed-row" data-tone="terra"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5v8L3 16V8Z"/><path d="m21 8-9 5v8l9-5V8Z"/></svg></div><div class="f-t"><strong>Vuelo de colibrí · A2</strong><span>Stock en 0 · pendiente reposición</span></div><div class="f-tm">CQV-0036</div></div>
-                <div class="feed-row" data-tone="warn"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5v8L3 16V8Z"/><path d="m21 8-9 5v8l9-5V8Z"/></svg></div><div class="f-t"><strong>Diario de páramo</strong><span>Quedan 6 unidades · stock bajo</span></div><div class="f-tm">CQV-0039</div></div>
-                <div class="feed-row" data-tone="warn"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg></div><div class="f-t"><strong>Pago pendiente · #CQ-2811</strong><span>Contra-entrega · 24h sin confirmación</span></div><div class="f-tm">$110k</div></div>
-                <div class="feed-row" data-tone="rio"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 17V5H2v12h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M14 8h4l4 4v5h-2"/><path d="M14 17h1"/></svg></div><div class="f-t"><strong>3 envíos por despachar</strong><span>Servientrega · cierre 5pm</span></div><div class="f-tm">Hoy</div></div>
-                <div class="feed-row" data-tone="ok"><div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div><div class="f-t"><strong>Carta del jueves</strong><span>Programada para 18 mayo · 1.487 destinatarios</span></div><div class="f-tm">Lista</div></div>
+              @if (gaLoading()) {
+              <div style="padding:var(--s-4) 0;color:var(--carbon-50);font-size:13px">Cargando datos de Analytics…</div>
+              } @else if (!gaConfigured()) {
+              <div style="padding:var(--s-3) 0;display:flex;flex-direction:column;gap:8px">
+                <div style="font-size:13.5px;color:var(--carbon-70)">Google Analytics no está conectado todavía.</div>
+                <a routerLink="/admin/ajustes/integraciones" class="btn-sm ghost" style="align-self:flex-start">Conectar en Ajustes →</a>
               </div>
+              } @else {
+              @if (gaError()) {
+              <div style="padding:var(--s-2) 0 var(--s-3);font-size:12px;color:var(--carbon-50)">Error al conectar con GA4 · {{ gaError() }}</div>
+              }
+              <div class="feed">
+                @for (pv of PAGE_VIEWS(); track pv.id) {
+                <div class="feed-row" [attr.data-tone]="pv.delta >= 0 ? 'ok' : 'terra'">
+                  <div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+                  <div class="f-t"><strong>{{ pv.label }}</strong><span>{{ pv.path }}</span></div>
+                  <div class="f-tm">{{ fmtViews(pv.views7d) }} <span [style.color]="pv.delta >= 0 ? 'var(--selva)' : 'var(--terra)'">{{ fmtDelta(pv.delta) }}</span></div>
+                </div>
+                }
+              </div>
+              <div style="margin:var(--s-4) 0 var(--s-3);font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Portafolios</div>
+              <div class="feed">
+                @for (pv of PORTFOLIO_VIEWS(); track pv.slug) {
+                <div class="feed-row" [attr.data-tone]="pv.delta >= 0 ? 'ok' : 'terra'" [style.opacity]="pv.pinned ? '0.6' : '1'">
+                  <div class="f-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+                  <div class="f-t"><strong>{{ pv.title }}</strong><span>/portafolio/{{ pv.slug }}</span></div>
+                  <div class="f-tm">{{ fmtViews(pv.views7d) }} <span [style.color]="pv.delta >= 0 ? 'var(--selva)' : 'var(--terra)'">{{ fmtDelta(pv.delta) }}</span></div>
+                </div>
+                }
+              </div>
+              }
             </div>
           </div>
         </div>
@@ -97,7 +157,7 @@
         @case ('productos') {
         <div class="ph">
           <div class="ph-l">
-            <div class="eyebrow"><span class="dot"></span> Catálogo <span class="num">/ 01</span></div>
+            <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Catálogo <span class="num" aria-hidden="true">/ 01</span></div>
             <h1>Productos del <em>cuaquiverso</em></h1>
             <p class="sub">42 productos · 8 categorías · 8 personajes.</p>
           </div>
@@ -152,7 +212,7 @@
         @case ('pedidos') {
         <div class="ph">
           <div class="ph-l">
-            <div class="eyebrow"><span class="dot"></span> Operación <span class="num">/ 02</span></div>
+            <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Operación <span class="num" aria-hidden="true">/ 02</span></div>
             <h1>Pedidos <em>en curso</em></h1>
             <p class="sub">Todo lo que ha pasado por la tienda. Click en cualquiera para ver detalle.</p>
           </div>
@@ -175,7 +235,7 @@
           <div class="spacer"></div>
           <span style="font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--carbon-50)">{{ currentOrders().length }} pedidos</span>
         </div>
-        <div class="panel">
+        <div class="panel tbl-page">
           <div class="panel-b flush">
             <table class="tbl">
               <thead><tr><th style="width:36px"><input type="checkbox" /></th><th>Orden</th><th>Cliente</th><th>Ciudad</th><th>Items</th><th>Pago</th><th>Envío</th><th>Método</th><th class="num">Total</th><th>Fecha</th><th></th></tr></thead>
@@ -207,7 +267,7 @@
         @case ('clientes') {
         <div class="ph">
           <div class="ph-l">
-            <div class="eyebrow"><span class="dot"></span> Comunidad <span class="num">/ 03</span></div>
+            <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Comunidad <span class="num" aria-hidden="true">/ 03</span></div>
             <h1>Quienes <em>habitan</em> el cuaquiverso</h1>
             <p class="sub">Clientes con al menos un pedido o registro.</p>
           </div>
@@ -244,7 +304,7 @@
           <div class="spacer"></div>
           <div class="chips"><button class="chip is-on">Todos <span class="ct">{{ CUSTOMERS.length }}</span></button><button class="chip">VIP <span class="ct">2</span></button><button class="chip">Activos <span class="ct">4</span></button><button class="chip">Con problemas <span class="ct">2</span></button></div>
         </div>
-        <div class="panel">
+        <div class="panel tbl-page">
           <div class="panel-b flush">
             <table class="tbl">
               <thead><tr><th style="width:36px"><input type="checkbox" /></th><th>Cliente</th><th>Email</th><th>Ciudad</th><th>Tipo</th><th class="num">Pedidos</th><th class="num">Gastado</th><th>Última actividad</th><th></th></tr></thead>
@@ -280,13 +340,33 @@
         @case ('pagos') {
         <div class="ph">
           <div class="ph-l">
-            <div class="eyebrow"><span class="dot"></span> Caja <span class="num">/ 04</span></div>
+            <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Caja <span class="num" aria-hidden="true">/ 04</span></div>
             <h1>Pagos y <em>movimientos</em></h1>
             <p class="sub">Conciliación con Bold, PSE y Nequi.</p>
           </div>
           <div class="ph-r">
-            <button class="btn-sm ghost">Exportar para contador</button>
-            <button class="btn-sm solid">Descargar reporte</button>
+            <div class="export-wrap" (click)="$event.stopPropagation()">
+              <button class="btn-sm ghost" (click)="toggleExportContador()">Exportar para contador</button>
+              @if (exportContadorOpen()) {
+                <div class="export-dropdown">
+                  <button class="export-opt" (click)="descargarContador('mes')">Este mes</button>
+                  <button class="export-opt" (click)="descargarContador('mes-pasado')">Mes pasado</button>
+                  <button class="export-opt" (click)="descargarContador('3meses')">Últimos 3 meses</button>
+                  <button class="export-opt" (click)="descargarContador('todo')">Todo el historial</button>
+                </div>
+              }
+            </div>
+            <div class="export-wrap" (click)="$event.stopPropagation()">
+              <button class="btn-sm solid" (click)="toggleExportReporte()">Descargar reporte</button>
+              @if (exportReporteOpen()) {
+                <div class="export-dropdown">
+                  <button class="export-opt" (click)="descargarReporte('mes')">Este mes</button>
+                  <button class="export-opt" (click)="descargarReporte('mes-pasado')">Mes pasado</button>
+                  <button class="export-opt" (click)="descargarReporte('3meses')">Últimos 3 meses</button>
+                  <button class="export-opt" (click)="descargarReporte('todo')">Todo el historial</button>
+                </div>
+              }
+            </div>
           </div>
         </div>
         <div class="kpi-strip">
@@ -311,8 +391,8 @@
             <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+1</span><span>1 caso</span></div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 320px;gap:var(--s-4);margin-top:var(--s-4)">
-          <div class="panel">
+        <div class="split-1-320" style="margin-top:var(--s-4);align-items:start">
+          <div class="panel tbl-page">
             <div class="panel-h"><div><h3>Movimientos</h3><div class="sub">Últimos 30 días</div></div></div>
             <div class="panel-b flush">
               <table class="tbl">
@@ -365,7 +445,7 @@
         @case ('contenido') {
         <div class="ph">
           <div class="ph-l">
-            <div class="eyebrow"><span class="dot"></span> Contenido <span class="num">/ 05</span></div>
+            <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Contenido <span class="num" aria-hidden="true">/ 05</span></div>
             <h1>Personajes <em>del elenco</em></h1>
             <p class="sub">Cada personaje vive en su propia página. Edita su historia, color, región y productos asociados.</p>
           </div>
@@ -397,7 +477,7 @@
             </table>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--s-4);margin-top:var(--s-4)">
+        <div class="grid-2" style="margin-top:var(--s-4)">
           <div class="panel">
             <div class="panel-h"><h3>Newsletter · Carta del Cuaquiverso</h3><span class="sub">Quincenal</span></div>
             <div class="panel-b">
@@ -557,7 +637,7 @@
     <button class="drawer-close" (click)="closeOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>
   <div class="drawer-b">
-    <div style="display:grid;grid-template-columns:1fr 280px;gap:var(--s-4)">
+    <div class="split-1-280">
       <div style="display:flex;flex-direction:column;gap:var(--s-4)">
         <div class="panel">
           <div class="panel-h"><h3>Productos</h3><span class="sub">{{ ORDER_DETAIL.items.length }} items</span></div>
@@ -590,7 +670,7 @@
           <div class="panel-b">
             <div class="timeline">
               @for (t of ORDER_DETAIL.timeline; track $index) {
-              <div class="tl-row" [class]="t.state"><div class="tm">{{ t.time }}</div><div class="pt"><span class="dot"></span></div><div class="ct"><div class="tt">{{ t.title }}</div><div class="desc">{{ t.desc }}</div></div></div>
+              <div class="tl-row" [class]="t.state"><div class="tm">{{ t.time }}</div><div class="pt"><span class="dot" aria-hidden="true"></span></div><div class="ct"><div class="tt">{{ t.title }}</div><div class="desc">{{ t.desc }}</div></div></div>
               }
             </div>
           </div>
@@ -644,7 +724,7 @@
 <!-- ══ MANUAL ORDER DRAWER ══════════════════════════════════════════════════ -->
 @if (manualOrderOn()) {
 <div class="drawer-back on" (click)="closeManualOrder()"></div>
-<div class="drawer on" style="width:min(880px,94vw)">
+<div class="drawer on" style="width:min(940px,96vw)">
   <div class="drawer-h">
     <div>
       <div class="crumbs-admin"><span>Pedidos</span><span class="sep">/</span><strong>Pedido manual</strong></div>
@@ -655,51 +735,91 @@
     </button>
   </div>
   <div class="drawer-b">
-    <div style="display:grid;grid-template-columns:1fr 280px;gap:var(--s-4);align-items:start">
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:var(--s-5);align-items:start">
 
-      <!-- Columna izquierda: productos + resumen -->
+      <!-- ── Columna izquierda: catálogo + ítems + cobros ─── -->
       <div style="display:flex;flex-direction:column;gap:var(--s-4)">
 
+        <!-- Catálogo: siempre visible -->
         <div class="panel">
-          <div class="panel-h"><h3>Línea de productos</h3></div>
-          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
-            <div class="search-min">
+          <div class="panel-h">
+            <div><h3>Catálogo</h3><div class="sub">{{ moProductosFiltrados().length }} producto(s)</div></div>
+            <div class="search-min" style="flex:0 0 220px;margin:0">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-              <input placeholder="Buscar producto por nombre o SKU…" [(ngModel)]="moProductSearch" name="moSearch" />
+              <input placeholder="Nombre o SKU…" [(ngModel)]="moProductSearch" name="moSearch" />
             </div>
+          </div>
+          <div class="panel-b flush" style="max-height:220px;overflow-y:auto">
             @if (moProductosFiltrados().length > 0) {
-              <div style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto">
-                @for (p of moProductosFiltrados(); track p.id) {
-                  <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--cream-2)">
-                    <div [style.background]="tone(p.color).bg" [style.color]="tone(p.color).fg" style="width:30px;height:30px;border-radius:6px;display:grid;place-items:center;font-family:var(--display);font-size:13px;flex-shrink:0">{{ p.name.charAt(0) }}</div>
-                    <div style="flex:1;min-width:0">
-                      <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
-                      <div style="font-family:var(--mono);font-size:10.5px;color:var(--carbon-50)">{{ p.sku }} · {{ fmtCOP(p.price) }}</div>
-                    </div>
-                    <button class="btn-sm ghost" style="padding:4px 10px;font-size:12px" (click)="moAddProduct(p)">+ Agregar</button>
+              @for (p of moProductosFiltrados(); track p.id) {
+                <div style="display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:8px var(--s-5);border-bottom:1px solid var(--carbon-06)">
+                  <div [style.background]="tone(p.color).bg" [style.color]="tone(p.color).fg" style="width:32px;height:32px;border-radius:6px;display:grid;place-items:center;font-family:var(--display);font-size:14px;flex-shrink:0">{{ p.name.charAt(0) }}</div>
+                  <div style="min-width:0">
+                    <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                    <div style="font-family:var(--mono);font-size:10.5px;color:var(--carbon-50)">{{ p.sku }} · {{ fmtCOP(p.price) }} · stock {{ p.stock }}</div>
                   </div>
-                }
-              </div>
+                  <button class="btn-sm ghost" style="padding:4px 10px;font-size:12px;white-space:nowrap" (click)="moAddProduct(p)">+ Agregar</button>
+                </div>
+              }
+            } @else {
+              <div style="padding:var(--s-4) var(--s-5);font-size:13px;color:var(--carbon-40)">Sin resultados para "{{ moProductSearch }}"</div>
             }
           </div>
         </div>
 
-        @if (moItems().length > 0) {
+        <!-- Ítems: siempre visible, empty state en el tbody -->
         <div class="panel">
-          <div class="panel-h"><h3>Items del pedido</h3><span class="sub">{{ moItems().length }} productos</span></div>
+          <div class="panel-h">
+            <div><h3>Ítems del pedido</h3><span class="sub">{{ moItems().length }} {{ moItems().length === 1 ? 'producto' : 'productos' }}</span></div>
+          </div>
           <div class="panel-b flush">
             <table class="tbl">
-              <thead><tr><th>Producto</th><th class="num">Precio</th><th class="num">Cant.</th><th class="num">Subtotal</th><th></th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Variante</th>
+                  <th class="num" style="width:96px">Precio unit.</th>
+                  <th class="num" style="width:100px">Cant.</th>
+                  <th class="num" style="width:88px">Subtotal</th>
+                  <th style="width:28px"></th>
+                </tr>
+              </thead>
               <tbody>
+                @if (moItems().length === 0) {
+                <tr>
+                  <td colspan="6" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Agrega productos desde el catálogo</td>
+                </tr>
+                }
                 @for (item of moItems(); track item.id) {
                 <tr>
-                  <td><strong style="font-size:13px">{{ item.name }}</strong></td>
-                  <td class="num">{{ fmtCOP(item.price) }}</td>
+                  <td>
+                    <div style="font-size:13px;font-weight:600">{{ item.name }}</div>
+                    <div style="font-family:var(--mono);font-size:10px;color:var(--carbon-50)">{{ item.sku }}</div>
+                  </td>
+                  <td>
+                    <input
+                      class="input"
+                      style="font-size:12px;padding:5px 8px;min-width:130px"
+                      placeholder="Ej: Talla M · Cream"
+                      [value]="item.variant"
+                      [name]="'variant_' + item.id"
+                      (input)="moUpdateVariant(item.id, $any($event.target).value)" />
+                  </td>
                   <td class="num">
-                    <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
-                      <button class="icon-act" style="width:22px;height:22px;font-size:14px" (click)="moChangeQty(item.id, -1)">−</button>
-                      <span style="font-variant-numeric:tabular-nums;min-width:20px;text-align:center">{{ item.qty }}</span>
-                      <button class="icon-act" style="width:22px;height:22px;font-size:14px" (click)="moChangeQty(item.id, 1)">+</button>
+                    <input
+                      class="input"
+                      type="number"
+                      style="font-size:12px;padding:5px 8px;text-align:right;width:90px"
+                      [value]="item.price"
+                      [name]="'price_' + item.id"
+                      min="0"
+                      (change)="moUpdatePrice(item.id, +$any($event.target).value)" />
+                  </td>
+                  <td class="num">
+                    <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+                      <button class="icon-act" style="width:22px;height:22px;font-size:14px;line-height:1" (click)="moChangeQty(item.id, -1)">−</button>
+                      <span style="font-variant-numeric:tabular-nums;min-width:20px;text-align:center;font-size:13px">{{ item.qty }}</span>
+                      <button class="icon-act" style="width:22px;height:22px;font-size:14px;line-height:1" (click)="moChangeQty(item.id, 1)">+</button>
                     </div>
                   </td>
                   <td class="num">{{ fmtCOP(item.price * item.qty) }}</td>
@@ -713,19 +833,48 @@
               </tbody>
             </table>
           </div>
-          <div style="padding:var(--s-4) var(--s-5);border-top:1px solid var(--carbon-08);background:var(--cream)">
-            <div class="kv-list" style="max-width:280px;margin-left:auto">
-              <div class="kv"><span class="k">Subtotal</span><span class="v">{{ fmtCOP(moSubtotal()) }}</span></div>
-              <div class="kv"><span class="k">Envío</span><span class="v" style="color:var(--carbon-50)">Por definir</span></div>
-              <div class="kv total"><span class="k">Total estimado</span><span class="v">{{ fmtCOP(moTotal()) }}</span></div>
+        </div>
+
+        <!-- Cobros: siempre visible -->
+        <div class="panel">
+          <div class="panel-h">
+            <div><h3>Cobros</h3><div class="sub">Subtotal: {{ fmtCOP(moSubtotal()) }}</div></div>
+          </div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+            <div class="grid-2">
+              <div class="field">
+                <label>Envío (COP)</label>
+                <input
+                  class="input"
+                  type="number"
+                  placeholder="0"
+                  [ngModel]="moEnvio()"
+                  (ngModelChange)="moEnvio.set(+$event)"
+                  name="moEnvio"
+                  min="0" />
+              </div>
+              <div class="field">
+                <label>Descuento (COP)</label>
+                <input
+                  class="input"
+                  type="number"
+                  placeholder="0"
+                  [ngModel]="moDescuento()"
+                  (ngModelChange)="moDescuento.set(+$event)"
+                  name="moDescuento"
+                  min="0" />
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:var(--s-3) var(--s-4);background:var(--cream-2);border-radius:10px">
+              <span style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Total del pedido</span>
+              <span style="font-family:var(--display);font-size:28px;letter-spacing:-.02em">{{ fmtCOP(moTotal()) }}</span>
             </div>
           </div>
         </div>
-        }
 
       </div>
 
-      <!-- Columna derecha: cliente + pago + notas -->
+      <!-- ── Columna derecha: cliente, dirección, pago, notas ─── -->
       <div style="display:flex;flex-direction:column;gap:var(--s-4)">
 
         <div class="panel">
@@ -743,44 +892,73 @@
               <label>Teléfono</label>
               <input class="input" [(ngModel)]="moClienteTel" name="moTel" placeholder="+57 311 000 0000" />
             </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h"><h3>Dirección de entrega</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
             <div class="field">
               <label>Ciudad</label>
-              <input class="input" [(ngModel)]="moClienteCiudad" name="moCiudad" placeholder="Bogotá" />
+              <input class="input" [(ngModel)]="moClienteCiudad" name="moCiudad" placeholder="Medellín" />
             </div>
             <div class="field">
               <label>Dirección</label>
-              <input class="input" [(ngModel)]="moClienteDireccion" name="moDireccion" placeholder="Cra 11 # 71-30" />
+              <input class="input" [(ngModel)]="moClienteDireccion" name="moDireccion" placeholder="Cra 43A # 14-50" />
             </div>
           </div>
         </div>
 
         <div class="panel">
-          <div class="panel-h"><h3>Pago</h3></div>
+          <div class="panel-h"><h3>Pago y origen</h3></div>
           <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
             <div class="field">
-              <label>Método de pago</label>
+              <label>Estado</label>
+              <div style="display:flex;flex-direction:column;gap:5px;margin-top:2px">
+                @for (opt of [['pendiente','Pendiente de pago'],['pagado','Pagado'],['contra-entrega','Contra-entrega']]; track opt[0]) {
+                <label
+                  style="display:flex;gap:8px;align-items:center;font-size:13px;padding:7px 10px;border-radius:8px;cursor:pointer"
+                  [style.background]="moEstado === opt[0] ? 'var(--cream-2)' : 'transparent'"
+                  [style.outline]="moEstado === opt[0] ? '1px solid var(--carbon-12)' : '1px solid transparent'">
+                  <input type="radio" name="moEstado" [value]="opt[0]" [(ngModel)]="moEstado" />
+                  {{ opt[1] }}
+                </label>
+                }
+              </div>
+            </div>
+            <div class="field">
+              <label>Método</label>
               <select class="select" [(ngModel)]="moMetodo" name="moMetodo">
                 <option value="efectivo">Efectivo</option>
                 <option value="transferencia">Transferencia</option>
                 <option value="nequi">Nequi</option>
-                <option value="bold">Bold</option>
+                <option value="bold">Bold / Datáfono</option>
                 <option value="contra-entrega">Contra-entrega</option>
               </select>
             </div>
+            @if (moMetodo === 'transferencia' || moMetodo === 'nequi') {
             <div class="field">
-              <label>Canal</label>
+              <label>N.° referencia</label>
+              <input class="input" [(ngModel)]="moReferencia" name="moReferencia" placeholder="Referencia o comprobante" style="font-family:var(--mono);font-size:12px;letter-spacing:.04em" />
+            </div>
+            }
+            <div class="field">
+              <label>Canal de venta</label>
               <select class="select" [(ngModel)]="moCanal" name="moCanal">
-                <option value="web">Web</option>
-                <option value="evento">Evento</option>
+                <option value="web">Web / Tienda</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="instagram">Instagram</option>
+                <option value="evento">Evento / Feria</option>
+                <option value="fisica">Tienda física</option>
               </select>
             </div>
           </div>
         </div>
 
         <div class="panel">
-          <div class="panel-h"><h3>Notas</h3></div>
+          <div class="panel-h"><h3>Notas internas</h3></div>
           <div class="panel-b">
-            <textarea class="textarea" rows="3" [(ngModel)]="moNotas" name="moNotas" placeholder="Instrucciones especiales, tallas, etc."></textarea>
+            <textarea class="textarea" rows="3" [(ngModel)]="moNotas" name="moNotas" placeholder="Acuerdos con el cliente, instrucciones de empaque, etc."></textarea>
           </div>
         </div>
 
@@ -790,8 +968,8 @@
   <div class="drawer-f">
     <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">
       @if (moItems().length === 0) { Agrega al menos 1 producto }
-      @else if (!moClienteNombre.trim()) { Ingresa el nombre del cliente }
-      @else { {{ moItems().length }} producto(s) · {{ fmtCOP(moTotal()) }} }
+      @else if (!moClienteNombre.trim()) { Falta el nombre del cliente }
+      @else { {{ moItems().length }} {{ moItems().length === 1 ? 'ítem' : 'ítems' }} · {{ fmtCOP(moTotal()) }} · {{ moEstado }} }
     </span>
     <div style="display:flex;gap:10px">
       <button class="btn-sm ghost" (click)="closeManualOrder()">Cancelar</button>
@@ -816,7 +994,86 @@
 <app-pago-detail [pagoId]="pagoId()!" (close)="closePago()" />
 }
 
-<!-- ══ TOAST ══════════════════════════════════════════════════════════════ -->
-<div class="toast" [class.on]="toast()">
-  <span class="tdot"></span>{{ toast() }}
+<!-- ══ NUEVO EVENTO DRAWER ══════════════════════════════════════════════════ -->
+@if (eventoOn()) {
+<div class="drawer-back on" (click)="closeNuevoEvento()"></div>
+<div class="drawer on">
+  <div class="drawer-h">
+    <div>
+      <div class="crumbs-admin"><span>Dashboard</span><span class="sep">/</span><strong>Nuevo evento</strong></div>
+      <h2>Crear evento</h2>
+    </div>
+    <button class="drawer-close" (click)="closeNuevoEvento()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="drawer-b">
+    <div class="grid-form-cols">
+      <div style="display:flex;flex-direction:column;gap:var(--s-5)">
+        <div class="panel">
+          <div class="panel-h"><h3>General</h3><span class="sub">Datos del evento</span></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+            <div class="field"><label>Nombre del evento <span style="color:var(--terra)">*</span></label><input class="input" [(ngModel)]="eventoNombre" name="eventoNombre" placeholder="Ej: Feria del Cuaquiverso 2026" /></div>
+            <div class="grid-2">
+              <div class="field"><label>Fecha <span style="color:var(--terra)">*</span></label><input class="input" type="date" [(ngModel)]="eventoFecha" name="eventoFecha" /></div>
+              <div class="field"><label>Hora</label><input class="input" type="time" [(ngModel)]="eventoHora" name="eventoHora" /></div>
+            </div>
+            <div class="field"><label>Tipo de evento</label>
+              <select class="select" [(ngModel)]="eventoTipo" name="eventoTipo">
+                <option value="feria">Feria / mercado</option>
+                <option value="taller">Taller</option>
+                <option value="lanzamiento">Lanzamiento</option>
+                <option value="concierto">Concierto</option>
+                <option value="pop-up">Pop-up</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="field"><label>Descripción</label><textarea class="textarea" [(ngModel)]="eventoDesc" name="eventoDesc" rows="4" placeholder="Cuéntale al equipo de qué se trata este evento."></textarea></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Lugar</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+            <div class="field"><label>Nombre del lugar</label><input class="input" [(ngModel)]="eventoLugar" name="eventoLugar" placeholder="Ej: Centro Comercial El Tesoro" /></div>
+            <div class="grid-2">
+              <div class="field"><label>Ciudad</label><input class="input" [(ngModel)]="eventoCiudad" name="eventoCiudad" placeholder="Medellín" /></div>
+              <div class="field"><label>Dirección</label><input class="input" [(ngModel)]="eventoDireccion" name="eventoDireccion" placeholder="Cra 25A # 1A Sur-45" /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+        <div class="panel">
+          <div class="panel-h"><h3>Logística</h3></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            <div class="field"><label>Aforo / cupos</label><input class="input" type="number" [(ngModel)]="eventoAforo" name="eventoAforo" placeholder="—" min="0" /></div>
+            <div class="field"><label>Costo de participación (COP)</label><input class="input" type="number" [(ngModel)]="eventoCosto" name="eventoCosto" placeholder="0 si es gratuito" min="0" /></div>
+            <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-top:4px"><input type="checkbox" [(ngModel)]="eventoVentasEnSitio" name="eventoVentasEnSitio" /> Habrá ventas en el evento</label>
+            <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" [(ngModel)]="eventoStandPropio" name="eventoStandPropio" /> Stand propio / carpa</label>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Notas internas</h3></div>
+          <div class="panel-b">
+            <textarea class="textarea" rows="4" [(ngModel)]="eventoNotas" name="eventoNotas" placeholder="Contacto del organizador, link de registro, requisitos, etc."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-f">
+    <button class="btn-sm danger" (click)="closeNuevoEvento()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg> Descartar</button>
+    <div style="display:flex;gap:10px">
+      <button class="btn-sm ghost" (click)="closeNuevoEvento()">Cancelar</button>
+      <button class="btn-sm solid"
+        [disabled]="!eventoNombre.trim() || !eventoFecha"
+        (click)="guardarEvento()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="m5 12 5 5L20 7"/></svg>
+        Crear evento
+      </button>
+    </div>
+  </div>
 </div>
+}
+
+@if (toast()) {
+  <div class="toast-global">{{ toast() }}</div>
+}
