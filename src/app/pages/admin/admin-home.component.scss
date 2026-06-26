@@ -1,3 +1,50 @@
 :host {
   display: block;
 }
+
+// ── Export dropdown ──────────────────────────────────────────────────────────
+.export-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.export-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  background: var(--paper);
+  border: 1px solid var(--carbon-12);
+  border-radius: 10px;
+  box-shadow: 0 12px 48px rgba(21, 31, 40, 0.14), 0 2px 8px rgba(21, 31, 40, 0.08);
+  z-index: 200;
+  overflow: hidden;
+  animation: exportIn 0.12s ease;
+}
+
+@keyframes exportIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.export-opt {
+  display: block;
+  width: 100%;
+  padding: 9px 14px;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: var(--carbon);
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--carbon-08);
+  }
+
+  &:hover {
+    background: var(--cream-2);
+  }
+}
