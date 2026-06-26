@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmación — Checkout Cuaquiverso</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #ECEFF3; color: #151F28; font-size: 14px; }
+
+  .topbar {
+    background: rgba(236,239,243,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(21,31,40,0.08);
+    padding: 0 40px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { font-size: 18px; font-weight: 700; letter-spacing: -0.03em; }
+  .brand em { color: #EC3813; font-style: normal; }
+  .steps { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+  .step { display: flex; align-items: center; gap: 6px; }
+  .step.done { color: #1F8A5B; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; display:flex;align-items:center;justify-content:center; font-size:11px; }
+  .step.done .step-num { background: #1F8A5B; color: #fff; }
+  .step-div { width: 28px; height: 1px; background: #1F8A5B; }
+
+  .page { max-width: 1080px; margin: 0 auto; padding: 48px 24px; }
+
+  /* Hero confirmación */
+  .confirm-hero {
+    background: #151F28;
+    border-radius: 18px;
+    padding: 48px 48px 40px;
+    color: #ECEFF3;
+    margin-bottom: 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 32px;
+  }
+  .confirm-icon {
+    width: 52px; height: 52px;
+    background: #1F8A5B;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  .confirm-eyebrow {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: #1F8A5B; margin-bottom: 10px;
+  }
+  .confirm-title {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.03em;
+    line-height: 1.2; margin-bottom: 10px;
+  }
+  .confirm-title em { color: #EC3813; font-style: normal; }
+  .confirm-sub {
+    font-size: 14px; color: rgba(236,239,243,0.55); line-height: 1.6;
+    max-width: 480px;
+  }
+  .order-ref {
+    text-align: right;
+  }
+  .order-ref .label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: rgba(236,239,243,0.4); margin-bottom: 6px;
+  }
+  .order-ref .code {
+    font-size: 20px; font-weight: 700; letter-spacing: 0.04em;
+    color: #ECEFF3; font-family: monospace;
+  }
+  .order-ref .date {
+    font-size: 12px; color: rgba(236,239,243,0.4); margin-top: 4px;
+  }
+  .wompi-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(236,239,243,0.08);
+    border: 1px solid rgba(236,239,243,0.1);
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-top: 20px;
+    font-size: 12px; color: rgba(236,239,243,0.55);
+  }
+  .wompi-badge strong { color: #ECEFF3; }
+  .wompi-logo-sm {
+    background: #EC3813; color: #fff;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.06em;
+    padding: 2px 5px; border-radius: 3px;
+  }
+
+  /* Layout inferior */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px;
+    border: 1px solid rgba(21,31,40,0.07);
+    margin-bottom: 16px;
+  }
+  .card:last-child { margin-bottom: 0; }
+  .card-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: rgba(21,31,40,0.4);
+    margin-bottom: 18px;
+  }
+
+  /* Items */
+  .order-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(21,31,40,0.06);
+  }
+  .order-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .order-item:first-child { padding-top: 0; }
+  .item-swatch { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; opacity: 0.8; }
+  .item-info { flex: 1; }
+  .item-name { font-size: 14px; font-weight: 600; }
+  .item-sub { font-size: 12px; color: rgba(21,31,40,0.45); margin-top: 2px; }
+  .item-price { font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+  /* Dirección */
+  .addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .addr-field .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(21,31,40,0.4); margin-bottom: 4px; }
+  .addr-field .val { font-size: 14px; font-weight: 500; }
+
+  /* Envío info */
+  .envio-info {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: #FBE0D5; border: 1px solid #F5B08E;
+    border-radius: 10px; padding: 14px 16px;
+    margin-top: 16px;
+  }
+  .envio-info .icon { font-size: 20px; flex-shrink: 0; }
+  .envio-info .txt strong { font-weight: 700; font-size: 13px; display: block; margin-bottom: 3px; color: #7A2A10; }
+  .envio-info .txt p { font-size: 12px; color: #7A2A10; line-height: 1.5; opacity: .85; }
+
+  /* Totales */
+  .totals { display: flex; flex-direction: column; gap: 10px; }
+  .total-row { display: flex; justify-content: space-between; font-size: 14px; color: rgba(21,31,40,0.55); }
+  .total-row.main { color: #151F28; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; padding-top: 10px; border-top: 1px solid rgba(21,31,40,0.08); }
+  .free-tag { background: #D7EBDD; color: #1F5C39; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+
+  /* Próximos pasos */
+  .next-steps { display: flex; flex-direction: column; gap: 12px; }
+  .next-step { display: flex; gap: 14px; align-items: flex-start; }
+  .step-dot { width: 32px; height: 32px; border-radius: 50%; background: rgba(21,31,40,0.06); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; color: #151F28; }
+  .step-body strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 2px; }
+  .step-body p { font-size: 12px; color: rgba(21,31,40,0.55); line-height: 1.5; }
+
+  .cta-row { margin-top: 20px; display: flex; gap: 10px; }
+  .btn-primary {
+    flex: 1; padding: 13px 20px; background: #151F28; color: #ECEFF3;
+    border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
+    cursor: pointer; text-align: center; text-decoration: none; display: block;
+  }
+  .btn-ghost {
+    flex: 1; padding: 13px 20px; background: transparent; color: #151F28;
+    border: 1.5px solid rgba(21,31,40,0.15); border-radius: 10px; font-size: 14px;
+    font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; display: block;
+  }
+
+  .screen-label {
+    display: inline-block; background: #1F8A5B; color: #fff;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px; margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Cuaqui<em>verso</em></div>
+  <div class="steps">
+    <div class="step done">
+      <div class="step-num">✓</div>
+      <span>Datos y envío</span>
+    </div>
+    <div class="step-div"></div>
+    <div class="step done">
+      <div class="step-num">✓</div>
+      <span>Pago confirmado</span>
+    </div>
+  </div>
+  <div style="font-size:12px;color:rgba(21,31,40,0.4)">Compra segura 🔒</div>
+</div>
+
+<div class="page">
+  <div class="screen-label">Paso 2 de 2 — Confirmación (post-Wompi redirect)</div>
+
+  <!-- Hero -->
+  <div class="confirm-hero">
+    <div>
+      <div class="confirm-icon">✓</div>
+      <div class="confirm-eyebrow">Pago aprobado</div>
+      <h1 class="confirm-title">Tu pedido está<br>en <em>camino</em>.</h1>
+      <p class="confirm-sub">Recibimos tu pago y ya estamos preparando tus productos. Te llegará un correo de confirmación con el número de guía cuando salgamos a despachar.</p>
+      <div class="wompi-badge">
+        Pago procesado por <span class="wompi-logo-sm">WOMPI</span> · <strong>Tarjeta ···· 4242</strong>
+      </div>
+    </div>
+    <div class="order-ref">
+      <div class="label">Número de pedido</div>
+      <div class="code">CQV-20260603-0042</div>
+      <div class="date">3 de junio de 2026 · 2:31 pm</div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div>
+      <!-- Productos -->
+      <div class="card">
+        <div class="card-title">Lo que pediste</div>
+        <div class="order-item">
+          <div class="item-swatch" style="background:#2A6FDB"></div>
+          <div class="item-info">
+            <div class="item-name">El explorador soñador</div>
+            <div class="item-sub">Camiseta · Algodón orgánico · ×1</div>
+          </div>
+          <div class="item-price">$89.000</div>
+        </div>
+        <div class="order-item">
+          <div class="item-swatch" style="background:#1F8A5B"></div>
+          <div class="item-info">
+            <div class="item-name">Café con vuelo</div>
+            <div class="item-sub">Gorra · Bordado · ×1</div>
+          </div>
+          <div class="item-price">$78.000</div>
+        </div>
+        <div class="order-item">
+          <div class="item-swatch" style="background:#FF6FA8"></div>
+          <div class="item-info">
+            <div class="item-name">Kiki la delfín</div>
+            <div class="item-sub">Pin esmaltado · ×2</div>
+          </div>
+          <div class="item-price">$44.000</div>
+        </div>
+      </div>
+
+      <!-- Dirección -->
+      <div class="card">
+        <div class="card-title">Dirección de entrega</div>
+        <div class="addr-grid">
+          <div class="addr-field">
+            <div class="lbl">Nombre</div>
+            <div class="val">Valentina Ríos</div>
+          </div>
+          <div class="addr-field">
+            <div class="lbl">Celular</div>
+            <div class="val">+57 310 456 7890</div>
+          </div>
+          <div class="addr-field" style="grid-column:span 2">
+            <div class="lbl">Dirección</div>
+            <div class="val">Calle 72 #10-34, Apto 502 · Chapinero · Bogotá D.C.</div>
+          </div>
+        </div>
+        <div class="envio-info">
+          <div class="icon">📦</div>
+          <div class="txt">
+            <strong>El envío se cobra contra entrega</strong>
+            <p>El transportista cobrará el flete al momento de la entrega. El costo aproximado para Bogotá es $8.000 – $12.000 COP.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna derecha -->
+    <div>
+      <!-- Total -->
+      <div class="card">
+        <div class="card-title">Resumen del pago</div>
+        <div class="totals">
+          <div class="total-row"><span>Subtotal (3 productos)</span><span>$211.000</span></div>
+          <div class="total-row"><span>Envío</span><span class="free-tag">GRATIS</span></div>
+          <div class="total-row main"><span>Total pagado</span><span>$211.000</span></div>
+        </div>
+      </div>
+
+      <!-- Próximos pasos -->
+      <div class="card">
+        <div class="card-title">¿Qué sigue?</div>
+        <div class="next-steps">
+          <div class="next-step">
+            <div class="step-dot">1</div>
+            <div class="step-body">
+              <strong>Confirmación por correo</strong>
+              <p>Te enviamos los detalles del pedido a valentina@correo.co</p>
+            </div>
+          </div>
+          <div class="next-step">
+            <div class="step-dot">2</div>
+            <div class="step-body">
+              <strong>Preparación en taller</strong>
+              <p>Empacamos tu pedido en nuestro taller de Bogotá. Demora 1–2 días hábiles.</p>
+            </div>
+          </div>
+          <div class="next-step">
+            <div class="step-dot">3</div>
+            <div class="step-body">
+              <strong>Número de guía</strong>
+              <p>Te llegará el código de seguimiento cuando el paquete salga a despachar.</p>
+            </div>
+          </div>
+          <div class="next-step">
+            <div class="step-dot">4</div>
+            <div class="step-body">
+              <strong>Entrega y pago del flete</strong>
+              <p>El transportista entrega en tu dirección y cobra el envío en efectivo.</p>
+            </div>
+          </div>
+        </div>
+        <div class="cta-row">
+          <a href="/cuaquiverso/tienda" class="btn-primary">Seguir comprando</a>
+          <a href="/cuaquiverso" class="btn-ghost">Ir al inicio</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

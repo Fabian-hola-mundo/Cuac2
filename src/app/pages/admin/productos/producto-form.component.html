@@ -70,8 +70,8 @@
               }
             </select>
           </div>
-          <div class="field inv-toggle-row">
-            <label>Producto activo en el POS</label>
+          <div class="field-toggle-row">
+            <div><span class="ftr-label">Activo en el POS</span></div>
             <label class="inv-toggle">
               <input type="checkbox" formControlName="activo" />
               <span class="inv-slider"></span>
@@ -80,25 +80,13 @@
         </div>
 
         <label class="field-toggle">
-          <input type="checkbox" formControlName="destacado" />
-          <span class="toggle-track"></span>
-          <span class="toggle-label">Mostrar en home del Cuaquiverso</span>
+          <span class="inv-toggle"><input type="checkbox" formControlName="destacado" /><span class="inv-slider"></span></span>
+          Mostrar en home del Cuaquiverso
         </label>
-
-        @if (errorMsg()) {
-          <p style="font-size:13px;color:var(--terra);margin-bottom:var(--s-4)">{{ errorMsg() }}</p>
-        }
-
-        <div style="display:flex;gap:10px;margin-top:var(--s-5)">
-          <button class="btn-sm solid" type="submit" [disabled]="guardando()">
-            {{ guardando() ? 'Guardando…' : (isEdit() ? 'Actualizar' : 'Crear producto') }}
-          </button>
-          <button class="btn-sm ghost" type="button" (click)="cancelar()">Cancelar</button>
-        </div>
 
         <!-- ── APARIENCIA ─────────────────────────────────────────── -->
         <div class="section-sep"></div>
-        <h4 style="font-size:13px;font-weight:600;margin-bottom:var(--s-4);color:var(--carbon-60)">Apariencia en tienda</h4>
+        <span class="panel-section-h">Apariencia en tienda</span>
 
         <div class="grid-2">
           <div class="field">
@@ -122,7 +110,7 @@
 
         <!-- ── DETALLES ───────────────────────────────────────────── -->
         <div class="section-sep"></div>
-        <h4 style="font-size:13px;font-weight:600;margin-bottom:var(--s-4);color:var(--carbon-60)">Detalles</h4>
+        <span class="panel-section-h">Detalles</span>
 
         <div class="field">
           <label>Descripción <span class="opt">opcional</span></label>
@@ -132,9 +120,9 @@
 
         <div class="field">
           <label>Material</label>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+          <div class="check-list">
             @for (m of MATERIALES; track m.id) {
-              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+              <label class="check-opt">
                 <input type="checkbox"
                   [checked]="material().includes(m.id)"
                   (change)="toggleMaterial(m.id, $any($event.target).checked)" />
@@ -142,6 +130,17 @@
               </label>
             }
           </div>
+        </div>
+
+        @if (errorMsg()) {
+          <p class="form-error">{{ errorMsg() }}</p>
+        }
+
+        <div class="form-footer">
+          <button class="btn-sm ghost" type="button" (click)="cancelar()">Cancelar</button>
+          <button class="btn-sm solid" type="submit" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : (isEdit() ? 'Actualizar' : 'Crear producto') }}
+          </button>
         </div>
 
       </form>
@@ -153,7 +152,7 @@
     <div class="panel-h"><h3>Imágenes</h3></div>
     <div class="panel-b">
 
-      <div class="field" style="margin-bottom:var(--s-5)">
+      <div class="field">
         <label>Foto de portada</label>
         @if (coverPreview()) {
           <div class="img-preview">

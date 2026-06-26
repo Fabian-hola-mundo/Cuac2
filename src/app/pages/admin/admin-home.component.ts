@@ -1,13 +1,14 @@
 import { Component, computed, signal, inject, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { AdminStateService, ViewId } from '../../core/services/admin-state.service';
 import { MockAdminDataService, Customer, Order, Payment, Product, Character, Category, ToneStyle } from '../../core/services/mock-admin-data.service';
 import { GoogleAnalyticsService, GaPageView, GaPortfolioView } from '../../core/services/google-analytics.service';
 import { ClienteDetailComponent } from './clientes/cliente-detail.component';
 import { PagoDetailComponent }    from './pagos/pago-detail.component';
 import { PagosExportService }    from './pagos/pagos-export.service';
+import { EventosService }        from '../../core/services/eventos.service';
 
 @Component({
   selector: 'app-admin-home',
@@ -18,10 +19,12 @@ import { PagosExportService }    from './pagos/pagos-export.service';
 })
 export class AdminHomeComponent implements OnInit, OnDestroy {
 
-  private adminState = inject(AdminStateService);
-  private data = inject(MockAdminDataService);
-  private ga   = inject(GoogleAnalyticsService);
-  private exportSvc = inject(PagosExportService);
+  private adminState  = inject(AdminStateService);
+  private data        = inject(MockAdminDataService);
+  private ga          = inject(GoogleAnalyticsService);
+  private exportSvc   = inject(PagosExportService);
+  private eventosSvc  = inject(EventosService);
+  private router      = inject(Router);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   view = this.adminState.view;
@@ -30,7 +33,13 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   editorOn       = signal(false);
   orderOn        = signal(false);
   manualOrderOn  = signal(false);
+  eventoOn       = signal(false);
   editingProduct = signal<Product | null>(null);
+
+  // ── Nuevo evento form ──────────────────────────────────────────────────────
+  eventoNombre  = '';
+  creandoEvento = signal(false);
+  eventoError   = signal<string | null>(null);
 
   // ── Export dropdowns ───────────────────────────────────────────────────────
   exportContadorOpen = signal(false);
@@ -189,10 +198,12 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   }
 
   filterPayments(rango: string): Payment[] {
-    const hoy      = new Date();
-    const mesActual = hoy.toISOString().substring(0, 7);
-    const mesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1)
-      .toISOString().substring(0, 7);
+    const hoy = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const mesActual = `${hoy.getFullYear()}-${pad(hoy.getMonth() + 1)}`;
+    const prevMonth = hoy.getMonth() === 0 ? 11 : hoy.getMonth() - 1;
+    const prevYear  = hoy.getMonth() === 0 ? hoy.getFullYear() - 1 : hoy.getFullYear();
+    const mesPasado = `${prevYear}-${pad(prevMonth + 1)}`;
     const hace90 = new Date(hoy.getTime() - 90 * 24 * 60 * 60 * 1000);
 
     switch (rango) {
@@ -205,11 +216,15 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
 
   periodoSlug(rango: string): string {
     const hoy = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const mesActualSlug = `${hoy.getFullYear()}-${pad(hoy.getMonth() + 1)}`;
+    const prevMonth = hoy.getMonth() === 0 ? 11 : hoy.getMonth() - 1;
+    const prevYear  = hoy.getMonth() === 0 ? hoy.getFullYear() - 1 : hoy.getFullYear();
+    const mesPasadoSlug = `${prevYear}-${pad(prevMonth + 1)}`;
     switch (rango) {
-      case 'mes':        return hoy.toISOString().substring(0, 7);
-      case 'mes-pasado': return new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1)
-        .toISOString().substring(0, 7);
-      case '3meses':     return `${hoy.toISOString().substring(0, 7)}-3m`;
+      case 'mes':        return mesActualSlug;
+      case 'mes-pasado': return mesPasadoSlug;
+      case '3meses':     return `${mesActualSlug}-3m`;
       default:           return 'todo';
     }
   }
@@ -343,6 +358,35 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   }
 
   closeManualOrder() { this.manualOrderOn.set(false); }
+
+  openNuevoEvento() {
+    this.eventoNombre = '';
+    this.eventoError.set(null);
+    this.eventoOn.set(true);
+  }
+
+  closeNuevoEvento() { this.eventoOn.set(false); }
+
+  async crearEvento() {
+    if (!this.eventoNombre.trim()) {
+      this.eventoError.set('El nombre del evento es requerido.');
+      return;
+    }
+    this.creandoEvento.set(true);
+    this.eventoError.set(null);
+    try {
+      const { error } = await this.eventosSvc.crearEvento(this.eventoNombre.trim());
+      if (error) {
+        this.eventoError.set(error);
+      } else {
+        this.closeNuevoEvento();
+        this.router.navigate(['/admin/eventos']);
+      }
+    } catch (e: any) {
+      this.eventoError.set(e.message ?? 'Error al crear el evento.');
+    }
+    this.creandoEvento.set(false);
+  }
 
   moAddProduct(p: Product) {
     this.moItems.update(items => {

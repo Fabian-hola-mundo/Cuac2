@@ -156,6 +156,8 @@ nav.primary {
 
 .hero-left {
   padding-top: var(--s-4);
+
+  .cuac-breadcrumb { margin-bottom: var(--s-5); }
 }
 
 
@@ -286,14 +288,7 @@ nav.primary {
     aspect-ratio: 1;
     display: flex; align-items: center; justify-content: center;
     position: relative; overflow: hidden;
-
-    &::before {
-      content: ''; position: absolute; inset: 0;
-      background: repeating-linear-gradient(
-        -45deg, transparent 0 10px,
-        rgba(21, 31, 40, 0.03) 10px 11px
-      );
-    }
+    backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5);
 
     &::after {
       content: ''; position: absolute; inset: 0;
@@ -394,14 +389,14 @@ nav.primary {
   }
 
   // Per-character colors
-  &[data-c="cuac"]       { --c: var(--rio);    .art { background: var(--rio-soft); } .glyph { color: var(--rio); } }
-  &[data-c="yeison"]     { --c: #B07820;        .art { background: var(--sol-soft); } .glyph { color: #B07820; } }
-  &[data-c="roar"]       { --c: var(--carbon);  .art { background: var(--bone); } .glyph { color: var(--carbon); } }
-  &[data-c="kiki"]       { --c: var(--rosa);    .art { background: var(--rosa-soft); } .glyph { color: var(--rosa); } }
-  &[data-c="abejandro"]  { --c: var(--terra);   .art { background: var(--terra-soft); } .glyph { color: var(--terra); } }
-  &[data-c="atolita"]    { --c: var(--lila);    .art { background: var(--lila-soft); } .glyph { color: var(--lila); } }
-  &[data-c="colibriana"] { --c: var(--selva);   .art { background: var(--selva-soft); } .glyph { color: var(--selva); } }
-  &[data-c="tiburcio"]   { --c: #2E8FB8;        .art { background: #DCEEF7; } .glyph { color: #2E8FB8; } }
+  &[data-c="cuac"]       { --c: var(--rio);    .art { background: rgba(201, 217, 246, 0.65); } .glyph { color: var(--rio); } }
+  &[data-c="yeison"]     { --c: #B07820;        .art { background: rgba(252, 239, 194, 0.65); } .glyph { color: #B07820; } }
+  &[data-c="roar"]       { --c: var(--carbon);  .art { background: rgba(212, 220, 228, 0.65); } .glyph { color: var(--carbon); } }
+  &[data-c="kiki"]       { --c: var(--rosa);    .art { background: rgba(252, 224, 236, 0.65); } .glyph { color: var(--rosa); } }
+  &[data-c="abejandro"]  { --c: var(--terra);   .art { background: rgba(251, 224, 213, 0.65); } .glyph { color: var(--terra); } }
+  &[data-c="atolita"]    { --c: var(--lila);    .art { background: rgba(229, 221, 247, 0.65); } .glyph { color: var(--lila); } }
+  &[data-c="colibriana"] { --c: var(--selva);   .art { background: rgba(215, 235, 221, 0.65); } .glyph { color: var(--selva); } }
+  &[data-c="tiburcio"]   { --c: #2E8FB8;        .art { background: rgba(220, 238, 247, 0.65); } .glyph { color: #2E8FB8; } }
 
   // Próximamente card
   &.proxim {

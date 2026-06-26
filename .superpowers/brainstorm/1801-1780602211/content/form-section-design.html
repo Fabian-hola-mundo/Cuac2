@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diseño del formulario</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #1a1a1a; color: #eee; padding: 32px 24px; }
+h2 { font-size: 16px; color: #fff; margin-bottom: 6px; }
+.subtitle { font-size: 13px; color: #888; margin-bottom: 32px; }
+
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1000px; margin: 0 auto; }
+
+.panel-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #555; margin-bottom: 12px; }
+
+/* ── Form section mockup ── */
+.form-section {
+  background: #ECEFF3;
+  border-radius: 12px;
+  padding: 48px 40px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.form-eyebrow {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: #EC3813; margin-bottom: 12px;
+}
+.form-eyebrow .dot { width: 5px; height: 5px; border-radius: 50%; background: #EC3813; flex-shrink: 0; }
+.form-h { font-size: 28px; font-weight: 400; color: #151F28; line-height: 1.15; margin-bottom: 6px; font-family: 'Georgia', serif; }
+.form-h em { font-style: italic; color: #EC3813; }
+.form-sub { font-size: 13px; color: rgba(21,31,40,0.55); margin-bottom: 28px; line-height: 1.5; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip {
+  border-radius: 20px; font-size: 12px; padding: 7px 14px; cursor: pointer;
+  border: 1.5px solid rgba(21,31,40,0.15); color: rgba(21,31,40,0.55);
+  background: transparent; transition: all .15s;
+}
+.chip.active {
+  background: #EC3813; border-color: #EC3813; color: #fff; font-weight: 600;
+}
+
+.form-textarea {
+  width: 100%; background: #fff; border: 1.5px solid rgba(21,31,40,0.12);
+  border-radius: 8px; font-size: 14px; color: #151F28; padding: 14px;
+  resize: none; height: 100px; margin-bottom: 10px; outline: none;
+  font-family: inherit;
+}
+.form-email {
+  width: 100%; background: #fff; border: 1.5px solid rgba(21,31,40,0.12);
+  border-radius: 8px; font-size: 14px; color: #151F28; padding: 12px 14px;
+  margin-bottom: 16px; outline: none; font-family: inherit;
+}
+.form-row { display: flex; justify-content: flex-end; }
+.btn-send {
+  background: #EC3813; color: #fff; border: none; border-radius: 6px;
+  padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+}
+
+/* ── Success state ── */
+.form-success {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 280px; text-align: center; gap: 12px;
+}
+.success-icon { font-size: 36px; }
+.success-h { font-size: 20px; font-weight: 600; color: #151F28; }
+.success-sub { font-size: 13px; color: rgba(21,31,40,0.55); }
+
+/* ── Admin mockup ── */
+.admin-panel {
+  background: #0f1923; border-radius: 12px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.admin-topbar {
+  background: #151F28; padding: 12px 16px; display: flex; align-items: center;
+  justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.admin-title { font-size: 13px; font-weight: 600; color: #ECEFF3; }
+.badge-unread {
+  background: #EC3813; color: #fff; font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+}
+.msg-row {
+  padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: start;
+}
+.msg-row.unread { background: rgba(236,56,19,0.04); }
+.tipo-chip {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+  background: rgba(236,56,19,0.15); color: #EC3813; white-space: nowrap; margin-top: 1px;
+}
+.tipo-chip.pedido { background: rgba(42,111,219,0.15); color: #5B9BFF; }
+.tipo-chip.duda   { background: rgba(255,200,60,0.15); color: #FFCC3C; }
+.tipo-chip.producto { background: rgba(80,200,120,0.15); color: #50C878; }
+.msg-body { overflow: hidden; }
+.msg-preview { font-size: 12px; color: rgba(236,239,243,0.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-email { font-size: 10px; color: rgba(236,239,243,0.3); margin-top: 2px; }
+.msg-date { font-size: 10px; color: rgba(236,239,243,0.25); white-space: nowrap; }
+.dot-unread { width: 6px; height: 6px; border-radius: 50%; background: #EC3813; margin-top: 4px; }
+.dot-read { width: 6px; height: 6px; border-radius: 50%; background: transparent; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h2 style="text-align:center;margin-bottom:6px;">Diseño — Formulario + Admin</h2>
+<p class="subtitle" style="text-align:center;margin-bottom:32px;">Vista previa de la sección que reemplaza al newsletter y la bandeja de mensajes en el admin</p>
+
+<div class="split">
+
+  <!-- Left: Form mockup -->
+  <div>
+    <div class="panel-label">Sección en la landing (reemplaza newsletter)</div>
+    <div class="form-section">
+      <div class="form-eyebrow"><span class="dot"></span> Escríbenos</div>
+      <h2 class="form-h">Lo que sea. <em>En serio.</em></h2>
+      <p class="form-sub">Una duda, una idea de producto, un comentario — todo llega directo al equipo de Cuac.</p>
+
+      <div class="chips">
+        <span class="chip active">💬 Comentario</span>
+        <span class="chip">🛍 Sugerir producto</span>
+        <span class="chip">❓ Duda</span>
+        <span class="chip">📦 Pedido</span>
+      </div>
+      <textarea class="form-textarea" placeholder="¿Cuál personaje merece su propia camiseta? ¿Tienes una queja? ¿Una idea loca? Cuéntanos."></textarea>
+      <input class="form-email" placeholder="tu@correo.co — solo si quieres que te respondamos (opcional)" />
+      <div class="form-row">
+        <button class="btn-send">Enviar →</button>
+      </div>
+    </div>
+
+    <!-- Success state below -->
+    <div class="panel-label" style="margin-top:20px;">Estado de éxito (después de enviar)</div>
+    <div class="form-section">
+      <div class="form-success">
+        <div class="success-icon">✉️</div>
+        <div class="success-h">Mensaje recibido</div>
+        <div class="success-sub">El equipo de Cuaquiverso lo leerá pronto.<br>Si dejaste tu correo, te respondemos.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Admin mockup -->
+  <div>
+    <div class="panel-label">Admin — /admin/mensajes</div>
+    <div class="admin-panel">
+      <div class="admin-topbar">
+        <span class="admin-title">Mensajes</span>
+        <span class="badge-unread">3 sin leer</span>
+      </div>
+
+      <div class="msg-row unread">
+        <div class="dot-unread"></div>
+        <div class="tipo-chip">💬 Comentario</div>
+        <div class="msg-body">
+          <div class="msg-preview">¿Van a sacar una camiseta de La Llorona? Sería épico para halloween...</div>
+          <div class="msg-email">sin correo</div>
+        </div>
+        <div class="msg-date">hace 5 min</div>
+      </div>
+
+      <div class="msg-row unread">
+        <div class="dot-unread"></div>
+        <div class="tipo-chip producto">🛍 Producto</div>
+        <div class="msg-body">
+          <div class="msg-preview">Me encantaría una libreta de Kiki con sus recetas de cocina</div>
+          <div class="msg-email">maria@gmail.com</div>
+        </div>
+        <div class="msg-date">hace 2h</div>
+      </div>
+
+      <div class="msg-row unread">
+        <div class="dot-unread"></div>
+        <div class="tipo-chip pedido">📦 Pedido</div>
+        <div class="msg-body">
+          <div class="msg-preview">Mi pedido #2847 lleva 8 días y no tengo información de envío</div>
+          <div class="msg-email">juan.p@outlook.com</div>
+        </div>
+        <div class="msg-date">ayer</div>
+      </div>
+
+      <div class="msg-row">
+        <div class="dot-read"></div>
+        <div class="tipo-chip duda">❓ Duda</div>
+        <div class="msg-body">
+          <div class="msg-preview">¿Hacen envíos a Medellín? ¿Cuánto demora?</div>
+          <div class="msg-email">sin correo</div>
+        </div>
+        <div class="msg-date">hace 3 días</div>
+      </div>
+
+      <div class="msg-row">
+        <div class="dot-read"></div>
+        <div class="tipo-chip producto">🛍 Producto</div>
+        <div class="msg-body">
+          <div class="msg-preview">Ojalá hicieran pins de todos los personajes, los coleccionaría</div>
+          <div class="msg-email">arte.bogota@gmail.com</div>
+        </div>
+        <div class="msg-date">hace 5 días</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

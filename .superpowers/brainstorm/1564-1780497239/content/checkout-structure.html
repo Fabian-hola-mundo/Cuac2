@@ -1,0 +1,88 @@
+<h2>¿Cómo estructuramos el checkout?</h2>
+<p class="subtitle">El carrito ya tiene los productos. Esto cubre lo que viene después.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:20px;background:#f8f9fb;font-family:sans-serif">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#151F28;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">1</div>
+        <div style="height:2px;flex:1;background:#151F28"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#151F28;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">2</div>
+        <div style="height:2px;flex:1;background:#ddd"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#ddd;color:#999;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">3</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7ea;border-radius:8px;padding:14px;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Paso 1 · Datos y envío</div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:80%;margin-bottom:6px"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:60%;margin-bottom:6px"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:70%"></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7ea;border-radius:8px;padding:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Paso 2 · Pago (Wompi)</div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:90%;margin-bottom:6px"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:50%"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A · 2 pasos + confirmación</h3>
+      <p>Paso 1: nombre, email, teléfono y dirección de envío. Paso 2: widget Wompi embebido. Paso 3: pantalla de confirmación. Flujo rápido, todo en /cuaquiverso/checkout.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:20px;background:#f8f9fb;font-family:sans-serif">
+      <div style="background:#fff;border:1px solid #e5e7ea;border-radius:8px;padding:14px;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Sección 1 · Resumen del carrito</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="width:32px;height:32px;border-radius:6px;background:#2A6FDB;opacity:.7"></div>
+          <div>
+            <div style="height:7px;background:#eee;border-radius:3px;width:100px;margin-bottom:4px"></div>
+            <div style="height:7px;background:#eee;border-radius:3px;width:60px"></div>
+          </div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7ea;border-radius:8px;padding:14px;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Sección 2 · Tus datos y envío</div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:80%;margin-bottom:6px"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:60%"></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7ea;border-radius:8px;padding:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Sección 3 · Pagar con Wompi</div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:70%"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B · Página única en secciones</h3>
+      <p>Todo en un scroll: resumen del carrito, datos personales y envío, luego el botón de Wompi. Sin pasos ni navegación entre pantallas. Más simple de implementar.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:20px;background:#f8f9fb;font-family:sans-serif">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+        <div style="background:#151F28;color:#fff;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:700">Datos</div>
+        <div style="height:2px;flex:1;background:#151F28;min-width:12px"></div>
+        <div style="background:#151F28;color:#fff;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:700">Envío</div>
+        <div style="height:2px;flex:1;background:#ddd;min-width:12px"></div>
+        <div style="background:#ddd;color:#999;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:700">Pago</div>
+        <div style="height:2px;flex:1;background:#ddd;min-width:12px"></div>
+        <div style="background:#ddd;color:#999;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:700">Listo</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7ea;border-radius:8px;padding:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Paso actual · Datos personales</div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:90%;margin-bottom:6px"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:55%;margin-bottom:6px"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:75%"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+        <div style="background:#EC3813;color:#fff;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700">Continuar →</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C · 4 pasos separados</h3>
+      <p>Datos personales → Dirección de envío → Pago (Wompi) → Confirmación. Más estructura, barra de progreso explícita, rutas separadas por paso.</p>
+    </div>
+  </div>
+
+</div>

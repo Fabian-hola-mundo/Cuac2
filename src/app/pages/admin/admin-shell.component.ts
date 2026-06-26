@@ -27,8 +27,10 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   loginPass     = '';
   loginError    = signal<string | null>(null);
   loginLoading  = signal(false);
+  showPass      = signal(false);
 
   searchOpen    = signal(false);
+  navOpen       = signal(false);
 
   notifOpen     = signal(false);
   readonly notifSvc = inject(NotificationsService);
@@ -45,8 +47,12 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     if (e.key === 'Escape') {
       this.notifOpen.set(false);
       this.searchOpen.set(false);
+      this.navOpen.set(false);
     }
   }
+
+  toggleNav() { this.navOpen.update(v => !v); }
+  closeNav()  { this.navOpen.set(false); }
 
   private routerUrl = toSignal(
     this.router.events.pipe(
@@ -147,6 +153,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   }
 
   goHome(id: ViewId) {
+    this.closeNav();
     if (id === 'productos') {
       this.router.navigate(['/admin/productos']);
       return;
@@ -165,12 +172,12 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     }
   }
 
-  goCotizaciones() { this.router.navigate(['/admin/cotizaciones']); }
-  goPortafolio() { this.router.navigate(['/admin/portafolio']); }
-  goProductos() { this.router.navigate(['/admin/productos']); }
-  goEventos()   { this.router.navigate(['/admin/eventos']); }
-  goPersonajes() { this.router.navigate(['/admin/personajes']); }
-  goMensajes()   { this.router.navigate(['/admin/mensajes']); }
+  goCotizaciones() { this.closeNav(); this.router.navigate(['/admin/cotizaciones']); }
+  goPortafolio() { this.closeNav(); this.router.navigate(['/admin/portafolio']); }
+  goProductos() { this.closeNav(); this.router.navigate(['/admin/productos']); }
+  goEventos()   { this.closeNav(); this.router.navigate(['/admin/eventos']); }
+  goPersonajes() { this.closeNav(); this.router.navigate(['/admin/personajes']); }
+  goMensajes()   { this.closeNav(); this.router.navigate(['/admin/mensajes']); }
 
   async loginGoogle() {
     this.loginLoading.set(true);
@@ -188,6 +195,10 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     const { error } = await this.sb.signInWithPassword(this.loginEmail, this.loginPass);
     this.loginLoading.set(false);
     if (error) this.loginError.set('Credenciales incorrectas. Intenta de nuevo.');
+  }
+
+  setShowPass(v: boolean) {
+    this.showPass.set(v);
   }
 
   async logout() { await this.sb.signOut(); }

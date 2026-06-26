@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product detail layout</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Inter',system-ui,sans-serif; background:#1a1a1a; color:#eee; padding:24px; }
+.label { display:inline-block; background:#EC3813; color:#fff; font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:3px 8px; border-radius:3px; margin-bottom:16px; }
+.grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-top:8px; }
+.opt { background:#111; border:2px solid transparent; border-radius:12px; overflow:hidden; cursor:pointer; transition:border-color .2s; }
+.opt:hover { border-color:#EC3813; }
+.opt.selected { border-color:#EC3813; }
+.opt-body { padding:14px; }
+.opt-title { font-size:13px; font-weight:700; margin-bottom:4px; color:#fff; }
+.opt-desc  { font-size:11px; color:#888; line-height:1.5; }
+
+/* Mockup shared */
+.mock { background:#ECEFF3; border-radius:6px; overflow:hidden; }
+.mock-nav { background:#151F28; height:36px; display:flex; align-items:center; padding:0 14px; gap:8px; }
+.mock-nav .dot { width:20px; height:4px; border-radius:2px; background:#ECEFF3; opacity:.3; }
+.mock-nav .dot.lg { width:40px; }
+.mock-nav .dot.acc { background:#EC3813; opacity:1; width:24px; }
+
+/* Option A: 2-col classic */
+.a-layout { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+.a-imgs { background:#DDE3EA; height:160px; display:flex; align-items:center; justify-content:center; }
+.a-imgs-inner { display:grid; grid-template-columns:1fr; gap:4px; padding:12px; width:100%; }
+.a-main-img { background:#C0C8D0; border-radius:4px; height:110px; }
+.a-thumbs { display:flex; gap:4px; }
+.a-thumb { background:#C0C8D0; border-radius:3px; height:28px; flex:1; opacity:.6; }
+.a-thumb.active { opacity:1; border:1.5px solid #151F28; }
+.a-info { padding:14px; background:#fff; }
+.a-tag { background:#F5F7FA; border-radius:3px; font-size:9px; color:#888; padding:2px 6px; display:inline-block; margin-bottom:6px; }
+.a-name { font-size:13px; font-weight:700; color:#151F28; margin-bottom:4px; }
+.a-price { font-size:16px; font-weight:800; color:#151F28; margin-bottom:8px; }
+.a-desc { font-size:9px; color:#888; line-height:1.4; margin-bottom:10px; }
+.a-btn { background:#EC3813; color:#fff; border-radius:5px; font-size:10px; font-weight:700; padding:7px 14px; display:inline-block; }
+
+/* Option B: editorial full-width */
+.b-hero { height:100px; background:#2A6FDB; display:flex; align-items:flex-end; padding:10px; }
+.b-hero-label { background:rgba(0,0,0,.4); color:#fff; font-size:9px; padding:3px 8px; border-radius:2px; }
+.b-body { padding:12px; background:#fff; }
+.b-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+.b-name { font-size:13px; font-weight:700; color:#151F28; }
+.b-price { font-size:14px; font-weight:800; color:#151F28; }
+.b-chips { display:flex; gap:4px; margin-bottom:8px; }
+.b-chip { background:#F5F7FA; border-radius:10px; font-size:8px; color:#888; padding:2px 7px; }
+.b-desc { font-size:9px; color:#888; line-height:1.4; margin-bottom:10px; }
+.b-gallery { display:flex; gap:4px; margin-bottom:10px; }
+.b-gi { flex:1; background:#DDE3EA; border-radius:3px; height:40px; }
+.b-btn { background:#151F28; color:#ECEFF3; border-radius:5px; font-size:10px; font-weight:700; padding:7px 14px; display:inline-block; width:100%; text-align:center; }
+
+/* Option C: stacked mobile-first */
+.c-img { background:#2A6FDB; height:120px; position:relative; }
+.c-img-dots { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); display:flex; gap:4px; }
+.c-img-dot { width:5px; height:5px; border-radius:50%; background:#fff; opacity:.5; }
+.c-img-dot.active { opacity:1; }
+.c-body { padding:14px; background:#fff; }
+.c-eyebrow { font-size:9px; color:#EC3813; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; }
+.c-name { font-size:15px; font-weight:700; color:#151F28; margin-bottom:2px; }
+.c-sub { font-size:9px; color:#888; margin-bottom:8px; }
+.c-price-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.c-price { font-size:16px; font-weight:800; color:#151F28; }
+.c-badge { background:#D7EBDD; color:#1F5C39; font-size:8px; font-weight:700; padding:2px 6px; border-radius:10px; }
+.c-desc { font-size:9px; color:#888; line-height:1.5; margin-bottom:10px; }
+.c-btn { background:#EC3813; color:#fff; border-radius:5px; font-size:11px; font-weight:700; padding:8px; display:block; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="label">Vista individual de producto — elige el layout</div>
+
+<div class="grid">
+
+  <!-- A -->
+  <div class="opt" id="opt-a" onclick="select('a')">
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="dot lg"></div>
+        <div class="dot"></div><div class="dot"></div>
+        <div style="flex:1"></div>
+        <div class="dot acc"></div>
+      </div>
+      <div class="a-layout">
+        <div class="a-imgs">
+          <div class="a-imgs-inner">
+            <div class="a-main-img"></div>
+            <div class="a-thumbs">
+              <div class="a-thumb active"></div>
+              <div class="a-thumb"></div>
+              <div class="a-thumb"></div>
+            </div>
+          </div>
+        </div>
+        <div class="a-info">
+          <div class="a-tag">Camiseta · Cuac</div>
+          <div class="a-name">El explorador soñador</div>
+          <div class="a-price">$89.000 COP</div>
+          <div class="a-desc">Algodón orgánico 100%. Edición limitada de 200 unidades, hecha en Bogotá.</div>
+          <div class="a-btn">Agregar al carrito</div>
+        </div>
+      </div>
+    </div>
+    <div class="opt-body">
+      <div class="opt-title">A · 2 columnas (clásico ecommerce)</div>
+      <div class="opt-desc">Galería izquierda con thumbnails, info derecha. Patrón familiar, fácil de escanear. Desktop-first.</div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="opt" id="opt-b" onclick="select('b')">
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="dot lg"></div>
+        <div class="dot"></div><div class="dot"></div>
+        <div style="flex:1"></div>
+        <div class="dot acc"></div>
+      </div>
+      <div class="b-hero"></div>
+      <div class="b-body">
+        <div class="b-row">
+          <div class="b-name">El explorador soñador</div>
+          <div class="b-price">$89.000</div>
+        </div>
+        <div class="b-chips">
+          <div class="b-chip">Camiseta</div>
+          <div class="b-chip">Cuac</div>
+          <div class="b-chip">Algodón org.</div>
+        </div>
+        <div class="b-desc">Edición limitada de 200 unidades. Tela de algodón orgánico 180g, hecha en talleres de Bogotá.</div>
+        <div class="b-gallery">
+          <div class="b-gi"></div><div class="b-gi"></div><div class="b-gi"></div>
+        </div>
+        <div class="b-btn">Agregar al carrito →</div>
+      </div>
+    </div>
+    <div class="opt-body">
+      <div class="opt-title">B · Hero + scroll editorial</div>
+      <div class="opt-desc">Imagen hero full-width, info en scroll debajo. Más editorial, inmersivo. Galería horizontal al final.</div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="opt" id="opt-c" onclick="select('c')">
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="dot lg"></div>
+        <div class="dot"></div><div class="dot"></div>
+        <div style="flex:1"></div>
+        <div class="dot acc"></div>
+      </div>
+      <div class="c-img">
+        <div class="c-img-dots">
+          <div class="c-img-dot active"></div>
+          <div class="c-img-dot"></div>
+          <div class="c-img-dot"></div>
+        </div>
+      </div>
+      <div class="c-body">
+        <div class="c-eyebrow">Camiseta · Cuac</div>
+        <div class="c-name">El explorador soñador</div>
+        <div class="c-sub">Algodón orgánico · Hecho en Bogotá</div>
+        <div class="c-price-row">
+          <div class="c-price">$89.000 COP</div>
+          <div class="c-badge">200 unidades</div>
+        </div>
+        <div class="c-desc">Cada personaje del Cuaquiverso tiene una región, una historia. Cuac es el viajero que cruza todo el mapa.</div>
+        <div class="c-btn">Agregar al carrito</div>
+      </div>
+    </div>
+    <div class="opt-body">
+      <div class="opt-title">C · Apilado mobile-first</div>
+      <div class="opt-desc">Imagen full-width con carrusel de puntos, info compacta debajo. Funciona igual en móvil y desktop.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function select(id) {
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  document.getElementById('opt-' + id).classList.add('selected');
+  if (window.__companion) window.__companion.select(id);
+}
+</script>
+
+</body>
+</html>

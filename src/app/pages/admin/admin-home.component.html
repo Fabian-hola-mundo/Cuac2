@@ -995,84 +995,34 @@
 }
 
 <!-- ══ NUEVO EVENTO DRAWER ══════════════════════════════════════════════════ -->
-@if (eventoOn()) {
-<div class="drawer-back on" (click)="closeNuevoEvento()"></div>
-<div class="drawer on">
+<div class="drawer-back" [class.on]="eventoOn()" (click)="closeNuevoEvento()"></div>
+<div class="drawer" [class.on]="eventoOn()" style="width:440px">
   <div class="drawer-h">
     <div>
-      <div class="crumbs-admin"><span>Dashboard</span><span class="sep">/</span><strong>Nuevo evento</strong></div>
+      <div class="eyebrow"><span class="dot"></span> Nuevo evento</div>
       <h2>Crear evento</h2>
     </div>
-    <button class="drawer-close" (click)="closeNuevoEvento()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <button class="drawer-close" (click)="closeNuevoEvento()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
   </div>
   <div class="drawer-b">
-    <div class="grid-form-cols">
-      <div style="display:flex;flex-direction:column;gap:var(--s-5)">
-        <div class="panel">
-          <div class="panel-h"><h3>General</h3><span class="sub">Datos del evento</span></div>
-          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
-            <div class="field"><label>Nombre del evento <span style="color:var(--terra)">*</span></label><input class="input" [(ngModel)]="eventoNombre" name="eventoNombre" placeholder="Ej: Feria del Cuaquiverso 2026" /></div>
-            <div class="grid-2">
-              <div class="field"><label>Fecha <span style="color:var(--terra)">*</span></label><input class="input" type="date" [(ngModel)]="eventoFecha" name="eventoFecha" /></div>
-              <div class="field"><label>Hora</label><input class="input" type="time" [(ngModel)]="eventoHora" name="eventoHora" /></div>
-            </div>
-            <div class="field"><label>Tipo de evento</label>
-              <select class="select" [(ngModel)]="eventoTipo" name="eventoTipo">
-                <option value="feria">Feria / mercado</option>
-                <option value="taller">Taller</option>
-                <option value="lanzamiento">Lanzamiento</option>
-                <option value="concierto">Concierto</option>
-                <option value="pop-up">Pop-up</option>
-                <option value="otro">Otro</option>
-              </select>
-            </div>
-            <div class="field"><label>Descripción</label><textarea class="textarea" [(ngModel)]="eventoDesc" name="eventoDesc" rows="4" placeholder="Cuéntale al equipo de qué se trata este evento."></textarea></div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-h"><h3>Lugar</h3></div>
-          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
-            <div class="field"><label>Nombre del lugar</label><input class="input" [(ngModel)]="eventoLugar" name="eventoLugar" placeholder="Ej: Centro Comercial El Tesoro" /></div>
-            <div class="grid-2">
-              <div class="field"><label>Ciudad</label><input class="input" [(ngModel)]="eventoCiudad" name="eventoCiudad" placeholder="Medellín" /></div>
-              <div class="field"><label>Dirección</label><input class="input" [(ngModel)]="eventoDireccion" name="eventoDireccion" placeholder="Cra 25A # 1A Sur-45" /></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:var(--s-4)">
-        <div class="panel">
-          <div class="panel-h"><h3>Logística</h3></div>
-          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
-            <div class="field"><label>Aforo / cupos</label><input class="input" type="number" [(ngModel)]="eventoAforo" name="eventoAforo" placeholder="—" min="0" /></div>
-            <div class="field"><label>Costo de participación (COP)</label><input class="input" type="number" [(ngModel)]="eventoCosto" name="eventoCosto" placeholder="0 si es gratuito" min="0" /></div>
-            <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-top:4px"><input type="checkbox" [(ngModel)]="eventoVentasEnSitio" name="eventoVentasEnSitio" /> Habrá ventas en el evento</label>
-            <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" [(ngModel)]="eventoStandPropio" name="eventoStandPropio" /> Stand propio / carpa</label>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-h"><h3>Notas internas</h3></div>
-          <div class="panel-b">
-            <textarea class="textarea" rows="4" [(ngModel)]="eventoNotas" name="eventoNotas" placeholder="Contacto del organizador, link de registro, requisitos, etc."></textarea>
-          </div>
-        </div>
-      </div>
+    <div class="field">
+      <label>Nombre del evento <span class="opt">*</span></label>
+      <input class="input" [(ngModel)]="eventoNombre" name="eventoNombre" placeholder="ej. SOFA 2026" (keyup.enter)="crearEvento()" />
+      <span class="help">El evento quedará como activo. Solo puede existir un evento activo a la vez.</span>
     </div>
+    @if (eventoError()) {
+      <p style="color:var(--terra);font-size:13px;margin-top:var(--s-3)">{{ eventoError() }}</p>
+    }
   </div>
   <div class="drawer-f">
-    <button class="btn-sm danger" (click)="closeNuevoEvento()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg> Descartar</button>
-    <div style="display:flex;gap:10px">
-      <button class="btn-sm ghost" (click)="closeNuevoEvento()">Cancelar</button>
-      <button class="btn-sm solid"
-        [disabled]="!eventoNombre.trim() || !eventoFecha"
-        (click)="guardarEvento()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="m5 12 5 5L20 7"/></svg>
-        Crear evento
-      </button>
-    </div>
+    <button class="btn-sm ghost" (click)="closeNuevoEvento()">Cancelar</button>
+    <button class="btn-sm solid" [disabled]="creandoEvento()" (click)="crearEvento()">
+      {{ creandoEvento() ? 'Creando…' : 'Crear evento' }}
+    </button>
   </div>
 </div>
-}
 
 @if (toast()) {
   <div class="toast-global">{{ toast() }}</div>

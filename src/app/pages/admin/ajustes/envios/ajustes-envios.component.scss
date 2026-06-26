@@ -1,13 +1,61 @@
 :host { display: contents; }
 
-.tog-wrap {
-  cursor: pointer;
-  .tog {
-    width: 40px; height: 22px; border-radius: 11px;
-    background: var(--carbon-20); position: relative; transition: background 150ms;
-    &::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition: left 150ms; }
-    &.on { background: var(--selva, #1F8A5B); &::after { left: 21px; } }
-  }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.carrier-card {
+  border: 1px solid var(--carbon-08);
+  border-radius: 10px;
+  overflow: hidden;
+
+  & + .carrier-card { margin-top: var(--s-3); }
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+.carrier-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: 14px 16px;
+}
+
+.carrier-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.carrier-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--cream-2);
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-size: 16px;
+  color: var(--carbon-50);
+  flex-shrink: 0;
+}
+
+.carrier-name {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--carbon);
+}
+
+.carrier-desc {
+  font-size: 12px;
+  color: var(--carbon-50);
+  margin-top: 2px;
+}
+
+.carrier-config {
+  padding: 0 16px 14px;
+  border-top: 1px solid var(--carbon-08);
+  padding-top: var(--s-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}

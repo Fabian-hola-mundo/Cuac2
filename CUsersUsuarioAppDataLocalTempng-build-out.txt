@@ -1,0 +1,32 @@
+[33m❯[39m Building...
+[32m✔[39m Building...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                         [2m | [22m [1mRaw size[22m
+[32mchunk-JBVTYWF6.js[39m  [2m | [22m[2m-[22m                             [2m | [22m  [36m1.08 MB[39m[2m | [22m
+[32mchunk-CW54D7UH.js[39m  [2m | [22m[2m-[22m                             [2m | [22m[36m342.28 kB[39m[2m | [22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                        [2m | [22m[36m163.80 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                          [2m | [22m  [36m8.71 kB[39m[2m | [22m
+[32mchunk-GOMI4DH3.js[39m  [2m | [22m[2m-[22m                             [2m | [22m  [36m1.37 kB[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m                 [2m | [22m  [1m1.60 MB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                         [2m | [22m [1mRaw size[22m
+[32mchunk-FRZWTVHG.js[39m  [2m | [22m[2mthree-module[22m                  [2m | [22m  [36m1.67 MB[39m[2m | [22m
+[32mchunk-PT5R6PSL.js[39m  [2m | [22m[2m-[22m                             [2m | [22m[36m718.77 kB[39m[2m | [22m
+[32mchunk-KYU3LT53.js[39m  [2m | [22m[2mdesignsystem-component[22m        [2m | [22m[36m332.59 kB[39m[2m | [22m
+[32mchunk-LO5LMOB5.js[39m  [2m | [22m[2madmin-home-component[22m          [2m | [22m[36m287.00 kB[39m[2m | [22m
+[32mchunk-QU4V5GGS.js[39m  [2m | [22m[2midentidadcorporativa-component[22m[2m | [22m[36m235.80 kB[39m[2m | [22m
+[32mchunk-FBFB6O5F.js[39m  [2m | [22m[2mhome-component[22m                [2m | [22m[36m179.57 kB[39m[2m | [22m
+[32mchunk-XAKLXQ3X.js[39m  [2m | [22m[2mindex[22m                         [2m | [22m[36m169.86 kB[39m[2m | [22m
+[32mchunk-FPCMNFF7.js[39m  [2m | [22m[2m-[22m                             [2m | [22m[36m152.86 kB[39m[2m | [22m
+[32mchunk-JHKANX3L.js[39m  [2m | [22m[2mcuaquiverso-component[22m         [2m | [22m[36m122.65 kB[39m[2m | [22m
+[32mchunk-RKNHZBQC.js[39m  [2m | [22m[2muniverso-component[22m            [2m | [22m[36m120.06 kB[39m[2m | [22m
+[32mchunk-KMGBCYED.js[39m  [2m | [22m[2mtienda-component[22m              [2m | [22m[36m103.85 kB[39m[2m | [22m
+[32mchunk-2ZPW2OFN.js[39m  [2m | [22m[2mportafolio-shell-component[22m    [2m | [22m [36m88.01 kB[39m[2m | [22m
+[32mchunk-YC6LC6J6.js[39m  [2m | [22m[2mportafolio-detail-component[22m   [2m | [22m [36m86.26 kB[39m[2m | [22m
+[32mchunk-ICC2JYV4.js[39m  [2m | [22m[2mcotizador-component[22m           [2m | [22m [36m63.23 kB[39m[2m | [22m
+[32mchunk-WKAUBC6M.js[39m  [2m | [22m[2mcheckout-component[22m            [2m | [22m [36m54.04 kB[39m[2m | [22m
+[2m...and 29 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+[35mPrerendered 2 static routes.[39m
+Application bundle generation failed. [21.552 seconds] - 2026-06-03T21:24:23.743Z
+

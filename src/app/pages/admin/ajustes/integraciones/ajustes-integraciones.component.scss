@@ -12,7 +12,7 @@
   overflow: hidden;
   background: var(--cream);
 
-  &.is-expanded { border-color: var(--carbon-20); }
+  &.is-expanded { border-color: var(--carbon-30); }
 }
 
 .int-card-head {
@@ -39,10 +39,9 @@
 }
 
 .int-config {
-  padding: 0 20px 20px;
+  padding: var(--s-4) 20px 20px;
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
   border-top: 1px solid var(--carbon-08);
-  padding-top: var(--s-4);
 }

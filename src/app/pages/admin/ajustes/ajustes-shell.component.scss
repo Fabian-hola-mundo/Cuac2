@@ -47,3 +47,16 @@
   flex-shrink: 0;
   color: inherit;
 }
+
+.aj-nav-list { padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+
+@media (max-width: 880px) {
+  .ajustes-layout { grid-template-columns: 1fr; }
+  .ajustes-nav { position: static; }
+  .aj-nav-list {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 4px;
+  }
+  .aj-link { flex-shrink: 0; }
+}

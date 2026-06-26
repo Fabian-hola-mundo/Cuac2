@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Diseño</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #ECEFF3; color: #151F28; font-size: 14px; }
+
+  .topbar {
+    background: rgba(236,239,243,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(21,31,40,0.08);
+    padding: 0 40px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { font-size: 18px; font-weight: 700; letter-spacing: -0.03em; }
+  .brand em { color: #EC3813; font-style: normal; }
+  .steps { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+  .step { display: flex; align-items: center; gap: 6px; color: rgba(21,31,40,0.35); }
+  .step.active { color: #151F28; }
+  .step.done { color: #1F8A5B; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(21,31,40,0.1); display:flex;align-items:center;justify-content:center; font-size:11px; }
+  .step.active .step-num { background: #151F28; color: #ECEFF3; }
+  .step.done .step-num { background: #1F8A5B; color: #fff; }
+  .step-div { width: 28px; height: 1px; background: rgba(21,31,40,0.15); }
+
+  .layout { display: grid; grid-template-columns: 1fr 380px; gap: 32px; max-width: 1080px; margin: 0 auto; padding: 40px 24px; }
+
+  .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(21,31,40,0.45); margin-bottom: 16px; }
+
+  .form-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(21,31,40,0.07);
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-row.three { grid-template-columns: 2fr 1fr 1fr; }
+
+  .field label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(21,31,40,0.45); margin-bottom: 5px; }
+  .field input, .field select {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid rgba(21,31,40,0.12);
+    border-radius: 8px; font-size: 13px; background: #f9fafb; color: #151F28;
+    outline: none; font-family: inherit;
+  }
+  .field input:focus { border-color: #151F28; background: #fff; }
+
+  .shipping-banner {
+    border-radius: 8px; padding: 10px 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12px; line-height: 1.5;
+    margin-top: 16px;
+  }
+  .shipping-banner.free { background: #D7EBDD; color: #1F5C39; border: 1px solid #A8D8B7; }
+  .shipping-banner.paid { background: #FBE0D5; color: #7A2A10; border: 1px solid #F5B08E; }
+  .shipping-banner strong { font-weight: 700; display: block; }
+
+  .city-calc { margin-top: 12px; }
+  .city-calc label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(21,31,40,0.45); margin-bottom: 5px; }
+  .city-row { display: flex; gap: 8px; }
+  .city-row select { flex:1; padding: 10px 12px; border: 1.5px solid rgba(21,31,40,0.12); border-radius: 8px; font-size: 13px; background: #f9fafb; font-family: inherit; }
+  .city-result { padding: 10px 14px; background: #f5f7fa; border-radius: 8px; font-size: 12px; color: rgba(21,31,40,0.6); margin-top: 8px; }
+  .city-result strong { color: #151F28; font-weight: 700; }
+
+  .summary-card {
+    background: #151F28;
+    border-radius: 14px;
+    padding: 24px;
+    color: #ECEFF3;
+    position: sticky; top: 24px;
+  }
+  .summary-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(236,239,243,0.45); margin-bottom: 18px; }
+  .summary-items { border-bottom: 1px solid rgba(236,239,243,0.1); padding-bottom: 16px; margin-bottom: 16px; }
+  .summary-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .summary-item:last-child { margin-bottom: 0; }
+  .item-dot { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; opacity: 0.8; }
+  .item-meta { flex: 1; }
+  .item-meta .name { font-size: 13px; font-weight: 600; }
+  .item-meta .sub { font-size: 11px; color: rgba(236,239,243,0.45); margin-top: 2px; }
+  .item-price { font-size: 13px; font-weight: 600; white-space: nowrap; }
+
+  .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; color: rgba(236,239,243,0.6); }
+  .summary-row.total { color: #ECEFF3; font-weight: 700; font-size: 17px; letter-spacing: -0.02em; margin-top: 4px; }
+  .summary-row span:last-child { font-weight: 600; }
+  .free-tag { background: #1F8A5B; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; letter-spacing: 0.04em; }
+
+  .wompi-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; margin-top: 20px; padding: 15px 20px;
+    background: #EC3813; color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: -0.01em;
+    transition: background 0.15s;
+  }
+  .wompi-btn:hover { background: #d43010; }
+  .wompi-logo { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; background: #fff; color: #EC3813; padding: 2px 6px; border-radius: 4px; }
+  .wompi-note { text-align: center; font-size: 11px; color: rgba(236,239,243,0.35); margin-top: 10px; line-height: 1.5; }
+
+  .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 6px; }
+  .page-sub { font-size: 14px; color: rgba(21,31,40,0.5); margin-bottom: 28px; }
+
+  .screen-label {
+    display: inline-block; background: #151F28; color: #ECEFF3;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px; margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">Cuaqui<em>verso</em></div>
+  <div class="steps">
+    <div class="step active">
+      <div class="step-num">1</div>
+      <span>Datos y envío</span>
+    </div>
+    <div class="step-div"></div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <span>Confirmar</span>
+    </div>
+  </div>
+  <div style="font-size:12px;color:rgba(21,31,40,0.4)">Compra segura 🔒</div>
+</div>
+
+<!-- PASO 1 -->
+<div class="layout">
+  <div>
+    <div class="screen-label">Paso 1 de 2 — vista de diseño</div>
+    <h1 class="page-title">¿A dónde te lo enviamos?</h1>
+    <p class="page-sub">Completa tus datos y calculamos el envío antes de pagar.</p>
+
+    <!-- Datos personales -->
+    <div class="form-card">
+      <div class="section-title">Datos personales</div>
+      <div class="form-row">
+        <div class="field">
+          <label>Nombre</label>
+          <input type="text" placeholder="Tu nombre completo" />
+        </div>
+        <div class="field">
+          <label>Apellido</label>
+          <input type="text" placeholder="Tu apellido" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" placeholder="tu@correo.co" />
+        </div>
+        <div class="field">
+          <label>Celular</label>
+          <input type="tel" placeholder="+57 300 000 0000" />
+        </div>
+      </div>
+      <div class="form-row three">
+        <div class="field">
+          <label>Tipo de documento</label>
+          <select>
+            <option>Cédula (CC)</option>
+            <option>Pasaporte</option>
+            <option>NIT</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column:span 2">
+          <label>Número de documento</label>
+          <input type="text" placeholder="1234567890" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Dirección de envío -->
+    <div class="form-card">
+      <div class="section-title">Dirección de envío</div>
+      <div class="form-row">
+        <div class="field">
+          <label>Departamento</label>
+          <select>
+            <option>Cundinamarca / Bogotá D.C.</option>
+            <option>Antioquia</option>
+            <option>Valle del Cauca</option>
+            <option>Atlántico</option>
+            <option>Santander</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ciudad / Municipio</label>
+          <input type="text" placeholder="Ej: Bogotá, Medellín..." />
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="field">
+          <label>Dirección</label>
+          <input type="text" placeholder="Calle 123 #45-67, Apto 8" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Barrio</label>
+          <input type="text" placeholder="Chapinero, El Poblado..." />
+        </div>
+        <div class="field">
+          <label>Código postal (opcional)</label>
+          <input type="text" placeholder="110111" />
+        </div>
+      </div>
+
+      <!-- Calculador de envío -->
+      <div class="city-calc">
+        <label>Costo estimado de envío</label>
+        <div class="city-result">
+          Tu pedido supera $150.000 — <strong>envío gratis</strong> incluido.
+          El transportista lo recoge en nuestro taller y lo lleva a tu puerta.
+        </div>
+      </div>
+
+      <!-- Banner envío gratis (estado: pedido >= 150k) -->
+      <div class="shipping-banner free">
+        <span>✓</span>
+        <div>
+          <strong>Envío gratis</strong>
+          Tu pedido supera $150.000. El costo de transporte va por nuestra cuenta.
+        </div>
+      </div>
+    </div>
+
+    <!-- Nota adicional -->
+    <div class="form-card" style="padding: 16px 20px">
+      <div class="field">
+        <label>Nota para el pedido (opcional)</label>
+        <input type="text" placeholder="Instrucciones de entrega, referencias del edificio..." />
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumen del pedido -->
+  <div>
+    <div class="summary-card">
+      <div class="summary-title">Resumen</div>
+      <div class="summary-items">
+        <div class="summary-item">
+          <div class="item-dot" style="background:#2A6FDB"></div>
+          <div class="item-meta">
+            <div class="name">El explorador soñador</div>
+            <div class="sub">Camiseta · ×1</div>
+          </div>
+          <div class="item-price">$89.000</div>
+        </div>
+        <div class="summary-item">
+          <div class="item-dot" style="background:#1F8A5B"></div>
+          <div class="item-meta">
+            <div class="name">Café con vuelo</div>
+            <div class="sub">Gorra · ×1</div>
+          </div>
+          <div class="item-price">$78.000</div>
+        </div>
+        <div class="summary-item">
+          <div class="item-dot" style="background:#FF6FA8"></div>
+          <div class="item-meta">
+            <div class="name">Kiki la delfín</div>
+            <div class="sub">Pin esmaltado · ×2</div>
+          </div>
+          <div class="item-price">$44.000</div>
+        </div>
+      </div>
+      <div class="summary-row"><span>Subtotal</span><span>$211.000</span></div>
+      <div class="summary-row"><span>Envío</span><span class="free-tag">GRATIS</span></div>
+      <div class="summary-row total"><span>Total</span><span>$211.000</span></div>
+
+      <button class="wompi-btn">
+        Pagar <span class="wompi-logo">WOMPI</span>
+      </button>
+      <p class="wompi-note">
+        Serás redirigido a Wompi para completar el pago.<br>
+        Aceptamos tarjetas, PSE, Nequi y efectivo.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mostrar el banner de "contra entrega" al cambiar ciudad
+  // (demo interactivo)
+</script>
+</body>
+</html>

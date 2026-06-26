@@ -31,7 +31,7 @@
   <div style="display:flex;flex-direction:column;gap:var(--s-4)">
     <div class="panel">
       <div class="panel-h"><h3>{{ p.nombre }}</h3><span class="badge" [class]="p.activa ? 'ok' : ''"><span class="pdot"></span>{{ p.activa ? 'Activa' : 'Inactiva' }}</span></div>
-      <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+      <div class="panel-b">
         <div class="field">
           <label>Asunto del correo</label>
           <input class="input" [value]="p.asunto" (input)="updateAsunto(p.id, $any($event.target).value)" />
@@ -62,7 +62,7 @@
       </div>
     </div>
 
-    <div style="display:flex;justify-content:flex-end;gap:10px">
+    <div class="page-footer">
       <button class="btn-sm ghost">Cancelar</button>
       <button class="btn-sm solid" [disabled]="saving()" (click)="guardar()">
         @if (saving()) { <svg style="width:13px;height:13px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg> Guardando… }

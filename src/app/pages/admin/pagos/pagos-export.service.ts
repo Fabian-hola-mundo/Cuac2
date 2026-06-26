@@ -6,9 +6,13 @@ import * as XLSX from 'xlsx';
 export class PagosExportService {
 
   exportCsv(payments: Payment[], periodoSlug: string): void {
+    const escape = (v: unknown): string => {
+      const s = String(v ?? '');
+      return /[;\n"]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
     const headers = ['ID Pago', 'Fecha', 'Orden', 'Método', 'Monto', 'Comisión', 'Neto', 'Estado'];
     const rows = payments.map(p => [p.id, p.date, p.order, p.method, p.amount, p.fee, p.net, p.status]);
-    const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
+    const csv = [headers, ...rows].map(r => r.map(escape).join(';')).join('\n');
     const bom = '﻿';
     const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
     this.triggerDownload(blob, `cuac-pagos-contador-${periodoSlug}.csv`);
@@ -51,7 +55,9 @@ export class PagosExportService {
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   }
 }

@@ -128,6 +128,8 @@ nav.primary {
 .shop-hero-inner {
   max-width: 1320px; margin: 0 auto;
   display: grid; grid-template-columns: 1.2fr 1fr; gap: var(--s-7); align-items: end;
+
+  .cuac-breadcrumb { margin-bottom: var(--s-5); }
 }
 
 
@@ -144,7 +146,7 @@ nav.primary {
 }
 
 .stats {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-5);
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-5);
   padding: var(--s-5);
   background: var(--paper); border: 1px solid var(--carbon-08); border-radius: var(--r-lg);
 
@@ -343,7 +345,7 @@ nav.primary {
 }
 
 .pcard {
-  position: relative; background: var(--paper);
+  position: relative; background: var(--paper); height: 100%;
   border: 1px solid var(--carbon-08); border-radius: var(--r-lg); overflow: hidden;
   display: flex; flex-direction: column;
   transition: transform .22s, box-shadow .22s, border-color .22s;
@@ -359,14 +361,19 @@ nav.primary {
   }
 
   .pcard-img {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 1; flex-shrink: 0; padding: var(--s-5);
     display: flex; align-items: center; justify-content: center;
     position: relative; overflow: hidden;
+    backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5);
+
+    img {
+      width: 100%; height: 100%; object-fit: contain; display: block;
+    }
 
     .label {
       font-family: var(--display); font-size: clamp(28px, 3.4vw, 48px);
       line-height: 1; mix-blend-mode: multiply; opacity: 0.72;
-      text-align: center; padding: var(--s-5);
+      text-align: center;
     }
   }
 
@@ -382,6 +389,7 @@ nav.primary {
 
   .pcard-info {
     padding: var(--s-4) var(--s-5); border-top: 1px solid var(--carbon-08);
+    display: flex; flex-direction: column; flex: 1;
   }
 
   .meta {
@@ -390,11 +398,16 @@ nav.primary {
     display: flex; justify-content: space-between; gap: 8px;
   }
 
-  h4 { font-family: var(--display); font-size: 19px; line-height: 1.1; margin-bottom: 8px; }
+  h4 {
+    font-family: var(--display); font-size: 19px; line-height: 1.18; margin-bottom: 8px;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    overflow: hidden; min-height: calc(1.18em * 2);
+  }
 
   .row {
     display: flex; justify-content: space-between; align-items: center;
     padding-top: 10px; border-top: 1px dashed var(--carbon-12);
+    margin-top: auto;
   }
 
   .price { font-family: var(--display); font-size: 18px; }
@@ -417,15 +430,15 @@ nav.primary {
   }
 
   // Per-color backgrounds and label colors
-  &[data-color="rio"]   .pcard-img { background: var(--rio-soft); }
-  &[data-color="rosa"]  .pcard-img { background: var(--rosa-soft); }
-  &[data-color="sol"]   .pcard-img { background: var(--sol-soft); }
-  &[data-color="selva"] .pcard-img { background: var(--selva-soft); }
-  &[data-color="terra"] .pcard-img { background: var(--terra-soft); }
-  &[data-color="lila"]  .pcard-img { background: var(--lila-soft); }
-  &[data-color="bone"]  .pcard-img { background: var(--bone); }
-  &[data-color="cream"] .pcard-img { background: var(--cream-2); }
-  &[data-color="tibu"]  .pcard-img { background: #DCEEF7; }
+  &[data-color="rio"]   .pcard-img { background: rgba(201, 217, 246, 0.65); }
+  &[data-color="rosa"]  .pcard-img { background: rgba(252, 224, 236, 0.65); }
+  &[data-color="sol"]   .pcard-img { background: rgba(252, 239, 194, 0.65); }
+  &[data-color="selva"] .pcard-img { background: rgba(215, 235, 221, 0.65); }
+  &[data-color="terra"] .pcard-img { background: rgba(251, 224, 213, 0.65); }
+  &[data-color="lila"]  .pcard-img { background: rgba(229, 221, 247, 0.65); }
+  &[data-color="bone"]  .pcard-img { background: rgba(212, 220, 228, 0.65); }
+  &[data-color="cream"] .pcard-img { background: rgba(221, 227, 234, 0.65); }
+  &[data-color="tibu"]  .pcard-img { background: rgba(220, 238, 247, 0.65); }
   &[data-color="rio"]   .label { color: var(--rio); }
   &[data-color="rosa"]  .label { color: var(--rosa); }
   &[data-color="sol"]   .label { color: #B07820; }
@@ -460,4 +473,22 @@ nav.primary {
   .grid { grid-template-columns: 1fr 1fr; }
   .toolbar { padding: var(--s-3) var(--s-4); }
   .shop-hero, .shop-layout { padding-left: var(--s-4); padding-right: var(--s-4); }
+
+  // 56px desktop floor reads oversized once the column drops to full-width mobile.
+  .shop-hero h1 { font-size: clamp(34px, 11vw, 56px); }
+
+  // 3 equal columns leave "Envío gratis / desde $150k" too narrow to fit on
+  // one line like the other two stats — stack into rows instead of wrapping.
+  .stats {
+    grid-template-columns: 1fr; gap: 10px; padding: var(--s-4) var(--s-5);
+
+    > div {
+      display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-4);
+      padding-bottom: 10px; border-bottom: 1px dashed var(--carbon-12);
+    }
+    > div:last-child { padding-bottom: 0; border-bottom: 0; }
+
+    .k { margin-bottom: 0; }
+    .v { font-size: 20px; }
+  }
 }

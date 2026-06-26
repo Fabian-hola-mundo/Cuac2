@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SiteSettingsService } from '../../../../core/services/site-settings.service';
 
 type Estado = 'conectado' | 'disponible' | 'proximo';
 
@@ -20,7 +21,9 @@ interface Integracion {
   templateUrl: './ajustes-integraciones.component.html',
   styleUrl: './ajustes-integraciones.component.scss',
 })
-export class AjustesIntegracionesComponent {
+export class AjustesIntegracionesComponent implements OnInit {
+  private siteSettings = inject(SiteSettingsService);
+
   integraciones = signal<Integracion[]>([
     { id: 'bold',       nombre: 'Bold',             desc: 'Pasarela de pagos colombiana',        categoria: 'Pagos',      estado: 'conectado',  color: '#2A6FDB', config: { apiKey: 'pk_live_xxxxx', secretKey: '', webhookUrl: '', sandbox: false }, keyVisible: false, expanded: false },
     { id: 'pse',        nombre: 'PSE',              desc: 'Débito directo a cuentas bancarias',  categoria: 'Pagos',      estado: 'conectado',  color: '#1F8A5B', config: { apiKey: 'pse_live_xxxxx', secretKey: '',                  sandbox: false }, keyVisible: false, expanded: false },
@@ -34,6 +37,14 @@ export class AjustesIntegracionesComponent {
 
   saving = signal(false);
   saved  = signal(false);
+
+  async ngOnInit() {
+    const measurementId = await this.siteSettings.get('ga_measurement_id');
+    if (!measurementId) return;
+    this.integraciones.update(list => list.map(i => i.id === 'ga'
+      ? { ...i, estado: 'conectado', config: { ...i.config, measurementId } }
+      : i));
+  }
 
   toggle(id: string) {
     this.integraciones.update(list => list.map(i => i.id === id ? { ...i, expanded: !i.expanded } : { ...i, expanded: false }));
@@ -49,6 +60,18 @@ export class AjustesIntegracionesComponent {
 
   async guardar(id: string) {
     this.saving.set(true);
+    if (id === 'ga') {
+      const measurementId = this.integraciones().find(i => i.id === 'ga')?.config.measurementId ?? '';
+      const { error } = await this.siteSettings.set('ga_measurement_id', measurementId);
+      this.saving.set(false);
+      if (error) return;
+      this.integraciones.update(list => list.map(i => i.id === 'ga'
+        ? { ...i, estado: measurementId ? 'conectado' : 'disponible', expanded: false }
+        : i));
+      this.saved.set(true);
+      setTimeout(() => this.saved.set(false), 2000);
+      return;
+    }
     await new Promise(r => setTimeout(r, 800));
     this.saving.set(false);
     this.saved.set(true);

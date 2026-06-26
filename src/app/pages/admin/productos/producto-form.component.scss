@@ -1,55 +1,26 @@
 :host { display: block; }
 
-.inv-toggle-row {
-  flex-direction: row;
+.form-error {
+  font-size: 13px;
+  color: var(--terra);
+}
+
+.check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.check-opt {
+  display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--s-4) 0;
-  border-top: 1px solid var(--carbon-08);
-  border-bottom: 1px solid var(--carbon-08);
-  margin-bottom: var(--s-4);
-}
-
-.inv-toggle {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  flex-shrink: 0;
-
-  input { opacity: 0; width: 0; height: 0; position: absolute; }
-
-  .inv-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--carbon-12);
-    border-radius: 12px;
-    transition: background .18s;
-    cursor: pointer;
-    &::before {
-      content: '';
-      position: absolute;
-      width: 18px; height: 18px;
-      left: 3px; top: 3px;
-      background: #fff;
-      border-radius: 50%;
-      transition: transform .18s;
-      box-shadow: 0 1px 3px rgba(21,31,40,0.2);
-    }
-  }
-
-  input:checked + .inv-slider { background: var(--terra); }
-  input:checked + .inv-slider::before { transform: translateX(20px); }
-}
-
-.section-sep {
-  height: 1px;
-  background: var(--carbon-08);
-  margin: var(--s-5) 0;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 .img-preview {
-  margin-bottom: 10px;
   border-radius: 8px;
   overflow: hidden;
   max-height: 200px;
@@ -58,8 +29,8 @@
 
 .img-placeholder {
   display: flex; align-items: center; justify-content: center;
-  background: var(--cream); border: 1px dashed var(--carbon-16);
-  border-radius: 8px; height: 160px; margin-bottom: 10px;
+  background: var(--cream); border: 1px dashed var(--carbon-12);
+  border-radius: 8px; height: 160px;
 }
 
 label.upload-btn {
@@ -67,7 +38,7 @@ label.upload-btn {
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  border: 1px solid var(--carbon-16);
+  border: 1px solid var(--carbon-12);
   border-radius: 6px;
   font-size: 13px;
   font-family: var(--sans);
@@ -77,14 +48,13 @@ label.upload-btn {
   color: var(--carbon);
   cursor: pointer;
   transition: background 0.15s;
-  &:hover { background: var(--carbon-04); }
+  &:hover { background: var(--cream-2); }
 }
 
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin-bottom: 10px;
 }
 
 .gallery-thumb {

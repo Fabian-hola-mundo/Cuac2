@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CookieConsentService } from '../../core/services/cookie-consent.service';
+import { AnalyticsLoaderService } from '../../core/services/analytics-loader.service';
 
 @Component({
   selector: 'app-cookie-banner',
@@ -11,6 +12,7 @@ import { CookieConsentService } from '../../core/services/cookie-consent.service
 })
 export class CookieBannerComponent implements OnInit, OnDestroy {
   private consent = inject(CookieConsentService);
+  private analytics = inject(AnalyticsLoaderService);
 
   visible = signal(false);
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -28,6 +30,7 @@ export class CookieBannerComponent implements OnInit, OnDestroy {
 
   accept(): void {
     this.consent.setConsent('accepted');
+    this.analytics.init();
     this.dismiss();
   }
 

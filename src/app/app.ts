@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CookieBannerComponent } from './shared/cookie-banner/cookie-banner.component';
+import { AnalyticsLoaderService } from './core/services/analytics-loader.service';
 
 @Component({
   selector: 'app-root',
@@ -12,4 +13,10 @@ import { CookieBannerComponent } from './shared/cookie-banner/cookie-banner.comp
   `,
   styles: [':host { display: block; }'],
 })
-export class App {}
+export class App implements OnInit {
+  private analytics = inject(AnalyticsLoaderService);
+
+  ngOnInit(): void {
+    this.analytics.init();
+  }
+}

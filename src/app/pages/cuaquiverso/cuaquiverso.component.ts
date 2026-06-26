@@ -44,6 +44,8 @@ export class CuaquiversoComponent implements OnInit {
     return (destacados.length > 0 ? destacados : activos).slice(0, 5);
   });
 
+  readonly activeProductCount = computed(() => this.inv.productos().filter(p => p.activo).length);
+
   async ngOnInit(): Promise<void> {
     await this.personajesSvc.load();
     this.seo.set({

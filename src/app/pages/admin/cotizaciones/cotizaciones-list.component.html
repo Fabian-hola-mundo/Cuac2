@@ -35,7 +35,7 @@
 }
 
 @if (!cargando() && filtradas().length > 0) {
-  <div class="panel">
+  <div class="panel tbl-page">
     <div class="tbl-wrap">
     <table class="tbl">
       <thead>
@@ -124,7 +124,6 @@
   </div>
 }
 
-<!-- Toast -->
 @if (toast()) {
-  <div class="toast">{{ toast() }}</div>
+  <div class="toast-global">{{ toast() }}</div>
 }

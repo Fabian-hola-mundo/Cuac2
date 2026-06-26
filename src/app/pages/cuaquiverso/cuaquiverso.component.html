@@ -55,7 +55,7 @@
       </div>
       <div class="hero-meta">
         <div><div class="k">Personajes</div><div class="v">8</div></div>
-        <div><div class="k">Productos</div><div class="v">42</div></div>
+        <div><div class="k">Productos</div><div class="v">{{ activeProductCount() || '—' }}</div></div>
         <div><div class="k">Hechos en</div><div class="v">Bogotá</div></div>
       </div>
     </div>
@@ -93,8 +93,8 @@
         <div class="pcard" style="background:rgba(21,31,40,.05);border-radius:12px;animation:blink 1.4s ease-in-out infinite"></div>
       }
     }
-    @for (p of showcaseProducts(); track p.id; let first = $first) {
-      <a class="pcard" [class.feature]="first"
+    @for (p of showcaseProducts(); track p.id) {
+      <a class="pcard"
          [routerLink]="['/cuaquiverso/tienda', p.id]">
         <div class="pcard-img" [style.background]="p.color ? p.color + '22' : 'var(--cream-2)'">
           @if (p.flag === 'new')  { <span class="flag new">Nuevo</span> }

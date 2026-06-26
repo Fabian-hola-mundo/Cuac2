@@ -1,0 +1,240 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Manrope', sans-serif; background: #f5f5f0; }
+  .q { text-align: center; margin-bottom: 28px; }
+  .q h2 { font-size: 18px; font-weight: 700; color: #151F28; margin-bottom: 6px; }
+  .q p { font-size: 13px; color: #666; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1100px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 12px; overflow: hidden; border: 2px solid transparent; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+  .card.selected { border-color: #EC3813; box-shadow: 0 0 0 3px rgba(236,56,19,.12); }
+  .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+  .card-label { padding: 12px 16px 0; display: flex; align-items: center; gap: 8px; }
+  .card-label .letter { width: 26px; height: 26px; border-radius: 50%; background: #151F28; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-label strong { font-size: 13px; font-weight: 700; color: #151F28; }
+  .card-label span { font-size: 11px; color: #888; margin-left: auto; }
+  .card-desc { padding: 8px 16px 14px; font-size: 12px; color: #666; line-height: 1.5; }
+
+  /* ── Mockup A: Editorial full-bleed ── */
+  .mock-a { font-family: 'Georgia', serif; }
+  .mock-a .hero { background: #2A6FDB; padding: 28px 20px 22px; position: relative; overflow: hidden; }
+  .mock-a .hero::after { content: ''; position: absolute; right: -20px; top: -20px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,.06); }
+  .mock-a .hero .crumb { font-size: 9px; color: rgba(255,255,255,.55); letter-spacing: .1em; text-transform: uppercase; font-family: 'Manrope',sans-serif; margin-bottom: 10px; }
+  .mock-a .hero h1 { font-size: 36px; color: #fff; font-weight: 400; line-height: 1.05; letter-spacing: -.02em; }
+  .mock-a .hero .sub { font-size: 11px; color: rgba(255,255,255,.65); font-family: 'Manrope',sans-serif; margin-top: 8px; letter-spacing: .05em; text-transform: uppercase; }
+  .mock-a .tags { display: flex; gap: 6px; padding: 14px 20px; background: #151F28; flex-wrap: wrap; }
+  .mock-a .tags .tag { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-family: 'Manrope',sans-serif; font-weight: 600; }
+  .mock-a .tags .t1 { background: rgba(42,111,219,.25); color: #7EB4FF; }
+  .mock-a .tags .t2 { background: rgba(255,255,255,.08); color: rgba(255,255,255,.6); }
+  .mock-a .body-sec { padding: 18px 20px; }
+  .mock-a .body-sec .section-title { font-size: 9px; font-family: 'Manrope',sans-serif; text-transform: uppercase; letter-spacing: .12em; color: #999; margin-bottom: 8px; }
+  .mock-a .body-sec p { font-size: 12px; color: #444; line-height: 1.6; }
+  .mock-a .facts-row { display: grid; grid-template-columns: repeat(3,1fr); border-top: 1px solid #eee; }
+  .mock-a .fact { padding: 12px 16px; border-right: 1px solid #eee; }
+  .mock-a .fact:last-child { border-right: none; }
+  .mock-a .fact .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: #aaa; font-family: 'Manrope',sans-serif; }
+  .mock-a .fact .val { font-size: 12px; font-weight: 600; color: #151F28; margin-top: 2px; font-family: 'Manrope',sans-serif; }
+  .mock-a .gallery-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; padding: 14px 20px; background: #f9f9f7; }
+  .mock-a .gallery-row .img-ph { border-radius: 6px; aspect-ratio: 1; background: #ddd; }
+  .mock-a .prods { padding: 14px 20px 20px; }
+  .mock-a .prods .section-title { font-size: 9px; font-family: 'Manrope',sans-serif; text-transform: uppercase; letter-spacing: .12em; color: #999; margin-bottom: 10px; }
+  .mock-a .prod-row { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
+  .mock-a .prod-card { background: #f5f5f0; border-radius: 8px; padding: 10px; }
+  .mock-a .prod-card .pi { aspect-ratio: 1; background: #ddd; border-radius: 5px; margin-bottom: 6px; }
+  .mock-a .prod-card .pn { font-size: 10px; font-weight: 600; color: #151F28; font-family: 'Manrope',sans-serif; }
+  .mock-a .prod-card .pp { font-size: 10px; color: #666; font-family: 'Manrope',sans-serif; }
+
+  /* ── Mockup B: Split pinned ── */
+  .mock-b { font-family: 'Manrope', sans-serif; }
+  .mock-b .split { display: grid; grid-template-columns: 1fr 1fr; min-height: 260px; }
+  .mock-b .left { background: #2A6FDB; padding: 20px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; }
+  .mock-b .left::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 60% 40%, rgba(255,255,255,.08), transparent 60%); }
+  .mock-b .left .char-num { font-size: 72px; font-weight: 800; color: rgba(255,255,255,.06); line-height: 1; position: absolute; top: 10px; left: 14px; }
+  .mock-b .left h1 { font-size: 28px; color: #fff; font-weight: 700; letter-spacing: -.02em; position: relative; }
+  .mock-b .left .region { font-size: 10px; color: rgba(255,255,255,.6); letter-spacing: .08em; text-transform: uppercase; margin-top: 4px; position: relative; }
+  .mock-b .left .slogan { font-size: 12px; color: rgba(255,255,255,.8); font-style: italic; margin-top: 10px; line-height: 1.4; position: relative; border-top: 1px solid rgba(255,255,255,.15); padding-top: 10px; }
+  .mock-b .right { background: #fff; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+  .mock-b .field-group .fg-label { font-size: 9px; text-transform: uppercase; letter-spacing: .12em; color: #aaa; margin-bottom: 4px; }
+  .mock-b .field-group .fg-val { font-size: 12px; color: #333; line-height: 1.55; }
+  .mock-b .tags-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .mock-b .tag-pill { padding: 3px 9px; background: #f0f0eb; border-radius: 20px; font-size: 10px; color: #555; font-weight: 600; }
+  .mock-b .gal-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; }
+  .mock-b .gal-thumb { aspect-ratio: 1; background: #eee; border-radius: 5px; }
+  .mock-b .prod-list { display: flex; flex-direction: column; gap: 6px; }
+  .mock-b .prod-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: #f9f9f7; border-radius: 6px; }
+  .mock-b .prod-item .pi { width: 36px; height: 36px; background: #ddd; border-radius: 4px; flex-shrink: 0; }
+  .mock-b .prod-item .pn { font-size: 11px; font-weight: 600; color: #151F28; }
+  .mock-b .prod-item .pp { font-size: 10px; color: #888; }
+
+  /* ── Mockup C: Story scroll ── */
+  .mock-c { font-family: 'Manrope', sans-serif; }
+  .mock-c .intro-bar { background: #151F28; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
+  .mock-c .intro-bar .back { font-size: 10px; color: rgba(255,255,255,.45); }
+  .mock-c .intro-bar .sep { color: rgba(255,255,255,.2); }
+  .mock-c .intro-bar .cur { font-size: 10px; color: rgba(255,255,255,.8); font-weight: 600; }
+  .mock-c .hero-band { background: #2A6FDB; padding: 30px 20px 20px; }
+  .mock-c .hero-band .eyebrow { font-size: 9px; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.5); margin-bottom: 8px; }
+  .mock-c .hero-band h1 { font-size: 42px; color: #fff; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+  .mock-c .hero-band .phrase { font-size: 13px; color: rgba(255,255,255,.75); font-style: italic; margin-top: 12px; line-height: 1.4; max-width: 26ch; }
+  .mock-c .identity-strip { display: grid; grid-template-columns: repeat(4,1fr); background: #fff; border-bottom: 1px solid #eee; }
+  .mock-c .id-cell { padding: 10px 14px; border-right: 1px solid #eee; }
+  .mock-c .id-cell:last-child { border-right: none; }
+  .mock-c .id-cell .ic-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: .12em; color: #aaa; margin-bottom: 3px; }
+  .mock-c .id-cell .ic-val { font-size: 11px; font-weight: 600; color: #151F28; }
+  .mock-c .section-block { padding: 18px 20px; border-bottom: 1px solid #f0f0eb; }
+  .mock-c .section-block .sb-label { font-size: 9px; text-transform: uppercase; letter-spacing: .12em; color: #aaa; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .mock-c .section-block .sb-label::after { content: ''; flex: 1; height: 1px; background: #eee; }
+  .mock-c .section-block p { font-size: 12px; color: #444; line-height: 1.65; }
+  .mock-c .gal-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 6px; height: 100px; }
+  .mock-c .gal-grid .g { background: #ddd; border-radius: 6px; }
+  .mock-c .prods-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .mock-c .pc { min-width: 80px; background: #f5f5f0; border-radius: 8px; padding: 8px; flex-shrink: 0; }
+  .mock-c .pc .pi { aspect-ratio: 1; background: #ddd; border-radius: 5px; margin-bottom: 5px; }
+  .mock-c .pc .pn { font-size: 9px; font-weight: 600; color: #151F28; }
+  .mock-c .pc .pp { font-size: 9px; color: #888; }
+</style>
+
+<div class="q">
+  <h2>¿Qué layout quieres para la página pública de cada personaje?</h2>
+  <p>Ej: /cuaquiverso/personaje/cuac — muestra bio, galería, productos relacionados</p>
+</div>
+
+<div class="cards">
+
+  <!-- OPCIÓN A: Editorial full-bleed -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-label">
+      <div class="letter">A</div>
+      <strong>Editorial full-bleed</strong>
+      <span>Lineal · scroll</span>
+    </div>
+    <div class="card-desc">Hero con color del personaje a pantalla completa, luego secciones en columna: tags de identidad, bio, galería, productos.</div>
+    <div class="mock-a">
+      <div class="hero">
+        <div class="crumb">Universo / Personajes</div>
+        <h1>Cuac</h1>
+        <div class="sub">El explorador · Bogotá migratorio</div>
+      </div>
+      <div class="tags">
+        <span class="tag t1">Bogotá · migratorio</span>
+        <span class="tag t2">Vallenato · jazz</span>
+        <span class="tag t2">Curioso · soñador</span>
+        <span class="tag t2">Frailejones</span>
+      </div>
+      <div class="body-sec">
+        <div class="section-title">Sobre Cuac</div>
+        <p>Un pato con maleta, siempre listo para el próximo destino. Nació en el páramo de Chingaza pero se quedó en Bogotá…</p>
+      </div>
+      <div class="facts-row">
+        <div class="fact"><div class="lbl">Región</div><div class="val">Bogotá</div></div>
+        <div class="fact"><div class="lbl">Música</div><div class="val">Jazz / vallenato</div></div>
+        <div class="fact"><div class="lbl">Fauna</div><div class="val">Frailejones</div></div>
+      </div>
+      <div class="gallery-row">
+        <div class="img-ph"></div><div class="img-ph"></div><div class="img-ph"></div>
+      </div>
+      <div class="prods">
+        <div class="section-title">Productos de Cuac</div>
+        <div class="prod-row">
+          <div class="prod-card"><div class="pi"></div><div class="pn">Camiseta Cuac</div><div class="pp">$89.000</div></div>
+          <div class="prod-card"><div class="pi"></div><div class="pn">Sticker pack</div><div class="pp">$18.000</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPCIÓN B: Split pinned -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-label">
+      <div class="letter">B</div>
+      <strong>Split pinned</strong>
+      <span>2 columnas · sticky left</span>
+    </div>
+    <div class="card-desc">Imagen/color del personaje fija a la izquierda mientras el usuario scrollea el contenido (bio, galería, productos) en el lado derecho.</div>
+    <div class="mock-b">
+      <div class="split">
+        <div class="left">
+          <div class="char-num">01</div>
+          <h1>Cuac</h1>
+          <div class="region">Bogotá · migratorio</div>
+          <div class="slogan">"Siempre hay un páramo más por descubrir."</div>
+        </div>
+        <div class="right">
+          <div class="field-group">
+            <div class="fg-label">Bio</div>
+            <div class="fg-val">Un pato con maleta, siempre listo para el próximo destino. Nació en Chingaza pero se quedó en Bogotá…</div>
+          </div>
+          <div class="field-group">
+            <div class="fg-label">Personalidad · Música · Fauna</div>
+            <div class="tags-row">
+              <span class="tag-pill">Curioso</span>
+              <span class="tag-pill">Jazz / vallenato</span>
+              <span class="tag-pill">Frailejones</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="fg-label">Galería</div>
+            <div class="gal-strip">
+              <div class="gal-thumb"></div><div class="gal-thumb"></div>
+              <div class="gal-thumb"></div><div class="gal-thumb"></div>
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="fg-label">Productos</div>
+            <div class="prod-list">
+              <div class="prod-item"><div class="pi"></div><div><div class="pn">Camiseta Cuac</div><div class="pp">$89.000</div></div></div>
+              <div class="prod-item"><div class="pi"></div><div><div class="pn">Sticker pack</div><div class="pp">$18.000</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPCIÓN C: Story scroll -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-label">
+      <div class="letter">C</div>
+      <strong>Story scroll</strong>
+      <span>Narrativo · capítulos</span>
+    </div>
+    <div class="card-desc">Hero grande con frase/eslogan, luego una franja de identidad (región, música, fauna, personalidad), después bio extensa, galería y productos al final.</div>
+    <div class="mock-c">
+      <div class="intro-bar">
+        <span class="back">Universo</span>
+        <span class="sep">/</span>
+        <span class="cur">Cuac</span>
+      </div>
+      <div class="hero-band">
+        <div class="eyebrow">Personaje 01</div>
+        <h1>Cuac</h1>
+        <div class="phrase">"Siempre hay un páramo más por descubrir."</div>
+      </div>
+      <div class="identity-strip">
+        <div class="id-cell"><div class="ic-lbl">Región</div><div class="ic-val">Bogotá</div></div>
+        <div class="id-cell"><div class="ic-lbl">Música</div><div class="ic-val">Jazz</div></div>
+        <div class="id-cell"><div class="ic-lbl">Fauna</div><div class="ic-val">Frailejón</div></div>
+        <div class="id-cell"><div class="ic-lbl">Carácter</div><div class="ic-val">Curioso</div></div>
+      </div>
+      <div class="section-block">
+        <div class="sb-label">Sobre Cuac</div>
+        <p>Un pato con maleta, siempre listo para el próximo destino. Nació en el páramo de Chingaza pero se quedó en Bogotá…</p>
+      </div>
+      <div class="section-block">
+        <div class="sb-label">Galería</div>
+        <div class="gal-grid">
+          <div class="g"></div><div class="g"></div><div class="g"></div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="sb-label">Productos de Cuac</div>
+        <div class="prods-scroll">
+          <div class="pc"><div class="pi"></div><div class="pn">Camiseta</div><div class="pp">$89k</div></div>
+          <div class="pc"><div class="pi"></div><div class="pn">Sticker</div><div class="pp">$18k</div></div>
+          <div class="pc"><div class="pi"></div><div class="pn">Tote</div><div class="pp">$54k</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

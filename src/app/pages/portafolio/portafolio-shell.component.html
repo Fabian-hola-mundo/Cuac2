@@ -2,12 +2,11 @@
 <header class="port-hero" [style.min-height]="hero.height">
   <app-portfolio-shader [theme]="theme()"></app-portfolio-shader>
 
-  <nav class="hero-nav cuac-breadcrumb" aria-label="Breadcrumb">
-    <a routerLink="/" class="bc-crumb">← Inicio</a>
-    @if (!isCuac) {
-      <a routerLink="/portafolio" class="bc-crumb">← Cuac Design</a>
-    }
-  </nav>
+  @if (isCuac) {
+    <nav class="hero-nav cuac-breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/" class="bc-crumb">← Inicio</a>
+    </nav>
+  }
 
   <div class="hero-content">
     <div class="hero-eyebrow">
@@ -190,20 +189,34 @@
   @if (isCuac) {
     <section class="personal-footer" aria-label="Portafolios del equipo">
       <p class="pf-eyebrow">El equipo también tiene voz propia</p>
-      <div class="pf-grid">
-        <a class="pf-card pf-natalia" routerLink="/portafolio/natalia">
-          <span class="pf-tag">Portafolio personal</span>
-          <strong class="pf-name">Natalia Castañeda Caicedo</strong>
-          <span class="pf-rol">Diseño editorial, ilustración y branding</span>
-          <span class="pf-cta">Ver portafolio <span aria-hidden="true">→</span></span>
-        </a>
-        <a class="pf-card pf-nathali" routerLink="/portafolio/nathali">
-          <span class="pf-tag">Portafolio personal</span>
-          <strong class="pf-name">Nathali Ramírez Ortiz</strong>
-          <span class="pf-rol">Diseño UI/UX, ilustración y branding</span>
-          <span class="pf-cta">Ver portafolio <span aria-hidden="true">→</span></span>
-        </a>
-      </div>
+      <ul class="pf-list">
+        <li class="pf-row">
+          <a class="pf-link" routerLink="/portafolio/natalia" target="_blank" rel="noopener">
+            <span class="pf-dot pf-dot--natalia" aria-hidden="true"></span>
+            <span class="pf-main">
+              <span class="pf-name">Natalia Castañeda Caicedo</span>
+              <span class="pf-rol">Diseño editorial, ilustración y branding</span>
+            </span>
+            <span class="pf-tag">Portafolio personal</span>
+            <span class="pf-go" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </span>
+          </a>
+        </li>
+        <li class="pf-row">
+          <a class="pf-link" routerLink="/portafolio/nathali" target="_blank" rel="noopener">
+            <span class="pf-dot pf-dot--nathali" aria-hidden="true"></span>
+            <span class="pf-main">
+              <span class="pf-name">Nathali Ramírez Ortiz</span>
+              <span class="pf-rol">Diseño UI/UX, ilustración y branding</span>
+            </span>
+            <span class="pf-tag">Portafolio personal</span>
+            <span class="pf-go" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </span>
+          </a>
+        </li>
+      </ul>
     </section>
   }
 

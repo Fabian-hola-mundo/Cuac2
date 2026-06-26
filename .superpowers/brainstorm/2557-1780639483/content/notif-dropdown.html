@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup — Dropdown de Notificaciones</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Inter', sans-serif;
+    background: #ECEFF3;
+    color: #151F28;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 32px;
+  }
+
+  /* ─── Tokens ─── */
+  :root {
+    --carbon:     #151F28;
+    --carbon-70:  rgba(21,31,40,0.7);
+    --carbon-50:  rgba(21,31,40,0.5);
+    --carbon-30:  rgba(21,31,40,0.3);
+    --carbon-12:  rgba(21,31,40,0.12);
+    --carbon-08:  rgba(21,31,40,0.08);
+    --cream:      #ECEFF3;
+    --cream-2:    #DDE3EA;
+    --paper:      #F5F7FA;
+    --terra:      #E8623D;
+    --terra-soft: #FBE0D5;
+    --sol:        #FFC93C;
+    --sol-soft:   #FCEFC2;
+    --selva:      #1F8A5B;
+    --selva-soft: #D7EBDD;
+    --rio:        #2A6FDB;
+    --rio-soft:   #C9D9F6;
+    --lila:       #8B6FD8;
+    --lila-soft:  #E5DDF7;
+    --rosa:       #FF6FA8;
+    --rosa-soft:  #FCE0EC;
+  }
+
+  h2 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: var(--carbon-50); margin-bottom: 24px; }
+
+  /* ─── Topbar simulada ─── */
+  .topbar-demo {
+    background: rgba(245,247,250,0.92);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--carbon-08);
+    border-radius: 14px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 12px;
+    position: relative;
+    box-shadow: 0 2px 12px rgba(21,31,40,0.06);
+    margin-bottom: 24px;
+  }
+  .tb-breadcrumb {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--carbon-30);
+    display: flex;
+    gap: 10px;
+  }
+  .tb-breadcrumb strong { color: var(--carbon); }
+  .tb-search {
+    flex: 1; max-width: 320px;
+    background: var(--paper); border: 1px solid var(--carbon-12);
+    border-radius: 999px; padding: 7px 14px;
+    display: flex; align-items: center; gap: 8px;
+    margin-left: auto;
+  }
+  .tb-search span { font-size: 12px; color: var(--carbon-30); }
+  .tb-search kbd {
+    font-family: 'Courier New', monospace; font-size: 9px;
+    background: var(--cream-2); color: var(--carbon-50);
+    padding: 2px 6px; border-radius: 4px; border: 1px solid var(--carbon-08);
+  }
+  .tb-actions { display: flex; gap: 8px; align-items: center; }
+
+  /* ─── Botón campana ─── */
+  .notif-trigger {
+    position: relative;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(21,31,40,0.06);
+    border: 0; cursor: pointer;
+    display: grid; place-items: center;
+    color: var(--carbon);
+  }
+  .notif-trigger svg { width: 16px; height: 16px; }
+  .notif-dot {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--terra);
+    border: 2px solid var(--paper);
+  }
+
+  /* ─── Dropdown ─── */
+  .notif-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 16px;
+    width: 340px;
+    background: var(--paper);
+    border: 1px solid var(--carbon-12);
+    border-radius: 14px;
+    box-shadow: 0 12px 48px rgba(21,31,40,0.14), 0 2px 8px rgba(21,31,40,0.08);
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .nd-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--carbon-08);
+  }
+  .nd-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--carbon);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nd-badge {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--terra);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+  .nd-ts {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--carbon-30);
+  }
+
+  /* Lista */
+  .nd-list {
+    max-height: 380px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--carbon-12) transparent;
+  }
+
+  /* Item */
+  .nd-item {
+    display: grid;
+    grid-template-columns: 32px 1fr 14px;
+    gap: 10px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--carbon-08);
+    align-items: center;
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .nd-item:last-child { border-bottom: 0; }
+  .nd-item:hover { background: var(--cream); }
+  .nd-item:hover .nd-arrow { opacity: 1; }
+
+  .nd-ic {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .nd-ic svg { width: 14px; height: 14px; }
+
+  .nd-ic.rio   { background: var(--rio-soft);   color: var(--rio);   }
+  .nd-ic.terra { background: var(--terra-soft); color: var(--terra); }
+  .nd-ic.lila  { background: var(--lila-soft);  color: var(--lila);  }
+  .nd-ic.selva { background: var(--selva-soft); color: var(--selva); }
+  .nd-ic.sol   { background: var(--sol-soft);   color: #B07820;      }
+  .nd-ic.rosa  { background: var(--rosa-soft);  color: var(--rosa);  }
+
+  .nd-body { min-width: 0; }
+  .nd-t {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--carbon);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+  .nd-s {
+    font-size: 11.5px;
+    color: var(--carbon-50);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nd-time {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--carbon-30);
+    white-space: nowrap;
+  }
+  .nd-s .sep { color: var(--carbon-12); }
+
+  .nd-arrow {
+    color: var(--carbon-30);
+    opacity: 0;
+    transition: opacity .1s;
+    flex-shrink: 0;
+  }
+  .nd-arrow svg { width: 12px; height: 12px; }
+
+  /* Footer */
+  .nd-footer {
+    padding: 10px 14px;
+    border-top: 1px solid var(--carbon-08);
+    background: var(--cream);
+    display: flex;
+    justify-content: center;
+  }
+  .nd-footer-link {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--carbon-30);
+    cursor: pointer;
+    transition: color .1s;
+    border: 0;
+    background: none;
+    padding: 2px 0;
+  }
+  .nd-footer-link:hover { color: var(--terra); }
+
+  /* ─── Estado vacío ─── */
+  .nd-empty {
+    padding: 36px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+  .nd-empty-ic {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--selva-soft);
+    display: grid; place-items: center; color: var(--selva);
+  }
+  .nd-empty-ic svg { width: 20px; height: 20px; }
+  .nd-empty-t {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--carbon);
+  }
+  .nd-empty-s {
+    font-size: 12px;
+    color: var(--carbon-50);
+    max-width: 22ch;
+    line-height: 1.5;
+  }
+
+  /* ─── Nota de animación ─── */
+  .anim-note {
+    background: var(--paper);
+    border: 1px solid var(--carbon-08);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--carbon-50);
+    margin-top: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.5;
+  }
+  .anim-note strong { color: var(--carbon); }
+
+  /* ─── Estado vacío abajo ─── */
+  .second-demo { margin-top: 32px; }
+</style>
+</head>
+<body>
+
+<h2>Sección 3 — UI del Dropdown de Notificaciones</h2>
+<p class="subtitle">Vista con notificaciones activas (izquierda) y estado vacío (derecha)</p>
+
+<div style="display:flex; gap:32px; align-items:flex-start; flex-wrap:wrap;">
+
+  <!-- ─── Demo CON notificaciones ─── -->
+  <div>
+    <p style="font-size:11px;font-family:'Courier New',monospace;letter-spacing:0.12em;text-transform:uppercase;color:var(--carbon-30);margin-bottom:8px;">Con notificaciones · 5 sin leer</p>
+    <!-- Topbar -->
+    <div class="topbar-demo" style="width:420px;">
+      <div class="tb-breadcrumb"><span>← </span><strong>Dashboard</strong></div>
+      <div class="tb-search" style="margin-left:auto;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <span style="flex:1;">Buscar…</span>
+        <kbd>⌘ K</kbd>
+      </div>
+      <div class="tb-actions">
+        <div class="notif-trigger" style="background:rgba(21,31,40,0.08);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16H6a3 3 0 0 0 3-3V9a3 3 0 0 1 6 0v4a3 3 0 0 0 3 3Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+          <span class="notif-dot"></span>
+        </div>
+      </div>
+
+      <!-- Dropdown -->
+      <div class="notif-dropdown">
+        <div class="nd-header">
+          <span class="nd-title">
+            Notificaciones
+            <span class="nd-badge">5</span>
+          </span>
+          <span class="nd-ts">Hoy</span>
+        </div>
+
+        <div class="nd-list">
+
+          <!-- Mensaje -->
+          <div class="nd-item">
+            <div class="nd-ic rio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="nd-body">
+              <div class="nd-t">Nuevo mensaje de Ana García</div>
+              <div class="nd-s">
+                <span>Hola, quería consultar sobre…</span>
+                <span class="sep">·</span>
+                <span class="nd-time">hace 5 min</span>
+              </div>
+            </div>
+            <div class="nd-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          </div>
+
+          <!-- Pedido -->
+          <div class="nd-item">
+            <div class="nd-ic terra">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V5a3 3 0 0 1 6 0v3"/></svg>
+            </div>
+            <div class="nd-body">
+              <div class="nd-t">Pedido #P-0091 recibido</div>
+              <div class="nd-s">
+                <span>Camisa Cuac — 2 uds. · $84.000</span>
+                <span class="sep">·</span>
+                <span class="nd-time">hace 18 min</span>
+              </div>
+            </div>
+            <div class="nd-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          </div>
+
+          <!-- Pago -->
+          <div class="nd-item">
+            <div class="nd-ic selva">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>
+            </div>
+            <div class="nd-body">
+              <div class="nd-t">Pago confirmado · $84.000</div>
+              <div class="nd-s">
+                <span>Pedido #P-0091 · Transferencia</span>
+                <span class="sep">·</span>
+                <span class="nd-time">hace 18 min</span>
+              </div>
+            </div>
+            <div class="nd-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          </div>
+
+          <!-- Stock bajo -->
+          <div class="nd-item">
+            <div class="nd-ic sol">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5v8L3 16V8Z"/><path d="m21 8-9 5v8l9-5V8Z"/></svg>
+            </div>
+            <div class="nd-body">
+              <div class="nd-t">Stock bajo · Tote Cuaquiverso</div>
+              <div class="nd-s">
+                <span>Solo quedan 2 unidades</span>
+                <span class="sep">·</span>
+                <span class="nd-time">hace 1 h</span>
+              </div>
+            </div>
+            <div class="nd-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          </div>
+
+          <!-- Cotización -->
+          <div class="nd-item">
+            <div class="nd-ic lila">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+            </div>
+            <div class="nd-body">
+              <div class="nd-t">Nueva cotización de Marcos R.</div>
+              <div class="nd-s">
+                <span>Diseño identidad corporativa</span>
+                <span class="sep">·</span>
+                <span class="nd-time">hace 2 h</span>
+              </div>
+            </div>
+            <div class="nd-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          </div>
+
+          <!-- Evento -->
+          <div class="nd-item" style="opacity:0.65;">
+            <div class="nd-ic rosa">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </div>
+            <div class="nd-body">
+              <div class="nd-t">Evento en 3 días · Feria Cuac</div>
+              <div class="nd-s">
+                <span>Sábado 7 jun · Parque Bicentenario</span>
+                <span class="sep">·</span>
+                <span class="nd-time">recordatorio</span>
+              </div>
+            </div>
+            <div class="nd-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          </div>
+
+        </div>
+
+        <div class="nd-footer">
+          <button class="nd-footer-link">Ver actividad completa</button>
+        </div>
+      </div>
+
+    </div><!-- /topbar-demo -->
+  </div>
+
+  <!-- ─── Demo estado VACÍO ─── -->
+  <div>
+    <p style="font-size:11px;font-family:'Courier New',monospace;letter-spacing:0.12em;text-transform:uppercase;color:var(--carbon-30);margin-bottom:8px;">Estado vacío · sin pendientes</p>
+    <div style="width:340px; background:var(--paper); border:1px solid var(--carbon-12); border-radius:14px; overflow:hidden; box-shadow:0 12px 48px rgba(21,31,40,0.14);">
+      <div class="nd-header">
+        <span class="nd-title">Notificaciones</span>
+        <span class="nd-ts">Hoy</span>
+      </div>
+      <div class="nd-empty">
+        <div class="nd-empty-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <div class="nd-empty-t">Todo al día</div>
+        <div class="nd-empty-s">No hay actividad nueva en el panel por ahora.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Notas de comportamiento -->
+<div class="anim-note" style="max-width:720px;">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+  <div>
+    <strong>Comportamiento en producción:</strong> el dropdown se abre/cierra con click en la campana y se cierra al hacer click afuera (HostListener). Al hacer click en un item navega a la sección correspondiente y el dropdown se cierra. La campana muestra el punto rojo solo cuando hay items. Las notificaciones se actualizan en tiempo real vía Supabase Realtime — nuevos inserts prependen al listado sin recargar.
+  </div>
+</div>
+
+</body>
+</html>

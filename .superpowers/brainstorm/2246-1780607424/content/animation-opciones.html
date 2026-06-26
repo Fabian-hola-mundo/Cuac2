@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opciones de animación — Hero del personaje</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #0f1117; color: #f0f1f6; min-height: 100vh; padding: 32px 24px; }
+
+  h2 { font-size: 18px; font-weight: 600; letter-spacing: -.02em; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: rgba(240,241,246,.45); margin-bottom: 32px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+  .card {
+    border: 1.5px solid rgba(240,241,246,.10);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color .2s, transform .15s;
+    background: rgba(255,255,255,.03);
+  }
+  .card:hover { border-color: rgba(240,241,246,.25); transform: translateY(-2px); }
+  .card.selected { border-color: #e85d4a; box-shadow: 0 0 0 2px rgba(232,93,74,.25); }
+
+  .preview {
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    background: #1a2332;
+  }
+
+  /* ─── Hero chrome (crumbs + title, same as real page) ─── */
+  .hero-chrome {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px 22px;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .crumb { font-size: 9px; color: rgba(255,255,255,.35); margin-bottom: 6px; letter-spacing: .04em; }
+  .hero-name { font-size: 38px; font-weight: 800; color: #fff; line-height: .95; letter-spacing: -.04em; }
+  .hero-slogan { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 6px; font-style: italic; }
+
+  /* ─── A: Orb único + partículas ─── */
+  .preview-a { background: #0d1a2d; }
+  .orb-main {
+    position: absolute; top: 24px; right: -20px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 38%, rgba(42,111,219,.55) 0%, rgba(42,111,219,.18) 45%, transparent 70%);
+    filter: blur(22px);
+    animation: orbFloat 5s ease-in-out infinite;
+  }
+  .orb-sat {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(92,149,234,.6), transparent 70%);
+    filter: blur(10px);
+    animation: orbFloat 4s ease-in-out infinite;
+  }
+  .s1 { width: 60px; height: 60px; top: 80px; right: 60px; animation-delay: -.8s; animation-duration: 3.5s; }
+  .s2 { width: 40px; height: 40px; top: 30px; right: 110px; animation-delay: -1.6s; animation-duration: 4.2s; }
+  .s3 { width: 28px; height: 28px; top: 120px; right: 20px; animation-delay: -2.4s; animation-duration: 3.8s; }
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-8px, -12px) scale(1.06); }
+    66% { transform: translate(6px, 8px) scale(.95); }
+  }
+
+  /* ─── B: Campo de partículas ─── */
+  .preview-b { background: #0d1a2d; }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(42,111,219,.7);
+    animation: drift linear infinite;
+  }
+  @keyframes drift {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: .6; }
+    100% { transform: translateY(-160px) translateX(var(--dx)); opacity: 0; }
+  }
+
+  /* ─── C: Wireframe geométrico ─── */
+  .preview-c { background: #0d1a2d; }
+  .wireframe-wrap {
+    position: absolute; right: 0; top: -10px; width: 200px; height: 220px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wireframe-svg {
+    width: 160px; height: 160px;
+    animation: wireRotate 8s linear infinite;
+    opacity: .6;
+  }
+  @keyframes wireRotate {
+    from { transform: rotate(0deg) rotateY(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* ─── D: Ondas / pulso ─── */
+  .preview-d { background: #0d1a2d; }
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid rgba(42,111,219,.5);
+    animation: ringPulse 3.2s ease-out infinite;
+  }
+  @keyframes ringPulse {
+    0% { transform: translate(-50%,-50%) scale(.1); opacity: .9; }
+    100% { transform: translate(-50%,-50%) scale(3.5); opacity: 0; }
+  }
+
+  .card-body { padding: 14px 16px 16px; }
+  .card-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: rgba(240,241,246,.35); margin-bottom: 4px; }
+  .card-title { font-size: 15px; font-weight: 600; color: #f0f1f6; margin-bottom: 5px; }
+  .card-desc { font-size: 12px; color: rgba(240,241,246,.5); line-height: 1.5; }
+
+  .selected-bar {
+    margin-top: 28px;
+    padding: 12px 16px;
+    background: rgba(232,93,74,.1);
+    border: 1px solid rgba(232,93,74,.2);
+    border-radius: 8px;
+    font-size: 13px;
+    color: rgba(240,241,246,.7);
+    display: none;
+  }
+  .selected-bar.visible { display: block; }
+</style>
+</head>
+<body>
+
+<h2>¿Qué tipo de animación va mejor en el hero del personaje?</h2>
+<p class="subtitle">Cada opción usa el color propio del personaje (p.color / wire_color). Click para seleccionar.</p>
+
+<div class="cards">
+
+  <!-- A: Orb único + satélites -->
+  <div class="card" data-choice="a" onclick="select(this)">
+    <div class="preview preview-a">
+      <div class="orb-main"></div>
+      <div class="orb-sat s1"></div>
+      <div class="orb-sat s2"></div>
+      <div class="orb-sat s3"></div>
+      <div class="hero-chrome">
+        <div class="crumb">Inicio / Universo /</div>
+        <div class="hero-name">Cachorro</div>
+        <div class="hero-slogan">Leal, callejero y orgulloso</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-label">Opción A</div>
+      <div class="card-title">Orb central + satélites</div>
+      <div class="card-desc">Un blob grande que flota a la derecha, con 2-3 orbs más pequeños orbitando. Coherente con el landing de Cuaquiverso. Suave, ambient.</div>
+    </div>
+  </div>
+
+  <!-- B: Campo de partículas -->
+  <div class="card" data-choice="b" onclick="select(this)">
+    <div class="preview preview-b" id="particles-preview">
+      <!-- partículas generadas por JS -->
+      <div class="hero-chrome">
+        <div class="crumb">Inicio / Universo /</div>
+        <div class="hero-name">Cachorro</div>
+        <div class="hero-slogan">Leal, callejero y orgulloso</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-label">Opción B</div>
+      <div class="card-title">Campo de partículas</div>
+      <div class="card-desc">Decenas de puntos que suben lentamente en el color del personaje, reaccionan al mouse. Efecto nebulosa etérea. Ligero y poético.</div>
+    </div>
+  </div>
+
+  <!-- C: Wireframe geométrico -->
+  <div class="card" data-choice="c" onclick="select(this)">
+    <div class="preview preview-c">
+      <div class="wireframe-wrap">
+        <svg class="wireframe-svg" viewBox="-80 -80 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- icosaedro simplificado como polígono wireframe -->
+          <polygon points="0,-70 60,20 -60,20" stroke="rgba(92,149,234,.6)" stroke-width="1.2" fill="none"/>
+          <polygon points="0,-70 60,20 0,60" stroke="rgba(92,149,234,.45)" stroke-width="1" fill="none"/>
+          <polygon points="0,-70 -60,20 0,60" stroke="rgba(92,149,234,.45)" stroke-width="1" fill="none"/>
+          <polygon points="-60,20 60,20 0,60" stroke="rgba(92,149,234,.6)" stroke-width="1.2" fill="none"/>
+          <polygon points="0,-70 30,-10 -30,-10" stroke="rgba(92,149,234,.25)" stroke-width=".8" fill="none"/>
+          <line x1="0" y1="-70" x2="0" y2="60" stroke="rgba(92,149,234,.2)" stroke-width=".6" stroke-dasharray="4 4"/>
+          <circle cx="0" cy="0" r="4" fill="rgba(92,149,234,.7)"/>
+        </svg>
+      </div>
+      <div class="hero-chrome">
+        <div class="crumb">Inicio / Universo /</div>
+        <div class="hero-name">Cachorro</div>
+        <div class="hero-slogan">Leal, callejero y orgulloso</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-label">Opción C</div>
+      <div class="card-title">Geometría wireframe rotante</div>
+      <div class="card-desc">Icosaedro/esfera low-poly en wire_color rotando suavemente. Editorial y minimalista. No depende del mouse. Muy performante.</div>
+    </div>
+  </div>
+
+  <!-- D: Anillos de pulso -->
+  <div class="card" data-choice="d" onclick="select(this)">
+    <div class="preview preview-d" id="rings-preview">
+      <div class="hero-chrome">
+        <div class="crumb">Inicio / Universo /</div>
+        <div class="hero-name">Cachorro</div>
+        <div class="hero-slogan">Leal, callejero y orgulloso</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-label">Opción D</div>
+      <div class="card-title">Anillos de pulso (radar)</div>
+      <div class="card-desc">Anillos concéntricos que se expanden desde un punto, efecto radar/sonar. Muy simple de implementar. Dinámico sin ser distractivo.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="selected-bar" id="selected-bar">
+  Seleccionaste: <strong id="selected-label"></strong>
+</div>
+
+<script>
+// ─── Partículas para opción B ───────────────────────────────────────────────
+const pp = document.getElementById('particles-preview');
+for (let i = 0; i < 28; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = 2 + Math.random() * 3;
+  const left = 5 + Math.random() * 90;
+  const delay = Math.random() * -8;
+  const dur = 5 + Math.random() * 6;
+  const dx = (Math.random() - .5) * 40;
+  p.style.cssText = `
+    width: ${size}px; height: ${size}px;
+    left: ${left}%; bottom: -6px;
+    --dx: ${dx}px;
+    animation-duration: ${dur}s;
+    animation-delay: ${delay}s;
+    opacity: 0;
+  `;
+  pp.insertBefore(p, pp.lastElementChild);
+}
+
+// ─── Anillos para opción D ──────────────────────────────────────────────────
+const rp = document.getElementById('rings-preview');
+const cx = 70, cy = 60;
+for (let i = 0; i < 5; i++) {
+  const r = document.createElement('div');
+  r.className = 'ring';
+  const size = 60;
+  r.style.cssText = `
+    width: ${size}px; height: ${size}px;
+    left: ${cx}px; top: ${cy}px;
+    animation-delay: ${i * .65}s;
+    animation-duration: 3.2s;
+  `;
+  rp.insertBefore(r, rp.lastElementChild);
+}
+
+// ─── Selección ──────────────────────────────────────────────────────────────
+const labels = {
+  a: 'A — Orb central + satélites',
+  b: 'B — Campo de partículas',
+  c: 'C — Geometría wireframe rotante',
+  d: 'D — Anillos de pulso (radar)',
+};
+
+function select(card) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  const choice = card.dataset.choice;
+  document.getElementById('selected-label').textContent = labels[choice];
+  document.getElementById('selected-bar').classList.add('visible');
+
+  // notify companion
+  if (window.__companion) window.__companion.select(choice, labels[choice]);
+}
+</script>
+</body>
+</html>

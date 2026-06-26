@@ -288,7 +288,7 @@ nav.primary {
 }
 
 .pcard {
-  position: relative; background: var(--paper);
+  position: relative; background: var(--paper); height: 100%;
   border: 1px solid var(--carbon-08); border-radius: var(--r-lg); overflow: hidden;
   display: flex; flex-direction: column;
   transition: transform .22s, box-shadow .22s, border-color .22s;
@@ -304,14 +304,16 @@ nav.primary {
   }
 
   .pcard-img {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 1; flex-shrink: 0; padding: var(--s-5);
     display: flex; align-items: center; justify-content: center;
     position: relative; overflow: hidden;
+
+    img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
     .label {
       font-family: var(--display); font-size: clamp(28px, 3.4vw, 52px);
       line-height: 1; mix-blend-mode: multiply; opacity: 0.72;
-      text-align: center; padding: var(--s-5);
+      text-align: center;
     }
   }
 
@@ -326,6 +328,7 @@ nav.primary {
 
   .pcard-info {
     padding: var(--s-4) var(--s-5); border-top: 1px solid var(--carbon-08);
+    display: flex; flex-direction: column; flex: 1;
   }
 
   .meta {
@@ -333,11 +336,16 @@ nav.primary {
     color: var(--carbon-50); text-transform: uppercase; margin-bottom: 4px;
   }
 
-  h4 { font-family: var(--display); font-size: 19px; line-height: 1.1; margin-bottom: 8px; letter-spacing: -0.005em; }
+  h4 {
+    font-family: var(--display); font-size: 19px; line-height: 1.18; margin-bottom: 8px; letter-spacing: -0.005em;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    overflow: hidden; min-height: calc(1.18em * 2);
+  }
 
   .row {
     display: flex; justify-content: space-between; align-items: center;
     padding-top: 10px; border-top: 1px dashed var(--carbon-12);
+    margin-top: auto;
   }
 
   .price { font-family: var(--display); font-size: 18px; }
@@ -378,15 +386,6 @@ nav.primary {
   &[data-color="lila"]   .label { color: var(--lila); }
   &[data-color="bone"]   .label { color: var(--carbon); }
   &[data-color="cream"]  .label { color: var(--carbon); }
-
-  &.feature {
-    grid-column: span 2; grid-row: span 2;
-
-    .pcard-img { aspect-ratio: auto; flex: 1; min-height: 0; }
-    .pcard-img .label { font-size: clamp(56px, 6.5vw, 96px); }
-    h4 { font-size: 26px; }
-    .price { font-size: 24px; }
-  }
 }
 
 .tienda-foot {
@@ -452,7 +451,12 @@ nav.primary {
 
 // ─── Elenco teaser ────────────────────────────────────────────────────────────
 .elenco {
-  padding: var(--s-9) var(--s-7); max-width: 1320px; margin: 0 auto;
+  padding: var(--s-9) var(--s-7);
+  background: var(--cream);
+}
+
+.elenco-head, .cast-row, .elenco-cta {
+  max-width: 1320px; margin-left: auto; margin-right: auto;
 }
 
 .elenco-head {
@@ -467,7 +471,8 @@ nav.primary {
 }
 
 .cast-card {
-  background: var(--paper); border: 1px solid var(--carbon-08);
+  background: rgba(245, 247, 250, 0.65); border: 1px solid var(--carbon-08);
+  backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5);
   border-radius: var(--r-lg); overflow: hidden;
   transition: transform .22s, box-shadow .22s, border-color .22s;
   display: flex; flex-direction: column; cursor: pointer;
@@ -480,12 +485,6 @@ nav.primary {
     line-height: 1; color: var(--c, var(--terra));
     mix-blend-mode: multiply; opacity: 0.85; position: relative; overflow: hidden;
 
-    &::after {
-      content: ''; position: absolute; inset: 0;
-      background: repeating-linear-gradient(45deg, transparent 0 6px, rgba(21, 31, 40, 0.03) 6px 7px);
-      mix-blend-mode: normal; pointer-events: none;
-    }
-
     &.has-cover {
       mix-blend-mode: normal; opacity: 1;
       img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
@@ -494,20 +493,21 @@ nav.primary {
 
   .nm {
     padding: 10px var(--s-4) 12px; border-top: 1px solid var(--carbon-08);
-    display: flex; flex-direction: column; gap: 1px; background: var(--cream);
+    display: flex; flex-direction: column; gap: 1px; background: rgba(236, 239, 243, 0.65);
+    backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5);
   }
 
   .n1 { font-family: var(--display); font-size: 17px; line-height: 1.05; }
   .n2 { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--carbon-50); }
 
-  &[data-c="cuac"]       { --c: var(--rio);    .face { background: var(--rio-soft); } }
-  &[data-c="yeison"]     { --c: #B07820;        .face { background: var(--sol-soft); } }
-  &[data-c="roar"]       { --c: var(--carbon);  .face { background: var(--bone); } }
-  &[data-c="kiki"]       { --c: var(--rosa);    .face { background: var(--rosa-soft); } }
-  &[data-c="abejandro"]  { --c: var(--terra);   .face { background: var(--terra-soft); } }
-  &[data-c="atolita"]    { --c: var(--lila);    .face { background: var(--lila-soft); } }
-  &[data-c="colibriana"] { --c: var(--selva);   .face { background: var(--selva-soft); } }
-  &[data-c="tiburcio"]   { --c: #2E8FB8;        .face { background: #DCEEF7; } }
+  &[data-c="cuac"]       { --c: var(--rio);    .face { background: linear-gradient(135deg, rgba(201, 217, 246, 0.7), rgba(42, 111, 219, 0.25)); backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5); } }
+  &[data-c="yeison"]     { --c: #B07820;        .face { background: linear-gradient(135deg, rgba(252, 239, 194, 0.7), rgba(176, 120, 32, 0.25)); backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5); } }
+  &[data-c="roar"]       { --c: var(--carbon);  .face { background: linear-gradient(135deg, rgba(212, 220, 228, 0.7), rgba(21, 31, 40, 0.2)); backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5); } }
+  &[data-c="kiki"]       { --c: var(--rosa);    .face { background: linear-gradient(135deg, rgba(252, 224, 236, 0.7), rgba(255, 111, 168, 0.25)); backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5); } }
+  &[data-c="abejandro"]  { --c: var(--terra);   .face { background: linear-gradient(135deg, rgba(251, 224, 213, 0.7), rgba(232, 98, 61, 0.25)); backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5); } }
+  &[data-c="atolita"]    { --c: var(--lila);    .face { background: linear-gradient(135deg, rgba(229, 221, 247, 0.7), rgba(139, 111, 216, 0.25)); backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5); } }
+  &[data-c="colibriana"] { --c: var(--selva);   .face { background: linear-gradient(135deg, rgba(215, 235, 221, 0.7), rgba(31, 138, 91, 0.25)); backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5); } }
+  &[data-c="tiburcio"]   { --c: #2E8FB8;        .face { background: linear-gradient(135deg, rgba(220, 238, 247, 0.7), rgba(46, 143, 184, 0.25)); backdrop-filter: blur(10px) saturate(1.5); -webkit-backdrop-filter: blur(10px) saturate(1.5); } }
 }
 
 .elenco-cta {
@@ -524,7 +524,6 @@ nav.primary {
   .hero-inner, .tienda-head, .manifiesto-inner, .elenco-head { grid-template-columns: 1fr; }
   .hero-canvas-wrap { margin: 0 auto; max-width: 480px; }
   .showcase { grid-template-columns: repeat(2, 1fr); }
-  .pcard.feature { grid-column: span 2; grid-row: auto; }
   .cast-row { grid-template-columns: repeat(4, 1fr); }
 }
 
@@ -533,4 +532,9 @@ nav.primary {
   .showcase { grid-template-columns: 1fr 1fr; }
   .hero { padding: 88px var(--s-4) var(--s-7); }
   .tienda, .elenco { padding-left: var(--s-4); padding-right: var(--s-4); }
+
+  // Unbroken words ("Cuaquiverso") have no wrap opportunity — the 60px
+  // desktop floor clips on narrow phones. Let it keep shrinking to 320px.
+  .hero h1 { font-size: clamp(38px, 12vw, 60px); }
+  .manifiesto h2 { font-size: clamp(32px, 9vw, 40px); }
 }

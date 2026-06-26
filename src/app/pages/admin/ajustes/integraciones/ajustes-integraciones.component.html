@@ -66,12 +66,15 @@
       </div>
       }
       @if (i.config['sandbox'] !== undefined) {
-      <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer">
-        <input type="checkbox" [checked]="i.config['sandbox']" (change)="updateConfig(i.id,'sandbox',$any($event.target).checked)" />
+      <label class="field-toggle">
+        <span class="inv-toggle">
+          <input type="checkbox" [checked]="i.config['sandbox']" (change)="updateConfig(i.id,'sandbox',$any($event.target).checked)" />
+          <span class="inv-slider"></span>
+        </span>
         Modo sandbox (pruebas)
       </label>
       }
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:var(--s-3)">
+      <div class="form-footer">
         <button class="btn-sm ghost" (click)="toggle(i.id)">Cancelar</button>
         <button class="btn-sm solid" (click)="guardar(i.id)">
           @if (saving()) { Guardando… } @else { Guardar configuración }

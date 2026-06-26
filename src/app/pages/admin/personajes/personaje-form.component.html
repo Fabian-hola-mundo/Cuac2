@@ -1,144 +1,163 @@
-<div class="form-page">
-  <div class="form-header">
-    <button class="back-btn" (click)="cancelar()">← Personajes</button>
-    <h2>{{ isEdit() ? 'Editar personaje' : 'Nuevo personaje' }}</h2>
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Cuaquiverso · Personajes</div>
+    <h1>{{ isEdit() ? 'Editar' : 'Nuevo' }} <em>personaje</em>.</h1>
   </div>
+  <div class="ph-r">
+    <button class="btn-sm ghost" (click)="cancelar()">← Personajes</button>
+  </div>
+</div>
 
-  <form [formGroup]="form" (ngSubmit)="guardar()" class="form-body">
-    <div class="form-grid">
+<div class="grid-form-cols">
 
-      <!-- Columna izquierda: datos -->
-      <div class="form-col">
-        <section class="form-section">
-          <h3>Identidad</h3>
+  <!-- Panel izquierdo: formulario -->
+  <div class="panel">
+    <div class="panel-h">
+      <h3>{{ isEdit() ? 'Editar personaje' : 'Crear personaje' }}</h3>
+    </div>
+    <div class="panel-b">
+      <form [formGroup]="form" (ngSubmit)="guardar()">
 
+        <!-- Identidad -->
+        <span class="panel-section-h">Identidad</span>
+
+        <div class="field">
+          <label>Nombre <span class="opt">*</span></label>
+          <input class="input" formControlName="nombre" type="text" placeholder="Ej: Cuac" />
+          @if (isInvalid('nombre')) { <span class="help" style="color:var(--terra)">Nombre requerido (mínimo 2 caracteres)</span> }
+        </div>
+
+        <div class="field">
+          <label>Key / slug <span class="opt">*</span></label>
+          <input class="input" formControlName="key" type="text" placeholder="ej: cuac" [attr.disabled]="isEdit() ? true : null" />
+          <span class="help">Solo minúsculas, números y guiones.{{ isEdit() ? ' No editable.' : ' Se genera automáticamente.' }}</span>
+          @if (isInvalid('key')) { <span class="help" style="color:var(--terra)">Solo letras minúsculas, números y guiones</span> }
+        </div>
+
+        <div class="field">
+          <label>Región</label>
+          <input class="input" formControlName="region" type="text" placeholder="Ej: Bogotá · migratorio" />
+        </div>
+
+        <div class="grid-2">
           <div class="field">
-            <label>Nombre <span class="req">*</span></label>
-            <input formControlName="nombre" type="text" placeholder="Ej: Cuac" />
-            @if (isInvalid('nombre')) { <span class="err">Nombre requerido (mínimo 2 caracteres)</span> }
-          </div>
-
-          <div class="field">
-            <label>Key / slug <span class="req">*</span></label>
-            <input formControlName="key" type="text" placeholder="ej: cuac" [attr.disabled]="isEdit() ? true : null" />
-            <span class="hint">Solo minúsculas, números y guiones. {{ isEdit() ? 'No editable.' : 'Se genera automáticamente.' }}</span>
-            @if (isInvalid('key')) { <span class="err">Solo letras minúsculas, números y guiones</span> }
-          </div>
-
-          <div class="field">
-            <label>Región</label>
-            <input formControlName="region" type="text" placeholder="Ej: Bogotá · migratorio" />
-          </div>
-
-          <div class="field-row">
-            <div class="field">
-              <label>Color principal</label>
-              <div class="color-wrap">
-                <input formControlName="color" type="color" class="color-input" />
-                <input formControlName="color" type="text" class="color-text" placeholder="#2A6FDB" />
-              </div>
+            <label>Color principal</label>
+            <div class="color-wrap">
+              <input formControlName="color" type="color" class="color-input" />
+              <input class="input" formControlName="color" type="text" placeholder="#2A6FDB" />
             </div>
-            <div class="field">
-              <label>Color wire (Three.js)</label>
-              <div class="color-wrap">
-                <input formControlName="wire_color" type="color" class="color-input" />
-                <input formControlName="wire_color" type="text" class="color-text" placeholder="#5C95EA" />
-              </div>
+          </div>
+          <div class="field">
+            <label>Color wire (Three.js)</label>
+            <div class="color-wrap">
+              <input formControlName="wire_color" type="color" class="color-input" />
+              <input class="input" formControlName="wire_color" type="text" placeholder="#5C95EA" />
             </div>
           </div>
-        </section>
+        </div>
 
-        <section class="form-section">
-          <h3>Personalidad</h3>
+        <!-- Personalidad -->
+        <div class="section-sep"></div>
+        <span class="panel-section-h">Personalidad</span>
 
-          <div class="field">
-            <label>Frase / eslogan</label>
-            <input formControlName="slogan" type="text" placeholder="Ej: Siempre hay un páramo más por descubrir." maxlength="120" />
-            <span class="hint">{{ field('slogan').value?.length ?? 0 }} / 120</span>
-          </div>
+        <div class="field">
+          <label>Frase / eslogan</label>
+          <input class="input" formControlName="slogan" type="text" placeholder="Ej: Siempre hay un páramo más por descubrir." maxlength="120" />
+          <span class="help">{{ field('slogan').value?.length ?? 0 }} / 120</span>
+        </div>
 
-          <div class="field">
-            <label>Bio</label>
-            <textarea formControlName="bio" rows="5" placeholder="Historia del personaje…"></textarea>
-          </div>
+        <div class="field">
+          <label>Bio</label>
+          <textarea class="input textarea" formControlName="bio" rows="5" placeholder="Historia del personaje…"></textarea>
+        </div>
 
+        <div class="grid-2">
           <div class="field">
             <label>Música</label>
-            <input formControlName="musica" type="text" placeholder="Ej: Vallenato · jazz" />
+            <input class="input" formControlName="musica" type="text" placeholder="Ej: Vallenato · jazz" />
           </div>
-
           <div class="field">
             <label>Personalidad</label>
-            <input formControlName="personalidad" type="text" placeholder="Ej: Curioso, soñador" />
+            <input class="input" formControlName="personalidad" type="text" placeholder="Ej: Curioso, soñador" />
           </div>
+        </div>
 
-          <div class="field">
-            <label>Fauna / flora asociada</label>
-            <input formControlName="fauna_flora" type="text" placeholder="Ej: Frailejones" />
+        <div class="field">
+          <label>Fauna / flora asociada</label>
+          <input class="input" formControlName="fauna_flora" type="text" placeholder="Ej: Frailejones" />
+        </div>
+
+        <!-- Visibilidad -->
+        <div class="section-sep"></div>
+        <span class="panel-section-h">Visibilidad</span>
+
+        <div class="field-toggle-row">
+          <div>
+            <span class="ftr-label">Activo en el sitio</span>
+            <span class="ftr-hint">El personaje aparece en el Cuaquiverso público</span>
           </div>
-        </section>
-
-        <section class="form-section">
-          <h3>Estado</h3>
-          <label class="toggle-label">
+          <label class="inv-toggle">
             <input formControlName="activo" type="checkbox" />
-            <span>Activo (visible en el sitio)</span>
+            <span class="inv-slider"></span>
           </label>
-        </section>
-      </div>
+        </div>
 
-      <!-- Columna derecha: imágenes -->
-      <div class="form-col">
-        <section class="form-section">
-          <h3>Imagen principal</h3>
-          <div class="cover-upload">
-            @if (coverPreview()) {
-              <div class="cover-preview">
-                <img [src]="coverPreview()!" alt="Cover" />
-                <button type="button" class="remove-cover" (click)="coverPreview.set(null)">✕</button>
-              </div>
-            } @else {
-              <label class="upload-area" for="cover-input">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <span>Subir imagen principal</span>
-                <span class="hint">PNG, JPG o WebP</span>
-              </label>
-              <input id="cover-input" type="file" accept="image/*" (change)="onCoverChange($event)" hidden />
-            }
-          <span class="hint" style="display:block;margin-top:8px;font-size:11.5px;color:var(--carbon-50)">Fondo transparente recomendado · mín 400 × 400 px · 1:1</span>
-          </div>
-        </section>
+        @if (errorMsg()) { <p class="form-error">{{ errorMsg() }}</p> }
 
-        <section class="form-section">
-          <h3>Galería <span class="hint">(máx. 8 imágenes)</span></h3>
-          <div class="gallery-grid">
-            @for (url of galleryPreviews(); track url; let i = $index) {
-              <div class="gallery-thumb">
-                <img [src]="url.includes('::') ? url.split('::')[1] : url" alt="Galería {{ i + 1 }}" />
-                <button type="button" class="remove-thumb" (click)="removeGalleryImage(i)">✕</button>
-              </div>
-            }
-            @if (galleryPreviews().length < 8) {
-              <label class="gallery-add" for="gallery-input">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              </label>
-              <input id="gallery-input" type="file" accept="image/*" multiple (change)="onGalleryChange($event)" hidden />
-            }
+        <div class="form-footer">
+          <button type="button" class="btn-sm ghost" (click)="cancelar()">Cancelar</button>
+          <button type="submit" class="btn-sm solid" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : (isEdit() ? 'Guardar cambios' : 'Crear personaje') }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Panel derecho: imágenes -->
+  <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+
+    <div class="panel" style="align-self:start">
+      <div class="panel-h"><h3>Imagen principal</h3></div>
+      <div class="panel-b">
+        @if (coverPreview()) {
+          <div class="pj-cover-preview">
+            <img [src]="coverPreview()!" alt="Cover" />
+            <button type="button" class="pj-cover-remove" (click)="coverPreview.set(null)">✕</button>
           </div>
-          <span class="hint" style="display:block;margin-top:8px;font-size:11.5px;color:var(--carbon-50)">PNG, JPG o WebP · mín 800 px de ancho · hasta 8 imágenes</span>
-        </section>
+        } @else {
+          <label class="pj-upload-area" for="cover-input">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Subir imagen principal</span>
+          </label>
+          <input id="cover-input" type="file" accept="image/*" (change)="onCoverChange($event)" hidden />
+        }
+        <span class="help">Fondo transparente · 1:1 · mín 400×400 px</span>
       </div>
     </div>
 
-    @if (errorMsg()) {
-      <p class="error-banner">{{ errorMsg() }}</p>
-    }
-
-    <div class="form-actions">
-      <button type="button" (click)="cancelar()">Cancelar</button>
-      <button type="submit" class="btn-save" [disabled]="guardando()">
-        {{ guardando() ? 'Guardando…' : (isEdit() ? 'Guardar cambios' : 'Crear personaje') }}
-      </button>
+    <div class="panel" style="align-self:start">
+      <div class="panel-h"><h3>Galería</h3><span class="sub">máx. 8 imágenes</span></div>
+      <div class="panel-b">
+        <div class="pj-gallery-grid">
+          @for (url of galleryPreviews(); track url; let i = $index) {
+            <div class="pj-gallery-thumb">
+              <img [src]="url.includes('::') ? url.split('::')[1] : url" alt="Galería {{ i + 1 }}" />
+              <button type="button" class="pj-remove-thumb" (click)="removeGalleryImage(i)">✕</button>
+            </div>
+          }
+          @if (galleryPreviews().length < 8) {
+            <label class="pj-gallery-add" for="gallery-input">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </label>
+            <input id="gallery-input" type="file" accept="image/*" multiple (change)="onGalleryChange($event)" hidden />
+          }
+        </div>
+        <span class="help">PNG, JPG o WebP · mín 800 px de ancho</span>
+      </div>
     </div>
-  </form>
+
+  </div>
+
 </div>

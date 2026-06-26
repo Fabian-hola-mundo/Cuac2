@@ -2,6 +2,12 @@
 .ma-wrap {
   padding: 28px 32px;
   max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 60px - var(--s-5));
+  overflow: hidden;
 }
 
 .ma-head {
@@ -9,6 +15,7 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 24px;
+  flex-shrink: 0;
 
   h1 {
     font-size: 20px;
@@ -38,7 +45,10 @@
 .ma-list {
   border: 1px solid rgba(21, 31, 40, 0.08);
   border-radius: 10px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .ma-row {
@@ -129,4 +139,27 @@
   color: #EC3813;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .ma-wrap { height: calc(100vh - 56px - var(--s-5)); }
+}
+
+@media (max-width: 720px) {
+  .ma-wrap { padding: 20px 16px; }
+
+  .ma-row-top {
+    grid-template-columns: 10px auto 1fr 12px;
+    grid-template-areas:
+      "dot tipo chevron chevron"
+      "preview preview preview preview"
+      "correo correo fecha fecha";
+    row-gap: 4px;
+  }
+  .ma-dot     { grid-area: dot; }
+  .ma-tipo    { grid-area: tipo; }
+  .ma-chevron { grid-area: chevron; justify-self: end; }
+  .ma-preview { grid-area: preview; white-space: normal; }
+  .ma-correo  { grid-area: correo; }
+  .ma-fecha   { grid-area: fecha; justify-self: end; }
 }

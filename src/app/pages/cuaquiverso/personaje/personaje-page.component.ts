@@ -1,5 +1,5 @@
-import { Component, OnInit, signal, computed, inject, PLATFORM_ID, DestroyRef } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { PersonajesService, Personaje } from '../../../core/services/personajes.service';
 import { InventarioService, ProductoEvento } from '../../../core/services/inventario.service';
@@ -22,8 +22,6 @@ export class PersonajePageComponent implements OnInit {
   readonly svcP              = inject(PersonajesService);
   readonly svcI              = inject(InventarioService);
   readonly cart              = inject(CartService);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly platformId = inject(PLATFORM_ID);
   readonly String            = String;
 
   personaje   = signal<Personaje | null>(null);
@@ -54,19 +52,6 @@ export class PersonajePageComponent implements OnInit {
     this.personaje.set(p);
     if (p.galeria_urls.length > 0) this.selectedImg.set(p.galeria_urls[0]);
 
-    if (isPlatformBrowser(this.platformId)) {
-      let attempts = 0;
-      const tryInit = () => {
-        const container = document.getElementById('pj-hero-canvas');
-        if (!container || !container.clientHeight) {
-          if (++attempts < 30) requestAnimationFrame(tryInit);
-          return;
-        }
-        this.initHeroScene(p);
-      };
-      requestAnimationFrame(tryInit);
-    }
-
     this.seo.set({
       title:       `${p.nombre} — Cuaquiverso`,
       description: p.bio ? p.bio.slice(0, 160) : `Conoce a ${p.nombre} del Cuaquiverso.`,
@@ -91,99 +76,20 @@ export class PersonajePageComponent implements OnInit {
     });
   }
 
-  private async initHeroScene(p: Personaje): Promise<void> {
-    const container = document.getElementById('pj-hero-canvas');
-    if (!container) return;
+  getTextColor(hex: string | null | undefined): string {
+    const h = (hex ?? '#2A6FDB').replace('#', '');
+    if (h.length !== 6) return '#ffffff';
+    const r = parseInt(h.slice(0, 2), 16) / 255;
+    const g = parseInt(h.slice(2, 4), 16) / 255;
+    const b = parseInt(h.slice(4, 6), 16) / 255;
+    const lin = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    return L > 0.35 ? '#151F28' : '#ffffff';
+  }
 
-    const THREE = await import('three');
-
-    const mainColor = p.color      ?? '#2A6FDB';
-    const satColor  = p.wire_color ?? '#5C95EA';
-
-    const orbDefs = [
-      { color: mainColor, bx:  1.2, by:  0.5, bz:  0.0, scale: 3.2, opacity: 0.55, sx: 0.28, sy: 0.22, px: 0.0, py: 0.0 },
-      { color: satColor,  bx: -0.6, by: -0.8, bz:  0.3, scale: 1.8, opacity: 0.40, sx: 0.35, sy: 0.30, px: 1.2, py: 0.8 },
-      { color: satColor,  bx:  0.4, by:  1.1, bz: -0.3, scale: 1.4, opacity: 0.35, sx: 0.42, sy: 0.38, px: 2.4, py: 1.6 },
-    ];
-
-    function makeBlobTexture(hex: string) {
-      const c = document.createElement('canvas');
-      c.width = c.height = 512;
-      const ctx = c.getContext('2d')!;
-      const rv = parseInt(hex.slice(1, 3), 16);
-      const gv = parseInt(hex.slice(3, 5), 16);
-      const bv = parseInt(hex.slice(5, 7), 16);
-      ctx.filter = 'blur(16px)';
-      const grad = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
-      grad.addColorStop(0,   `rgba(${rv},${gv},${bv},0.50)`);
-      grad.addColorStop(0.4, `rgba(${rv},${gv},${bv},0.18)`);
-      grad.addColorStop(1,   `rgba(${rv},${gv},${bv},0.00)`);
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 512, 512);
-      const tex = new THREE.CanvasTexture(c);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      return tex;
-    }
-
-    const aspect = () =>
-      container.clientHeight > 0 ? container.clientWidth / container.clientHeight : 1;
-
-    const scene    = new THREE.Scene();
-    const camera   = new THREE.PerspectiveCamera(38, aspect(), 0.1, 100);
-    camera.position.set(0, 0, 5.5);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    container.appendChild(renderer.domElement);
-
-    const group = new THREE.Group();
-    scene.add(group);
-
-    const orbs = orbDefs.map(def => {
-      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: makeBlobTexture(def.color),
-        transparent: true,
-        opacity: def.opacity,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      }));
-      sprite.position.set(def.bx, def.by, def.bz);
-      sprite.scale.set(def.scale, def.scale, 1);
-      sprite.userData = { bx: def.bx, by: def.by, sx: def.sx, sy: def.sy, px: def.px, py: def.py };
-      group.add(sprite);
-      return sprite;
-    });
-
-    const clock = new THREE.Clock();
-    let animFrameId: number;
-
-    const tick = () => {
-      const t = clock.getElapsedTime();
-      group.rotation.y = t * 0.004;
-      orbs.forEach(b => {
-        const s = b.userData;
-        b.position.x = s.bx + Math.sin(t * s.sx + s.px) * 0.18;
-        b.position.y = s.by + Math.sin(t * s.sy + s.py) * 0.18;
-      });
-      renderer.render(scene, camera);
-      animFrameId = requestAnimationFrame(tick);
-    };
-    animFrameId = requestAnimationFrame(tick);
-
-    const onResize = () => {
-      if (!container.clientWidth || !container.clientHeight) return;
-      camera.aspect = aspect();
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    };
-    window.addEventListener('resize', onResize);
-
-    this.destroyRef.onDestroy(() => {
-      cancelAnimationFrame(animFrameId);
-      orbs.forEach(b => { b.material.map?.dispose(); b.material.dispose(); });
-      renderer.dispose();
-      window.removeEventListener('resize', onResize);
-    });
+  getTextMuted(hex: string | null | undefined): string {
+    return this.getTextColor(hex) === '#ffffff'
+      ? 'rgba(255,255,255,0.68)'
+      : 'rgba(21,31,40,0.52)';
   }
 }

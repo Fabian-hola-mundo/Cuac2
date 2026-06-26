@@ -20,58 +20,78 @@
     <a class="brand" href="/cuaquiverso">
       <span class="b1">Cuaqui</span><span class="dot"></span><span class="b2">verso</span>
     </a>
-    <nav class="primary">
+    <nav class="primary" aria-label="Navegación principal">
       <a href="/cuaquiverso/tienda">Tienda</a>
       <a href="/cuaquiverso/universo">Universo</a>
     </nav>
     <div class="top-actions">
       <button class="icon-btn" aria-label="Carrito" (click)="cart.open()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h2l2.5 12.5h11L21 7H7"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
-        @if (cart.count() > 0) { <span class="badge">{{ cart.count() }}</span> }
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h2l2.5 12.5h11L21 7H7"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+        @if (cart.count() > 0) { <span class="badge" aria-label="{{ cart.count() }} artículos en el carrito">{{ cart.count() }}</span> }
       </button>
     </div>
   </div>
 </header>
 
 <!-- Hero -->
-<section class="pj-hero" [style.--pj-color]="p.color ?? '#2A6FDB'">
-  <div id="pj-hero-canvas"></div>
+<section
+  class="pj-hero"
+  aria-label="Perfil de {{ p.nombre }}"
+  [style.--pj-color]="p.color ?? '#2A6FDB'"
+  [style.--pj-wire]="p.wire_color ?? 'rgba(255,255,255,.4)'"
+  [style.--pj-text]="getTextColor(p.color)"
+  [style.--pj-text-muted]="getTextMuted(p.color)">
+
+  <span class="pj-bg-num" aria-hidden="true">{{ String(p.sort_order).padStart(2, '0') }}</span>
+
   <div class="pj-hero-inner">
-    <nav class="cuac-breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/cuaquiverso" class="bc-crumb">← Inicio</a>
-      <a routerLink="/cuaquiverso/universo" class="bc-crumb">← Universo</a>
-    </nav>
-    <div class="pj-num">{{ String(p.sort_order).padStart(2, '0') }}</div>
-    <h1>{{ p.nombre }}</h1>
-    @if (p.slogan) {
-      <p class="pj-slogan">{{ p.slogan }}</p>
-    }
+    <div class="pj-hero-text">
+      <nav class="pj-crumb" aria-label="Miga de pan">
+        <ol>
+          <li><a routerLink="/cuaquiverso">Inicio</a></li>
+          <li><a routerLink="/cuaquiverso/universo">Universo</a></li>
+          <li aria-current="page">{{ p.nombre }}</li>
+        </ol>
+      </nav>
+      <span class="pj-tag">N° {{ String(p.sort_order).padStart(2, '0') }}@if (p.region) { · {{ p.region }} }</span>
+      <h1>{{ p.nombre }}</h1>
+      @if (p.slogan) {
+        <p class="pj-slogan">{{ p.slogan }}</p>
+      }
+    </div>
+    <div class="pj-hero-portrait">
+      @if (p.cover_url) {
+        <img [src]="p.cover_url" alt="Ilustración de {{ p.nombre }}" />
+      } @else {
+        <div class="pj-portrait-fallback" role="img" [attr.aria-label]="p.nombre">{{ p.nombre.slice(0, 2) }}</div>
+      }
+    </div>
   </div>
 </section>
 
 <!-- Identity strip -->
 @if (p.region || p.musica || p.personalidad || p.fauna_flora) {
-  <div class="pj-identity">
+  <div class="pj-identity" role="list" aria-label="Datos del personaje">
     @if (p.region) {
-      <div class="id-cell">
+      <div class="id-cell" role="listitem">
         <span class="id-lbl">Región</span>
         <span class="id-val">{{ p.region }}</span>
       </div>
     }
     @if (p.musica) {
-      <div class="id-cell">
+      <div class="id-cell" role="listitem">
         <span class="id-lbl">Música</span>
         <span class="id-val">{{ p.musica }}</span>
       </div>
     }
     @if (p.personalidad) {
-      <div class="id-cell">
+      <div class="id-cell" role="listitem">
         <span class="id-lbl">Carácter</span>
         <span class="id-val">{{ p.personalidad }}</span>
       </div>
     }
     @if (p.fauna_flora) {
-      <div class="id-cell">
+      <div class="id-cell" role="listitem">
         <span class="id-lbl">Fauna / flora</span>
         <span class="id-val">{{ p.fauna_flora }}</span>
       </div>
@@ -83,7 +103,7 @@
 @if (p.bio) {
   <section class="pj-section pj-bio">
     <div class="pj-section-inner">
-      <div class="eyebrow"><span class="dot-sm"></span> Sobre {{ p.nombre }}</div>
+      <div class="eyebrow"><span class="dot-sm" aria-hidden="true"></span> Sobre {{ p.nombre }}</div>
       <p>{{ p.bio }}</p>
     </div>
   </section>
@@ -93,20 +113,23 @@
 @if (p.galeria_urls.length > 0) {
   <section class="pj-section pj-gallery">
     <div class="pj-section-inner">
-      <div class="eyebrow"><span class="dot-sm"></span> Galería</div>
+      <div class="eyebrow"><span class="dot-sm" aria-hidden="true"></span> Galería</div>
       <div class="gallery-layout">
         <div class="gallery-main">
           <img [src]="selectedImg() ?? p.galeria_urls[0]" [alt]="p.nombre" />
         </div>
         @if (p.galeria_urls.length > 1) {
-          <div class="gallery-thumbs">
-            @for (url of p.galeria_urls; track url) {
-              <div
+          <div class="gallery-thumbs" role="group" aria-label="Miniaturas de la galería">
+            @for (url of p.galeria_urls; track url; let idx = $index) {
+              <button
+                type="button"
                 class="gallery-thumb"
                 [class.active]="selectedImg() === url"
+                [attr.aria-label]="'Ver imagen ' + (idx + 1)"
+                [attr.aria-pressed]="selectedImg() === url"
                 (click)="selectedImg.set(url)">
-                <img [src]="url" [alt]="p.nombre" />
-              </div>
+                <img [src]="url" [alt]="p.nombre + ', imagen ' + (idx + 1)" />
+              </button>
             }
           </div>
         }
@@ -120,12 +143,12 @@
   <section class="pj-section pj-productos">
     <div class="pj-section-inner">
       <div class="prod-section-head">
-        <div class="eyebrow"><span class="dot-sm"></span> Productos relacionados</div>
+        <div class="eyebrow"><span class="dot-sm" aria-hidden="true"></span> Productos relacionados</div>
         <a class="prod-section-link" href="/cuaquiverso/tienda">Ver tienda <span aria-hidden="true">→</span></a>
       </div>
-      <div class="productos-scroll">
+      <div class="productos-scroll" role="list">
         @for (pr of productos(); track pr.id) {
-          <a class="prod-card" [routerLink]="['/cuaquiverso/tienda', pr.id]">
+          <a class="prod-card" [routerLink]="['/cuaquiverso/tienda', pr.id]" role="listitem">
             <div class="prod-img" [style.background]="pr.color ?? '#eee'">
               @if (pr.cover_url) { <img [src]="pr.cover_url" [alt]="pr.nombre" /> }
             </div>
@@ -134,7 +157,7 @@
               <span class="prod-sub">{{ pr.categoria }}</span>
               <span class="prod-price">${{ pr.precio | number:'1.0-0' }}</span>
             </div>
-            <button class="prod-cart" (click)="addToCart($event, pr)">+ Carrito</button>
+            <button type="button" class="prod-cart" (click)="addToCart($event, pr)" aria-label="Agregar {{ pr.nombre }} al carrito">+ Carrito</button>
           </a>
         }
       </div>
@@ -143,10 +166,11 @@
 }
 
 <!-- Nav entre personajes -->
-<nav class="pj-nav">
+<nav class="pj-nav" aria-label="Personajes anteriores y siguientes">
   @if (prev(); as prevP) {
     <a class="pj-nav-item prev" [href]="'/cuaquiverso/personaje/' + prevP.key">
-      <span class="nav-dir">← Anterior</span>
+      <span class="nav-dir" aria-hidden="true">←</span>
+      <span class="nav-label">Anterior</span>
       <span class="nav-name">{{ prevP.nombre }}</span>
     </a>
   } @else {
@@ -155,7 +179,8 @@
   <a class="pj-nav-all" href="/cuaquiverso/universo">Ver todos</a>
   @if (next(); as nextP) {
     <a class="pj-nav-item next" [href]="'/cuaquiverso/personaje/' + nextP.key">
-      <span class="nav-dir">Siguiente →</span>
+      <span class="nav-dir" aria-hidden="true">→</span>
+      <span class="nav-label">Siguiente</span>
       <span class="nav-name">{{ nextP.nombre }}</span>
     </a>
   } @else {
