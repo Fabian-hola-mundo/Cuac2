@@ -1,22 +1,27 @@
-import { Component, computed, signal, inject, OnDestroy } from '@angular/core';
+import { Component, computed, signal, inject, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AdminStateService, ViewId } from '../../core/services/admin-state.service';
 import { MockAdminDataService, Customer, Order, Payment, Product, Character, Category, ToneStyle } from '../../core/services/mock-admin-data.service';
+import { GoogleAnalyticsService, GaPageView, GaPortfolioView } from '../../core/services/google-analytics.service';
 import { ClienteDetailComponent } from './clientes/cliente-detail.component';
 import { PagoDetailComponent }    from './pagos/pago-detail.component';
+import { PagosExportService }    from './pagos/pagos-export.service';
 
 @Component({
   selector: 'app-admin-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, ClienteDetailComponent, PagoDetailComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ClienteDetailComponent, PagoDetailComponent],
   templateUrl: './admin-home.component.html',
   styleUrl: './admin-home.component.scss',
 })
-export class AdminHomeComponent implements OnDestroy {
+export class AdminHomeComponent implements OnInit, OnDestroy {
 
   private adminState = inject(AdminStateService);
   private data = inject(MockAdminDataService);
+  private ga   = inject(GoogleAnalyticsService);
+  private exportSvc = inject(PagosExportService);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   view = this.adminState.view;
@@ -26,6 +31,10 @@ export class AdminHomeComponent implements OnDestroy {
   orderOn        = signal(false);
   manualOrderOn  = signal(false);
   editingProduct = signal<Product | null>(null);
+
+  // ── Export dropdowns ───────────────────────────────────────────────────────
+  exportContadorOpen = signal(false);
+  exportReporteOpen  = signal(false);
 
   // ── Toast ──────────────────────────────────────────────────────────────────
   toast = signal<string | null>(null);
@@ -41,7 +50,11 @@ export class AdminHomeComponent implements OnDestroy {
   moCanal            = 'web';
   moNotas            = '';
   moProductSearch    = '';
-  moItems            = signal<{ id: string; name: string; price: number; qty: number }[]>([]);
+  moEstado           = 'pendiente';
+  moReferencia       = '';
+  moEnvio            = signal(0);
+  moDescuento        = signal(0);
+  moItems            = signal<{ id: string; name: string; sku: string; price: number; qty: number; variant: string }[]>([]);
 
   moProductosFiltrados = computed(() => {
     const q = this.moProductSearch.toLowerCase().trim();
@@ -55,7 +68,7 @@ export class AdminHomeComponent implements OnDestroy {
     this.moItems().reduce((acc, i) => acc + i.price * i.qty, 0)
   );
 
-  moTotal = computed(() => this.moSubtotal());
+  moTotal = computed(() => this.moSubtotal() + this.moEnvio() - this.moDescuento());
 
   // ── Filters ───────────────────────────────────────────────────────────────
   productCat   = signal('all');
@@ -85,6 +98,35 @@ export class AdminHomeComponent implements OnDestroy {
   readonly CUSTOMERS   = this.data.CUSTOMERS;
   readonly PAYMENTS    = this.data.PAYMENTS;
   readonly SIZES       = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  readonly gaLoading    = signal(true);
+  readonly gaConfigured = signal(false);
+  readonly gaError      = signal<string | undefined>(undefined);
+  readonly PAGE_VIEWS      = signal<GaPageView[]>([]);
+  readonly PORTFOLIO_VIEWS = signal<GaPortfolioView[]>([]);
+
+  @HostListener('document:click')
+  onDocClick() {
+    this.exportContadorOpen.set(false);
+    this.exportReporteOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onExportEscape() {
+    this.exportContadorOpen.set(false);
+    this.exportReporteOpen.set(false);
+  }
+
+  async ngOnInit() {
+    this.updateClock();
+    this.clockTimer = setInterval(() => this.updateClock(), 60_000);
+
+    const report = await this.ga.getReport();
+    this.gaConfigured.set(report.configured);
+    this.gaError.set(report.fetchError);
+    this.PAGE_VIEWS.set(report.pages);
+    this.PORTFOLIO_VIEWS.set(report.portfolios);
+    this.gaLoading.set(false);
+  }
 
   readonly GATEWAYS: { name: string; state: string; tone: string; fee: string; count: number; color: string }[] = [
     { name: 'Bold',           state: 'Conectado', tone: 'ok',   fee: '3.0% + $300', count: 64, color: 'rio'   },
@@ -112,6 +154,20 @@ export class AdminHomeComponent implements OnDestroy {
     ],
   };
 
+  // ── Live clock & greeting ──────────────────────────────────────────────────
+  nowTime     = signal('');
+  nowDatetime = signal('');
+  nowGreeting = signal('Hola');
+  private clockTimer?: ReturnType<typeof setInterval>;
+
+  private updateClock(): void {
+    const now = new Date();
+    const h   = now.getHours();
+    this.nowGreeting.set(h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches');
+    this.nowTime.set(now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false }));
+    this.nowDatetime.set(now.toISOString());
+  }
+
   // ── Drawer signals para Cliente y Pago ─────────────────────────────────────
   clienteId = signal<string | null>(null);
   pagoId    = signal<string | null>(null);
@@ -120,6 +176,74 @@ export class AdminHomeComponent implements OnDestroy {
   closeCliente()          { this.clienteId.set(null); }
   openPago(id: string)    { this.pagoId.set(id); }
   closePago()             { this.pagoId.set(null); }
+
+  // ── Export helpers ─────────────────────────────────────────────────────────
+  toggleExportContador() {
+    this.exportContadorOpen.update(v => !v);
+    this.exportReporteOpen.set(false);
+  }
+
+  toggleExportReporte() {
+    this.exportReporteOpen.update(v => !v);
+    this.exportContadorOpen.set(false);
+  }
+
+  filterPayments(rango: string): Payment[] {
+    const hoy      = new Date();
+    const mesActual = hoy.toISOString().substring(0, 7);
+    const mesPasado = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1)
+      .toISOString().substring(0, 7);
+    const hace90 = new Date(hoy.getTime() - 90 * 24 * 60 * 60 * 1000);
+
+    switch (rango) {
+      case 'mes':        return this.PAYMENTS.filter(p => p.date.substring(0, 7) === mesActual);
+      case 'mes-pasado': return this.PAYMENTS.filter(p => p.date.substring(0, 7) === mesPasado);
+      case '3meses':     return this.PAYMENTS.filter(p => new Date(p.date) >= hace90);
+      default:           return [...this.PAYMENTS];
+    }
+  }
+
+  periodoSlug(rango: string): string {
+    const hoy = new Date();
+    switch (rango) {
+      case 'mes':        return hoy.toISOString().substring(0, 7);
+      case 'mes-pasado': return new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1)
+        .toISOString().substring(0, 7);
+      case '3meses':     return `${hoy.toISOString().substring(0, 7)}-3m`;
+      default:           return 'todo';
+    }
+  }
+
+  periodoLabel(rango: string): string {
+    const hoy = new Date();
+    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    switch (rango) {
+      case 'mes':
+        return `${MESES[hoy.getMonth()]} ${hoy.getFullYear()}`;
+      case 'mes-pasado': {
+        const m = hoy.getMonth() === 0 ? 11 : hoy.getMonth() - 1;
+        const y = hoy.getMonth() === 0 ? hoy.getFullYear() - 1 : hoy.getFullYear();
+        return `${MESES[m]} ${y}`;
+      }
+      case '3meses': return 'Últimos 3 meses';
+      default:       return 'Historial completo';
+    }
+  }
+
+  descargarContador(rango: string) {
+    const pagos = this.filterPayments(rango);
+    this.exportSvc.exportCsv(pagos, this.periodoSlug(rango));
+    this.exportContadorOpen.set(false);
+    this.flash(`✓ Exportado · ${pagos.length} movimientos · ${this.periodoLabel(rango)}`);
+  }
+
+  descargarReporte(rango: string) {
+    const pagos = this.filterPayments(rango);
+    this.exportSvc.exportXlsx(pagos, this.periodoSlug(rango));
+    this.exportReporteOpen.set(false);
+    this.flash(`✓ Exportado · ${pagos.length} movimientos · ${this.periodoLabel(rango)}`);
+  }
 
   // ── KPI computados desde el servicio ────────────────────────────────────────
   readonly kpiIngresos7d  = computed(() => this.data.totalIngresos7d());
@@ -158,6 +282,25 @@ export class AdminHomeComponent implements OnDestroy {
 
   barHeight(b: number): number { return (b / this.MAX_BAR) * 100; }
 
+  trendPoints(): string {
+    const n = this.BARS.length;
+    return this.BARS.map((b, i) => {
+      const x = ((i + 0.5) / n) * 100;
+      const y = 100 - this.barHeight(b);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  }
+
+  trendArea(): string {
+    const n = this.BARS.length;
+    const pts = this.BARS.map((b, i) => {
+      const x = ((i + 0.5) / n) * 100;
+      const y = 100 - this.barHeight(b);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    return `0,100 ${pts} 100,100`;
+  }
+
   // ── Methods ────────────────────────────────────────────────────────────────
   go(v: ViewId, opts: { newProduct?: boolean; detail?: boolean } = {}) {
     this.view.set(v);
@@ -191,6 +334,10 @@ export class AdminHomeComponent implements OnDestroy {
     this.moCanal            = 'web';
     this.moNotas            = '';
     this.moProductSearch    = '';
+    this.moEstado           = 'pendiente';
+    this.moReferencia       = '';
+    this.moEnvio.set(0);
+    this.moDescuento.set(0);
     this.moItems.set([]);
     this.manualOrderOn.set(true);
   }
@@ -203,7 +350,7 @@ export class AdminHomeComponent implements OnDestroy {
       if (existing) {
         return items.map(i => i.id === p.id ? { ...i, qty: i.qty + 1 } : i);
       }
-      return [...items, { id: p.id, name: p.name, price: p.price, qty: 1 }];
+      return [...items, { id: p.id, name: p.name, sku: p.sku, price: p.price, qty: 1, variant: '' }];
     });
   }
 
@@ -220,7 +367,19 @@ export class AdminHomeComponent implements OnDestroy {
   moCrear() {
     if (this.moItems().length === 0 || !this.moClienteNombre.trim()) return;
     this.closeManualOrder();
-    this.flash('Pedido manual creado.');
+    this.flash(`Pedido creado · ${this.fmtCOP(this.moTotal())}`);
+  }
+
+  moUpdatePrice(id: string, price: number) {
+    this.moItems.update(items =>
+      items.map(i => i.id === id ? { ...i, price: isNaN(price) || price < 0 ? 0 : price } : i)
+    );
+  }
+
+  moUpdateVariant(id: string, variant: string) {
+    this.moItems.update(items =>
+      items.map(i => i.id === id ? { ...i, variant } : i)
+    );
   }
 
   flash(msg: string) {
@@ -253,6 +412,10 @@ export class AdminHomeComponent implements OnDestroy {
   removeImage(idx: number) { this.editorImages.splice(idx, 1); }
   addImage()               { if (this.editorImages.length < 8) this.editorImages.push(this.editorImages.length); }
 
+  fmtViews(n: number): string { return n.toLocaleString('es-CO'); }
+
+  fmtDelta(d: number): string { return (d > 0 ? '+' : '') + d.toFixed(1) + '%'; }
+
   fmtCOP(n: number): string {
     return (n < 0 ? '-' : '') + '$' + Math.abs(n).toLocaleString('es-CO');
   }
@@ -279,5 +442,8 @@ export class AdminHomeComponent implements OnDestroy {
     return 'var(--carbon)';
   }
 
-  ngOnDestroy() { if (this.toastTimer) clearTimeout(this.toastTimer); }
+  ngOnDestroy() {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    if (this.clockTimer) clearInterval(this.clockTimer);
+  }
 }
