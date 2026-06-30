@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { PersonajesService, Personaje } from '../../../core/services/personajes.service';
@@ -15,7 +15,7 @@ import { SeoService } from '../../../core/services/seo.service';
   templateUrl: './personaje-page.component.html',
   styleUrl: './personaje-page.component.scss',
 })
-export class PersonajePageComponent implements OnInit {
+export class PersonajePageComponent implements OnInit, OnDestroy {
   private route              = inject(ActivatedRoute);
   private router             = inject(Router);
   private seo                = inject(SeoService);
@@ -24,9 +24,11 @@ export class PersonajePageComponent implements OnInit {
   readonly cart              = inject(CartService);
   readonly String            = String;
 
-  personaje   = signal<Personaje | null>(null);
-  productos   = signal<ProductoEvento[]>([]);
-  selectedImg = signal<string | null>(null);
+  personaje    = signal<Personaje | null>(null);
+  productos    = signal<ProductoEvento[]>([]);
+  selectedIdx  = signal(0);
+  lightboxOpen = signal(false);
+  lightboxIdx  = signal(0);
 
   prev = computed(() => {
     const p = this.personaje();
@@ -50,7 +52,7 @@ export class PersonajePageComponent implements OnInit {
     const p = this.svcP.activos().find(x => x.key === slug);
     if (!p) { this.router.navigate(['/cuaquiverso/universo']); return; }
     this.personaje.set(p);
-    if (p.galeria_urls.length > 0) this.selectedImg.set(p.galeria_urls[0]);
+    this.selectedIdx.set(0);
 
     this.seo.set({
       title:       `${p.nombre} — Cuaquiverso`,
@@ -62,6 +64,58 @@ export class PersonajePageComponent implements OnInit {
     this.productos.set(
       this.svcI.productos().filter(pr => pr.personaje === slug && pr.activo)
     );
+  }
+
+  ngOnDestroy() {
+    document.body.style.overflow = '';
+  }
+
+  // ─── Gallery ──────────────────────────────────────────────────────────────
+  galleryPrev() {
+    const len = this.personaje()?.galeria_urls.length ?? 0;
+    if (len > 1) this.selectedIdx.set((this.selectedIdx() - 1 + len) % len);
+  }
+
+  galleryNext() {
+    const len = this.personaje()?.galeria_urls.length ?? 0;
+    if (len > 1) this.selectedIdx.set((this.selectedIdx() + 1) % len);
+  }
+
+  // ─── Lightbox ─────────────────────────────────────────────────────────────
+  openLightbox(idx: number) {
+    this.lightboxIdx.set(idx);
+    this.lightboxOpen.set(true);
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      (document.querySelector('.pj-lb-close') as HTMLElement)?.focus();
+    }, 40);
+  }
+
+  closeLightbox() {
+    this.lightboxOpen.set(false);
+    document.body.style.overflow = '';
+  }
+
+  lightboxPrev() {
+    const urls = this.personaje()?.galeria_urls ?? [];
+    const newIdx = (this.lightboxIdx() - 1 + urls.length) % urls.length;
+    this.lightboxIdx.set(newIdx);
+    this.selectedIdx.set(newIdx);
+  }
+
+  lightboxNext() {
+    const urls = this.personaje()?.galeria_urls ?? [];
+    const newIdx = (this.lightboxIdx() + 1) % urls.length;
+    this.lightboxIdx.set(newIdx);
+    this.selectedIdx.set(newIdx);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(e: KeyboardEvent) {
+    if (!this.lightboxOpen()) return;
+    if (e.key === 'Escape')     { e.preventDefault(); this.closeLightbox(); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); this.lightboxPrev(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); this.lightboxNext(); }
   }
 
   addToCart(event: Event, p: ProductoEvento) {

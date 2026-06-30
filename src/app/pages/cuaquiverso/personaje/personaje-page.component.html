@@ -113,22 +113,67 @@
 @if (p.galeria_urls.length > 0) {
   <section class="pj-section pj-gallery">
     <div class="pj-section-inner">
-      <div class="eyebrow"><span class="dot-sm" aria-hidden="true"></span> Galería</div>
+      <div class="gallery-header">
+        <div class="eyebrow"><span class="dot-sm" aria-hidden="true"></span> Galería</div>
+        @if (p.galeria_urls.length > 1) {
+          <span class="gallery-total" aria-hidden="true">{{ p.galeria_urls.length }} imágenes</span>
+        }
+      </div>
+
       <div class="gallery-layout">
+
+        <!-- Main viewer -->
         <div class="gallery-main">
-          <img [src]="selectedImg() ?? p.galeria_urls[0]" [alt]="p.nombre" />
+          <button
+            type="button"
+            class="gallery-main-img"
+            [attr.aria-label]="'Ampliar imagen ' + (selectedIdx() + 1) + ' de ' + p.galeria_urls.length"
+            (click)="openLightbox(selectedIdx())">
+            <img
+              [src]="p.galeria_urls[selectedIdx()]"
+              [alt]="p.nombre + ', imagen ' + (selectedIdx() + 1)"
+              loading="eager" />
+            <span class="gallery-zoom-hint" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="11" cy="11" r="7.5"/>
+                <path d="m21 21-4.2-4.2M11 8v6M8 11h6"/>
+              </svg>
+            </span>
+          </button>
+
+          @if (p.galeria_urls.length > 1) {
+            <button type="button" class="gallery-arrow gallery-arrow--prev"
+              aria-label="Imagen anterior"
+              (click)="galleryPrev()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+            <button type="button" class="gallery-arrow gallery-arrow--next"
+              aria-label="Imagen siguiente"
+              (click)="galleryNext()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
+            <div class="gallery-counter" aria-live="polite" aria-atomic="true">
+              {{ selectedIdx() + 1 }}&thinsp;/&thinsp;{{ p.galeria_urls.length }}
+            </div>
+          }
         </div>
+
+        <!-- Thumbnails -->
         @if (p.galeria_urls.length > 1) {
           <div class="gallery-thumbs" role="group" aria-label="Miniaturas de la galería">
             @for (url of p.galeria_urls; track url; let idx = $index) {
               <button
                 type="button"
                 class="gallery-thumb"
-                [class.active]="selectedImg() === url"
+                [class.active]="selectedIdx() === idx"
                 [attr.aria-label]="'Ver imagen ' + (idx + 1)"
-                [attr.aria-pressed]="selectedImg() === url"
-                (click)="selectedImg.set(url)">
-                <img [src]="url" [alt]="p.nombre + ', imagen ' + (idx + 1)" />
+                [attr.aria-pressed]="selectedIdx() === idx"
+                (click)="selectedIdx.set(idx)">
+                <img [src]="url" [alt]="p.nombre + ', imagen ' + (idx + 1)" loading="lazy" />
               </button>
             }
           </div>
@@ -188,6 +233,76 @@
   }
 </nav>
 
+}
+
+<!-- Lightbox -->
+@if (lightboxOpen()) {
+  @if (personaje(); as p) {
+    <div
+      class="pj-lightbox"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="'Galería de ' + p.nombre"
+      (click)="closeLightbox()">
+
+      <div class="pj-lb-shell" (click)="$event.stopPropagation()">
+        <!-- Close -->
+        <button type="button" class="pj-lb-close" aria-label="Cerrar galería" (click)="closeLightbox()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <!-- Stage: arrow + image + arrow -->
+        <div class="pj-lb-stage">
+          <button type="button" class="pj-lb-arrow"
+            aria-label="Imagen anterior"
+            [disabled]="p.galeria_urls.length <= 1 || undefined"
+            (click)="lightboxPrev()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+
+          <div class="pj-lb-canvas">
+            <img
+              [src]="p.galeria_urls[lightboxIdx()]"
+              [alt]="p.nombre + ', imagen ' + (lightboxIdx() + 1)" />
+          </div>
+
+          <button type="button" class="pj-lb-arrow"
+            aria-label="Imagen siguiente"
+            [disabled]="p.galeria_urls.length <= 1 || undefined"
+            (click)="lightboxNext()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Footer: counter + dots -->
+        <footer class="pj-lb-foot">
+          <span class="pj-lb-counter" aria-live="polite" aria-atomic="true">
+            {{ lightboxIdx() + 1 }}&thinsp;/&thinsp;{{ p.galeria_urls.length }}
+          </span>
+          @if (p.galeria_urls.length > 1) {
+            <div class="pj-lb-dots" role="group" aria-label="Seleccionar imagen">
+              @for (url of p.galeria_urls; track url; let idx = $index) {
+                <button
+                  type="button"
+                  class="pj-lb-dot"
+                  [class.active]="lightboxIdx() === idx"
+                  [attr.aria-label]="'Imagen ' + (idx + 1)"
+                  [attr.aria-pressed]="lightboxIdx() === idx"
+                  (click)="lightboxIdx.set(idx); selectedIdx.set(idx)">
+                </button>
+              }
+            </div>
+          }
+        </footer>
+      </div>
+    </div>
+  }
 }
 
 <app-cuaquiverso-footer />
