@@ -27,10 +27,25 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.export-section {
+  padding: 7px 14px 4px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: var(--carbon-30);
+}
+
+.export-divider {
+  height: 1px;
+  background: var(--carbon-08);
+  margin: 4px 0;
+}
+
 .export-opt {
   display: block;
   width: 100%;
-  padding: 9px 14px;
+  padding: 8px 14px;
   font: inherit;
   font-size: 13px;
   text-align: left;
@@ -39,10 +54,6 @@
   color: var(--carbon);
   cursor: pointer;
   transition: background 0.1s;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--carbon-08);
-  }
 
   &:hover {
     background: var(--cream-2);

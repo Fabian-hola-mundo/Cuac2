@@ -12,7 +12,7 @@
             <p class="sub">Resumen de la semana. Pedidos en aumento, dos productos requieren reposición.</p>
           </div>
           <div class="ph-r">
-            <button class="btn-sm solid" (click)="openNuevoEvento()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Nuevo evento</button>
+            <button class="btn-sm solid" (click)="nuevoEvento()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Nuevo evento</button>
           </div>
           <div class="ph-meta">
             <div class="ph-meta-item">
@@ -346,20 +346,16 @@
           </div>
           <div class="ph-r">
             <div class="export-wrap" (click)="$event.stopPropagation()">
-              <button class="btn-sm ghost" (click)="toggleExportContador()">Exportar para contador</button>
-              @if (exportContadorOpen()) {
+              <button class="btn-sm solid" (click)="toggleExport()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg> Exportar</button>
+              @if (exportOpen()) {
                 <div class="export-dropdown">
+                  <div class="export-section">Contador (CSV)</div>
                   <button class="export-opt" (click)="descargarContador('mes')">Este mes</button>
                   <button class="export-opt" (click)="descargarContador('mes-pasado')">Mes pasado</button>
                   <button class="export-opt" (click)="descargarContador('3meses')">Últimos 3 meses</button>
                   <button class="export-opt" (click)="descargarContador('todo')">Todo el historial</button>
-                </div>
-              }
-            </div>
-            <div class="export-wrap" (click)="$event.stopPropagation()">
-              <button class="btn-sm solid" (click)="toggleExportReporte()">Descargar reporte</button>
-              @if (exportReporteOpen()) {
-                <div class="export-dropdown">
+                  <div class="export-divider"></div>
+                  <div class="export-section">Reporte (XLSX)</div>
                   <button class="export-opt" (click)="descargarReporte('mes')">Este mes</button>
                   <button class="export-opt" (click)="descargarReporte('mes-pasado')">Mes pasado</button>
                   <button class="export-opt" (click)="descargarReporte('3meses')">Últimos 3 meses</button>
@@ -994,35 +990,6 @@
 <app-pago-detail [pagoId]="pagoId()!" (close)="closePago()" />
 }
 
-<!-- ══ NUEVO EVENTO DRAWER ══════════════════════════════════════════════════ -->
-<div class="drawer-back" [class.on]="eventoOn()" (click)="closeNuevoEvento()"></div>
-<div class="drawer" [class.on]="eventoOn()" style="width:440px">
-  <div class="drawer-h">
-    <div>
-      <div class="eyebrow"><span class="dot"></span> Nuevo evento</div>
-      <h2>Crear evento</h2>
-    </div>
-    <button class="drawer-close" (click)="closeNuevoEvento()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-    </button>
-  </div>
-  <div class="drawer-b">
-    <div class="field">
-      <label>Nombre del evento <span class="opt">*</span></label>
-      <input class="input" [(ngModel)]="eventoNombre" name="eventoNombre" placeholder="ej. SOFA 2026" (keyup.enter)="crearEvento()" />
-      <span class="help">El evento quedará como activo. Solo puede existir un evento activo a la vez.</span>
-    </div>
-    @if (eventoError()) {
-      <p style="color:var(--terra);font-size:13px;margin-top:var(--s-3)">{{ eventoError() }}</p>
-    }
-  </div>
-  <div class="drawer-f">
-    <button class="btn-sm ghost" (click)="closeNuevoEvento()">Cancelar</button>
-    <button class="btn-sm solid" [disabled]="creandoEvento()" (click)="crearEvento()">
-      {{ creandoEvento() ? 'Creando…' : 'Crear evento' }}
-    </button>
-  </div>
-</div>
 
 @if (toast()) {
   <div class="toast-global">{{ toast() }}</div>

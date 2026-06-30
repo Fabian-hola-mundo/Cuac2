@@ -8,7 +8,6 @@ import { GoogleAnalyticsService, GaPageView, GaPortfolioView } from '../../core/
 import { ClienteDetailComponent } from './clientes/cliente-detail.component';
 import { PagoDetailComponent }    from './pagos/pago-detail.component';
 import { PagosExportService }    from './pagos/pagos-export.service';
-import { EventosService }        from '../../core/services/eventos.service';
 
 @Component({
   selector: 'app-admin-home',
@@ -23,7 +22,6 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   private data        = inject(MockAdminDataService);
   private ga          = inject(GoogleAnalyticsService);
   private exportSvc   = inject(PagosExportService);
-  private eventosSvc  = inject(EventosService);
   private router      = inject(Router);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
@@ -33,17 +31,10 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   editorOn       = signal(false);
   orderOn        = signal(false);
   manualOrderOn  = signal(false);
-  eventoOn       = signal(false);
   editingProduct = signal<Product | null>(null);
 
-  // ── Nuevo evento form ──────────────────────────────────────────────────────
-  eventoNombre  = '';
-  creandoEvento = signal(false);
-  eventoError   = signal<string | null>(null);
-
-  // ── Export dropdowns ───────────────────────────────────────────────────────
-  exportContadorOpen = signal(false);
-  exportReporteOpen  = signal(false);
+  // ── Export dropdown ────────────────────────────────────────────────────────
+  exportOpen = signal(false);
 
   // ── Toast ──────────────────────────────────────────────────────────────────
   toast = signal<string | null>(null);
@@ -115,14 +106,12 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
 
   @HostListener('document:click')
   onDocClick() {
-    this.exportContadorOpen.set(false);
-    this.exportReporteOpen.set(false);
+    this.exportOpen.set(false);
   }
 
   @HostListener('document:keydown.escape')
   onExportEscape() {
-    this.exportContadorOpen.set(false);
-    this.exportReporteOpen.set(false);
+    this.exportOpen.set(false);
   }
 
   async ngOnInit() {
@@ -187,14 +176,8 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   closePago()             { this.pagoId.set(null); }
 
   // ── Export helpers ─────────────────────────────────────────────────────────
-  toggleExportContador() {
-    this.exportContadorOpen.update(v => !v);
-    this.exportReporteOpen.set(false);
-  }
-
-  toggleExportReporte() {
-    this.exportReporteOpen.update(v => !v);
-    this.exportContadorOpen.set(false);
+  toggleExport() {
+    this.exportOpen.update(v => !v);
   }
 
   filterPayments(rango: string): Payment[] {
@@ -249,14 +232,14 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   descargarContador(rango: string) {
     const pagos = this.filterPayments(rango);
     this.exportSvc.exportCsv(pagos, this.periodoSlug(rango));
-    this.exportContadorOpen.set(false);
+    this.exportOpen.set(false);
     this.flash(`✓ Exportado · ${pagos.length} movimientos · ${this.periodoLabel(rango)}`);
   }
 
   descargarReporte(rango: string) {
     const pagos = this.filterPayments(rango);
     this.exportSvc.exportXlsx(pagos, this.periodoSlug(rango));
-    this.exportReporteOpen.set(false);
+    this.exportOpen.set(false);
     this.flash(`✓ Exportado · ${pagos.length} movimientos · ${this.periodoLabel(rango)}`);
   }
 
@@ -359,33 +342,8 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
 
   closeManualOrder() { this.manualOrderOn.set(false); }
 
-  openNuevoEvento() {
-    this.eventoNombre = '';
-    this.eventoError.set(null);
-    this.eventoOn.set(true);
-  }
-
-  closeNuevoEvento() { this.eventoOn.set(false); }
-
-  async crearEvento() {
-    if (!this.eventoNombre.trim()) {
-      this.eventoError.set('El nombre del evento es requerido.');
-      return;
-    }
-    this.creandoEvento.set(true);
-    this.eventoError.set(null);
-    try {
-      const { error } = await this.eventosSvc.crearEvento(this.eventoNombre.trim());
-      if (error) {
-        this.eventoError.set(error);
-      } else {
-        this.closeNuevoEvento();
-        this.router.navigate(['/admin/eventos']);
-      }
-    } catch (e: any) {
-      this.eventoError.set(e.message ?? 'Error al crear el evento.');
-    }
-    this.creandoEvento.set(false);
+  nuevoEvento() {
+    this.router.navigate(['/admin/eventos'], { state: { abrirNuevo: true } });
   }
 
   moAddProduct(p: Product) {
