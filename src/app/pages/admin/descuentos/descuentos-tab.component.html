@@ -193,7 +193,7 @@
           <div class="cat-chips">
             @for (cat of CATEGORIAS; track cat.id) {
               <button type="button" class="chip"
-                      [class.on]="dcCategorias.includes(cat.id)"
+                      [class.is-on]="dcCategorias.includes(cat.id)"
                       (click)="toggleCategoria(cat.id)">
                 {{ cat.label }}
               </button>
