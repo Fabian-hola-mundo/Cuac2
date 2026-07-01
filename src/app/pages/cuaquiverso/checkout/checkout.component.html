@@ -178,10 +178,63 @@
         }
       </div>
 
+      <!-- Código de descuento -->
+      <div class="discount-section">
+        @if (!descuento.codigoAplicado()) {
+          <button class="discount-toggle" type="button"
+                  (click)="descuentoExpanded.update(v => !v)">
+            ¿Tienes un código de descuento?
+            <svg class="chevron" [class.open]="descuentoExpanded()"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+          @if (descuentoExpanded()) {
+            <div class="discount-input-row">
+              <input type="text" class="discount-input"
+                     [value]="codigoInput"
+                     (input)="onCodigoInput($event)"
+                     placeholder="CUAC20"
+                     [disabled]="descuento.validando()" />
+              <button type="button" class="btn-apply"
+                      [disabled]="!codigoInput.trim() || descuento.validando()"
+                      (click)="aplicarCodigo()">
+                @if (descuento.validando()) {
+                  <span class="spin">⟳</span>
+                } @else {
+                  Aplicar
+                }
+              </button>
+            </div>
+            @if (descuento.error()) {
+              <div class="discount-error">{{ descuento.error() }}</div>
+            }
+          }
+        } @else {
+          <div class="discount-applied-row">
+            <span class="discount-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                   stroke-linecap="round" style="width:12px;height:12px">
+                <path d="M20 6 9 17l-5-5"/>
+              </svg>
+              {{ descuento.codigoAplicado() }}
+            </span>
+            <button type="button" class="btn-remove-code" (click)="quitarCodigo()">Quitar</button>
+          </div>
+        }
+      </div>
+
       <div class="sum-row">
         <span>Subtotal</span>
         <span>{{ cart.fmtPrice(cart.total()) }}</span>
       </div>
+      @if (descuento.codigoAplicado()) {
+        <div class="sum-row discount-line">
+          <span>Descuento <em class="code-tag">{{ descuento.codigoAplicado() }}</em></span>
+          <span class="discount-amount">−{{ cart.fmtPrice(descuento.montoDescuento()) }}</span>
+        </div>
+      }
       <div class="sum-row">
         <span>Envío</span>
         @if (cart.total() >= ENVIO_GRATIS_DESDE) {
@@ -192,7 +245,7 @@
       </div>
       <div class="sum-row total">
         <span>Total</span>
-        <span>{{ cart.fmtPrice(cart.total()) }}</span>
+        <span>{{ cart.fmtPrice(totalFinal()) }}</span>
       </div>
 
       <button class="btn-wompi" type="button" (click)="pagar()"

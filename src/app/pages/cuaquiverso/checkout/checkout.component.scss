@@ -228,3 +228,82 @@
   background: var(--carbon); color: var(--cream);
   border-radius: 10px; font-weight: 700; text-decoration: none; font-size: 14px;
 }
+
+/* ── Discount code section ──────────────────────────────────────────────────── */
+.discount-section {
+  padding: 12px 0 4px;
+  border-top: 1px solid var(--carbon-08);
+  margin-top: 4px;
+}
+
+.discount-toggle {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  font-size: 12.5px; color: var(--carbon-50); font-family: var(--sans);
+  padding: 0; transition: color .15s;
+  &:hover { color: var(--carbon); }
+}
+.chevron {
+  width: 14px; height: 14px; transition: transform .2s;
+  &.open { transform: rotate(180deg); }
+}
+
+.discount-input-row {
+  display: flex; gap: 8px; margin-top: 10px;
+}
+.discount-input {
+  flex: 1; height: 38px; padding: 0 12px;
+  border: 1.5px solid var(--carbon-12); border-radius: 8px;
+  font-size: 13px; font-family: var(--mono);
+  letter-spacing: .08em; text-transform: uppercase;
+  background: #fff; outline: none;
+  transition: border-color .15s;
+  &:focus { border-color: var(--carbon); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+.btn-apply {
+  height: 38px; padding: 0 16px;
+  background: var(--carbon); color: #fff;
+  border: none; border-radius: 8px; cursor: pointer;
+  font-size: 12.5px; font-weight: 600; font-family: var(--sans);
+  transition: opacity .15s;
+  &:disabled { opacity: .4; cursor: not-allowed; }
+  &:not(:disabled):hover { opacity: .85; }
+}
+.spin {
+  display: inline-block;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.discount-error {
+  margin-top: 8px; font-size: 12px; color: var(--terra);
+}
+
+.discount-applied-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
+}
+.discount-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(31,138,91,.12); color: #1F8A5B;
+  border-radius: 99px; padding: 4px 10px;
+  font-size: 12px; font-weight: 700; font-family: var(--mono);
+  letter-spacing: .08em;
+}
+.btn-remove-code {
+  background: none; border: none; cursor: pointer;
+  font-size: 11.5px; color: var(--carbon-50); font-family: var(--sans);
+  text-decoration: underline; padding: 0;
+  &:hover { color: var(--terra); }
+}
+
+.discount-line {
+  color: #1F8A5B;
+  .code-tag {
+    font-family: var(--mono); font-size: 10.5px;
+    font-style: normal; letter-spacing: .08em;
+    background: rgba(31,138,91,.1); border-radius: 4px;
+    padding: 1px 5px; margin-left: 4px;
+  }
+}
+.discount-amount { font-weight: 600; }

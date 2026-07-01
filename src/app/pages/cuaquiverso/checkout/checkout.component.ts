@@ -1,7 +1,9 @@
+// src/app/pages/cuaquiverso/checkout/checkout.component.ts
 import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { CartService } from '../services/cart.service';
 import { CheckoutService, CheckoutForm } from '../services/checkout.service';
+import { DescuentoService } from '../services/descuento.service';
 import { CartModalComponent } from '../cart-modal/cart-modal.component';
 import { SeoService } from '../../../core/services/seo.service';
 
@@ -40,11 +42,19 @@ const COLOR_MAP: Record<string, string> = {
 export class CheckoutComponent implements OnInit {
   readonly cart     = inject(CartService);
   readonly checkout = inject(CheckoutService);
-  private  seo      = inject(SeoService);
+  readonly descuento = inject(DescuentoService);
+  private  seo       = inject(SeoService);
 
   readonly ENVIO_GRATIS_DESDE = 150_000;
 
   private ciudadActual = signal('');
+
+  codigoInput       = '';
+  descuentoExpanded = signal(false);
+
+  readonly totalFinal = computed(() =>
+    Math.max(0, this.cart.total() - this.descuento.montoDescuento())
+  );
 
   form = new FormGroup({
     nombre:       new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -64,11 +74,7 @@ export class CheckoutComponent implements OnInit {
   estimadoTexto = computed(() => {
     const ciudad = this.ciudadActual();
     if (!ciudad) return 'Ingresa tu ciudad para ver el estimado.';
-    const key = ciudad
-      .toLowerCase()
-      .trim()
-      .normalize('NFD')
-      .replace(/\p{M}/gu, '');
+    const key = ciudad.toLowerCase().trim().normalize('NFD').replace(/\p{M}/gu, '');
     return ENVIO_ESTIMADO[key] ?? '~$18.000 – $28.000 COP (contra entrega)';
   });
 
@@ -79,6 +85,7 @@ export class CheckoutComponent implements OnInit {
       canonical:   'https://cuacdesign.com/cuaquiverso/checkout',
     });
     this.checkout.error.set(null);
+    this.descuento.limpiar();
   }
 
   touched(field: string): boolean {
@@ -88,6 +95,20 @@ export class CheckoutComponent implements OnInit {
 
   onCiudadChange(): void {
     this.ciudadActual.set(this.form.get('ciudad')?.value ?? '');
+  }
+
+  onCodigoInput(e: Event): void {
+    this.codigoInput = (e.target as HTMLInputElement).value.toUpperCase();
+  }
+
+  async aplicarCodigo(): Promise<void> {
+    if (!this.codigoInput.trim()) return;
+    await this.descuento.aplicar(this.codigoInput, this.cart.items(), this.cart.total());
+  }
+
+  quitarCodigo(): void {
+    this.codigoInput = '';
+    this.descuento.limpiar();
   }
 
   colorHex(key: string): string {
@@ -104,10 +125,15 @@ export class CheckoutComponent implements OnInit {
     this.checkout.error.set(null);
 
     try {
+      const codigoDesc = this.descuento.codigoAplicado()
+        ? { codigo: this.descuento.codigoAplicado()!, monto: this.descuento.montoDescuento() }
+        : undefined;
+
       const { wompi_url } = await this.checkout.crearPedido(
         this.form.getRawValue() as CheckoutForm,
         this.cart.items(),
-        this.cart.total(),
+        this.totalFinal(),
+        codigoDesc,
       );
       window.location.href = wompi_url;
     } catch (e: any) {

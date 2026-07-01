@@ -50,9 +50,10 @@ export class CheckoutService {
   readonly error   = signal<string | null>(null);
 
   async crearPedido(
-    form: CheckoutForm,
-    items: CartItem[],
+    form:     CheckoutForm,
+    items:    CartItem[],
     subtotal: number,
+    codigoDescuento?: { codigo: string; monto: number },
   ): Promise<{ referencia: string; wompi_url: string }> {
     const { data, error } = await this.supabase.db.functions.invoke('crear-pedido', {
       body: {
@@ -65,6 +66,8 @@ export class CheckoutService {
           color:    i.color,
         })),
         subtotal,
+        codigo_descuento: codigoDescuento?.codigo ?? null,
+        descuento_monto:  codigoDescuento?.monto  ?? 0,
       },
     });
 
