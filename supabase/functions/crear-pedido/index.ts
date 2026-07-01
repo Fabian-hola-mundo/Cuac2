@@ -32,9 +32,8 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { form, items, subtotal } = body
+    const { form, items, subtotal, codigo_descuento, descuento_monto } = body
 
-    // Validación básica
     if (
       !isStr(form?.nombre) || !isStr(form?.apellido) ||
       !isStr(form?.email)  || !isStr(form?.celular)  ||
@@ -47,37 +46,55 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Faltan campos requeridos' }, 400)
     }
 
+    const montoDescuento = typeof descuento_monto === 'number' && descuento_monto > 0
+      ? descuento_monto
+      : 0
+    const total = Math.max(0, subtotal - montoDescuento)
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // Generar referencia única (reintento si hay colisión)
+    // Si viene código de descuento: decrementar usos atómicamente
+    if (typeof codigo_descuento === 'string' && codigo_descuento.trim()) {
+      const { data: dcRows } = await supabase.rpc('incrementar_uso_descuento', {
+        p_codigo: codigo_descuento.toUpperCase().trim(),
+      })
+      // Si dcRows es 0 (o null), el código ya no está disponible
+      if (!dcRows || dcRows === 0) {
+        return json({ ok: false, error: 'El código de descuento ya no está disponible' }, 409)
+      }
+    }
+
+    // Generar referencia única
     let referencia = generarReferencia()
     const { data: existing } = await supabase
       .from('pedidos').select('id').eq('referencia', referencia).maybeSingle()
-    if (existing) referencia = generarReferencia() // segundo intento
+    if (existing) referencia = generarReferencia()
 
     // Insertar pedido
     const { data: pedido, error: pedidoError } = await supabase
       .from('pedidos')
       .insert({
         referencia,
-        nombre:       form.nombre.trim(),
-        apellido:     form.apellido.trim(),
-        email:        form.email.trim().toLowerCase(),
-        celular:      form.celular.trim(),
-        tipo_doc:     form.tipoDoc,
-        num_doc:      form.numDoc.trim(),
-        departamento: form.departamento.trim(),
-        ciudad:       form.ciudad.trim(),
-        direccion:    form.direccion.trim(),
-        barrio:       form.barrio?.trim() || null,
-        codigo_postal:form.codigoPostal?.trim() || null,
-        nota:         form.nota?.trim() || null,
+        nombre:           form.nombre.trim(),
+        apellido:         form.apellido.trim(),
+        email:            form.email.trim().toLowerCase(),
+        celular:          form.celular.trim(),
+        tipo_doc:         form.tipoDoc,
+        num_doc:          form.numDoc.trim(),
+        departamento:     form.departamento.trim(),
+        ciudad:           form.ciudad.trim(),
+        direccion:        form.direccion.trim(),
+        barrio:           form.barrio?.trim() || null,
+        codigo_postal:    form.codigoPostal?.trim() || null,
+        nota:             form.nota?.trim() || null,
         subtotal,
-        total: subtotal,
-        estado: 'pendiente',
+        total,
+        codigo_descuento: codigo_descuento?.toUpperCase().trim() || null,
+        descuento_monto:  montoDescuento,
+        estado:           'pendiente',
       })
       .select('id')
       .single()
@@ -104,33 +121,31 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Error al guardar los productos' }, 500)
     }
 
-    // Construir URL de Wompi
-    const publicKey      = Deno.env.get('WOMPI_PUBLIC_KEY')!
-    const integritySecret= Deno.env.get('WOMPI_INTEGRITY_SECRET')!
-    const appUrl         = Deno.env.get('APP_URL') ?? 'https://cuacdesign.com'
-    const amountCentavos = subtotal * 100
-    const currency       = 'COP'
-    const redirectUrl    = `${appUrl}/cuaquiverso/checkout/confirmacion`
+    // Construir URL de Wompi con el total descontado
+    const publicKey       = Deno.env.get('WOMPI_PUBLIC_KEY')!
+    const integritySecret = Deno.env.get('WOMPI_INTEGRITY_SECRET')!
+    const appUrl          = Deno.env.get('APP_URL') ?? 'https://cuacdesign.com'
+    const amountCentavos  = total * 100
+    const currency        = 'COP'
+    const redirectUrl     = `${appUrl}/cuaquiverso/checkout/confirmacion`
 
     const integrity = await sha256hex(`${referencia}${amountCentavos}${currency}${integritySecret}`)
 
     const params = new URLSearchParams({
-      'public-key':                publicKey,
-      'currency':                  currency,
-      'amount-in-cents':           String(amountCentavos),
-      'reference':                 referencia,
-      'redirect-url':              redirectUrl,
-      'customer-data:email':       form.email.trim().toLowerCase(),
-      'customer-data:full-name':   `${form.nombre.trim()} ${form.apellido.trim()}`,
-      'customer-data:phone-number':form.celular.replace(/\D/g, ''),
-      'customer-data:legal-id':    form.numDoc.trim(),
+      'public-key':                  publicKey,
+      'currency':                    currency,
+      'amount-in-cents':             String(amountCentavos),
+      'reference':                   referencia,
+      'redirect-url':                redirectUrl,
+      'customer-data:email':         form.email.trim().toLowerCase(),
+      'customer-data:full-name':     `${form.nombre.trim()} ${form.apellido.trim()}`,
+      'customer-data:phone-number':  form.celular.replace(/\D/g, ''),
+      'customer-data:legal-id':      form.numDoc.trim(),
       'customer-data:legal-id-type': form.tipoDoc,
-      'signature:integrity':       integrity,
+      'signature:integrity':         integrity,
     })
 
-    const wompi_url = `https://checkout.wompi.co/p/?${params.toString()}`
-
-    return json({ ok: true, referencia, wompi_url })
+    return json({ ok: true, referencia, wompi_url: `https://checkout.wompi.co/p/?${params.toString()}` })
 
   } catch (err) {
     console.error(err)
