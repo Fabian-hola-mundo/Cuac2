@@ -1,0 +1,45 @@
+// src/app/pages/admin/descuentos/descuentos-tab.component.scss
+:host { display: block; }
+
+.cat-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;
+}
+
+.expand-row td {
+  background: rgba(21,31,40,.02);
+  border-bottom: 1px solid var(--carbon-06);
+}
+.expand-inner {
+  padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.inner-tbl {
+  width: 100%; border-collapse: collapse; font-size: 12.5px;
+  th { text-align: left; color: var(--carbon-50); font-weight: 500; padding: 4px 8px; }
+  td { padding: 5px 8px; border-bottom: 1px solid var(--carbon-06); }
+}
+
+.toggle-btn {
+  width: 36px; height: 20px; border-radius: 99px;
+  background: var(--carbon-12); border: none; cursor: pointer;
+  position: relative; transition: background .2s;
+  &.on { background: #1F8A5B; }
+}
+.toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; transition: transform .2s;
+  .toggle-btn.on & { transform: translateX(16px); }
+}
+
+.toast-admin {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--carbon); color: #fff; border-radius: 10px;
+  padding: 10px 20px; font-size: 13px; z-index: 200;
+  box-shadow: 0 4px 24px rgba(21,31,40,.18);
+  animation: fadeInUp .25s ease;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

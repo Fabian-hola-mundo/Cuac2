@@ -8,11 +8,12 @@ import { GoogleAnalyticsService, GaPageView, GaPortfolioView } from '../../core/
 import { ClienteDetailComponent } from './clientes/cliente-detail.component';
 import { PagoDetailComponent }    from './pagos/pago-detail.component';
 import { PagosExportService }    from './pagos/pagos-export.service';
+import { DescuentosTabComponent } from './descuentos/descuentos-tab.component';
 
 @Component({
   selector: 'app-admin-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ClienteDetailComponent, PagoDetailComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ClienteDetailComponent, PagoDetailComponent, DescuentosTabComponent],
   templateUrl: './admin-home.component.html',
   styleUrl: './admin-home.component.scss',
 })
@@ -71,9 +72,10 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   moTotal = computed(() => this.moSubtotal() + this.moEnvio() - this.moDescuento());
 
   // ── Filters ───────────────────────────────────────────────────────────────
-  productCat   = signal('all');
-  productQuery = signal('');
-  orderTab     = signal('all');
+  productCat      = signal('all');
+  productQuery    = signal('');
+  orderTab        = signal('all');
+  pedidosSubTab   = signal<'pedidos' | 'descuentos'>('pedidos');
 
   // ── Product editor form ────────────────────────────────────────────────────
   editorName      = '';

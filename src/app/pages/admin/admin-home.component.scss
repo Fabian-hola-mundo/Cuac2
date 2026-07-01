@@ -59,3 +59,20 @@
     background: var(--cream-2);
   }
 }
+
+/* ── Section switcher (Pedidos / Descuentos) ─────────────────────────────── */
+.section-switcher {
+  display: flex; gap: 2px; margin-bottom: 18px;
+  background: var(--carbon-06); border-radius: 10px; padding: 3px;
+  width: fit-content;
+}
+.ssw-btn {
+  padding: 6px 16px; border: none; border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 500; font-family: var(--sans);
+  color: var(--carbon-50); background: transparent; transition: all .15s;
+  &.on {
+    background: #fff; color: var(--carbon); font-weight: 600;
+    box-shadow: 0 1px 4px rgba(21,31,40,.1);
+  }
+  &:not(.on):hover { color: var(--carbon); }
+}

@@ -1,0 +1,241 @@
+<!-- src/app/pages/admin/descuentos/descuentos-tab.component.html -->
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Marketing</div>
+    <h1>Códigos de <em>descuento</em></h1>
+    <p class="sub">Crea y gestiona cupones para la tienda Cuaquiverso.</p>
+  </div>
+  <div class="ph-r">
+    <button class="btn-sm solid" (click)="abrirNuevo()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" style="width:13px;height:13px">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Nuevo código
+    </button>
+  </div>
+</div>
+
+<div class="panel tbl-page">
+  <div class="panel-b flush">
+    @if (loading()) {
+      <div style="padding:48px;text-align:center;color:var(--carbon-50)">Cargando…</div>
+    } @else if (codigos().length === 0) {
+      <div style="padding:48px;text-align:center;color:var(--carbon-50)">
+        Aún no hay códigos de descuento. Crea el primero.
+      </div>
+    } @else {
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Mínimo</th>
+            <th>Usos</th>
+            <th>Expira</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of codigos(); track c.id) {
+          <tr (click)="toggleExpand(c)" style="cursor:pointer">
+            <td><strong style="font-family:var(--mono);letter-spacing:.08em">{{ c.codigo }}</strong></td>
+            <td><span style="font-size:11.5px;color:var(--carbon-70)">{{ c.tipo === 'porcentaje' ? 'Porcentaje' : 'Monto fijo' }}</span></td>
+            <td>
+              @if (c.tipo === 'porcentaje') { {{ c.valor }}% }
+              @else { {{ fmtCOP(c.valor) }} }
+            </td>
+            <td>{{ c.minimo_orden > 0 ? fmtCOP(c.minimo_orden) : '—' }}</td>
+            <td>
+              {{ c.usos_actuales }}
+              @if (c.limite_usos !== null) { / {{ c.limite_usos }} }
+              @else { / ∞ }
+            </td>
+            <td>{{ fmtFecha(c.expira_en) }}</td>
+            <td>
+              @if (c.activo) {
+                <span class="badge ok"><span class="pdot"></span>Activo</span>
+              } @else {
+                <span class="badge"><span class="pdot"></span>Inactivo</span>
+              }
+            </td>
+            <td class="actions" (click)="$event.stopPropagation()">
+              @if (deleteConfirmId() === c.id) {
+                <span style="font-size:11.5px;color:var(--terra)">¿Eliminar?</span>
+                <button class="icon-act" title="Confirmar" (click)="eliminar(c.id)" style="color:var(--terra)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M20 6 9 17l-5-5"/></svg>
+                </button>
+                <button class="icon-act" title="Cancelar" (click)="deleteConfirmId.set(null)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                </button>
+              } @else {
+                <button class="icon-act" title="Editar" (click)="abrirEditar(c)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/></svg>
+                </button>
+                <button class="icon-act" [title]="c.activo ? 'Desactivar' : 'Activar'" (click)="toggleActivo(c)">
+                  @if (c.activo) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:15px;height:15px"><rect x="1" y="5" width="22" height="14" rx="7"/><circle cx="16" cy="12" r="3" fill="currentColor"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:15px;height:15px;opacity:.4"><rect x="1" y="5" width="22" height="14" rx="7"/><circle cx="8" cy="12" r="3" fill="currentColor"/></svg>
+                  }
+                </button>
+                <button class="icon-act" title="Eliminar" (click)="confirmarEliminar(c.id)" style="color:var(--carbon-40)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </button>
+              }
+            </td>
+          </tr>
+          @if (expandedId() === c.id) {
+            <tr class="expand-row">
+              <td colspan="8">
+                <div class="expand-inner">
+                  @if (usosLoading()) {
+                    <span style="color:var(--carbon-50);font-size:12px">Cargando usos…</span>
+                  } @else if (usos().length === 0) {
+                    <span style="color:var(--carbon-50);font-size:12px">Sin usos registrados aún.</span>
+                  } @else {
+                    <span style="font-size:11.5px;font-weight:600;color:var(--carbon-50);text-transform:uppercase;letter-spacing:.08em">Últimos pedidos con este código</span>
+                    <table class="inner-tbl">
+                      <thead><tr><th>Referencia</th><th>Fecha</th><th>Descuento</th></tr></thead>
+                      <tbody>
+                        @for (u of usos(); track u.referencia) {
+                          <tr>
+                            <td><span style="font-family:var(--mono);font-size:11.5px">{{ u.referencia }}</span></td>
+                            <td>{{ fmtFecha(u.creado_en) }}</td>
+                            <td style="color:#1F8A5B;font-weight:600">−{{ fmtCOP(u.descuento_monto) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
+
+<!-- Toast -->
+@if (toastMsg()) {
+  <div class="toast-admin">{{ toastMsg() }}</div>
+}
+
+<!-- Drawer -->
+@if (drawerOn()) {
+<div class="drawer-back on" (click)="cerrarDrawer()"></div>
+<div class="drawer on">
+  <div class="drawer-h">
+    <div>
+      <h2>{{ editingId() ? 'Editar código' : 'Nuevo código de descuento' }}</h2>
+    </div>
+    <button class="drawer-close" (click)="cerrarDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M6 6l12 12M18 6 6 18"/>
+      </svg>
+    </button>
+  </div>
+  <div class="drawer-b">
+    <div class="panel">
+      <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
+
+        <div class="field">
+          <label>Código</label>
+          <input class="input" [(ngModel)]="dcCodigo" name="dcCodigo"
+                 placeholder="CUAC20" style="text-transform:uppercase;font-family:var(--mono);letter-spacing:.08em"
+                 (input)="dcCodigo = dcCodigo.toUpperCase()" />
+          <div class="help">Solo letras y números, sin espacios. Se guarda en mayúsculas.</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Tipo de descuento</label>
+            <select class="select" [ngModel]="dcTipo()" (ngModelChange)="dcTipo.set($event)" name="dcTipo">
+              <option value="porcentaje">Porcentaje (%)</option>
+              <option value="fijo">Monto fijo ($)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Valor {{ dcTipo() === 'porcentaje' ? '(%)' : '(COP)' }}</label>
+            <input class="input" type="number" [(ngModel)]="dcValor" name="dcValor"
+                   [placeholder]="dcTipo() === 'porcentaje' ? 'Ej: 20' : 'Ej: 5000'" min="1" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Monto mínimo <span class="opt">(opcional)</span></label>
+            <input class="input" type="number" [(ngModel)]="dcMinimo" name="dcMinimo"
+                   placeholder="Ej: 80000" min="0" />
+            <div class="help">Vacío = sin mínimo.</div>
+          </div>
+          <div class="field">
+            <label>Límite de usos <span class="opt">(opcional)</span></label>
+            <input class="input" type="number" [(ngModel)]="dcLimite" name="dcLimite"
+                   placeholder="Ej: 100" min="1" />
+            <div class="help">Vacío = ilimitado.</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Fecha de expiración <span class="opt">(opcional)</span></label>
+          <input class="input" type="date" [(ngModel)]="dcExpira" name="dcExpira" />
+          <div class="help">Vacío = no expira.</div>
+        </div>
+
+        <div class="field">
+          <label>Categorías <span class="opt">(opcional, vacío = todas)</span></label>
+          <div class="cat-chips">
+            @for (cat of CATEGORIAS; track cat.id) {
+              <button type="button" class="chip"
+                      [class.on]="dcCategorias.includes(cat.id)"
+                      (click)="toggleCategoria(cat.id)">
+                {{ cat.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Productos específicos <span class="opt">(opcional)</span></label>
+          <textarea class="textarea" [(ngModel)]="dcProductos" name="dcProductos" rows="2"
+                    placeholder="UUID1, UUID2, ..."></textarea>
+          <div class="help">UUIDs de productos separados por coma. Vacío = todos los productos.</div>
+        </div>
+
+        <div class="field" style="flex-direction:row;align-items:center;gap:10px">
+          <label style="margin:0">Activo</label>
+          <button type="button" class="toggle-btn" [class.on]="dcActivo()"
+                  (click)="dcActivo.update(v => !v)">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        @if (errorMsg()) {
+          <div style="color:var(--terra);font-size:12.5px;padding:8px 12px;background:rgba(232,98,61,.08);border-radius:8px">
+            {{ errorMsg() }}
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+  <div class="drawer-f">
+    @if (editingId()) {
+      <button class="btn-sm ghost" style="color:var(--terra)"
+              (click)="confirmarEliminar(editingId()!); cerrarDrawer()">
+        Eliminar
+      </button>
+    }
+    <div style="flex:1"></div>
+    <button class="btn-sm ghost" (click)="cerrarDrawer()">Cancelar</button>
+    <button class="btn-sm solid" (click)="guardar()" [disabled]="saving()">
+      {{ saving() ? 'Guardando…' : (editingId() ? 'Actualizar' : 'Crear código') }}
+    </button>
+  </div>
+</div>
+}
