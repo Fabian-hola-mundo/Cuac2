@@ -7,21 +7,7 @@ import {
   CodigoDescuentoInput,
   UsoDescuento,
 } from '../../../core/services/descuentos-admin.service';
-
-const CATEGORIAS = [
-  { id: 'tee',        label: 'Camiseta'   },
-  { id: 'pin',        label: 'Pin'        },
-  { id: 'sticker',    label: 'Sticker'    },
-  { id: 'tote',       label: 'Tote bag'   },
-  { id: 'gorra',      label: 'Gorra'      },
-  { id: 'peluche',    label: 'Peluche'    },
-  { id: 'print',      label: 'Print'      },
-  { id: 'llavero',    label: 'Llavero'    },
-  { id: 'pañoleta',   label: 'Pañoleta'   },
-  { id: 'amigurumi',  label: 'Amigurumi'  },
-  { id: 'charm',      label: 'Charm'      },
-  { id: 'libreta',    label: 'Libreta'    },
-];
+import { CATEGORIAS } from '../../../core/services/inventario.service';
 
 @Component({
   selector: 'app-descuentos-tab',
@@ -106,6 +92,18 @@ export class DescuentosTabComponent implements OnInit {
   cerrarDrawer(): void {
     this.drawerOn.set(false);
     this.errorMsg.set(null);
+  }
+
+  get todasSeleccionadas(): boolean {
+    return this.dcCategorias.length === CATEGORIAS.length;
+  }
+
+  toggleTodasCategorias(): void {
+    if (this.todasSeleccionadas) {
+      this.dcCategorias = [];
+    } else {
+      this.dcCategorias = CATEGORIAS.map(c => c.id);
+    }
   }
 
   toggleCategoria(id: string): void {
