@@ -132,7 +132,7 @@ export class CheckoutComponent implements OnInit {
       const { wompi_url } = await this.checkout.crearPedido(
         this.form.getRawValue() as CheckoutForm,
         this.cart.items(),
-        this.totalFinal(),
+        this.cart.total(),
         codigoDesc,
       );
       window.location.href = wompi_url;

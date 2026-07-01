@@ -32,7 +32,8 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { form, items, subtotal, codigo_descuento, descuento_monto } = body
+    // descuento_monto from the client body is intentionally ignored — computed server-side (C2)
+    const { form, items, subtotal, codigo_descuento } = body
 
     if (
       !isStr(form?.nombre) || !isStr(form?.apellido) ||
@@ -46,26 +47,69 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Faltan campos requeridos' }, 400)
     }
 
-    const montoDescuento = typeof descuento_monto === 'number' && descuento_monto > 0
-      ? descuento_monto
-      : 0
-    const total = Math.max(0, subtotal - montoDescuento)
-
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // Si viene código de descuento: decrementar usos atómicamente
+    // ── C2: Server-side discount validation + recomputation ───────────────────
+    let montoDescuento    = 0
+    let codigoNormalizado: string | null = null
+
     if (typeof codigo_descuento === 'string' && codigo_descuento.trim()) {
-      const { data: dcRows } = await supabase.rpc('incrementar_uso_descuento', {
-        p_codigo: codigo_descuento.toUpperCase().trim(),
-      })
-      // Si dcRows es 0 (o null), el código ya no está disponible
-      if (!dcRows || dcRows === 0) {
-        return json({ ok: false, error: 'El código de descuento ya no está disponible' }, 409)
+      codigoNormalizado = codigo_descuento.toUpperCase().trim()
+
+      const { data: dc, error: dcError } = await supabase
+        .from('codigos_descuento')
+        .select('*')
+        .eq('codigo', codigoNormalizado)
+        .single()
+
+      // existence + activo
+      if (dcError || !dc || !dc.activo) {
+        return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
       }
+
+      // expiry
+      if (dc.expira_en && new Date(dc.expira_en) < new Date()) {
+        return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
+      }
+
+      // usage limit (snapshot check; definitive check happens via RPC after inserts)
+      if (dc.limite_usos !== null && dc.usos_actuales >= dc.limite_usos) {
+        return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
+      }
+
+      // minimum order
+      if (subtotal < dc.minimo_orden) {
+        return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
+      }
+
+      // product / category filter
+      let itemsElegibles: any[] = items
+      if (dc.productos_ids && dc.productos_ids.length > 0) {
+        itemsElegibles = items.filter((i: any) => dc.productos_ids.includes(i.id))
+        if (itemsElegibles.length === 0) {
+          return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
+        }
+      } else if (dc.categorias_ids && dc.categorias_ids.length > 0) {
+        itemsElegibles = items.filter((i: any) => i.categoria && dc.categorias_ids.includes(i.categoria))
+        if (itemsElegibles.length === 0) {
+          return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
+        }
+      }
+
+      // recompute amount server-side
+      const subtotalElegible = itemsElegibles.reduce(
+        (acc: number, i: any) => acc + i.precio * i.cantidad, 0
+      )
+      montoDescuento = dc.tipo === 'porcentaje'
+        ? Math.round(subtotalElegible * dc.valor / 100)
+        : Math.min(dc.valor, subtotal)
     }
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const total = Math.max(0, subtotal - montoDescuento)
 
     // Generar referencia única
     let referencia = generarReferencia()
@@ -92,7 +136,7 @@ Deno.serve(async (req) => {
         nota:             form.nota?.trim() || null,
         subtotal,
         total,
-        codigo_descuento: codigo_descuento?.toUpperCase().trim() || null,
+        codigo_descuento: codigoNormalizado,
         descuento_monto:  montoDescuento,
         estado:           'pendiente',
       })
@@ -120,6 +164,20 @@ Deno.serve(async (req) => {
       console.error(itemsError)
       return json({ ok: false, error: 'Error al guardar los productos' }, 500)
     }
+
+    // ── I1: Increment usage counter AFTER both inserts succeed ────────────────
+    if (codigoNormalizado) {
+      const { data: dcRows } = await supabase.rpc('incrementar_uso_descuento', {
+        p_codigo: codigoNormalizado,
+      })
+      // If RPC returns 0/null the code was exhausted in the race window — roll back
+      if (!dcRows || dcRows === 0) {
+        await supabase.from('pedido_items').delete().eq('pedido_id', pedido.id)
+        await supabase.from('pedidos').delete().eq('id', pedido.id)
+        return json({ ok: false, error: 'El código ya no está disponible' }, 409)
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     // Construir URL de Wompi con el total descontado
     const publicKey       = Deno.env.get('WOMPI_PUBLIC_KEY')!
