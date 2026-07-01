@@ -70,11 +70,12 @@ export class CuaquiversoComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
     this.cart.add({
-      id:    p.id,
-      name:  p.nombre,
-      sub:   this.catLabel(p.categoria),
-      price: p.precio,
-      color: p.color ?? '#3D4856',
+      id:        p.id,
+      name:      p.nombre,
+      sub:       this.catLabel(p.categoria),
+      price:     p.precio,
+      color:     p.color ?? '#3D4856',
+      categoria: p.categoria,
     });
   }
 

@@ -7,6 +7,7 @@ export interface CartItem {
   price: number;
   color: string;
   qty: number;
+  categoria: string;
 }
 
 @Injectable({ providedIn: 'root' })

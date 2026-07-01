@@ -75,11 +75,12 @@ export class ProductoDetailComponent implements OnInit {
     const p = this.producto();
     if (!p) return;
     this.cart.add({
-      id:    p.id,
-      name:  p.nombre,
-      sub:   this.catLabel(p.categoria),
-      price: p.precio,
-      color: p.color ?? '#3D4856',
+      id:        p.id,
+      name:      p.nombre,
+      sub:       this.catLabel(p.categoria),
+      price:     p.precio,
+      color:     p.color ?? '#3D4856',
+      categoria: p.categoria,
     });
     this.cart.open();
   }

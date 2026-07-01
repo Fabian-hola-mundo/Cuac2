@@ -122,11 +122,12 @@ export class PersonajePageComponent implements OnInit, OnDestroy {
     event.preventDefault();
     event.stopPropagation();
     this.cart.add({
-      id:    p.id,
-      name:  p.nombre,
-      sub:   p.categoria,
-      price: p.precio,
-      color: p.color ?? '#ccc',
+      id:        p.id,
+      name:      p.nombre,
+      sub:       p.categoria,
+      price:     p.precio,
+      color:     p.color ?? '#ccc',
+      categoria: p.categoria,
     });
   }
 
