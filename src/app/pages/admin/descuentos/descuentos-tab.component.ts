@@ -109,9 +109,11 @@ export class DescuentosTabComponent implements OnInit {
   }
 
   toggleCategoria(id: string): void {
-    const i = this.dcCategorias.indexOf(id);
-    if (i > -1) this.dcCategorias.splice(i, 1);
-    else this.dcCategorias.push(id);
+    if (this.dcCategorias.includes(id)) {
+      this.dcCategorias = this.dcCategorias.filter(c => c !== id);
+    } else {
+      this.dcCategorias = [...this.dcCategorias, id];
+    }
   }
 
   async guardar(): Promise<void> {
