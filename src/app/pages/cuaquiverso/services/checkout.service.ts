@@ -76,16 +76,13 @@ export class CheckoutService {
     return data as { referencia: string; wompi_url: string };
   }
 
+  // Va por RPC y no por la tabla: 'pedidos' ya no tiene lectura anónima, porque
+  // con USING (true) la anon key podía volcar los datos personales de todos los
+  // clientes. obtener_pedido devuelve un solo pedido y sólo los campos que esta
+  // pantalla muestra (sin documento ni celular).
   async obtenerPedido(referencia: string): Promise<PedidoDetalle | null> {
     const { data, error } = await this.supabase.db
-      .from('pedidos')
-      .select(`
-        id, referencia, estado, nombre, apellido, email,
-        ciudad, direccion, barrio, subtotal, total, creado_en,
-        pedido_items ( nombre, sub, precio, cantidad, color )
-      `)
-      .eq('referencia', referencia)
-      .single();
+      .rpc('obtener_pedido', { p_referencia: referencia });
 
     if (error || !data) return null;
     return data as PedidoDetalle;

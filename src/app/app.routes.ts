@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -105,6 +106,7 @@ export const routes: Routes = [
     path: 'admin',
     loadComponent: () =>
       import('./pages/admin/admin-shell.component').then(m => m.AdminShellComponent),
+    canActivateChild: [adminGuard],
     children: [
       {
         path: '',

@@ -11,16 +11,36 @@ export class SupabaseService {
 
   readonly session = signal<Session | null>(null);
 
+  /** Si el usuario de la sesión actual está en admin_users. */
+  readonly isAdmin = signal(false);
+
+  // getSession() es asíncrono: al recargar la página el guard corre antes de que
+  // la sesión se restaure desde storage. Sin esperar esto, un F5 en /admin/pedidos
+  // se lee como "no hay sesión" y rebota al login.
+  private readonly ready: Promise<void>;
+
   constructor() {
-    this.client.auth.getSession().then(({ data }) => {
+    this.ready = this.client.auth.getSession().then(async ({ data }) => {
       this.session.set(data.session);
+      await this.refreshIsAdmin();
     });
+
     this.client.auth.onAuthStateChange((_, session) => {
       this.session.set(session);
+      void this.refreshIsAdmin();
     });
   }
 
+  /** Resuelve cuando la sesión inicial ya se restauró. */
+  whenReady(): Promise<void> { return this.ready; }
+
   get db(): SupabaseClient { return this.client; }
+
+  private async refreshIsAdmin(): Promise<void> {
+    if (!this.session()) { this.isAdmin.set(false); return; }
+    const { data, error } = await this.client.rpc('is_admin');
+    this.isAdmin.set(!error && data === true);
+  }
 
   signInWithGoogle() {
     return this.client.auth.signInWithOAuth({
