@@ -72,6 +72,20 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   isMensajesRoute      = computed(() => this.routerUrl().includes('/admin/mensajes'));
   readonly unreadSvc   = inject(MensajesUnreadService);
 
+  // Single source of truth for the highlighted sidebar item — avoids the
+  // previous per-link chains of "!isXRoute()" exclusions getting out of
+  // sync whenever a new admin route was added.
+  activeNavId = computed<string>(() => {
+    if (this.isMensajesRoute())   return 'mensajes';
+    if (this.isPersonajesRoute()) return 'contenido';
+    if (this.isAjustesRoute())    return 'ajustes';
+    if (this.isProductosRoute())  return 'productos';
+    if (this.isPortafolioRoute()) return 'portafolio';
+    if (this.isEventosRoute())    return 'eventos';
+    if (this.isCotizacionesRoute()) return 'cotizaciones';
+    return this.state.view();
+  });
+
   crumbs = computed(() => {
     const url = this.routerUrl();
     if (url.includes('/personajes/nuevo'))        return ['Universo', 'Personajes', 'Nuevo'];

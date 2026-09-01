@@ -28,7 +28,10 @@ export class EventosListComponent implements OnInit {
   creando       = signal(false);
   createError   = signal<string | null>(null);
 
-  async ngOnInit() { await this.cargar(); }
+  async ngOnInit() {
+    await this.cargar();
+    if (history.state?.abrirNuevo) this.abrirDrawer();
+  }
 
   async cargar() {
     this.cargando.set(true);
