@@ -16,11 +16,13 @@ Deno.serve(async (req) => {
 
   const cuerpoCrudo = await req.text()
 
-  // En el ambiente de pruebas de Bold la llave secreta del webhook es cadena
-  // vacía, así que no se puede exigir que esté definida — pero sí que la firma
-  // calculada con ella cuadre.
-  const llaveSecreta = Deno.env.get('BOLD_SECRET_KEY') ?? ''
-  const esperada = await firmaWebhook(cuerpoCrudo, llaveSecreta)
+  // En el ambiente de pruebas Bold firma los eventos con la cadena vacía, no
+  // con la llave secreta. Va por una variable propia y explícita: si algún día
+  // se despliega producción con BOLD_AMBIENTE mal puesto, se cae del lado de
+  // rechazar eventos, no del de aceptar cualquiera.
+  const esPruebas    = Deno.env.get('BOLD_AMBIENTE') === 'pruebas'
+  const llaveSecreta = esPruebas ? '' : (Deno.env.get('BOLD_SECRET_KEY') ?? '')
+  const esperada     = await firmaWebhook(cuerpoCrudo, llaveSecreta)
 
   if (!firmasIguales(req.headers.get('x-bold-signature'), esperada)) {
     return new Response('Firma inválida', { status: 401, headers: CORS })
