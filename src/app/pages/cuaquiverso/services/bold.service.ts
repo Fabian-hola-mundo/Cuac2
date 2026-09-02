@@ -33,8 +33,13 @@ export class BoldService {
   private carga: Promise<void> | null = null;
 
   /**
-   * Carga `boldPaymentButton.js` una sola vez. La librería avisa por eventos en
-   * window, no por el onload del script, así que escuchamos esos.
+   * Carga `boldPaymentButton.js` una sola vez.
+   *
+   * La librería anuncia que está lista con el evento `boldCheckoutLoaded`, pero
+   * cargándola dinámicamente ese evento no siempre llega, aunque `BoldCheckout`
+   * quede definido. Esperar sólo el evento dejaba el botón en "Procesando..."
+   * para siempre. Así que el evento es el camino rápido y la condición que
+   * realmente decide es que `window.BoldCheckout` exista.
    */
   private cargarLibreria(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) {
@@ -45,20 +50,38 @@ export class BoldService {
     this.carga = new Promise<void>((resolve, reject) => {
       if (window.BoldCheckout) { resolve(); return; }
 
+      let terminado = false;
+      let sondeo:  ReturnType<typeof setInterval> | undefined;
+      let limite:  ReturnType<typeof setTimeout>  | undefined;
+
+      const limpiar = () => {
+        clearInterval(sondeo);
+        clearTimeout(limite);
+        window.removeEventListener('boldCheckoutLoaded', listo);
+        window.removeEventListener('boldCheckoutLoadFailed', fallo);
+      };
+
+      const listo = () => {
+        if (terminado) return;
+        terminado = true;
+        limpiar();
+        resolve();
+      };
+
       const fallo = () => {
+        if (terminado) return;
+        terminado = true;
         limpiar();
         // Se descarta la promesa para que el siguiente intento vuelva a cargar.
         this.carga = null;
         reject(new Error('No pudimos cargar la pasarela de pagos. Revisa tu conexión e intenta de nuevo.'));
       };
-      const listo = () => { limpiar(); resolve(); };
-      const limpiar = () => {
-        window.removeEventListener('boldCheckoutLoaded', listo);
-        window.removeEventListener('boldCheckoutLoadFailed', fallo);
-      };
 
       window.addEventListener('boldCheckoutLoaded', listo);
       window.addEventListener('boldCheckoutLoadFailed', fallo);
+
+      sondeo = setInterval(() => { if (window.BoldCheckout) listo(); }, 100);
+      limite = setTimeout(fallo, 15_000);
 
       const existente = document.querySelector<HTMLScriptElement>(`script[src="${LIBRERIA}"]`);
       if (existente) return;
