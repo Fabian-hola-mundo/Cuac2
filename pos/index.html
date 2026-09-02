@@ -10,7 +10,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fauna+One&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.106.1/dist/umd/supabase.min.js"
+          integrity="sha384-9dsYHX1/12VQI+gHRtPXSM3YFsgJ+iIPjTy4WCtY7XbKG/q7MTdZxZhMd4cL9Gif"
+          crossorigin="anonymous"></script>
   <style>
     /* ===================================================================
        CUAQUIVERSO POS  ·  child brand of Cuac
@@ -553,7 +555,7 @@
     <p class="auth-sub">Inicia sesión con tu cuenta para acceder al catálogo del evento.</p>
     <form class="auth-form" onsubmit="event.preventDefault(); window.doLogin()" novalidate>
       <label class="field-label" for="login-email">Correo</label>
-      <input type="email" id="login-email" value="designcuac@gmail.com"
+      <input type="email" id="login-email" placeholder="tu@correo.com"
              autocomplete="email" inputmode="email" enterkeyhint="next"
              spellcheck="false" autocorrect="off" autocapitalize="off" />
       <label class="field-label" for="login-password">Contraseña</label>

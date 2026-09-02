@@ -34,17 +34,17 @@ export class ConfirmacionComponent implements OnInit {
       canonical:   'https://cuacdesign.com/cuaquiverso/checkout/confirmacion',
     });
 
-    // `ref` lo ponemos nosotros en la redirectionUrl; `bold-order-id` lo añade
-    // Bold al devolver al comprador y vale lo mismo, porque el orderId que le
-    // mandamos es la referencia del pedido.
+    // `ref` lo ponemos nosotros en la redirectionUrl y lleva el token de
+    // confirmación (uuid impredecible), no la referencia: la referencia era
+    // enumerable y con ella se podían leer los datos de cualquier cliente.
     const params = this.route.snapshot.queryParams;
-    const ref = params['ref'] ?? params['bold-order-id'];
-    if (!ref) {
+    const token = params['ref'];
+    if (!token) {
       this.router.navigate(['/cuaquiverso']);
       return;
     }
 
-    const data = await this.checkout.obtenerPedido(ref);
+    const data = await this.checkout.obtenerPedido(token);
     if (!data) {
       this.notFound.set(true);
     } else {

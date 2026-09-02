@@ -2,10 +2,28 @@
 // Reporta vistas de página desde Google Analytics 4 (Data API) para el
 // dashboard de /admin. Usa una service account de Google Cloud — las
 // credenciales viven solo como secrets de Supabase, nunca en el frontend.
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.106.1'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+/**
+ * Sólo un administrador puede leer las métricas. La función tiene verify_jwt
+ * desactivado (para poder responder OPTIONS y errores limpios), así que la
+ * autorización se comprueba aquí: se ejecuta is_admin() con el JWT del usuario.
+ */
+async function esAdmin(req: Request): Promise<boolean> {
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader) return false
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } },
+  )
+  const { data, error } = await supabase.rpc('is_admin')
+  return !error && data === true
 }
 
 const TRACKED_PATHS: Record<string, string> = {
@@ -26,6 +44,10 @@ interface RunReportRow {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
+
+  if (!(await esAdmin(req))) {
+    return json({ ok: false, error: 'No autorizado' }, 401)
+  }
 
   const propertyId = Deno.env.get('GA4_PROPERTY_ID')
   const clientEmail = Deno.env.get('GA4_CLIENT_EMAIL')

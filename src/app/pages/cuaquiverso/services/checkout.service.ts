@@ -59,7 +59,10 @@ export class CheckoutService {
     const { data, error } = await this.supabase.db.functions.invoke('crear-pedido', {
       body: {
         form,
+        // El id es lo que el servidor usa para buscar el precio real; precio y
+        // subtotal se envían sólo por compatibilidad y el servidor los ignora.
         items: items.map(i => ({
+          id:       i.id,
           nombre:   i.name,
           sub:      i.sub,
           precio:   i.price,
@@ -68,7 +71,6 @@ export class CheckoutService {
         })),
         subtotal,
         codigo_descuento: codigoDescuento?.codigo ?? null,
-        descuento_monto:  codigoDescuento?.monto  ?? 0,
       },
     });
 
@@ -81,9 +83,9 @@ export class CheckoutService {
   // con USING (true) la anon key podía volcar los datos personales de todos los
   // clientes. obtener_pedido devuelve un solo pedido y sólo los campos que esta
   // pantalla muestra (sin documento ni celular).
-  async obtenerPedido(referencia: string): Promise<PedidoDetalle | null> {
+  async obtenerPedido(token: string): Promise<PedidoDetalle | null> {
     const { data, error } = await this.supabase.db
-      .rpc('obtener_pedido', { p_referencia: referencia });
+      .rpc('obtener_pedido', { p_token: token });
 
     if (error || !data) return null;
     return data as PedidoDetalle;

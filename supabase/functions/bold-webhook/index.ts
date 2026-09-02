@@ -1,5 +1,5 @@
 // supabase/functions/bold-webhook/index.ts
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.106.1'
 import { estadoDesdeEvento, firmasIguales, firmaWebhook } from '../_shared/bold.ts'
 
 const CORS = {
@@ -16,13 +16,23 @@ Deno.serve(async (req) => {
 
   const cuerpoCrudo = await req.text()
 
-  // En el ambiente de pruebas Bold firma los eventos con la cadena vacía, no
-  // con la llave secreta. Va por una variable propia y explícita: si algún día
-  // se despliega producción con BOLD_AMBIENTE mal puesto, se cae del lado de
-  // rechazar eventos, no del de aceptar cualquiera.
-  const esPruebas    = Deno.env.get('BOLD_AMBIENTE') === 'pruebas'
-  const llaveSecreta = esPruebas ? '' : (Deno.env.get('BOLD_SECRET_KEY') ?? '')
-  const esperada     = await firmaWebhook(cuerpoCrudo, llaveSecreta)
+  // En pruebas Bold firma con la cadena vacía; en producción, con la llave
+  // secreta. Fail-closed: si falta BOLD_SECRET_KEY fuera de pruebas NO se cae a
+  // la llave vacía (que cualquiera puede reproducir y forjar un SALE_APPROVED),
+  // sino que se responde 500 y ningún evento pasa la validación.
+  const esPruebas = Deno.env.get('BOLD_AMBIENTE') === 'pruebas'
+  let   llaveSecreta: string
+  if (esPruebas) {
+    llaveSecreta = ''
+  } else {
+    const secreto = Deno.env.get('BOLD_SECRET_KEY')
+    if (!secreto) {
+      console.error('BOLD_SECRET_KEY no configurada en producción — rechazando el webhook')
+      return new Response('Configuración del servidor incompleta', { status: 500, headers: CORS })
+    }
+    llaveSecreta = secreto
+  }
+  const esperada = await firmaWebhook(cuerpoCrudo, llaveSecreta)
 
   if (!firmasIguales(req.headers.get('x-bold-signature'), esperada)) {
     return new Response('Firma inválida', { status: 401, headers: CORS })

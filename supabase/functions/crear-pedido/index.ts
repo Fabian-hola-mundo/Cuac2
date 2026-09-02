@@ -1,5 +1,5 @@
 // supabase/functions/crear-pedido/index.ts
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.106.1'
 import { BOLD_CURRENCY, firmaIntegridad } from '../_shared/bold.ts'
 
 const CORS = {
@@ -27,8 +27,10 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    // descuento_monto from the client body is intentionally ignored — computed server-side (C2)
-    const { form, items, subtotal, codigo_descuento } = body
+    // El precio, el subtotal y el descuento que manda el cliente se IGNORAN a
+    // propósito: se recalculan aquí contra el catálogo. Confiar en ellos dejaba
+    // que el comprador firmara con Bold el monto que quisiera (fraude de precio).
+    const { form, items, codigo_descuento } = body
 
     if (
       !isStr(form?.nombre) || !isStr(form?.apellido) ||
@@ -36,10 +38,17 @@ Deno.serve(async (req) => {
       !isStr(form?.tipoDoc) || !isStr(form?.numDoc)  ||
       !isStr(form?.departamento) || !isStr(form?.ciudad) ||
       !isStr(form?.direccion) ||
-      !Array.isArray(items) || items.length === 0 ||
-      typeof subtotal !== 'number' || subtotal <= 0
+      !Array.isArray(items) || items.length === 0
     ) {
       return json({ ok: false, error: 'Faltan campos requeridos' }, 400)
+    }
+
+    // Cada ítem debe traer el id del producto y una cantidad entera positiva.
+    // El precio se toma de la base, no de aquí.
+    for (const it of items) {
+      if (!isStr(it?.id) || !Number.isInteger(it?.cantidad) || it.cantidad <= 0) {
+        return json({ ok: false, error: 'Ítems del pedido inválidos' }, 400)
+      }
     }
 
     const supabase = createClient(
@@ -47,7 +56,50 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // ── C2: Server-side discount validation + recomputation ───────────────────
+    // ── Precios autoritativos desde el catálogo ───────────────────────────────
+    const ids = [...new Set(items.map((i: any) => i.id as string))]
+    const { data: productos, error: prodError } = await supabase
+      .from('productos_evento')
+      .select('id, nombre, categoria, precio, activo')
+      .in('id', ids)
+
+    if (prodError) {
+      console.error(prodError)
+      return json({ ok: false, error: 'No se pudo verificar el catálogo' }, 500)
+    }
+
+    const catalogo = new Map(
+      (productos ?? [])
+        .filter((p: any) => p.activo && Number.isInteger(p.precio) && p.precio > 0)
+        .map((p: any) => [p.id, p]),
+    )
+
+    // Todo id pedido debe existir, estar activo y tener precio válido.
+    if (items.some((i: any) => !catalogo.has(i.id))) {
+      return json({ ok: false, error: 'Alguno de los productos ya no está disponible' }, 422)
+    }
+
+    // Líneas con el precio, nombre y categoría que manda el servidor. `sub` y
+    // `color` son cosméticos (variante de color) y sí vienen del cliente.
+    const lineas = items.map((i: any) => {
+      const p = catalogo.get(i.id)!
+      return {
+        id:       i.id as string,
+        nombre:   p.nombre as string,
+        categoria: p.categoria as string | null,
+        precio:   p.precio as number,
+        cantidad: i.cantidad as number,
+        sub:      typeof i.sub === 'string' ? i.sub : null,
+        color:    typeof i.color === 'string' ? i.color : null,
+      }
+    })
+
+    const subtotal = lineas.reduce((acc, l) => acc + l.precio * l.cantidad, 0)
+    if (subtotal <= 0) {
+      return json({ ok: false, error: 'El pedido no tiene un total válido' }, 400)
+    }
+
+    // ── Validación + recomputación del descuento (sobre precios de catálogo) ───
     let montoDescuento    = 0
     let codigoNormalizado: string | null = null
 
@@ -60,49 +112,38 @@ Deno.serve(async (req) => {
         .eq('codigo', codigoNormalizado)
         .single()
 
-      // existence + activo
       if (dcError || !dc || !dc.activo) {
         return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
       }
-
-      // expiry
       if (dc.expira_en && new Date(dc.expira_en) < new Date()) {
         return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
       }
-
-      // usage limit (snapshot check; definitive check happens via RPC after inserts)
       if (dc.limite_usos !== null && dc.usos_actuales >= dc.limite_usos) {
         return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
       }
-
-      // minimum order
       if (subtotal < dc.minimo_orden) {
         return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
       }
 
-      // product / category filter
-      let itemsElegibles: any[] = items
+      // Filtro por producto / categoría, usando id y categoría de catálogo.
+      let lineasElegibles = lineas
       if (dc.productos_ids && dc.productos_ids.length > 0) {
-        itemsElegibles = items.filter((i: any) => dc.productos_ids.includes(i.id))
-        if (itemsElegibles.length === 0) {
+        lineasElegibles = lineas.filter(l => dc.productos_ids.includes(l.id))
+        if (lineasElegibles.length === 0) {
           return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
         }
       } else if (dc.categorias_ids && dc.categorias_ids.length > 0) {
-        itemsElegibles = items.filter((i: any) => i.categoria && dc.categorias_ids.includes(i.categoria))
-        if (itemsElegibles.length === 0) {
+        lineasElegibles = lineas.filter(l => l.categoria && dc.categorias_ids.includes(l.categoria))
+        if (lineasElegibles.length === 0) {
           return json({ ok: false, error: 'Código de descuento no válido o expirado' }, 422)
         }
       }
 
-      // recompute amount server-side
-      const subtotalElegible = itemsElegibles.reduce(
-        (acc: number, i: any) => acc + i.precio * i.cantidad, 0
-      )
+      const subtotalElegible = lineasElegibles.reduce((acc, l) => acc + l.precio * l.cantidad, 0)
       montoDescuento = dc.tipo === 'porcentaje'
         ? Math.round(subtotalElegible * dc.valor / 100)
         : Math.min(dc.valor, subtotal)
     }
-    // ─────────────────────────────────────────────────────────────────────────
 
     const total = Math.max(0, subtotal - montoDescuento)
 
@@ -112,7 +153,7 @@ Deno.serve(async (req) => {
       .from('pedidos').select('id').eq('referencia', referencia).maybeSingle()
     if (existing) referencia = generarReferencia()
 
-    // Insertar pedido
+    // Insertar pedido (subtotal/total/descuento son los del servidor)
     const { data: pedido, error: pedidoError } = await supabase
       .from('pedidos')
       .insert({
@@ -135,7 +176,7 @@ Deno.serve(async (req) => {
         descuento_monto:  montoDescuento,
         estado:           'pendiente',
       })
-      .select('id')
+      .select('id, confirmacion_token')
       .single()
 
     if (pedidoError || !pedido) {
@@ -143,16 +184,16 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Error al crear el pedido' }, 500)
     }
 
-    // Insertar items
+    // Insertar items con el precio y nombre autoritativos
     const { error: itemsError } = await supabase
       .from('pedido_items')
-      .insert(items.map((i: any) => ({
+      .insert(lineas.map(l => ({
         pedido_id: pedido.id,
-        nombre:    i.nombre,
-        sub:       i.sub,
-        precio:    i.precio,
-        cantidad:  i.cantidad,
-        color:     i.color,
+        nombre:    l.nombre,
+        sub:       l.sub,
+        precio:    l.precio,
+        cantidad:  l.cantidad,
+        color:     l.color,
       })))
 
     if (itemsError) {
@@ -160,23 +201,19 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Error al guardar los productos' }, 500)
     }
 
-    // ── I1: Increment usage counter AFTER both inserts succeed ────────────────
+    // ── Incrementar el contador de usos tras ambos inserts ────────────────────
     if (codigoNormalizado) {
       const { data: dcRows } = await supabase.rpc('incrementar_uso_descuento', {
         p_codigo: codigoNormalizado,
       })
-      // If RPC returns 0/null the code was exhausted in the race window — roll back
       if (!dcRows || dcRows === 0) {
         await supabase.from('pedido_items').delete().eq('pedido_id', pedido.id)
         await supabase.from('pedidos').delete().eq('id', pedido.id)
         return json({ ok: false, error: 'El código ya no está disponible' }, 409)
       }
     }
-    // ─────────────────────────────────────────────────────────────────────────
 
     // ── Configuración firmada del botón de pagos Bold ─────────────────────────
-    // La llave de identidad es pública y viaja al navegador; la secreta se queda
-    // aquí y sólo se usa para el hash de integridad.
     const apiKey       = Deno.env.get('BOLD_API_KEY')!
     const llaveSecreta = Deno.env.get('BOLD_SECRET_KEY')!
     const appUrl       = Deno.env.get('APP_URL') ?? 'https://cuacdesign.com'
@@ -184,13 +221,14 @@ Deno.serve(async (req) => {
     // Bold cobra en pesos sin decimales, no en centavos como Wompi.
     const amount = total
 
-    // La página de confirmación busca el pedido por ?ref=; Bold añade sus
+    // La página de confirmación busca el pedido por ?ref=, que ahora lleva el
+    // token impredecible (no la referencia, que era enumerable). Bold añade sus
     // propios parámetros con & al volver.
-    const redirectionUrl = `${appUrl}/cuaquiverso/checkout/confirmacion?ref=${encodeURIComponent(referencia)}`
+    const redirectionUrl = `${appUrl}/cuaquiverso/checkout/confirmacion?ref=${encodeURIComponent(pedido.confirmacion_token)}`
 
     const integritySignature = await firmaIntegridad(referencia, amount, BOLD_CURRENCY, llaveSecreta)
 
-    const cantidadItems = items.reduce((acc: number, i: any) => acc + i.cantidad, 0)
+    const cantidadItems = lineas.reduce((acc, l) => acc + l.cantidad, 0)
 
     return json({
       ok: true,
