@@ -60,9 +60,17 @@ export async function firmaIntegridad(
  * secreta, sobre el cuerpo crudo codificado en base64.
  */
 export async function firmaWebhook(cuerpoCrudo: string, llaveSecreta: string): Promise<string> {
+  // En pruebas Bold firma con la llave vacía, y Deno rechaza importar una clave
+  // HMAC de longitud cero. Se sustituye por 64 bytes en cero: por RFC 2104 la
+  // clave más corta que el bloque se rellena con ceros hasta 64, así que el
+  // HMAC resultante es idéntico al de la llave vacía.
+  const bytes = llaveSecreta
+    ? new TextEncoder().encode(llaveSecreta)
+    : new Uint8Array(64);
+
   const key = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(llaveSecreta),
+    bytes,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign'],

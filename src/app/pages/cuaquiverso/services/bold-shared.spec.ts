@@ -65,6 +65,16 @@ describe('firmaWebhook', () => {
     expect(firma).toBe('8efeb71bc900b01f251a2b177284789bc4d68c322fcf2cdf71cee6d6d57027b0');
   });
 
+  // En el ambiente de pruebas Bold firma con la llave vacía, y Deno se niega a
+  // importar una clave HMAC de longitud cero ("Key length is zero"). Se sustituye
+  // por 64 bytes en cero, que por RFC 2104 dan exactamente el mismo HMAC: la
+  // clave más corta que el bloque se rellena con ceros hasta 64.
+  it('firma con la llave vacía sin que Deno rechace la clave', async () => {
+    // HMAC-SHA256 con llave vacía sobre el base64 del cuerpo, según node:crypto.
+    const firma = await firmaWebhook('mensaje de prueba', '');
+    expect(firma).toBe('0137ddadc91c2466b1524fa24704b8ee7ecba81779a1175a2b88877c410a5e2d');
+  });
+
   it('cambia si el cuerpo fue manipulado', async () => {
     const original   = await firmaWebhook(cuerpo, 'llave-secreta-de-prueba');
     const manipulado = await firmaWebhook(
