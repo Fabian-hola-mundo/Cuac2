@@ -34,7 +34,11 @@ export class ConfirmacionComponent implements OnInit {
       canonical:   'https://cuacdesign.com/cuaquiverso/checkout/confirmacion',
     });
 
-    const ref = this.route.snapshot.queryParams['ref'];
+    // `ref` lo ponemos nosotros en la redirectionUrl; `bold-order-id` lo añade
+    // Bold al devolver al comprador y vale lo mismo, porque el orderId que le
+    // mandamos es la referencia del pedido.
+    const params = this.route.snapshot.queryParams;
+    const ref = params['ref'] ?? params['bold-order-id'];
     if (!ref) {
       this.router.navigate(['/cuaquiverso']);
       return;

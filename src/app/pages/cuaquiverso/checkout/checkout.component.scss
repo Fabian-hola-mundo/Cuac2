@@ -188,7 +188,7 @@
   border-radius: 999px; letter-spacing: .04em;
 }
 
-.btn-wompi {
+.btn-bold {
   display: flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%; margin-top: 20px; padding: 15px 20px;
   background: var(--ember); color: #fff;
@@ -200,13 +200,13 @@
   &:hover:not(:disabled) { background: #d43010; transform: translateY(-1px); }
   &:disabled { opacity: .6; cursor: not-allowed; }
 
-  .wompi-badge {
+  .bold-badge {
     background: #fff; color: var(--ember);
     font-size: 10px; font-weight: 800; letter-spacing: .05em;
     padding: 2px 6px; border-radius: 4px;
   }
 }
-.btn-wompi-note {
+.btn-bold-note {
   text-align: center; font-size: 11px;
   color: rgba(236,239,243,.35); margin-top: 10px; line-height: 1.5;
 }

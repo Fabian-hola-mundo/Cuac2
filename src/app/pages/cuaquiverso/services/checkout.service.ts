@@ -2,6 +2,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { CartItem } from './cart.service';
+import { BoldCheckoutConfig } from './bold.service';
 
 export interface CheckoutForm {
   nombre:       string;
@@ -54,7 +55,7 @@ export class CheckoutService {
     items:    CartItem[],
     subtotal: number,
     codigoDescuento?: { codigo: string; monto: number },
-  ): Promise<{ referencia: string; wompi_url: string }> {
+  ): Promise<{ referencia: string; bold: BoldCheckoutConfig }> {
     const { data, error } = await this.supabase.db.functions.invoke('crear-pedido', {
       body: {
         form,
@@ -72,8 +73,8 @@ export class CheckoutService {
     });
 
     if (error) throw new Error(error.message);
-    if (!data?.wompi_url) throw new Error('Respuesta inválida del servidor');
-    return data as { referencia: string; wompi_url: string };
+    if (!data?.bold?.integritySignature) throw new Error('Respuesta inválida del servidor');
+    return data as { referencia: string; bold: BoldCheckoutConfig };
   }
 
   // Va por RPC y no por la tabla: 'pedidos' ya no tiene lectura anónima, porque

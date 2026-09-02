@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { CartService } from '../services/cart.service';
 import { CheckoutService, CheckoutForm } from '../services/checkout.service';
 import { DescuentoService } from '../services/descuento.service';
+import { BoldService, BoldCheckoutConfig } from '../services/bold.service';
 import { CartModalComponent } from '../cart-modal/cart-modal.component';
 import { SeoService } from '../../../core/services/seo.service';
 
@@ -43,6 +44,7 @@ export class CheckoutComponent implements OnInit {
   readonly cart     = inject(CartService);
   readonly checkout = inject(CheckoutService);
   readonly descuento = inject(DescuentoService);
+  private  bold      = inject(BoldService);
   private  seo       = inject(SeoService);
 
   readonly ENVIO_GRATIS_DESDE = 150_000;
@@ -51,6 +53,9 @@ export class CheckoutComponent implements OnInit {
 
   codigoInput       = '';
   descuentoExpanded = signal(false);
+
+  /** Pedido ya creado en este intento, para no duplicarlo si se reabre el modal. */
+  private pedidoCreado: { huella: string; bold: BoldCheckoutConfig } | null = null;
 
   readonly totalFinal = computed(() =>
     Math.max(0, this.cart.total() - this.descuento.montoDescuento())
@@ -129,13 +134,22 @@ export class CheckoutComponent implements OnInit {
         ? { codigo: this.descuento.codigoAplicado()!, monto: this.descuento.montoDescuento() }
         : undefined;
 
-      const { wompi_url } = await this.checkout.crearPedido(
-        this.form.getRawValue() as CheckoutForm,
-        this.cart.items(),
-        this.cart.total(),
-        codigoDesc,
-      );
-      window.location.href = wompi_url;
+      const form = this.form.getRawValue() as CheckoutForm;
+
+      // El modal de Bold se cierra sin salir del sitio, así que reintentar es
+      // fácil y frecuente. Sin esto, cada reintento crearía otro pedido y
+      // quemaría otro uso del código de descuento.
+      const huella = JSON.stringify([form, this.cart.items(), this.cart.total(), codigoDesc ?? null]);
+      let bold = this.pedidoCreado?.huella === huella ? this.pedidoCreado.bold : null;
+
+      if (!bold) {
+        const creado = await this.checkout.crearPedido(form, this.cart.items(), this.cart.total(), codigoDesc);
+        bold = creado.bold;
+        this.pedidoCreado = { huella, bold };
+      }
+
+      await this.bold.abrirCheckout(bold);
+      this.checkout.loading.set(false);
     } catch (e: any) {
       this.checkout.error.set(e.message ?? 'Error al procesar el pedido. Intenta de nuevo.');
       this.checkout.loading.set(false);

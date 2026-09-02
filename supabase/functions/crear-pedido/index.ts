@@ -1,5 +1,6 @@
 // supabase/functions/crear-pedido/index.ts
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { BOLD_CURRENCY, firmaIntegridad } from '../_shared/bold.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -12,12 +13,6 @@ function json(body: unknown, status = 200) {
     status,
     headers: { ...CORS, 'Content-Type': 'application/json' },
   })
-}
-
-async function sha256hex(text: string): Promise<string> {
-  const data = new TextEncoder().encode(text)
-  const buf  = await crypto.subtle.digest('SHA-256', data)
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 function generarReferencia(): string {
@@ -179,31 +174,52 @@ Deno.serve(async (req) => {
     }
     // ─────────────────────────────────────────────────────────────────────────
 
-    // Construir URL de Wompi con el total descontado
-    const publicKey       = Deno.env.get('WOMPI_PUBLIC_KEY')!
-    const integritySecret = Deno.env.get('WOMPI_INTEGRITY_SECRET')!
-    const appUrl          = Deno.env.get('APP_URL') ?? 'https://cuacdesign.com'
-    const amountCentavos  = total * 100
-    const currency        = 'COP'
-    const redirectUrl     = `${appUrl}/cuaquiverso/checkout/confirmacion`
+    // ── Configuración firmada del botón de pagos Bold ─────────────────────────
+    // La llave de identidad es pública y viaja al navegador; la secreta se queda
+    // aquí y sólo se usa para el hash de integridad.
+    const apiKey       = Deno.env.get('BOLD_API_KEY')!
+    const llaveSecreta = Deno.env.get('BOLD_SECRET_KEY')!
+    const appUrl       = Deno.env.get('APP_URL') ?? 'https://cuacdesign.com'
 
-    const integrity = await sha256hex(`${referencia}${amountCentavos}${currency}${integritySecret}`)
+    // Bold cobra en pesos sin decimales, no en centavos como Wompi.
+    const amount = total
 
-    const params = new URLSearchParams({
-      'public-key':                  publicKey,
-      'currency':                    currency,
-      'amount-in-cents':             String(amountCentavos),
-      'reference':                   referencia,
-      'redirect-url':                redirectUrl,
-      'customer-data:email':         form.email.trim().toLowerCase(),
-      'customer-data:full-name':     `${form.nombre.trim()} ${form.apellido.trim()}`,
-      'customer-data:phone-number':  form.celular.replace(/\D/g, ''),
-      'customer-data:legal-id':      form.numDoc.trim(),
-      'customer-data:legal-id-type': form.tipoDoc,
-      'signature:integrity':         integrity,
+    // La página de confirmación busca el pedido por ?ref=; Bold añade sus
+    // propios parámetros con & al volver.
+    const redirectionUrl = `${appUrl}/cuaquiverso/checkout/confirmacion?ref=${encodeURIComponent(referencia)}`
+
+    const integritySignature = await firmaIntegridad(referencia, amount, BOLD_CURRENCY, llaveSecreta)
+
+    const cantidadItems = items.reduce((acc: number, i: any) => acc + i.cantidad, 0)
+
+    return json({
+      ok: true,
+      referencia,
+      bold: {
+        apiKey,
+        orderId:  referencia,
+        amount:   String(amount),
+        currency: BOLD_CURRENCY,
+        integritySignature,
+        redirectionUrl,
+        description: `Cuaquiverso · ${cantidadItems} ${cantidadItems === 1 ? 'producto' : 'productos'}`,
+        customerData: JSON.stringify({
+          email:          form.email.trim().toLowerCase(),
+          fullName:       `${form.nombre.trim()} ${form.apellido.trim()}`,
+          phone:          form.celular.replace(/\D/g, ''),
+          dialCode:       '+57',
+          documentNumber: form.numDoc.trim(),
+          documentType:   form.tipoDoc,
+        }),
+        billingAddress: JSON.stringify({
+          address: form.direccion.trim(),
+          zipCode: form.codigoPostal?.trim() || '',
+          city:    form.ciudad.trim(),
+          state:   form.departamento.trim(),
+          country: 'CO',
+        }),
+      },
     })
-
-    return json({ ok: true, referencia, wompi_url: `https://checkout.wompi.co/p/?${params.toString()}` })
 
   } catch (err) {
     console.error(err)

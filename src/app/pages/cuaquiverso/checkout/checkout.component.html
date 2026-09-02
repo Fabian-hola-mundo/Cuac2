@@ -248,12 +248,12 @@
         <span>{{ cart.fmtPrice(totalFinal()) }}</span>
       </div>
 
-      <button class="btn-wompi" type="button" (click)="pagar()"
+      <button class="btn-bold" type="button" (click)="pagar()"
               [disabled]="checkout.loading()">
         @if (checkout.loading()) {
           Procesando...
         } @else {
-          Pagar con <span class="wompi-badge">WOMPI</span>
+          Pagar con <span class="bold-badge">BOLD</span>
         }
       </button>
 
@@ -261,8 +261,8 @@
         <div class="error-banner">{{ checkout.error() }}</div>
       }
 
-      <p class="btn-wompi-note">
-        Serás redirigido a Wompi.<br>
+      <p class="btn-bold-note">
+        Pago seguro con Bold, sin salir del sitio.<br>
         Tarjetas, PSE, Nequi, efectivo.
       </p>
     </div>
