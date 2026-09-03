@@ -56,4 +56,49 @@ export class SupabaseService {
   signOut() {
     return this.client.auth.signOut();
   }
+
+  // ── Verificación en dos pasos (MFA / TOTP) ──────────────────────────────────
+
+  /** Nivel de aseguramiento actual y el requerido (aal1 → aal2 si hay factor). */
+  mfaAAL() {
+    return this.client.auth.mfa.getAuthenticatorAssuranceLevel();
+  }
+
+  /** Factores MFA del usuario (incluye verificados y sin verificar). */
+  mfaListFactors() {
+    return this.client.auth.mfa.listFactors();
+  }
+
+  /**
+   * Empieza el enrolamiento de un factor TOTP. Antes limpia cualquier factor
+   * sin verificar que haya quedado de un intento anterior (Supabase rechaza
+   * enrolar con un nombre repetido). Devuelve el QR, el secreto y el factorId.
+   */
+  async mfaEnrollTotp() {
+    const { data: list } = await this.client.auth.mfa.listFactors();
+    const pendientes = (list?.all ?? []).filter(f => f.factor_type === 'totp' && f.status !== 'verified');
+    for (const f of pendientes) {
+      await this.client.auth.mfa.unenroll({ factorId: f.id });
+    }
+    return this.client.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Autenticador' });
+  }
+
+  /** Verifica el código de 6 dígitos para confirmar el enrolamiento o el login. */
+  async mfaVerify(factorId: string, code: string) {
+    const challenge = await this.client.auth.mfa.challenge({ factorId });
+    if (challenge.error) return { data: null, error: challenge.error };
+    const res = await this.client.auth.mfa.verify({
+      factorId,
+      challengeId: challenge.data.id,
+      code,
+    });
+    // Al verificar, la sesión sube a aal2: reevaluamos si es admin.
+    if (!res.error) await this.refreshIsAdmin();
+    return res;
+  }
+
+  /** Quita un factor MFA (para reconfigurar). */
+  mfaUnenroll(factorId: string) {
+    return this.client.auth.mfa.unenroll({ factorId });
+  }
 }
