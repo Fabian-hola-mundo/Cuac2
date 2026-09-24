@@ -93,6 +93,16 @@ export const routes: Routes = [
       import('./pages/ruleta/ruleta.component').then(m => m.RuletaComponent),
   },
   {
+    path: 'GuíaTarot',
+    loadComponent: () =>
+      import('./pages/guia-tarot/guia-tarot.component').then(m => m.GuiaTarotComponent),
+  },
+  // Variantes sin tilde o en minúsculas: el router distingue mayúsculas y
+  // mucha gente escribe la URL a mano.
+  { path: 'GuiaTarot', redirectTo: 'GuíaTarot' },
+  { path: 'guiatarot', redirectTo: 'GuíaTarot' },
+  { path: 'guíatarot', redirectTo: 'GuíaTarot' },
+  {
     path: 'terminos',
     loadComponent: () =>
       import('./pages/legal/terminos.component').then(m => m.TerminosComponent),

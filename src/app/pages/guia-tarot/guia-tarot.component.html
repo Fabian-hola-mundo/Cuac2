@@ -1,0 +1,374 @@
+<!-- Cabecera propia: solo el logo y el menú de la guía. -->
+<header class="gt-top">
+  <a class="gt-logo" routerLink="/" aria-label="Cuac Design, ir al sitio principal">
+    <svg viewBox="0 0 805.42 186.8" fill="currentColor" aria-hidden="true">
+        <path d="M88.93,3.01c-6.81.03-13.63.39-20.38,1.12C34.86,7.77,12.18,27.29,4.07,60.16c-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.66c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02l-14.65-.02c-4.27-.02-8.59-.15-12.81-.8-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.57,0-67.52-.07-97.89.05h0Z"/>
+        <path d="M209.21,97.89c.03,6.81.39,13.63,1.12,20.38,3.64,33.69,23.15,56.35,56.01,64.46,22.7,5.6,45.59,5.43,68.19-.56,27.07-7.18,44.85-24.36,51.69-51.72,2.3-9.17,3.54-18.82,3.67-28.28.44-32.51-.05-100.55-.19-102.03h-36.66c-13.9,0-25.16,11.26-25.16,25.16,0,16.91,0,39.23-.02,56.98v14.65c-.02,4.27-.15,8.59-.8,12.81-1.45,9.43-5.9,16.83-15.21,20.5-19.58,7.69-37.11-2.48-39.9-23.24-.46-3.45-.61-6.98-.61-10.48-.03-18.24-.03-49.37-.03-71.35C271.3,11.28,260.04.02,246.14.02h-36.99c0,2.55-.07,67.51.05,97.87h0Z"/>
+        <path d="M596.2,88.93c-.03-6.81-.39-13.63-1.12-20.38-3.64-33.69-23.15-56.35-56.01-64.46-22.71-5.61-45.61-5.44-68.2.54-27.07,7.18-44.85,24.36-51.69,51.72-2.3,9.17-3.54,18.82-3.67,28.28-.44,32.51.05,100.55.19,102.03h36.66c13.9,0,25.16-11.26,25.16-25.16,0-11.64,0-26.9,0-26.9h27.65c11.97,0,21.68-11.41,21.68-23.38,0-3.92,0-7.17,0-8.4h-67.52c-6.18,0-11.18-3.3-11.18-9.47h29.36v-3.47c.02-4.27.15-8.59.8-12.81,1.45-9.43,5.9-16.83,15.21-20.48,19.58-7.69,37.11,2.48,39.9,23.24.46,3.45.61,6.98.61,10.48.03,18.24.03,49.37.03,71.35,0,13.9,11.27,25.16,25.16,25.16h36.99c.02-2.55.09-67.51-.03-97.87h0Z"/>
+        <path d="M707.51,3.01c-6.81.03-13.63.39-20.38,1.12-33.69,3.64-56.35,23.15-64.46,56.01-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.65c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02,0,0-23.24-.17-27.46-.82-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.59,0-67.54-.07-97.91.05h0Z"/>
+    </svg>
+  </a>
+
+  <button type="button" class="gt-burger" [class.is-abierto]="menu()" (click)="menu.set(!menu())"
+    [attr.aria-expanded]="menu()" aria-controls="gt-menu"
+    [attr.aria-label]="menu() ? 'Cerrar menú' : 'Abrir menú'">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+@if (menu()) {
+  <div class="gt-menu-fondo" (click)="menu.set(false)" aria-hidden="true"></div>
+  <nav id="gt-menu" class="gt-menu" aria-label="Secciones de la guía">
+    <span class="gt-eyebrow"><i></i> Guía del tarot</span>
+    <ol>
+      @for (sec of secciones; track sec.id; let i = $index) {
+        <li>
+          <button type="button" (click)="irA(sec.id)">
+            <span class="gt-n">{{ i + 1 }}</span>
+            {{ sec.nombre }}
+          </button>
+        </li>
+      }
+    </ol>
+  </nav>
+}
+
+
+<main class="gt">
+
+  <!-- ── Portada ─────────────────────────────────────────────────────────── -->
+  <section class="gt-hero gt-noche" id="inicio">
+    <div class="gt-deco" aria-hidden="true">
+      <span class="gt-glow gt-glow--magenta"></span>
+      <span class="gt-glow gt-glow--oro"></span>
+      <span class="gt-glow gt-glow--indigo"></span>
+      <span class="gt-grano"></span>
+    </div>
+
+    <div class="gt-hero-inner">
+      <div class="gt-hero-txt">
+        <span class="gt-eyebrow"><i></i> Arcanos mayores</span>
+        <h1>Guía para leer el <em>tarot</em></h1>
+        <p class="gt-lede">
+          Veintidós cartas, veintidós etapas del viaje. Aquí encuentras qué significa cada
+          arcano y cómo cambia su mensaje cuando lo lees desde el fuego, el agua, el aire o la tierra.
+        </p>
+        <div class="gt-hero-cta">
+          <button type="button" class="gt-btn gt-btn--solid" (click)="irA('arcanos')">Ver los 22 arcanos</button>
+          <button type="button" class="gt-btn gt-btn--ghost" (click)="irA('sacar')">Saca una carta</button>
+        </div>
+      </div>
+
+      <div class="gt-abanico" aria-hidden="true">
+        <img class="gt-abanico-c gt-abanico-c--1" src="/tarot/sm/la-luna.jpg" alt="" width="360" height="617" />
+        <img class="gt-abanico-c gt-abanico-c--2" src="/tarot/reverso.jpg" alt="" width="720" height="1233" />
+        <img class="gt-abanico-c gt-abanico-c--3" src="/tarot/sm/el-sol.jpg" alt="" width="360" height="617" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Cómo leer ───────────────────────────────────────────────────────── -->
+  <section class="gt-seccion gt-crema" id="como-leer">
+    <header class="gt-cabecera">
+      <span class="gt-eyebrow"><i></i> 01 · Antes de empezar</span>
+      <h2>Cómo hacer una <em>lectura</em></h2>
+      <p>
+        El tarot no adivina un destino fijo: es un espejo para mirar tu momento con otros ojos.
+        Estos cuatro pasos sirven para cualquier tirada.
+      </p>
+    </header>
+
+    <ol class="gt-pasos">
+      <li>
+        <span class="gt-n">1</span>
+        <h3>Haz una pregunta abierta</h3>
+        <p>Prefiere «¿qué necesito saber sobre…?» a «¿va a pasar…?». Las preguntas abiertas dan respuestas útiles.</p>
+      </li>
+      <li>
+        <span class="gt-n">2</span>
+        <h3>Baraja con calma</h3>
+        <p>Respira, piensa en tu pregunta y mezcla hasta que sientas que es suficiente. Luego corta el mazo.</p>
+      </li>
+      <li>
+        <span class="gt-n">3</span>
+        <h3>Fíjate en su elemento</h3>
+        <p>Cada carta está regida por fuego, agua, aire o tierra. Su elemento te dice en qué área de tu vida resuena el mensaje.</p>
+      </li>
+      <li>
+        <span class="gt-n">4</span>
+        <h3>Mira antes de leer</h3>
+        <p>Cada animal, planta y objeto de la ilustración tiene un significado. Lo primero que te llama la atención también es parte del mensaje.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ── Elementos ───────────────────────────────────────────────────────── -->
+  <section class="gt-seccion gt-crema gt-crema--2" id="elementos">
+    <header class="gt-cabecera">
+      <span class="gt-eyebrow"><i></i> 02 · Los cuatro elementos</span>
+      <h2>El <em>elemento</em> de cada carta</h2>
+      <p>
+        Cada arcano está regido por fuego, agua, aire o tierra según su correspondencia astrológica.
+        Su elemento marca su energía natural y el área de la vida donde más se siente su mensaje.
+      </p>
+    </header>
+
+    <div class="gt-elementos">
+      @for (e of elementos; track e.id) {
+        <article class="gt-el" [attr.data-el]="e.id">
+          <svg class="gt-el-icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path [attr.d]="iconos[e.id]" />
+          </svg>
+          <span class="gt-el-ambito">{{ e.ambito }}</span>
+          <h3>{{ e.nombre }}</h3>
+          <p>{{ e.descripcion }}</p>
+          <ul>
+            @for (c of e.claves; track c) { <li>{{ c }}</li> }
+          </ul>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- ── Tiradas ─────────────────────────────────────────────────────────── -->
+  <section class="gt-seccion gt-crema" id="tiradas">
+    <header class="gt-cabecera">
+      <span class="gt-eyebrow"><i></i> 03 · Tiradas</span>
+      <h2>Tres formas de <em>tirar</em> las cartas</h2>
+    </header>
+
+    <div class="gt-tiradas">
+      @for (t of tiradas; track t.nombre) {
+        <article class="gt-tirada">
+          <div class="gt-tirada-mesa" [attr.data-n]="t.cartas">
+            @for (p of t.posiciones; track p; let i = $index) {
+              <div class="gt-tirada-slot">
+                <span class="gt-tirada-carta"></span>
+                <span class="gt-n">{{ i + 1 }}</span>
+                <small>{{ p }}</small>
+              </div>
+            }
+          </div>
+          <h3>{{ t.nombre }}</h3>
+          <p>{{ t.descripcion }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- ── Saca una carta ──────────────────────────────────────────────────── -->
+  <section class="gt-sacar gt-noche" id="sacar">
+    <div class="gt-deco" aria-hidden="true">
+      <span class="gt-glow gt-glow--magenta"></span>
+      <span class="gt-glow gt-glow--oro"></span>
+      <span class="gt-grano"></span>
+    </div>
+
+    <div class="gt-sacar-inner">
+      <div class="gt-sacar-carta" [class.is-volteada]="sacada()" [class.is-barajando]="barajando()">
+        <div class="gt-mazo" aria-hidden="true">
+          @for (n of [1, 2, 3, 4]; track n) {
+            <img class="gt-mazo-c" [class]="'gt-mazo-c--' + n" src="/tarot/sm/reverso.jpg" alt="" width="360" height="617" />
+          }
+        </div>
+        <div class="gt-flip">
+          <img class="gt-flip-cara gt-flip-cara--reverso" src="/tarot/reverso.jpg" alt="Reverso de la baraja" width="720" height="1233" />
+          @if (sacada(); as c) {
+            <img class="gt-flip-cara gt-flip-cara--frente" [src]="img(c)" [alt]="c.nombre" width="720" height="1233" />
+          }
+        </div>
+      </div>
+
+      <div class="gt-sacar-txt" aria-live="polite">
+        <span class="gt-eyebrow"><i></i> Tu carta del día</span>
+        @if (barajando()) {
+          <h2 class="gt-fugaz">{{ fugaz() || 'Barajando…' }}</h2>
+          <p>El mazo se está mezclando. La carta que salga es completamente al azar.</p>
+        } @else if (sacada(); as c) {
+          <h2>{{ c.nombre }}</h2>
+          <p class="gt-claves-linea">{{ c.claves.join(' · ') }}</p>
+          <p>{{ c.general }}</p>
+          <div class="gt-hero-cta">
+            <button type="button" class="gt-btn gt-btn--solid" (click)="abrir(indice(c))">Ver su significado</button>
+            <button type="button" class="gt-btn gt-btn--ghost" (click)="sacar()" [disabled]="girando()">Sacar otra</button>
+          </div>
+        } @else {
+          <h2>Piensa en tu <em>pregunta</em></h2>
+          <p>Respira, concéntrate en lo que quieres saber y, cuando estés lista o listo, saca una carta del mazo.</p>
+          <div class="gt-hero-cta">
+            <button type="button" class="gt-btn gt-btn--solid" (click)="sacar()" [disabled]="girando()">Sacar una carta</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Arcanos ─────────────────────────────────────────────────────────── -->
+  <section class="gt-seccion gt-crema gt-arcanos" id="arcanos">
+    <header class="gt-cabecera">
+      <span class="gt-eyebrow"><i></i> 04 · Los arcanos mayores</span>
+      <h2>Las <em>22</em> cartas</h2>
+      <p>Toca una carta para ver su significado, su elemento y la simbología de su ilustración.</p>
+    </header>
+
+    <div class="gt-filtros" role="group" aria-label="Filtrar por elemento regente">
+      <button type="button" class="gt-chip" [class.is-activo]="filtro() === null" (click)="filtro.set(null)">
+        Todas <span>{{ arcanos.length }}</span>
+      </button>
+      @for (e of elementos; track e.id) {
+        <button type="button" class="gt-chip" [attr.data-el]="e.id"
+          [class.is-activo]="filtro() === e.id" (click)="filtro.set(e.id)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="iconos[e.id]" /></svg>
+          {{ e.nombre }}
+        </button>
+      }
+    </div>
+
+    <ul class="gt-grid">
+      @for (a of visibles(); track a.slug) {
+        <li>
+          <button type="button" class="gt-carta" (click)="abrir(indice(a))"
+            [style.--t1]="a.tono[0]" [style.--t2]="a.tono[1]">
+            <span class="gt-carta-img">
+              <img [src]="img(a, true)" [alt]="a.nombre" loading="lazy" width="360" height="617" />
+            </span>
+            <span class="gt-carta-meta">
+              <span class="gt-carta-num">{{ a.romano }}</span>
+              <strong>{{ a.nombre }}</strong>
+              <small>{{ a.claves.slice(0, 2).join(' · ') }}</small>
+            </span>
+          </button>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <!-- ── Recuerda ────────────────────────────────────────────────────────── -->
+  <section class="gt-recuerda gt-noche" id="recuerda">
+    <div class="gt-deco" aria-hidden="true">
+      <span class="gt-glow gt-glow--magenta"></span>
+      <span class="gt-glow gt-glow--indigo"></span>
+      <span class="gt-grano"></span>
+    </div>
+
+    <div class="gt-recuerda-inner">
+      <span class="gt-eyebrow"><i></i> Antes de cerrar el mazo</span>
+      <h2>Recuerda: las cartas <em>no hablan solas</em></h2>
+      <p>
+        Estas interpretaciones son un punto de partida, no una sentencia. Una misma carta dice
+        cosas distintas según quién pregunta, qué pregunta y el momento de la vida en que llega.
+        Ajusta cada lectura a tu pregunta, a la persona y a su momento.
+      </p>
+      <ul class="gt-recuerda-claves">
+        <li><strong>La pregunta</strong> define el tema de la lectura.</li>
+        <li><strong>La persona</strong> le da su historia y su contexto.</li>
+        <li><strong>El momento</strong> dice si la carta anuncia, confirma o advierte.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<!-- El detalle vive fuera de <main>: dentro quedaría debajo de la barra fija. -->
+@if (carta(); as c) {
+  <div class="gt-modal-fondo" (click)="cerrar()" aria-hidden="true"></div>
+
+  <div
+    #modal
+    class="gt-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="gt-modal-titulo"
+    tabindex="-1"
+    [style.--t1]="c.tono[0]"
+    [style.--t2]="c.tono[1]">
+
+    <button type="button" class="gt-modal-x" (click)="cerrar()" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M18 6 6 18M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <div class="gt-modal-grid">
+      <figure class="gt-modal-img">
+        <img [src]="img(c)" [alt]="c.nombre" width="720" height="1233" />
+      </figure>
+
+      <div class="gt-modal-txt" #modalTxt>
+        <span class="gt-modal-num">Arcano {{ c.romano }}</span>
+        <h2 id="gt-modal-titulo">{{ c.nombre }}</h2>
+
+        <ul class="gt-modal-claves">
+          @for (k of c.claves; track k) { <li>{{ k }}</li> }
+        </ul>
+
+        <h3 class="gt-modal-sub">Significado general</h3>
+        <p class="gt-modal-general">{{ c.general }}</p>
+
+        @let el = elemento(c.elemento);
+        <article class="gt-lectura" [attr.data-el]="el.id">
+          <header>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="iconos[el.id]" /></svg>
+            <div>
+              <span>Su elemento · {{ el.ambito }} · {{ c.astro }}</span>
+              <h4>{{ el.nombre }}</h4>
+            </div>
+          </header>
+          <p>{{ c.lectura }}</p>
+        </article>
+
+        <h3 class="gt-modal-sub">Simbología de la carta</h3>
+        <p class="gt-simb-intro">
+          Cada elemento de la ilustración reinterpreta un símbolo del tarot original con la flora,
+          la fauna y el paisaje de Colombia.
+        </p>
+        <ol class="gt-simbolos">
+          @for (s of c.simbologia; track s.nombre; let i = $index) {
+            <li>
+              <span class="gt-n">{{ i + 1 }}</span>
+              <div>
+                <h4>{{ s.nombre }}</h4>
+                <p class="gt-simb-original">En el tarot original: <em>{{ s.original }}</em></p>
+                <p>{{ s.significado }}</p>
+              </div>
+            </li>
+          }
+        </ol>
+
+        <nav class="gt-modal-nav" aria-label="Otras cartas">
+          <button type="button" (click)="mover(-1)">
+            <span aria-hidden="true">←</span> Anterior
+          </button>
+          <button type="button" (click)="mover(1)">
+            Siguiente <span aria-hidden="true">→</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Flecha para volver a la portada, visible una vez pasada. -->
+<button type="button" class="gt-arriba" [class.is-visible]="pasoHero()" (click)="irA('inicio')"
+  [attr.tabindex]="pasoHero() ? null : -1" [attr.aria-hidden]="!pasoHero()" aria-label="Volver al inicio">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 19V5M5 12l7-7 7 7"/>
+  </svg>
+</button>
+
+<!-- Botón flotante con los otros sitios de Cuac. -->
+<div class="gt-fab" [class.is-abierto]="enlaces()" (mouseleave)="enlaces.set(false)">
+  <ul class="gt-fab-menu" id="gt-fab-menu">
+    <li><a routerLink="/">Web de Cuac <span aria-hidden="true">↗</span></a></li>
+    <li><a routerLink="/cuaquiverso">Cuaquiverso <span aria-hidden="true">↗</span></a></li>
+    <li><a routerLink="/cuaquiverso/tienda">Tienda <span aria-hidden="true">↗</span></a></li>
+  </ul>
+  <button type="button" class="gt-fab-btn" (click)="enlaces.set(!enlaces())"
+    [attr.aria-expanded]="enlaces()" aria-controls="gt-fab-menu" aria-label="Ir a otros sitios de Cuac">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    </svg>
+  </button>
+</div>
+
+<app-footer />
