@@ -137,7 +137,7 @@
               <thead><tr><th>Orden</th><th>Cliente</th><th>Items</th><th>Pago</th><th>Envío</th><th class="num">Total</th><th>Fecha</th></tr></thead>
               <tbody>
                 @for (o of ORDERS.slice(0,5); track o.id) {
-                <tr (click)="openOrder()">
+                <tr (click)="openOrder(o)" style="cursor:pointer">
                   <td><span class="id">{{ o.id }}</span></td>
                   <td><strong style="font-weight:600">{{ o.customer }}</strong><div style="font-size:11.5px;color:var(--carbon-50);font-family:var(--mono)">{{ o.city }}</div></td>
                   <td>{{ o.items }}</td>
@@ -254,7 +254,7 @@
                 <thead><tr><th style="width:36px"><input type="checkbox" /></th><th>Orden</th><th>Cliente</th><th>Ciudad</th><th>Items</th><th>Pago</th><th>Envío</th><th>Método</th><th class="num">Total</th><th>Fecha</th><th></th></tr></thead>
                 <tbody>
                   @for (o of currentOrders(); track o.id) {
-                  <tr (click)="openOrder()">
+                  <tr (click)="openOrder(o)" style="cursor:pointer">
                     <td (click)="$event.stopPropagation()"><input type="checkbox" /></td>
                     <td><span class="id" style="color:var(--carbon);font-weight:600">{{ o.id }}</span></td>
                     <td><strong style="font-weight:600">{{ o.customer }}</strong><div style="font-size:11px;color:var(--carbon-50);font-family:var(--mono)">{{ o.email }}</div></td>
@@ -266,7 +266,7 @@
                     <td class="num">{{ fmtCOP(o.total) }}</td>
                     <td><span class="id">{{ o.date }}</span></td>
                     <td class="actions" (click)="$event.stopPropagation()">
-                      <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                      <button class="icon-act" type="button" title="Ver detalle" [attr.aria-label]="'Ver detalle del pedido ' + o.id" (click)="openOrder(o)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                     </td>
                   </tr>
                   }
@@ -638,13 +638,13 @@
 }
 
 <!-- ══ ORDER DETAIL DRAWER ════════════════════════════════════════════════ -->
-@if (orderOn()) {
+@if (orderOn() && selectedOrder(); as ord) {
 <div class="drawer-back on" (click)="closeOrder()"></div>
 <div class="drawer on">
   <div class="drawer-h">
     <div>
-      <div class="crumbs-admin"><span>Pedidos</span><span class="sep">/</span><strong>{{ ORDER_DETAIL.id }}</strong></div>
-      <h2>Pedido {{ ORDER_DETAIL.id }} <span style="margin-left:10px;vertical-align:middle"><span class="badge ok"><span class="pdot"></span>Pagado</span></span></h2>
+      <div class="crumbs-admin"><span>Pedidos</span><span class="sep">/</span><strong>{{ ord.id }}</strong></div>
+      <h2>Pedido {{ ord.id }} <span style="margin-left:10px;vertical-align:middle"><span class="badge" [class]="sb(ord.status).tone"><span class="pdot"></span>{{ sb(ord.status).label }}</span></span></h2>
     </div>
     <button class="drawer-close" (click)="closeOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>
@@ -652,28 +652,29 @@
     <div class="split-1-280">
       <div style="display:flex;flex-direction:column;gap:var(--s-4)">
         <div class="panel">
-          <div class="panel-h"><h3>Productos</h3><span class="sub">{{ ORDER_DETAIL.items.length }} items</span></div>
-          <div class="panel-b flush">
-            <table class="tbl">
-              <thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead>
-              <tbody>
-                @for (it of ORDER_DETAIL.items; track it.sku) {
-                <tr>
-                  <td><div class="pname"><div class="thumb" [style.background]="tone(it.color).bg" [style.color]="tone(it.color).fg">{{ it.label.charAt(0) }}</div><div class="meta"><strong>{{ it.name }}</strong><span>{{ it.sku }} · {{ it.variant }}</span></div></div></td>
-                  <td class="num">{{ it.qty }}</td>
-                  <td class="num">{{ fmtCOP(it.price) }}</td>
-                  <td class="num">{{ fmtCOP(it.price * it.qty) }}</td>
-                </tr>
-                }
-              </tbody>
-            </table>
+          <div class="panel-h"><h3>Resumen</h3><span class="sub">{{ ord.items }} {{ ord.items === 1 ? 'item' : 'items' }}</span></div>
+          <div class="panel-b">
+            <div class="kv-list">
+              <div class="kv"><span class="k">Orden</span><span class="v" style="font-family:var(--mono);font-weight:600">{{ ord.id }}</span></div>
+              <div class="kv"><span class="k">Items</span><span class="v">{{ ord.items }} producto(s)</span></div>
+              <div class="kv"><span class="k">Método</span><span class="v">{{ ord.method }}</span></div>
+              <div class="kv"><span class="k">Ciudad</span><span class="v">{{ ord.city }}</span></div>
+              <div class="kv"><span class="k">Fecha</span><span class="v">{{ ord.date }}</span></div>
+              <div class="kv"><span class="k">Estado pago</span>
+                <span class="v"><span class="badge" [class]="sb(ord.status).tone"><span class="pdot"></span>{{ sb(ord.status).label }}</span></span>
+              </div>
+              <div class="kv"><span class="k">Estado envío</span>
+                <span class="v"><span class="badge" [class]="sb(ord.shipping).tone"><span class="pdot"></span>{{ sb(ord.shipping).label }}</span></span>
+              </div>
+            </div>
           </div>
           <div style="padding:var(--s-4) var(--s-5);border-top:1px solid var(--carbon-08);background:var(--cream)">
             <div class="kv-list" style="max-width:320px;margin-left:auto">
-              <div class="kv"><span class="k">Subtotal</span><span class="v">{{ fmtCOP(ORDER_DETAIL.totals.subtotal) }}</span></div>
-              <div class="kv"><span class="k">Envío</span><span class="v">{{ fmtCOP(ORDER_DETAIL.totals.shipping) }}</span></div>
-              <div class="kv"><span class="k">Descuento</span><span class="v" style="color:var(--selva)">-{{ fmtCOP(ORDER_DETAIL.totals.discount) }}</span></div>
-              <div class="kv total"><span class="k">Total</span><span class="v">{{ fmtCOP(ORDER_DETAIL.totals.total) }}</span></div>
+              @if (orderPayment(); as pay) {
+              <div class="kv"><span class="k">Comisión</span><span class="v" style="color:var(--carbon-50)">-{{ fmtCOP(pay.fee) }}</span></div>
+              <div class="kv"><span class="k">Neto</span><span class="v">{{ fmtCOP(pay.net) }}</span></div>
+              }
+              <div class="kv total"><span class="k">Total</span><span class="v">{{ fmtCOP(ord.total) }}</span></div>
             </div>
           </div>
         </div>
@@ -681,7 +682,7 @@
           <div class="panel-h"><h3>Línea de tiempo</h3><span class="sub">Eventos del pedido</span></div>
           <div class="panel-b">
             <div class="timeline">
-              @for (t of ORDER_DETAIL.timeline; track $index) {
+              @for (t of orderTimeline(); track $index) {
               <div class="tl-row" [class]="t.state"><div class="tm">{{ t.time }}</div><div class="pt"><span class="dot" aria-hidden="true"></span></div><div class="ct"><div class="tt">{{ t.title }}</div><div class="desc">{{ t.desc }}</div></div></div>
               }
             </div>
@@ -692,25 +693,30 @@
         <div class="panel">
           <div class="panel-h"><h3>Cliente</h3></div>
           <div class="panel-b">
-            <div style="font-family:var(--display);font-size:20px;line-height:1.1;margin-bottom:4px">{{ ORDER_DETAIL.customer.name }}</div>
-            <div style="font-size:13px;color:var(--carbon-70)">{{ ORDER_DETAIL.customer.email }}</div>
-            <div style="font-family:var(--mono);font-size:11.5px;color:var(--carbon-50);margin-top:4px">{{ ORDER_DETAIL.customer.phone }}</div>
+            @if (orderCustomer(); as c) {
+            <div style="font-family:var(--display);font-size:20px;line-height:1.1;margin-bottom:4px">{{ c.nombre }}</div>
+            <div style="font-size:13px;color:var(--carbon-70)">{{ c.email }}</div>
+            <div style="font-family:var(--mono);font-size:11.5px;color:var(--carbon-50);margin-top:4px">{{ c.phone }}</div>
             <div style="margin-top:var(--s-3);padding-top:var(--s-3);border-top:1px dashed var(--carbon-08);display:flex;justify-content:space-between;font-size:12px">
-              <span style="color:var(--carbon-50)">Cliente desde {{ ORDER_DETAIL.customer.since }}</span>
-              <span><strong>{{ ORDER_DETAIL.customer.orders }}</strong> pedidos</span>
+              <span style="color:var(--carbon-50)">Cliente desde {{ fmtSince(c.since) }}</span>
+              <span><strong>{{ c.orders }}</strong> pedidos</span>
             </div>
+            } @else {
+            <div style="font-family:var(--display);font-size:20px;line-height:1.1;margin-bottom:4px">{{ ord.customer }}</div>
+            <div style="font-size:13px;color:var(--carbon-70)">{{ ord.email }}</div>
+            }
           </div>
         </div>
         <div class="panel">
           <div class="panel-h"><h3>Dirección de envío</h3></div>
           <div class="panel-b" style="font-size:13.5px;line-height:1.6">
-            <div>{{ ORDER_DETAIL.shipping.address }}</div>
-            <div>{{ ORDER_DETAIL.shipping.city }}</div>
-            <div style="font-family:var(--mono);font-size:11.5px;color:var(--carbon-50)">{{ ORDER_DETAIL.shipping.zip }}</div>
+            @if (orderCustomer(); as c) {
+            <div>{{ c.direccion }}</div>
+            }
+            <div>{{ ord.city }}</div>
             <div style="margin-top:var(--s-3);padding-top:var(--s-3);border-top:1px dashed var(--carbon-08)">
-              <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Transportadora</div>
-              <div style="margin-top:4px;font-weight:600">{{ ORDER_DETAIL.shipping.carrier }}</div>
-              <div style="font-family:var(--mono);font-size:11.5px;color:var(--terra)">{{ ORDER_DETAIL.shipping.tracking }}</div>
+              <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Estado</div>
+              <div style="margin-top:4px"><span class="badge" [class]="sb(ord.shipping).tone"><span class="pdot"></span>{{ sb(ord.shipping).label }}</span></div>
             </div>
           </div>
         </div>
@@ -727,7 +733,7 @@
     </div>
   </div>
   <div class="drawer-f">
-    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">Creado {{ ORDER_DETAIL.date }}</span>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">Creado {{ ord.date }}</span>
     <button class="btn-sm ghost" (click)="closeOrder()">Cerrar</button>
   </div>
 </div>

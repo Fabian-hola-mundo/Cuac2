@@ -32,11 +32,26 @@
         <div class="grid-2">
           <div class="field">
             <label>Categoría <span class="opt">*</span></label>
-            <select class="input select" formControlName="categoria">
-              @for (c of categorias; track c.id) {
-                <option [value]="c.id">{{ c.label }}</option>
+            @if (creandoCategoria()) {
+              <div class="cat-nueva">
+                <input class="input" [(ngModel)]="categoriaNueva" [ngModelOptions]="{ standalone: true }"
+                       placeholder="Ej: Termos" autofocus />
+                <button class="btn-mini ghost" type="button" (click)="cancelarCategoriaNueva()">Cancelar</button>
+              </div>
+              @if (slugNuevaCategoria) {
+                <span class="help">Se guardará como <code>{{ slugNuevaCategoria }}</code></span>
+              } @else {
+                <span class="help" style="color:var(--terra)">Escribe el nombre de la categoría</span>
               }
-            </select>
+            } @else {
+              <select class="input select" formControlName="categoria"
+                      (change)="onCategoriaChange($any($event.target).value)">
+                @for (c of categorias(); track c.id) {
+                  <option [value]="c.id">{{ c.label }}</option>
+                }
+                <option [value]="VALOR_NUEVA">+ Nueva categoría…</option>
+              </select>
+            }
           </div>
           <div class="field">
             <label>Precio COP <span class="opt">*</span></label>
@@ -45,6 +60,49 @@
               <span class="help" style="color:var(--terra)">Debe ser mayor a 0</span>
             }
           </div>
+        </div>
+
+        <!-- Lo que se queda la pasarela sale del precio, así que sin esto la
+             ganancia real sólo se descubría al conciliar. Va a ancho completo y
+             no dentro de la columna del precio: ahí desbalanceaba la fila y
+             dejaba un hueco muerto al lado de Categoría. -->
+        <div class="bd-panel">
+          <div class="bd-chips">
+            <div class="bd-chip">
+              <span class="bd-k">
+                Bold se queda
+                <button class="bd-edit" type="button"
+                        (click)="editandoComision.set(!editandoComision())"
+                        [attr.aria-expanded]="editandoComision()"
+                        [attr.aria-label]="'Editar la comisión, ahora ' + comisionPct() + ' por ciento'">
+                  {{ comisionPct() }}%{{ comisionIva() ? ' + IVA' : '' }}
+                  <span aria-hidden="true">{{ editandoComision() ? '▾' : '▸' }}</span>
+                </button>
+              </span>
+              <span class="bd-v is-neg">−{{ fmt(desglose().comision) }}</span>
+            </div>
+            <div class="bd-chip is-ganancia">
+              <span class="bd-k">Ganancia real</span>
+              <span class="bd-v">{{ fmt(desglose().ganancia) }}</span>
+            </div>
+          </div>
+
+          @if (editandoComision()) {
+            <div class="bd-editor">
+              <label class="bd-campo">
+                Comisión
+                <input class="bd-pct" type="number" step="0.01" min="0" max="100"
+                       [value]="comisionPct()" (input)="onComisionPct($any($event.target).value)" />
+                <span aria-hidden="true">%</span>
+              </label>
+              <label class="bd-campo">
+                <input type="checkbox" [checked]="comisionIva()"
+                       (change)="onComisionIva($any($event.target).checked)" />
+                + IVA ({{ IVA_PCT }}% sobre la comisión)
+              </label>
+              <span class="bd-nota">Se recuerda en este navegador.</span>
+            </div>
+          }
         </div>
 
         <div class="field">
@@ -60,16 +118,10 @@
           }
         </div>
 
-        <div class="grid-2">
-          <div class="field">
-            <label>Personaje</label>
-            <select class="input select" formControlName="personaje">
-              <option [value]="null">Sin personaje</option>
-              @for (c of characters; track c.id) {
-                <option [value]="c.id">{{ c.label }}</option>
-              }
-            </select>
-          </div>
+        <!-- Los dos interruptores son la misma decisión ("dónde se ve esto"),
+             así que van en una sola fila y con la misma forma: etiqueta a la
+             izquierda, control a la derecha. -->
+        <div class="grid-2 toggles-fila">
           <div class="field-toggle-row">
             <div><span class="ftr-label">Activo en el POS</span></div>
             <label class="inv-toggle">
@@ -77,12 +129,15 @@
               <span class="inv-slider"></span>
             </label>
           </div>
-        </div>
 
-        <label class="field-toggle">
-          <span class="inv-toggle"><input type="checkbox" formControlName="destacado" /><span class="inv-slider"></span></span>
-          Mostrar en home del Cuaquiverso
-        </label>
+          <div class="field-toggle-row">
+            <div><span class="ftr-label">Mostrar en home del Cuaquiverso</span></div>
+            <label class="inv-toggle">
+              <input type="checkbox" formControlName="destacado" />
+              <span class="inv-slider"></span>
+            </label>
+          </div>
+        </div>
 
         <!-- ── APARIENCIA ─────────────────────────────────────────── -->
         <div class="section-sep"></div>
@@ -100,11 +155,25 @@
           </div>
           <div class="field">
             <label>Etiqueta especial</label>
-            <select class="input select" formControlName="flag">
-              <option [value]="null">Ninguna</option>
-              <option value="new">Nuevo</option>
-              <option value="last">Últimas unidades</option>
-            </select>
+            @if (creandoEtiqueta()) {
+              <div class="cat-nueva">
+                <input class="input" [(ngModel)]="etiquetaNueva" [ngModelOptions]="{ standalone: true }"
+                       [maxlength]="MAX_LARGO_ETIQUETA" placeholder="Ej: Edición limitada" />
+                <button class="btn-mini ghost" type="button" (click)="cancelarEtiquetaNueva()">Cancelar</button>
+              </div>
+              <span class="help">
+                Se pinta tal cual en la tarjeta · {{ etiquetaNueva.length }}/{{ MAX_LARGO_ETIQUETA }}
+              </span>
+            } @else {
+              <select class="input select" formControlName="flag"
+                      (change)="onEtiquetaChange($any($event.target).value)">
+                <option [value]="null">Ninguna</option>
+                @for (e of etiquetas(); track e.id) {
+                  <option [value]="e.id">{{ e.label }}</option>
+                }
+                <option [value]="VALOR_NUEVA">+ Nueva etiqueta…</option>
+              </select>
+            }
           </div>
         </div>
 
@@ -119,17 +188,18 @@
         </div>
 
         <div class="field">
-          <label>Material</label>
-          <div class="check-list">
-            @for (m of MATERIALES; track m.id) {
-              <label class="check-opt">
-                <input type="checkbox"
-                  [checked]="material().includes(m.id)"
-                  (change)="toggleMaterial(m.id, $any($event.target).checked)" />
-                {{ m.label }}
-              </label>
-            }
-          </div>
+          <label>Material <span class="opt">opcional</span></label>
+          <input class="input" [value]="materialTexto"
+                 (input)="onMaterialInput($any($event.target).value)"
+                 placeholder="Algodón orgánico, lona reciclada" />
+          <span class="help">Separa varios con comas.</span>
+          @if (material().length > 0) {
+            <div class="mat-chips">
+              @for (m of material(); track m) {
+                <span class="mat-chip">{{ m }}</span>
+              }
+            </div>
+          }
         </div>
 
         @if (errorMsg()) {
@@ -171,33 +241,41 @@
           </svg>
           {{ coverPreview() ? 'Cambiar portada' : 'Subir portada' }}
         </label>
-        <input id="prod-cover-input" type="file" accept="image/*" (change)="onCoverChange($event)" style="display:none" />
-        <span class="help">JPG, PNG o WebP · 4:3 recomendado · mín 800 × 600 px</span>
+        <input id="prod-cover-input" type="file" accept="image/jpeg,image/png,image/webp" (change)="onCoverChange($event)" style="display:none" />
+        <span class="help">JPG, PNG o WebP · 4:3 recomendado · mín 800 × 600 px · máx 5 MB</span>
       </div>
 
       <div class="field">
-        <label>Galería <span class="opt">({{ galleryPreviews().length }}/8)</span></label>
-        @if (galleryPreviews().length > 0) {
+        <label>Galería <span class="opt">({{ galeriaPreviews().length }}/{{ maxFotos }})</span></label>
+        @if (galeriaPreviews().length > 0) {
           <div class="gallery-grid">
-            @for (url of galleryPreviews(); track url; let i = $index) {
+            @for (url of galeriaPreviews(); track $index; let i = $index) {
               <div style="position:relative">
                 <div class="gallery-thumb" [style.backgroundImage]="'url(' + url + ')'"></div>
-                <button type="button" class="gallery-remove" (click)="removeGalleryItem(i)">×</button>
+                <button type="button" class="gallery-remove" [attr.aria-label]="'Quitar foto ' + (i + 1)"
+                        (click)="removeGalleryItem(i)">×</button>
               </div>
             }
           </div>
         }
-        <label class="upload-btn" for="prod-gallery-input">
+        <label class="upload-btn" for="prod-gallery-input" [class.is-disabled]="galeriaLlena()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="17 8 12 3 7 8"/>
             <line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
-          Agregar fotos
+          {{ galeriaLlena() ? 'Galería completa' : 'Agregar fotos' }}
         </label>
-        <input id="prod-gallery-input" type="file" accept="image/*" multiple (change)="onGalleryChange($event)" style="display:none" />
-        <span class="help">JPG, PNG o WebP · mín 800 px de ancho · hasta 8 fotos</span>
+        <input id="prod-gallery-input" type="file" accept="image/jpeg,image/png,image/webp" multiple
+               [disabled]="galeriaLlena()" (change)="onGalleryChange($event)" style="display:none" />
+        <span class="help">JPG, PNG o WebP · mín 800 px de ancho · hasta {{ maxFotos }} fotos · máx 5 MB c/u</span>
       </div>
+
+      @if (avisos().length > 0) {
+        <ul class="upload-avisos" role="alert">
+          @for (a of avisos(); track a) { <li>{{ a }}</li> }
+        </ul>
+      }
 
     </div>
   </div>

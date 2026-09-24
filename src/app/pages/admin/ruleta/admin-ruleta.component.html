@@ -1,0 +1,472 @@
+@let c = cfg();
+
+<div class="ph">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> Universo</div>
+    <h1>La <em>ruleta</em></h1>
+    <p class="sub">
+      Todo lo que se ve en <strong>/ruleta</strong> se edita aquí: los premios, los textos,
+      los colores y hasta cuánto dura el giro.
+    </p>
+  </div>
+  <div class="ph-r">
+    <a class="btn-sm ghost" href="/ruleta" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+      Ver la página
+    </a>
+  </div>
+</div>
+
+@if (aviso(); as a) {
+  <div class="ar-aviso">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+    <span>{{ a }}</span>
+  </div>
+}
+
+@if (error(); as e) {
+  <div class="ar-aviso ar-aviso--error">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16h.01"/></svg>
+    <span>No se pudo guardar: {{ e }}</span>
+  </div>
+}
+
+<div class="ar-layout">
+  <!-- ─────────────────────────── Columna de edición ─────────────────────── -->
+  <div class="ar-editor">
+
+    <div class="panel">
+      <div class="panel-b">
+        <div class="field-toggle-row">
+          <div>
+            <span class="ftr-label">Ruleta publicada</span>
+            <span class="ftr-hint">
+              Si la apagas, quien entre a /ruleta verá un mensaje de «cerrada» en vez del juego.
+            </span>
+          </div>
+          <div class="tog-wrap" (click)="alternar('activa')">
+            <div class="tog" [class.on]="c.activa"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      @for (p of PESTANAS; track p.id) {
+        <a class="tab" [class.on]="pestana() === p.id" (click)="pestana.set(p.id)">
+          {{ p.label }}
+          @if (p.id === 'opciones') { <span class="ct">{{ opciones().length }}</span> }
+        </a>
+      }
+    </div>
+
+    <!-- ── Contenido ──────────────────────────────────────────────────────── -->
+    @if (pestana() === 'contenido') {
+      <div class="panel">
+        <div class="panel-h"><h3>Textos de la página</h3></div>
+        <div class="panel-b">
+          <div class="field">
+            <label>Título</label>
+            <input class="input" [value]="valorTexto('titulo')" (input)="setTexto('titulo', $event)" />
+          </div>
+          <div class="field">
+            <label>Subtítulo</label>
+            <input class="input" [value]="valorTexto('subtitulo')" (input)="setTexto('subtitulo', $event)" />
+          </div>
+          <div class="field">
+            <label>Descripción <span class="opt">— el bloque «¿Cómo funciona?»</span></label>
+            <textarea class="textarea" [value]="valorTexto('descripcion')" (input)="setTexto('descripcion', $event)"></textarea>
+          </div>
+          <div class="field">
+            <label>Letra pequeña <span class="opt">— pie de página</span></label>
+            <input class="input" [value]="valorTexto('pie_texto')" (input)="setTexto('pie_texto', $event)" />
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><h3>Botón y resultado</h3></div>
+        <div class="panel-b">
+          <div class="grid-2">
+            <div class="field">
+              <label>Texto del botón</label>
+              <input class="input" [value]="valorTexto('boton_texto')" (input)="setTexto('boton_texto', $event)" />
+            </div>
+            <div class="field">
+              <label>Mientras gira</label>
+              <input class="input" [value]="valorTexto('boton_girando_texto')" (input)="setTexto('boton_girando_texto', $event)" />
+            </div>
+            <div class="field">
+              <label>Título del resultado</label>
+              <input class="input" [value]="valorTexto('resultado_titulo')" (input)="setTexto('resultado_titulo', $event)" />
+            </div>
+            <div class="field">
+              <label>Botón de volver a girar</label>
+              <input class="input" [value]="valorTexto('resultado_cta')" (input)="setTexto('resultado_cta', $event)" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Mensaje de agradecimiento <span class="opt">— en el modal del premio</span></label>
+            <textarea class="textarea" [value]="valorTexto('gracias_texto')" (input)="setTexto('gracias_texto', $event)"></textarea>
+            <span class="help">
+              Es donde se le dice a la gente qué hacer con lo que ganó. El modal se enciende y apaga
+              desde Apariencia → Qué se muestra.
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Opciones ───────────────────────────────────────────────────────── -->
+    @if (pestana() === 'opciones') {
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <h3>Opciones de la ruleta</h3>
+            <span class="sub">El peso es a la vez el tamaño de la porción y la probabilidad.</span>
+          </div>
+          <button class="btn-sm ghost" (click)="agregar()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Nueva opción
+          </button>
+        </div>
+        <div class="panel-b flush">
+          <table class="tbl ar-tbl">
+            <thead>
+              <tr>
+                <th style="width:34px"></th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th style="width:104px">Colores</th>
+                <th style="width:72px">Peso</th>
+                <th style="width:58px">Sale</th>
+                <th style="width:54px">Activa</th>
+                <th style="width:112px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (o of ordenadas(); track o.id; let i = $index, last = $last) {
+                <tr [class.is-off]="!o.activa">
+                  <td>
+                    <span class="ar-orden" [style.background]="o.color"></span>
+                  </td>
+                  <td>
+                    <input class="input ar-mini" [value]="o.etiqueta" placeholder="Ej. Envío gratis"
+                           (input)="actualizarTexto(o.id, 'etiqueta', $event)" />
+                  </td>
+                  <td>
+                    <input class="input ar-mini" [value]="o.descripcion ?? ''" placeholder="Opcional"
+                           (input)="actualizarTexto(o.id, 'descripcion', $event)" />
+                  </td>
+                  <td>
+                    <div class="ar-colores">
+                      <label class="ar-swatch" [title]="'Relleno: ' + o.color">
+                        <input type="color" [value]="o.color" (input)="actualizarTexto(o.id, 'color', $event)" />
+                        <span [style.background]="o.color"></span>
+                      </label>
+                      <label class="ar-swatch" [title]="'Texto: ' + o.color_texto">
+                        <input type="color" [value]="o.color_texto" (input)="actualizarTexto(o.id, 'color_texto', $event)" />
+                        <span [style.background]="o.color_texto"></span>
+                      </label>
+                    </div>
+                  </td>
+                  <td>
+                    <input class="input ar-mini ar-peso" type="number" min="1" max="100" [value]="o.peso"
+                           (input)="actualizarPeso(o.id, $event)" />
+                  </td>
+                  <td class="ar-prob">{{ probabilidad(o) }}%</td>
+                  <td>
+                    <div class="tog-wrap" (click)="actualizar(o.id, 'activa', !o.activa)">
+                      <div class="tog" [class.on]="o.activa"></div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="ar-acciones">
+                    <button class="icon-act" title="Subir" [disabled]="i === 0" (click)="mover(o.id, -1)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>
+                    </button>
+                    <button class="icon-act" title="Bajar" [disabled]="last" (click)="mover(o.id, 1)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <button class="icon-act" title="Eliminar" (click)="eliminar(o.id)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>
+                    </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="ar-vacio">
+                    Todavía no hay opciones. Añade al menos una para que la ruleta gire.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ── Apariencia ─────────────────────────────────────────────────────── -->
+    @if (pestana() === 'apariencia') {
+      <div class="panel">
+        <div class="panel-h"><h3>Colores</h3></div>
+        <div class="panel-b">
+          <div class="ar-colores-grid">
+            @for (campo of COLORES; track campo.clave) {
+              <div class="ar-color-campo">
+                <label class="ar-swatch ar-swatch--lg" [title]="campo.label">
+                  <input type="color" [value]="valorTexto(campo.clave)" (input)="setTexto(campo.clave, $event)" />
+                  <span [style.background]="valorTexto(campo.clave)"></span>
+                </label>
+                <div>
+                  <span class="ar-color-label">{{ campo.label }}</span>
+                  <span class="ar-color-hint">{{ campo.hint }}</span>
+                </div>
+                <input class="input ar-hex" [value]="valorTexto(campo.clave)" (input)="setTexto(campo.clave, $event)" />
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><h3>Qué se muestra</h3></div>
+        <div class="panel-b">
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Modal con el premio</span>
+              <span class="ftr-hint">
+                Al parar la ruleta se abre una ventana con lo que ganó y el agradecimiento.
+                Apagado, el resultado solo aparece en la tarjeta lateral.
+              </span>
+            </div>
+            <div class="tog-wrap" (click)="alternar('mostrar_modal')">
+              <div class="tog" [class.on]="c.mostrar_modal"></div>
+            </div>
+          </div>
+
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Bombillas del aro</span>
+              <span class="ftr-hint">Las luces que parpadean alrededor del disco</span>
+            </div>
+            <div class="tog-wrap" (click)="alternar('mostrar_luces')">
+              <div class="tog" [class.on]="c.mostrar_luces"></div>
+            </div>
+          </div>
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Descripción dentro de la porción</span>
+              <span class="ftr-hint">Solo cabe en las porciones anchas; en las estrechas se oculta sola</span>
+            </div>
+            <div class="tog-wrap" (click)="alternar('mostrar_descripcion')">
+              <div class="tog" [class.on]="c.mostrar_descripcion"></div>
+            </div>
+          </div>
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Lista «En juego»</span>
+              <span class="ftr-hint">El panel lateral con todas las opciones y su probabilidad</span>
+            </div>
+            <div class="tog-wrap" (click)="alternar('mostrar_leyenda')">
+              <div class="tog" [class.on]="c.mostrar_leyenda"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Comportamiento ─────────────────────────────────────────────────── -->
+    @if (pestana() === 'comportamiento') {
+      <div class="panel">
+        <div class="panel-h"><h3>El giro</h3></div>
+        <div class="panel-b">
+          <div class="field">
+            <label>Duración — {{ (c.duracion_ms / 1000).toFixed(1) }} s</label>
+            <input class="ar-rango" type="range" min="1000" max="12000" step="100"
+                   [value]="c.duracion_ms" (input)="setNumero('duracion_ms', $event, 500, 30000)" />
+            <span class="help">Entre 4 y 6 segundos es lo que mejor se siente.</span>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Vueltas mínimas</label>
+              <input class="input" type="number" min="1" max="30" [value]="c.vueltas_min"
+                     (input)="setNumero('vueltas_min', $event, 1, 30)" />
+            </div>
+            <div class="field">
+              <label>Vueltas máximas</label>
+              <input class="input" type="number" min="1" max="30" [value]="c.vueltas_max"
+                     (input)="setNumero('vueltas_max', $event, 1, 30)" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><h3>Reglas y efectos</h3></div>
+        <div class="panel-b">
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Permitir volver a girar</span>
+              <span class="ftr-hint">
+                Apagado, cada persona tiene un solo giro: desaparece el botón de «{{ c.resultado_cta }}»
+                y la tapa central queda bloqueada.
+              </span>
+            </div>
+            <div class="tog-wrap" (click)="alternar('permitir_regirar')">
+              <div class="tog" [class.on]="c.permitir_regirar"></div>
+            </div>
+          </div>
+
+          @if (!c.permitir_regirar) {
+          <div class="field ar-sangria">
+            <label>Aviso cuando ya no quedan giros</label>
+            <input class="input" [value]="valorTexto('agotado_texto')" (input)="setTexto('agotado_texto', $event)" />
+            <span class="help">
+              El turno gastado se recuerda en el navegador de quien juega, así recargar la página
+              no regala otro giro. No aguanta que alguien borre sus datos, use el modo incógnito
+              u otro dispositivo: sirve para ordenar una fila, no para blindar un sorteo.
+            </span>
+          </div>
+          }
+
+          <div class="ar-reinicio">
+            <div class="ar-reinicio-txt">
+              <span class="ftr-label">Reiniciar el juego</span>
+              <span class="ftr-hint">
+                Devuelve el turno a todo el que ya jugó, en cualquier dispositivo. Abre una ronda
+                nueva: nadie tiene que borrar nada de su navegador. Va por la ronda
+                <strong>{{ c.ronda }}</strong>.
+              </span>
+            </div>
+
+            @if (!confirmandoReinicio()) {
+              <button class="btn-sm ghost" [disabled]="reiniciando()" (click)="pedirConfirmacionReinicio()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+                Reiniciar juego
+              </button>
+            } @else {
+              <div class="ar-reinicio-confirma">
+                <span>¿Seguro? Todos podrán girar otra vez.</span>
+                <button class="btn-sm danger" [disabled]="reiniciando()" (click)="reiniciarJuego()">
+                  @if (reiniciando()) { Reiniciando… } @else { Sí, reiniciar }
+                </button>
+                <button class="btn-sm ghost" [disabled]="reiniciando()" (click)="cancelarReinicio()">Cancelar</button>
+              </div>
+            }
+          </div>
+
+          @if (rondaAbierta(); as r) {
+            <p class="ar-reinicio-ok">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+              Listo: ronda {{ r }} abierta. Quien ya había jugado vuelve a tener turno.
+            </p>
+          }
+
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Permitir que se repita el premio</span>
+              <span class="ftr-hint">
+                Cosa distinta de la anterior: esta decide si el mismo premio puede volver a salir.
+                Apagado, no se repite hasta que hayan salido todos.
+              </span>
+            </div>
+            <div class="tog-wrap" (click)="alternar('permitir_repetir')">
+              <div class="tog" [class.on]="c.permitir_repetir"></div>
+            </div>
+          </div>
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Sonido</span>
+              <span class="ftr-hint">Clic de la aguja al pasar cada porción y fanfarria al ganar</span>
+            </div>
+            <div class="tog-wrap" (click)="alternar('sonido')">
+              <div class="tog" [class.on]="c.sonido"></div>
+            </div>
+          </div>
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Confeti</span>
+              <span class="ftr-hint">Al detenerse la ruleta</span>
+            </div>
+            <div class="tog-wrap" (click)="alternar('confeti')">
+              <div class="tog" [class.on]="c.confeti"></div>
+            </div>
+          </div>
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Guardar cada giro</span>
+              <span class="ftr-hint">Registra qué salió y cuándo, para saber cuánto se está usando</span>
+            </div>
+            <div class="tog-wrap" (click)="alternar('registrar_giros')">
+              <div class="tog" [class.on]="c.registrar_giros"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (c.registrar_giros) {
+        <div class="panel">
+          <div class="panel-h"><h3>Últimos giros</h3></div>
+          <div class="panel-b flush">
+            <table class="tbl">
+              <thead><tr><th>Resultado</th><th style="width:180px">Cuándo</th></tr></thead>
+              <tbody>
+                @for (g of ultimosGiros(); track $index) {
+                  <tr>
+                    <td>{{ g.etiqueta }}</td>
+                    <td class="id">{{ g.creado_en | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="2" class="ar-vacio">Nada registrado todavía.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    }
+
+    <div class="page-footer">
+      @if (problemas().length > 0) {
+        <span class="ar-problemas">{{ problemas()[0] }}</span>
+      }
+      <button class="btn-sm ghost" [disabled]="guardando()" (click)="recargar()">Descartar cambios</button>
+      <button class="btn-sm solid" [disabled]="!puedeGuardar()" (click)="guardar()">
+        @if (guardando()) { Guardando… }
+        @else if (guardado()) {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+          Guardado
+        }
+        @else { Guardar cambios }
+      </button>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────── Vista previa ───────────────────────────── -->
+  <aside class="ar-preview">
+    <div class="ar-preview-sticky">
+      <div class="panel">
+        <div class="panel-h">
+          <h3>Vista previa</h3>
+          <span class="sub">En vivo, sin guardar</span>
+        </div>
+        <div class="panel-b">
+          <div class="ar-stage" [style.background]="c.color_fondo">
+            <app-ruleta-wheel [config]="c" [opciones]="opciones()" />
+          </div>
+          <div class="ar-preview-acciones">
+            <button class="btn-sm solid" (click)="probarGiro()">Probar giro</button>
+            <button class="btn-sm ghost" (click)="reiniciarPreview()">Volver al inicio</button>
+          </div>
+          <p class="help">
+            El giro de prueba no se guarda en el registro ni afecta a la página pública.
+            «Volver al inicio» solo recoloca esta rueda de muestra.
+          </p>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>

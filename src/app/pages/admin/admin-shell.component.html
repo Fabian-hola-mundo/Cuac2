@@ -163,6 +163,10 @@
         <span>{{ NAV_META[id].label }}</span>
       </a>
       }
+      <a [class.is-active]="activeNavId() === 'ruleta'" (click)="goRuleta()">
+        <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3v6.6M21 12h-6.6M12 21v-6.6M3 12h6.6"/></svg>
+        <span>Ruleta</span>
+      </a>
     </div>
     <div class="sb-section">Estudio</div>
     <div class="sb-nav">

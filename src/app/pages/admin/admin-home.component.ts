@@ -135,25 +135,6 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     { name: 'Contra-entrega', state: 'Manual',    tone: 'warn', fee: '—',           count: 4,  color: 'sol'   },
   ];
 
-  readonly ORDER_DETAIL = {
-    id: '#CQ-2814', date: '2026-05-15 14:22',
-    customer: { name: 'Mariana Restrepo', email: 'mariana.r@gmail.com', phone: '+57 311 444 2891', since: 'Marzo 2026', orders: 4 },
-    shipping:  { address: 'Cra 43A # 14-50, Apto 802', city: 'Medellín, Antioquia', zip: '050021', carrier: 'Servientrega', tracking: 'SVT-887412339' },
-    items: [
-      { sku: 'TEE-CUAC-EXP', name: 'El explorador soñador', variant: 'Talla M · Cream', qty: 1, price: 89000,  color: 'rio',   label: 'Cuac' },
-      { sku: 'PIN-KIKI-001', name: 'Kiki la delfín',         variant: 'Único',           qty: 2, price: 22000,  color: 'rosa',  label: 'Kiki' },
-      { sku: 'STK-ABE-PK',  name: 'Pack stickers Abejandro', variant: '5 stickers',     qty: 1, price: 18000,  color: 'terra', label: 'Abe'  },
-    ],
-    totals: { subtotal: 151000, shipping: 12000, discount: 4000, total: 159000 },
-    timeline: [
-      { time: '14:22', title: 'Orden creada',    desc: 'Cliente completó el checkout',              state: 'done'   },
-      { time: '14:22', title: 'Pago aprobado',   desc: 'Bold · Visa terminada en 4421 · $159.000', state: 'done'   },
-      { time: '15:01', title: 'En preparación',  desc: 'Asignado al lote del lunes',               state: 'active' },
-      { time: '—',     title: 'Despacho',         desc: 'Pendiente · Servientrega',                 state: 'wait'   },
-      { time: '—',     title: 'Entrega',           desc: 'Estimado 18 mayo',                         state: 'wait'   },
-    ],
-  };
-
   // ── Live clock & greeting ──────────────────────────────────────────────────
   nowTime     = signal('');
   nowDatetime = signal('');
@@ -167,6 +148,71 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.nowTime.set(now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false }));
     this.nowDatetime.set(now.toISOString());
   }
+
+  // ── Detalle del pedido seleccionado ────────────────────────────────────────
+  selectedOrder = signal<Order | null>(null);
+
+  readonly orderCustomer = computed(() => {
+    const o = this.selectedOrder();
+    return o ? this.data.getCustomer(o.customerId) ?? null : null;
+  });
+
+  readonly orderPayment = computed(() => {
+    const o = this.selectedOrder();
+    return o ? this.data.getPaymentByOrder(o.id) ?? null : null;
+  });
+
+  /** Línea de tiempo derivada del estado real de pago y envío del pedido. */
+  readonly orderTimeline = computed<{ time: string; title: string; desc: string; state: string }[]>(() => {
+    const o = this.selectedOrder();
+    if (!o) return [];
+
+    const hora = o.date.slice(11) || '—';
+    const rows = [
+      { time: hora, title: 'Orden creada', desc: 'Cliente completó el checkout', state: 'done' },
+    ];
+
+    const pay = this.orderPayment();
+    const monto = this.fmtCOP(o.total);
+    switch (o.status) {
+      case 'paid':
+        rows.push({ time: hora, title: 'Pago aprobado', desc: `${o.method} · ${monto}`, state: 'done' });
+        break;
+      case 'pending':
+        rows.push({ time: '—', title: 'Pago pendiente', desc: `${o.method} · ${monto}`, state: 'active' });
+        break;
+      case 'failed':
+        rows.push({ time: hora, title: 'Pago rechazado', desc: `${o.method} · ${monto}`, state: 'done' });
+        break;
+      case 'refunded':
+        rows.push({ time: hora, title: 'Pago aprobado', desc: `${o.method} · ${monto}`, state: 'done' });
+        rows.push({ time: pay?.date.slice(11) ?? '—', title: 'Reembolso emitido', desc: `Devolución de ${monto}`, state: 'done' });
+        break;
+    }
+
+    if (o.status === 'paid' || o.status === 'refunded') {
+      switch (o.shipping) {
+        case 'pending':
+          rows.push({ time: '—', title: 'En preparación', desc: 'Pendiente de despacho', state: 'active' });
+          break;
+        case 'shipped':
+          rows.push({ time: '—', title: 'Despachado', desc: `En camino a ${o.city}`, state: 'done' });
+          rows.push({ time: '—', title: 'Entrega', desc: 'Pendiente de confirmación', state: 'wait' });
+          break;
+        case 'delivered':
+          rows.push({ time: '—', title: 'Despachado', desc: `Enviado a ${o.city}`, state: 'done' });
+          rows.push({ time: '—', title: 'Entregado', desc: `Recibido en ${o.city}`, state: 'done' });
+          break;
+        case 'returned':
+          rows.push({ time: '—', title: 'Devuelto', desc: 'El pedido regresó a bodega', state: 'done' });
+          break;
+      }
+    }
+
+    return rows;
+  });
+
+  fmtSince(iso: string): string { return this.data.fmtSince(iso); }
 
   // ── Drawer signals para Cliente y Pago ─────────────────────────────────────
   clienteId = signal<string | null>(null);
@@ -302,10 +348,9 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   }
 
   // ── Methods ────────────────────────────────────────────────────────────────
-  go(v: ViewId, opts: { newProduct?: boolean; detail?: boolean } = {}) {
+  go(v: ViewId, opts: { newProduct?: boolean } = {}) {
     this.view.set(v);
     if (opts.newProduct) { this.initEditorForm(null); this.editorOn.set(true); }
-    if (opts.detail)     { this.orderOn.set(true); }
   }
 
   openEditor(p: Product | null) {
@@ -321,8 +366,8 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.flash(this.editingProduct() ? '✓ Producto actualizado' : '✓ Producto creado');
   }
 
-  openOrder() { this.orderOn.set(true); }
-  closeOrder() { this.orderOn.set(false); }
+  openOrder(o: Order) { this.selectedOrder.set(o); this.orderOn.set(true); }
+  closeOrder() { this.orderOn.set(false); this.selectedOrder.set(null); }
 
   openManualOrder() {
     this.moClienteNombre    = '';

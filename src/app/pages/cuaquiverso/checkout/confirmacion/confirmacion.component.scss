@@ -1,4 +1,12 @@
 :host {
+  /* Verde y ámbar legibles sobre el hero carbón; el verde sólido queda para
+     fondos con texto blanco encima. */
+  --ok-dark:   #5FD39B;
+  --ok-solid:  #17724A;
+  --wait-dark: #E8A33D;
+  --fail-dark: #FF8D75;
+  --fail-solid:#C4321A;
+
   display: block;
   background: #ECEFF3;
   color: #151F28;
@@ -16,22 +24,50 @@
 .topbar-inner {
   max-width: 1320px; margin: 0 auto; height: 64px;
   padding: 0 var(--s-7);
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-4);
+
+  @media (max-width: 760px) { padding: 0 var(--s-4); }
 }
 .brand {
   font-family: var(--display); font-size: 18px; font-weight: 400;
   text-decoration: none; color: #151F28;
   em { color: var(--ember); font-style: normal; }
 }
-.steps-done { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #1F8A5B; }
+.steps-done {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 600; color: var(--ok-solid);
+
+  &.is-pending { color: #8A5A12; }
+  &.is-failed  { color: #A02912; }
+}
 .sd-num {
   width: 22px; height: 22px; border-radius: 50%;
-  background: #1F8A5B; color: #fff;
-  display: flex; align-items: center; justify-content: center; font-size: 11px;
-}
-.sd-div { width: 28px; height: 1px; background: #1F8A5B; }
+  background: var(--ok-solid); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; flex-shrink: 0;
 
-.page { max-width: 1080px; margin: 0 auto; padding: 96px var(--s-7) var(--s-9); }
+  .is-pending & { background: #8A5A12; }
+  .is-failed  & { background: #A02912; }
+}
+.sd-div {
+  width: 28px; height: 1px; background: var(--ok-solid);
+  .is-pending & { background: #8A5A12; }
+  .is-failed  & { background: #A02912; }
+}
+
+/* El indicador se aplastaba en móvil: se deja sólo el paso en el que está. */
+@media (max-width: 620px) {
+  .steps-done > span:first-of-type,
+  .sd-div { display: none; }
+  .steps-done > .sd-num:first-of-type { display: none; }
+}
+
+.page {
+  max-width: 1080px; margin: 0 auto;
+  padding: 96px var(--s-7) var(--s-9);
+
+  @media (max-width: 700px) { padding: 88px var(--s-4) var(--s-7); }
+}
 
 .confirm-hero {
   background: #151F28;
@@ -48,36 +84,50 @@
 }
 .hero-check {
   width: 52px; height: 52px; border-radius: 50%;
-  background: #1F8A5B;
   display: flex; align-items: center; justify-content: center;
   font-size: 22px; margin-bottom: 20px;
+  background: var(--ok-solid); color: #fff;
+
+  &.wait { background: rgba(232,163,61,.18); }
+  &.fail { background: var(--fail-solid); color: #fff; font-size: 30px; line-height: 1; }
 }
 .hero-eyebrow {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .1em; color: #1F8A5B; margin-bottom: 8px;
+  letter-spacing: .1em; margin-bottom: 8px; color: var(--ok-dark);
+
+  &.wait { color: var(--wait-dark); }
+  &.fail { color: var(--fail-dark); }
 }
 .hero-title {
   font-family: var(--display); font-size: 30px; font-weight: 400;
   letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 10px;
   em { color: var(--ember); font-style: normal; }
+
+  @media (max-width: 700px) { font-size: 26px; }
 }
 .hero-sub {
-  font-size: 14px; color: rgba(236,239,243,.55); line-height: 1.6; max-width: 460px;
+  font-size: 14px; color: rgba(236,239,243,.75); line-height: 1.6; max-width: 460px;
+  strong { color: #ECEFF3; font-weight: 700; }
 }
 .bold-badge {
   display: inline-flex; align-items: center; gap: 8px;
   background: rgba(236,239,243,.08);
-  border: 1px solid rgba(236,239,243,.1);
+  border: 1px solid rgba(236,239,243,.14);
   border-radius: 8px; padding: 8px 14px; margin-top: 20px;
-  font-size: 12px; color: rgba(236,239,243,.55);
+  font-size: 12px; color: rgba(236,239,243,.7);
   strong { color: #ECEFF3; }
   .wl { background: var(--ember); color: #fff; font-size: 9px; font-weight: 800; letter-spacing: .05em; padding: 2px 5px; border-radius: 3px; }
 }
 .order-ref {
   text-align: right;
-  .r-lbl  { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(236,239,243,.4); margin-bottom: 6px; }
+  .r-lbl  { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(236,239,243,.6); margin-bottom: 6px; }
   .r-code { font-size: 20px; font-weight: 700; letter-spacing: .04em; font-family: monospace; }
-  .r-date { font-size: 12px; color: rgba(236,239,243,.4); margin-top: 4px; }
+  .r-date { font-size: 12px; color: rgba(236,239,243,.6); margin-top: 4px; }
+
+  @media (max-width: 700px) {
+    text-align: left;
+    border-top: 1px solid rgba(236,239,243,.12); padding-top: 20px;
+  }
 }
 
 .bottom-grid {
@@ -90,10 +140,12 @@
   border: 1px solid rgba(21,31,40,.07);
   border-radius: 14px; padding: 28px; margin-bottom: 18px;
   &:last-child { margin-bottom: 0; }
+
+  @media (max-width: 560px) { padding: 22px 18px; }
 }
 .card-title {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .08em; color: rgba(21,31,40,.4); margin-bottom: 18px;
+  letter-spacing: .08em; color: rgba(21,31,40,.55); margin-bottom: 18px;
 }
 
 .order-item {
@@ -103,14 +155,21 @@
   &:last-child  { border-bottom: none; padding-bottom: 0; }
 }
 .oi-swatch { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; opacity: .8; }
-.oi-info   { flex: 1; }
+.oi-info   { flex: 1; min-width: 0; }
 .oi-name   { font-size: 14px; font-weight: 600; }
-.oi-sub    { font-size: 12px; color: rgba(21,31,40,.45); margin-top: 2px; }
+.oi-sub    { font-size: 12px; color: rgba(21,31,40,.58); margin-top: 2px; }
 .oi-price  { font-size: 14px; font-weight: 600; white-space: nowrap; }
 
-.addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.addr-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  /* No colapsaba nunca: a 360px "Nombre" y "Ciudad" se partían en dos columnas
+     de ~140px. */
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+}
+.addr-full { grid-column: 1 / -1; }
 .addr-field {
-  .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: rgba(21,31,40,.4); margin-bottom: 3px; }
+  min-width: 0;
+  .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: rgba(21,31,40,.55); margin-bottom: 3px; }
   .val { font-size: 14px; }
 }
 
@@ -124,13 +183,17 @@
 }
 
 .total-row {
-  display: flex; justify-content: space-between; font-size: 14px;
-  color: rgba(21,31,40,.55); margin-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  font-size: 14px; color: rgba(21,31,40,.65); margin-bottom: 8px;
   &.main { color: #151F28; font-size: 18px; font-weight: 700; letter-spacing: -.02em; padding-top: 10px; border-top: 1px solid rgba(21,31,40,.08); }
 }
+.total-note {
+  font-size: 11.5px; color: rgba(21,31,40,.6); line-height: 1.5; margin-top: 6px;
+}
 .free-tag {
-  background: #D7EBDD; color: #1F5C39;
-  font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  background: #D7EBDD; color: #14532F;
+  font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px;
+  white-space: nowrap;
 }
 
 .next-steps { display: flex; flex-direction: column; gap: 14px; }
@@ -143,18 +206,61 @@
 }
 .ns-body {
   strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 2px; }
-  p { font-size: 12px; color: rgba(21,31,40,.55); line-height: 1.5; }
+  p { font-size: 12px; color: rgba(21,31,40,.65); line-height: 1.5; }
 }
 
-.cta-row { display: flex; gap: 10px; margin-top: 22px; }
-.btn-primary { flex:1; padding: 13px 20px; background: #151F28; color: #ECEFF3; border-radius: 10px; font-size: 14px; font-weight: 700; text-align: center; text-decoration: none; display: block; }
-.btn-ghost   { flex:1; padding: 13px 20px; border: 1.5px solid rgba(21,31,40,.15); border-radius: 10px; font-size: 14px; font-weight: 600; text-align: center; text-decoration: none; color: #151F28; display: block; }
+/* Repartir la fila en mitades exactas descuadraba los botones: en la columna
+   de 360px "Seguir comprando" se partía en dos líneas mientras "Inicio" nadaba
+   en espacio vacío. El primario se queda con el sobrante y el secundario mide
+   lo que mide su texto. */
+.cta-row {
+  display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap;
+  @media (max-width: 420px) { flex-direction: column; }
+
+  &.cta-centrado {
+    justify-content: center; margin-top: 24px;
+    .btn-primary, .btn-ghost { flex: 0 0 auto; }
+  }
+}
+.btn-primary {
+  flex: 1 1 auto; padding: 13px 20px;
+  background: #151F28; color: #ECEFF3;
+  border: none; border-radius: 10px;
+  font-family: var(--sans); font-size: 14px; font-weight: 700; line-height: 1.2;
+  text-align: center; text-decoration: none; white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+
+  &:hover { background: #23303c; }
+  &:focus-visible { outline: 2px solid #151F28; outline-offset: 2px; }
+}
+.btn-ghost {
+  flex: 0 1 auto; padding: 13px 18px;
+  background: transparent;
+  border: 1.5px solid rgba(21,31,40,.2); border-radius: 10px;
+  font-family: var(--sans); font-size: 14px; font-weight: 600; line-height: 1.2;
+  text-align: center; text-decoration: none; color: #151F28; white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+
+  &:hover { border-color: rgba(21,31,40,.45); }
+  &:focus-visible { outline: 2px solid #151F28; outline-offset: 2px; }
+}
 
 .skeleton-wrap { max-width: 1080px; margin: 96px auto; padding: 0 var(--s-7); }
 .skeleton-hero { background: rgba(21,31,40,.08); border-radius: 18px; height: 220px; margin-bottom: 28px; animation: pulse 1.4s ease-in-out infinite; }
 .skeleton-row  { background: rgba(21,31,40,.06); border-radius: 10px; height: 60px; margin-bottom: 14px; animation: pulse 1.4s ease-in-out infinite; }
 @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.5; } }
 
-.not-found { text-align: center; padding: var(--s-9) var(--s-7); }
-.not-found h2 { font-family: var(--display); font-size: 24px; margin-bottom: 8px; }
-.not-found p  { color: rgba(21,31,40,.5); margin-bottom: 20px; }
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-hero, .skeleton-row { animation: none; }
+}
+
+.estado-vacio {
+  max-width: 520px; margin: 0 auto;
+  text-align: center; padding: var(--s-9) var(--s-5);
+
+  h2 { font-family: var(--display); font-size: 24px; margin-bottom: 10px; }
+  p  { color: rgba(21,31,40,.65); line-height: 1.6; }
+  .nota { font-size: 13px; color: rgba(21,31,40,.55); margin-top: 10px; }
+}

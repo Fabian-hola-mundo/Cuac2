@@ -5,7 +5,12 @@ import { CartService } from './services/cart.service';
 import { CartModalComponent } from './cart-modal/cart-modal.component';
 import { CuaquiversoFooterComponent } from './footer/cuaquiverso-footer.component';
 import { HelpModalComponent } from './help-modal/help-modal.component';
-import { InventarioService, ProductoEvento } from '../../core/services/inventario.service';
+import {
+  InventarioService,
+  ProductoEvento,
+  esEtiquetaPropia,
+  etiquetaFlag,
+} from '../../core/services/inventario.service';
 import { PersonajesService } from '../../core/services/personajes.service';
 import { MensajesFormComponent } from './mensajes-form/mensajes-form.component';
 
@@ -65,6 +70,9 @@ export class CuaquiversoComponent implements OnInit {
   catLabel(cat: string): string {
     return CAT_SHORT[cat] ?? cat;
   }
+
+  etiquetaFlag = etiquetaFlag;
+  esEtiquetaPropia = esEtiquetaPropia;
 
   addToCart(event: Event, p: ProductoEvento): void {
     event.preventDefault();

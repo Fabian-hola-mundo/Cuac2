@@ -63,8 +63,10 @@
   min-width: 22px;
   height: 22px;
   padding: 0 7px;
-  background: #EC3813;
-  color: #ECEFF3;
+  /* #EC3813 con la tinta crema daba 3.51:1 y no pasaba AA; este tono, el mismo
+     que ya se usaba en :hover de los botones, llega a 4.96:1 con blanco. */
+  background: #D43010;
+  color: #fff;
   font-size: 11px;
   font-weight: 700;
   border-radius: 999px;
@@ -85,6 +87,7 @@
   transition: background 0.15s;
 
   &:hover { background: rgba(236, 239, 243, 0.14); }
+  &:focus-visible { outline: 2px solid #ECEFF3; outline-offset: 2px; }
 
   svg { width: 18px; height: 18px; }
 }
@@ -108,18 +111,20 @@
 
 .empty-state p {
   font-size: 15px;
-  color: rgba(236, 239, 243, 0.6);
+  color: rgba(236, 239, 243, 0.7);
   margin: 0;
 }
 
 .link-tienda {
   font-size: 14px;
   font-weight: 600;
-  color: #EC3813;
+  /* El naranja de marca sobre el panel carbón da 4.09:1; el coral, 7.40:1. */
+  color: #FF8D75;
   text-decoration: none;
   letter-spacing: 0.01em;
 
   &:hover { text-decoration: underline; }
+  &:focus-visible { outline: 2px solid #ECEFF3; outline-offset: 3px; border-radius: 4px; }
 }
 
 .items-list {
@@ -169,7 +174,7 @@
 
 .item-sub {
   font-size: 12px;
-  color: rgba(236, 239, 243, 0.5);
+  color: rgba(236, 239, 243, 0.62);
 }
 
 .item-price {
@@ -211,7 +216,10 @@
   transition: background 0.12s;
   line-height: 1;
 
-  &:hover { background: rgba(236, 239, 243, 0.12); }
+  &:hover:not(:disabled) { background: rgba(236, 239, 243, 0.12); }
+  &:focus-visible { outline: 2px solid #ECEFF3; outline-offset: -2px; }
+
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
 }
 
 .qty-val {
@@ -231,11 +239,12 @@
   height: 28px;
   background: transparent;
   border: none;
-  color: rgba(236, 239, 243, 0.35);
+  color: rgba(236, 239, 243, 0.6);
   cursor: pointer;
   transition: color 0.15s;
 
-  &:hover { color: #EC3813; }
+  &:hover { color: #FF8D75; }
+  &:focus-visible { outline: 2px solid #ECEFF3; outline-offset: 1px; border-radius: 6px; }
 
   svg { width: 15px; height: 15px; }
 }
@@ -257,7 +266,7 @@
 
 .subtotal-lbl {
   font-size: 13px;
-  color: rgba(236, 239, 243, 0.6);
+  color: rgba(236, 239, 243, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 500;
@@ -272,7 +281,7 @@
 
 .shipping-note {
   font-size: 11.5px;
-  color: rgba(236, 239, 243, 0.35);
+  color: rgba(236, 239, 243, 0.6);
   margin: 0 0 4px;
 }
 
@@ -283,8 +292,9 @@
   gap: 8px;
   width: 100%;
   padding: 14px 24px;
-  background: #EC3813;
-  color: #ECEFF3;
+  /* Era #EC3813 con tinta crema: 3.51:1. Con este tono y blanco son 4.96:1. */
+  background: #D43010;
+  color: #fff;
   font-family: var(--sans);
   font-size: 15px;
   font-weight: 700;
@@ -294,9 +304,10 @@
   transition: background 0.15s, transform 0.12s;
 
   &:hover {
-    background: #d43010;
+    background: #B82A0D;
     transform: translateY(-1px);
   }
+  &:focus-visible { outline: 2px solid #ECEFF3; outline-offset: 2px; }
 
   span { font-size: 17px; }
 }
@@ -307,7 +318,7 @@
   background: transparent;
   border: 1px solid rgba(236, 239, 243, 0.15);
   border-radius: 10px;
-  color: rgba(236, 239, 243, 0.65);
+  color: rgba(236, 239, 243, 0.78);
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 500;
@@ -318,4 +329,5 @@
     border-color: rgba(236, 239, 243, 0.3);
     color: #ECEFF3;
   }
+  &:focus-visible { outline: 2px solid #ECEFF3; outline-offset: 2px; }
 }

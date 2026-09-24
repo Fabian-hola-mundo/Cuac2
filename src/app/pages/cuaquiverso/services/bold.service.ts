@@ -96,6 +96,20 @@ export class BoldService {
     return this.carga;
   }
 
+  /**
+   * Empieza a bajar la librería en segundo plano, sin bloquear a nadie.
+   *
+   * Antes sólo se pedía al pulsar "Pagar", es decir después de haber creado ya
+   * el pedido: en una conexión lenta el comprador se quedaba mirando
+   * "Procesando..." mientras bajaba un script que se podía haber traído
+   * mientras rellenaba el formulario. Un fallo aquí se ignora a propósito;
+   * `abrirCheckout` lo reintenta y ahí sí hay dónde contarlo.
+   */
+  precargar(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.cargarLibreria().catch(() => { /* se reintenta al pagar */ });
+  }
+
   /** Abre el modal de Bold sobre la página actual. */
   async abrirCheckout(config: BoldCheckoutConfig): Promise<void> {
     await this.cargarLibreria();

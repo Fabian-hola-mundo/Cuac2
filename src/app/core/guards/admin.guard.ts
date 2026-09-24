@@ -22,8 +22,12 @@ export const adminGuard: CanActivateChildFn = async (route: ActivatedRouteSnapsh
 
   const esRaiz = route.routeConfig?.path === '';
 
-  // Sin sesión, la raíz muestra el login; con sesión, cae al chequeo de admin.
-  if (esRaiz && !sb.session()) return true;
+  // La raíz también es la pantalla del segundo factor. Al volver de Google se
+  // recarga /admin con una sesión nueva en aal1, y ahí is_admin() todavía es
+  // false: sin esta salida el guard rebotaba al inicio y el código TOTP no
+  // llegaba a pedirse nunca. Con contraseña no se veía porque no hay
+  // navegación de vuelta y el guard no vuelve a correr.
+  if (esRaiz && (!sb.session() || sb.mfaPendiente())) return true;
 
   if (sb.isAdmin()) return true;
 

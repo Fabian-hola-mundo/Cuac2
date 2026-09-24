@@ -1,0 +1,175 @@
+@let cfg = config();
+
+<app-topbar />
+
+<main
+  class="rp"
+  [style.--rp-bg]="cfg.color_fondo"
+  [style.--rp-fg]="cfg.color_texto"
+  [style.--rp-acento]="cfg.color_acento">
+
+  <div class="rp-deco" aria-hidden="true">
+    <span class="rp-glow rp-glow--a"></span>
+    <span class="rp-glow rp-glow--b"></span>
+    <span class="rp-dots"></span>
+  </div>
+
+  <header class="rp-hero">
+    <span class="rp-eyebrow"><i></i> Cuaquiverso</span>
+    <h1>{{ cfg.titulo }}</h1>
+    <p class="rp-sub">{{ cfg.subtitulo }}</p>
+  </header>
+
+  @if (disponible()) {
+    <div class="rp-grid">
+      <div class="rp-wheel">
+        <app-ruleta-wheel
+          [config]="cfg"
+          [opciones]="opciones()"
+          [interactivo]="!agotado()"
+          (empiezaGiro)="alEmpezar()"
+          (resultado)="alTerminar($event)" />
+      </div>
+
+      <aside class="rp-aside">
+        @if (resultado(); as premio) {
+          <div class="rp-premio" [style.--premio]="premio.color">
+            <span class="rp-premio-tag">{{ cfg.resultado_titulo }}</span>
+            <h2>{{ premio.etiqueta }}</h2>
+            @if (premio.descripcion) {
+              <p class="rp-premio-desc">{{ premio.descripcion }}</p>
+            }
+            <div class="rp-premio-acciones">
+              @if (!agotado()) {
+                <button type="button" class="rp-btn rp-btn--solid" (click)="girarOtraVez()">
+                  {{ cfg.resultado_cta }}
+                </button>
+              }
+              <a class="rp-btn rp-btn--ghost" href="/cuaquiverso/tienda">Ir a la tienda</a>
+            </div>
+            @if (agotado()) {
+              <p class="rp-premio-nota rp-nota-fuerte">{{ cfg.agotado_texto }}</p>
+            } @else {
+              <p class="rp-premio-nota">
+                Giro {{ giros() }}{{ giros() === 1 ? '' : 's' }} en esta sesión.
+              </p>
+            }
+          </div>
+        } @else if (agotado()) {
+          <div class="rp-intro">
+            <h2>Tu turno ya pasó</h2>
+            <p>{{ cfg.agotado_texto }}</p>
+            <a class="rp-btn rp-btn--ghost" href="/cuaquiverso/tienda">Ir a la tienda</a>
+          </div>
+        } @else {
+          <div class="rp-intro">
+            <h2>¿Cómo funciona?</h2>
+            @if (cfg.descripcion) {
+              <p>{{ cfg.descripcion }}</p>
+            }
+            <ol class="rp-pasos">
+              <li><span>1</span> Pulsa el botón del centro.</li>
+              <li><span>2</span> Espera a que la aguja se detenga.</li>
+              <li><span>3</span> Reclama lo que te haya tocado.</li>
+            </ol>
+          </div>
+        }
+
+        @if (cfg.mostrar_leyenda) {
+          <div class="rp-leyenda">
+            <h3>En juego</h3>
+            <ul>
+              @for (l of leyenda(); track l.opcion.id) {
+                <li [class.is-ganadora]="resultado()?.id === l.opcion.id">
+                  <span class="rp-swatch" [style.background]="l.opcion.color"></span>
+                  <span class="rp-leyenda-txt">
+                    <strong>{{ l.opcion.etiqueta }}</strong>
+                    @if (l.opcion.descripcion) { <em>{{ l.opcion.descripcion }}</em> }
+                  </span>
+                  <span class="rp-leyenda-prob">{{ l.probabilidad }}%</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </aside>
+    </div>
+
+    @if (cfg.pie_texto) {
+      <p class="rp-pie">{{ cfg.pie_texto }}</p>
+    }
+  } @else if (cargando()) {
+    <div class="rp-estado">
+      <div class="rp-spinner" aria-hidden="true"></div>
+      <p>Preparando la ruleta…</p>
+    </div>
+  } @else {
+    <div class="rp-estado">
+      <h2>La ruleta está cerrada por ahora</h2>
+      <p>Vuelve pronto: la activamos en eventos y fechas especiales.</p>
+      <a class="rp-btn rp-btn--solid" href="/cuaquiverso">Volver al Cuaquiverso</a>
+    </div>
+  }
+</main>
+
+<!-- El modal vive fuera de <main> a propósito: dentro quedaría por debajo de
+     la barra superior, que está fija con z-index 80. -->
+@if (modalAbierto()) {
+  @if (resultado(); as premio) {
+    <div
+      class="rp-modal-fondo"
+      [style.--rp-acento]="cfg.color_acento"
+      (click)="cerrarModal()"
+      aria-hidden="true"></div>
+
+    <div
+      #modal
+      class="rp-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="rp-modal-titulo"
+      tabindex="-1"
+      [style.--premio]="premio.color"
+      [style.--premio-texto]="premio.color_texto"
+      [style.--rp-acento]="cfg.color_acento">
+
+      <button type="button" class="rp-modal-x" (click)="cerrarModal()" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <div class="rp-modal-cinta">
+        <span class="rp-modal-tag">{{ cfg.resultado_titulo }}</span>
+      </div>
+
+      <div class="rp-modal-cuerpo">
+        <h2 id="rp-modal-titulo">{{ premio.etiqueta }}</h2>
+
+        @if (premio.descripcion) {
+          <p class="rp-modal-desc">{{ premio.descripcion }}</p>
+        }
+
+        @if (cfg.gracias_texto) {
+          <p class="rp-modal-gracias">{{ cfg.gracias_texto }}</p>
+        }
+
+        @if (agotado()) {
+          <p class="rp-modal-agotado">{{ cfg.agotado_texto }}</p>
+        }
+
+        <div class="rp-modal-acciones">
+          @if (!agotado()) {
+            <button type="button" class="rp-btn rp-btn--solid" (click)="girarOtraVez()">
+              {{ cfg.resultado_cta }}
+            </button>
+          }
+          <a class="rp-btn rp-btn--ghost" href="/cuaquiverso/tienda">Ir a la tienda</a>
+          <button type="button" class="rp-modal-cerrar" (click)="cerrarModal()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+}
+
+<app-footer />

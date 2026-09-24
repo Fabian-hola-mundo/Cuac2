@@ -1,44 +1,120 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule }    from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute }  from '@angular/router';
-import { InventarioService, CATEGORIAS, CHARACTERS, ProductoEvento } from '../../../core/services/inventario.service';
+import {
+  InventarioService,
+  CATEGORIAS,
+  ETIQUETAS_FIJAS,
+  MAX_LARGO_ETIQUETA,
+  ProductoEvento,
+  etiquetaCategoria,
+  etiquetaFlag,
+  slugCategoria,
+} from '../../../core/services/inventario.service';
+import { IVA, comisionBold, guardarComision, leerComisionGuardada } from './comision-bold';
 import { EventosService } from '../../../core/services/eventos.service';
+import {
+  EstadoGaleria,
+  MAX_FOTOS,
+  agregarAGaleria,
+  quitarDeGaleria,
+  totalGaleria,
+  validarImagen,
+} from './galeria';
 
 @Component({
   selector: 'app-producto-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './producto-form.component.html',
   styleUrl: './producto-form.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductoFormComponent implements OnInit {
+export class ProductoFormComponent implements OnInit, OnDestroy {
   private router  = inject(Router);
   private route   = inject(ActivatedRoute);
   private fb      = inject(FormBuilder);
-  private inv     = inject(InventarioService);
-  private eventos = inject(EventosService);
+  private inv        = inject(InventarioService);
+  private eventos    = inject(EventosService);
+  private destroyRef = inject(DestroyRef);
 
-  readonly categorias = CATEGORIAS;
-  readonly characters = CHARACTERS;
+  readonly maxFotos   = MAX_FOTOS;
   readonly editId     = signal<string | null>(null);
   readonly guardando  = signal(false);
   readonly errorMsg   = signal<string | null>(null);
+  readonly avisos     = signal<string[]>([]);
   readonly isEdit     = computed(() => this.editId() !== null);
 
-  readonly coverPreview    = signal<string | null>(null);
-  readonly galleryPreviews = signal<string[]>([]);
-  readonly material        = signal<string[]>([]);
-  private coverFile?: File;
-  private galleryFiles: File[] = [];
-  private existingFotos: string[] = [];
+  // ── Categorías ────────────────────────────────────────────────────────────
+  /** Fijas + las que ya usa algún producto: así una nueva no se pierde. */
+  readonly categoriasUsadas = signal<string[]>([]);
+  readonly categorias = computed(() => {
+    const ids = new Set([...CATEGORIAS.map(c => c.id), ...this.categoriasUsadas()]);
+    return [...ids]
+      .map(id => ({ id, label: etiquetaCategoria(id) }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+  });
+  readonly creandoCategoria = signal(false);
+  categoriaNueva = '';
+
+  // ── Etiquetas especiales ──────────────────────────────────────────────────
+  readonly MAX_LARGO_ETIQUETA = MAX_LARGO_ETIQUETA;
+  readonly etiquetasUsadas = signal<string[]>([]);
+  /** Fijas + las que ya escribió el admin en otros productos. */
+  readonly etiquetas = computed(() => {
+    const ids = new Set([...ETIQUETAS_FIJAS.map(e => e.id), ...this.etiquetasUsadas()]);
+    return [...ids].map(id => ({ id, label: etiquetaFlag(id) }));
+  });
+  readonly creandoEtiqueta = signal(false);
+  etiquetaNueva = '';
+
+  // ── Comisión de Bold ──────────────────────────────────────────────────────
+  private guardado = leerComisionGuardada();
+  readonly comisionPct  = signal(this.guardado.porcentaje);
+  readonly comisionIva  = signal(this.guardado.conIva);
+  readonly editandoComision = signal(false);
+  readonly precio = signal<number | null>(null);
+
+  readonly desglose = computed(() =>
+    comisionBold(this.precio(), this.comisionPct(), this.comisionIva())
+  );
+
+  readonly IVA_PCT = IVA * 100;
+
+  readonly material = signal<string[]>([]);
+
+  /** El campo de materiales es texto libre separado por comas. */
+  materialTexto = '';
+
+  // ── Portada ───────────────────────────────────────────────────────────────
+  /** URL ya persistida en Storage (null si nunca se subió o si se reemplazó). */
+  private coverGuardada: string | null = null;
+  private coverFile: File | null = null;
+  readonly coverPreview = signal<string | null>(null);
+
+  // ── Galería ───────────────────────────────────────────────────────────────
+  readonly galeria = signal<EstadoGaleria>({ existentes: [], nuevos: [] });
+  /** Object URLs vivos, para revocarlos y no dejar blobs colgando. */
+  private blobs = new Map<File, string>();
+  readonly galeriaPreviews = computed(() => {
+    const g = this.galeria();
+    return [...g.existentes, ...g.nuevos.map(f => this.blobs.get(f) ?? '')];
+  });
+  readonly galeriaLlena = computed(() => totalGaleria(this.galeria()) >= MAX_FOTOS);
+
+  /**
+   * Id del producto ya insertado en un intento previo de guardado. Si la subida
+   * de imágenes falla, reintentar no debe crear un segundo producto.
+   */
+  private creadoId: string | null = null;
 
   form = this.fb.group({
     nombre:        ['', [Validators.required, Validators.minLength(2)]],
     categoria:     ['tote', Validators.required],
     precio:        [null as number | null, [Validators.required, Validators.min(1)]],
     stock_inicial: [0, [Validators.required, Validators.min(0)]],
-    personaje:     [null as string | null],
     activo:        [true],
     color:         [null as string | null],
     flag:          [null as string | null],
@@ -47,112 +123,155 @@ export class ProductoFormComponent implements OnInit {
   });
 
   async ngOnInit() {
+    this.form.get('precio')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(v => this.precio.set(v ?? null));
+    this.inv.getCategoriasUsadas().then(cats => this.categoriasUsadas.set(cats));
+    this.inv.getEtiquetasUsadas().then(tags => this.etiquetasUsadas.set(tags));
+
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.editId.set(id);
-      const p = await this.inv.getProducto(id);
-      if (p) {
-        this.form.patchValue({
-          nombre:        p.nombre,
-          categoria:     p.categoria,
-          precio:        p.precio,
-          stock_inicial: p.stock_inicial,
-          personaje:     p.personaje,
-          activo:        p.activo,
-          color:         p.color,
-          flag:          p.flag,
-          destacado:     p.destacado ?? false,
-          descripcion:   p.descripcion ?? '',
-        });
-        this.form.get('stock_inicial')?.disable();
-        this.coverPreview.set(p.cover_url);
-        this.galleryPreviews.set(p.fotos ?? []);
-        this.existingFotos = [...(p.fotos ?? [])];
-        this.material.set(p.material ?? []);
-      }
-    }
+    if (!id) return;
+    this.editId.set(id);
+    const p = await this.inv.getProducto(id);
+    if (!p) { this.errorMsg.set('No se encontró el producto.'); return; }
+
+    this.form.patchValue({
+      nombre:        p.nombre,
+      categoria:     p.categoria,
+      precio:        p.precio,
+      stock_inicial: p.stock_inicial,
+      activo:        p.activo,
+      color:         p.color,
+      flag:          p.flag,
+      destacado:     p.destacado ?? false,
+      descripcion:   p.descripcion ?? '',
+    });
+    // El stock actual lo mueven el POS, el restock y los ajustes; editar el
+    // inicial a mano desincronizaría el historial.
+    this.form.get('stock_inicial')?.disable();
+    this.coverGuardada = p.cover_url;
+    this.coverPreview.set(p.cover_url);
+    this.galeria.set({ existentes: p.fotos ?? [], nuevos: [] });
+    this.material.set(p.material ?? []);
+    this.materialTexto = (p.material ?? []).join(', ');
   }
 
+  ngOnDestroy() {
+    this.revocarTodos();
+  }
+
+  // ── Guardado ──────────────────────────────────────────────────────────────
+
   async guardar() {
+    // Una categoría nueva sin escribir es un formulario incompleto, no un
+    // producto sin categoría.
+    if (this.creandoCategoria() && !slugCategoria(this.categoriaNueva)) {
+      this.errorMsg.set('Escribe el nombre de la categoría nueva.');
+      return;
+    }
+    if (this.creandoEtiqueta() && !this.etiquetaNueva.trim()) {
+      this.errorMsg.set('Escribe el texto de la etiqueta nueva.');
+      return;
+    }
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.guardando.set(true);
     this.errorMsg.set(null);
     try {
       const v = this.form.getRawValue();
-      const tempId = this.editId() ?? `tmp_${Date.now()}`;
+      const categoria = this.creandoCategoria()
+        ? slugCategoria(this.categoriaNueva)
+        : v.categoria!;
+      const datos = {
+        nombre:      v.nombre!,
+        categoria,
+        precio:      v.precio!,
+        activo:      v.activo ?? true,
+        material:    this.material(),
+        color:       v.color ?? null,
+        flag:        this.creandoEtiqueta()
+          ? this.etiquetaNueva.trim().slice(0, MAX_LARGO_ETIQUETA)
+          : (v.flag ?? null),
+        destacado:   v.destacado ?? false,
+        descripcion: v.descripcion || null,
+      };
 
-      // Cover upload — keep existing Supabase URL if no new file selected
-      let coverUrl: string | null = this.coverPreview()?.startsWith('blob:')
-        ? null
-        : (this.coverPreview() ?? null);
-      if (this.coverFile) {
-        const ext = this.coverFile.name.split('.').pop() ?? 'jpg';
-        const { url, error: uploadErr } = await this.inv.uploadProductoImage(tempId, this.coverFile, `cover.${ext}`);
-        if (uploadErr) { this.errorMsg.set(`Error al subir portada: ${uploadErr}`); return; }
-        if (url) coverUrl = url;
-      }
+      // Primero el registro, después las imágenes: sólo con el id definitivo se
+      // pueden subir a la carpeta del producto en vez de a una temporal.
+      const id = await this.asegurarId(datos, v.stock_inicial ?? 0);
+      if (!id) return;
 
-      let fotosUrls: string[] = [...this.existingFotos];
-      for (let i = 0; i < this.galleryFiles.length; i++) {
-        const file = this.galleryFiles[i];
-        const ext = file.name.split('.').pop() ?? 'jpg';
-        const { url, error: uploadErr } = await this.inv.uploadProductoImage(tempId, file, `foto_${i}.${ext}`);
-        if (uploadErr) { this.errorMsg.set(`Error al subir foto ${i + 1}: ${uploadErr}`); return; }
-        if (url) fotosUrls.push(url);
-      }
+      const imagenes = await this.subirImagenes(id);
+      if (!imagenes) return;
 
-      let result: { error: string | null };
+      const { error } = await this.inv.updateProducto(id, { ...datos, ...imagenes });
+      if (error) { this.errorMsg.set(error); return; }
 
-      if (this.isEdit()) {
-        const editPayload: Partial<Omit<ProductoEvento, 'id' | 'creado_en' | 'stock_actual'>> = {
-          nombre:      v.nombre!,
-          categoria:   v.categoria!,
-          personaje:   v.personaje ?? null,
-          precio:      v.precio!,
-          activo:      v.activo ?? true,
-          cover_url:   coverUrl,
-          fotos:       fotosUrls,
-          material:    this.material(),
-          color:       v.color ?? null,
-          flag:        v.flag ?? null,
-          destacado:   v.destacado ?? false,
-          descripcion: v.descripcion || null,
-        };
-        result = await this.inv.updateProducto(this.editId()!, editPayload);
-      } else {
-        let eventoId = 'Venta-regular';
-        try {
-          const activo = await this.eventos.getEventoActivo();
-          eventoId = activo?.id ?? 'Venta-regular';
-        } catch {
-          eventoId = 'Venta-regular';
-        }
-        const createPayload: Omit<ProductoEvento, 'id' | 'creado_en' | 'stock_actual'> = {
-          evento_id:     eventoId,
-          nombre:        v.nombre!,
-          categoria:     v.categoria!,
-          personaje:     v.personaje ?? null,
-          precio:        v.precio!,
-          stock_inicial: v.stock_inicial!,
-          activo:        v.activo ?? true,
-          cover_url:     coverUrl,
-          fotos:         fotosUrls,
-          material:      this.material(),
-          color:         v.color ?? null,
-          flag:          v.flag ?? null,
-          destacado:     v.destacado ?? false,
-          descripcion:   v.descripcion || null,
-        };
-        result = await this.inv.createProducto(createPayload);
-      }
-
-      if (result.error) { this.errorMsg.set(result.error); return; }
       this.router.navigate(['/admin/productos']);
     } catch (e: unknown) {
       this.errorMsg.set(e instanceof Error ? e.message : 'Error inesperado');
     } finally {
       this.guardando.set(false);
     }
+  }
+
+  /** Devuelve el id a usar, creando el producto si aún no existe. */
+  private async asegurarId(
+    datos: Partial<ProductoEvento>,
+    stockInicial: number,
+  ): Promise<string | null> {
+    const existente = this.editId() ?? this.creadoId;
+    if (existente) return existente;
+
+    let eventoId = 'Venta-regular';
+    try {
+      eventoId = (await this.eventos.getEventoActivo())?.id ?? 'Venta-regular';
+    } catch { /* sin evento activo: catálogo regular */ }
+
+    const { id, error } = await this.inv.createProducto({
+      ...(datos as Omit<ProductoEvento, 'id' | 'creado_en' | 'stock_actual'>),
+      evento_id:     eventoId,
+      stock_inicial: stockInicial,
+      cover_url:     null,
+      fotos:         [],
+    });
+    if (error || !id) { this.errorMsg.set(error ?? 'No se pudo crear el producto.'); return null; }
+    this.creadoId = id;
+    return id;
+  }
+
+  /** Sube portada y galería pendientes. Devuelve null si algo falló. */
+  private async subirImagenes(
+    id: string,
+  ): Promise<{ cover_url: string | null; fotos: string[] } | null> {
+    let cover = this.coverGuardada;
+    if (this.coverFile) {
+      const ext = this.coverFile.name.split('.').pop() ?? 'jpg';
+      const { url, error } = await this.inv.uploadProductoImage(id, this.coverFile, `cover.${ext}`);
+      if (error) { this.errorMsg.set(`Error al subir portada: ${error}`); return null; }
+      cover = url;
+      // Subida buena: no repetirla si el guardado se reintenta. La vista previa
+      // pasa a apuntar al archivo real para poder soltar el object URL.
+      this.coverGuardada = url;
+      this.coverFile = null;
+      const blob = this.coverPreview();
+      this.coverPreview.set(url);
+      if (blob?.startsWith('blob:')) URL.revokeObjectURL(blob);
+    }
+
+    const g = this.galeria();
+    const fotos = [...g.existentes];
+    for (const file of g.nuevos) {
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const nombre = `foto_${Date.now()}_${fotos.length}.${ext}`;
+      const { url, error } = await this.inv.uploadProductoImage(id, file, nombre);
+      if (error) { this.errorMsg.set(`Error al subir "${file.name}": ${error}`); return null; }
+      if (url) fotos.push(url);
+    }
+    // Las nuevas ya son existentes; un reintento no las vuelve a subir.
+    this.galeria.set({ existentes: fotos, nuevos: [] });
+    this.revocarGaleria();
+
+    return { cover_url: cover, fotos };
   }
 
   cancelar() { this.router.navigate(['/admin/productos']); }
@@ -162,39 +281,129 @@ export class ProductoFormComponent implements OnInit {
     return c?.invalid && c?.touched;
   }
 
+  // ── Imágenes ──────────────────────────────────────────────────────────────
+
   onCoverChange(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';               // permite volver a elegir el mismo archivo
     if (!file) return;
-    const prev = this.coverPreview();
-    if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
+
+    const invalida = validarImagen(file);
+    if (invalida) { this.avisos.set([invalida]); return; }
+
+    const previo = this.coverPreview();
+    if (previo?.startsWith('blob:')) URL.revokeObjectURL(previo);
+    this.avisos.set([]);
     this.coverFile = file;
     this.coverPreview.set(URL.createObjectURL(file));
   }
 
   onGalleryChange(event: Event) {
-    const files = Array.from((event.target as HTMLInputElement).files ?? []);
-    this.galleryFiles = files;
-    this.galleryPreviews.set([
-      ...this.existingFotos,
-      ...files.map(f => URL.createObjectURL(f)),
-    ]);
+    const input = event.target as HTMLInputElement;
+    const seleccion = Array.from(input.files ?? []);
+    input.value = '';
+    if (!seleccion.length) return;
+
+    const { estado, rechazados } = agregarAGaleria(this.galeria(), seleccion);
+    for (const file of estado.nuevos) {
+      if (!this.blobs.has(file)) this.blobs.set(file, URL.createObjectURL(file));
+    }
+    this.galeria.set(estado);
+    this.avisos.set(rechazados);
   }
 
   removeGalleryItem(index: number) {
-    if (index < this.existingFotos.length) {
-      this.existingFotos = this.existingFotos.filter((_, i) => i !== index);
-    } else {
-      const fileIndex = index - this.existingFotos.length;
-      this.galleryFiles = this.galleryFiles.filter((_, i) => i !== fileIndex);
-    }
-    this.galleryPreviews.update(list => list.filter((_, i) => i !== index));
+    const { estado, archivoQuitado } = quitarDeGaleria(this.galeria(), index);
+    if (archivoQuitado) this.revocar(archivoQuitado);
+    this.galeria.set(estado);
   }
 
-  toggleMaterial(mat: string, checked: boolean) {
-    const current = this.material();
+  private revocar(file: File) {
+    const url = this.blobs.get(file);
+    if (url) { URL.revokeObjectURL(url); this.blobs.delete(file); }
+  }
+
+  private revocarGaleria() {
+    for (const url of this.blobs.values()) URL.revokeObjectURL(url);
+    this.blobs.clear();
+  }
+
+  private revocarTodos() {
+    this.revocarGaleria();
+    const cover = this.coverPreview();
+    if (cover?.startsWith('blob:')) URL.revokeObjectURL(cover);
+  }
+
+  // ── Categoría ─────────────────────────────────────────────────────────────
+  /** El `<select>` reserva un valor para "escribir una nueva". */
+  readonly VALOR_NUEVA = '__nueva__';
+
+  onCategoriaChange(valor: string) {
+    if (valor === this.VALOR_NUEVA) {
+      this.creandoCategoria.set(true);
+      return;
+    }
+    this.creandoCategoria.set(false);
+    this.categoriaNueva = '';
+    this.form.get('categoria')!.setValue(valor);
+  }
+
+  cancelarCategoriaNueva() {
+    this.creandoCategoria.set(false);
+    this.categoriaNueva = '';
+    this.form.get('categoria')!.setValue(this.categorias()[0]?.id ?? 'tote');
+  }
+
+  // ── Etiqueta especial ─────────────────────────────────────────────────────
+  onEtiquetaChange(valor: string) {
+    if (valor === this.VALOR_NUEVA) {
+      this.creandoEtiqueta.set(true);
+      return;
+    }
+    this.creandoEtiqueta.set(false);
+    this.etiquetaNueva = '';
+    this.form.get('flag')!.setValue(valor || null);
+  }
+
+  cancelarEtiquetaNueva() {
+    this.creandoEtiqueta.set(false);
+    this.etiquetaNueva = '';
+    this.form.get('flag')!.setValue(null);
+  }
+
+  /** Vista previa del id con el que se va a guardar la categoría escrita. */
+  get slugNuevaCategoria(): string {
+    return slugCategoria(this.categoriaNueva);
+  }
+
+  // ── Materiales ────────────────────────────────────────────────────────────
+  /**
+   * Antes era una lista fija de cinco casillas, así que un material que no
+   * estuviera en ella no se podía registrar. Ahora es texto separado por comas.
+   */
+  onMaterialInput(valor: string) {
+    this.materialTexto = valor;
     this.material.set(
-      checked ? [...current, mat] : current.filter(m => m !== mat)
+      valor.split(',').map(m => m.trim()).filter(Boolean)
     );
+  }
+
+  // ── Comisión de Bold ──────────────────────────────────────────────────────
+  onComisionPct(valor: string) {
+    const n = Number(valor);
+    if (!Number.isFinite(n) || n < 0) return;
+    this.comisionPct.set(n);
+    guardarComision(n, this.comisionIva());
+  }
+
+  onComisionIva(conIva: boolean) {
+    this.comisionIva.set(conIva);
+    guardarComision(this.comisionPct(), conIva);
+  }
+
+  fmt(n: number): string {
+    return '$' + Math.round(n).toLocaleString('es-CO');
   }
 
   readonly COLORES = [
@@ -209,11 +418,4 @@ export class ProductoFormComponent implements OnInit {
     { id: 'cream', label: 'Cream'         },
   ];
 
-  readonly MATERIALES = [
-    { id: 'algodon', label: 'Algodón orgánico' },
-    { id: 'lona',    label: 'Lona reciclada'   },
-    { id: 'papel',   label: 'Papel reciclado'  },
-    { id: 'vinilo',  label: 'Vinilo mate'       },
-    { id: 'esmalte', label: 'Esmalte / metal'  },
-  ];
 }

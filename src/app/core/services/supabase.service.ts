@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { createClient, SupabaseClient, Session } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
+import { hayFactorPendiente } from './mfa-pendiente';
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
@@ -14,6 +15,14 @@ export class SupabaseService {
   /** Si el usuario de la sesión actual está en admin_users. */
   readonly isAdmin = signal(false);
 
+  /**
+   * Hay sesión, hay un factor TOTP verificado y todavía no se ha metido el
+   * código: la sesión está en aal1 pero puede subir a aal2. is_admin() es
+   * false en ese hueco, así que el guard necesita distinguirlo de "este
+   * usuario no es admin" para dejar pintar la pantalla del segundo factor.
+   */
+  readonly mfaPendiente = signal(false);
+
   // getSession() es asíncrono: al recargar la página el guard corre antes de que
   // la sesión se restaure desde storage. Sin esperar esto, un F5 en /admin/pedidos
   // se lee como "no hay sesión" y rebota al login.
@@ -22,12 +31,12 @@ export class SupabaseService {
   constructor() {
     this.ready = this.client.auth.getSession().then(async ({ data }) => {
       this.session.set(data.session);
-      await this.refreshIsAdmin();
+      await this.refreshEstadoAdmin();
     });
 
     this.client.auth.onAuthStateChange((_, session) => {
       this.session.set(session);
-      void this.refreshIsAdmin();
+      void this.refreshEstadoAdmin();
     });
   }
 
@@ -36,10 +45,29 @@ export class SupabaseService {
 
   get db(): SupabaseClient { return this.client; }
 
-  private async refreshIsAdmin(): Promise<void> {
-    if (!this.session()) { this.isAdmin.set(false); return; }
-    const { data, error } = await this.client.rpc('is_admin');
-    this.isAdmin.set(!error && data === true);
+  /** Recalcula isAdmin y mfaPendiente. Los dos se leen desde el guard. */
+  private async refreshEstadoAdmin(): Promise<void> {
+    if (!this.session()) {
+      this.isAdmin.set(false);
+      this.mfaPendiente.set(false);
+      return;
+    }
+
+    // Nada de aquí puede lanzar: esta promesa es la que espera el guard en
+    // whenReady(), y si se rejecta /admin queda inaccesible para siempre en vez
+    // de limitarse a pedir el login otra vez.
+    try {
+      const { data, error } = await this.client.rpc('is_admin');
+      this.isAdmin.set(!error && data === true);
+    } catch {
+      this.isAdmin.set(false);
+    }
+
+    try {
+      this.mfaPendiente.set(await hayFactorPendiente(this.client.auth.mfa));
+    } catch {
+      this.mfaPendiente.set(false);
+    }
   }
 
   signInWithGoogle() {
@@ -93,7 +121,7 @@ export class SupabaseService {
       code,
     });
     // Al verificar, la sesión sube a aal2: reevaluamos si es admin.
-    if (!res.error) await this.refreshIsAdmin();
+    if (!res.error) await this.refreshEstadoAdmin();
     return res;
   }
 

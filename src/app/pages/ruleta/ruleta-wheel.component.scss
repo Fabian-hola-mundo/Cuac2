@@ -1,0 +1,246 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.rw {
+  width: 100%;
+}
+
+.rw-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  // Las tipografías del disco y del botón se miden contra el propio escenario,
+  // así la ruleta se ve igual de proporcionada a 280px que a 620px.
+  container-type: inline-size;
+}
+
+.rw-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ── Disco ─────────────────────────────────────────────────────────────────── */
+
+.rw-rueda {
+  transform-box: view-box;
+  transform-origin: 210px 210px;
+  will-change: transform;
+}
+
+.rw-etiqueta {
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  paint-order: stroke fill;
+}
+
+.rw-etiqueta-desc {
+  font-family: var(--sans);
+  font-weight: 600;
+  opacity: 0.72;
+  letter-spacing: -0.005em;
+}
+
+.rw-vacia {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+.rw-remache { pointer-events: none; }
+
+/* ── Bombillas del aro ─────────────────────────────────────────────────────── */
+
+.rw-luz {
+  fill: var(--rw-acento);
+  animation: rw-luz 1.8s ease-in-out infinite;
+}
+
+@keyframes rw-luz {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1;    }
+}
+
+/* Durante el giro las luces corren más rápido: refuerza la sensación de premio. */
+.rw--girando .rw-luz { animation-duration: 0.5s; }
+
+/* ── Puntero ───────────────────────────────────────────────────────────────── */
+
+.rw-puntero {
+  transform-box: view-box;
+  transform-origin: 210px 18px;
+}
+
+.rw-puntero.is-hit {
+  animation: rw-golpe 0.14s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes rw-golpe {
+  0%   { transform: rotate(0deg);   }
+  35%  { transform: rotate(-11deg); }
+  100% { transform: rotate(0deg);   }
+}
+
+/* ── Botón central ─────────────────────────────────────────────────────────── */
+
+.rw-boton {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+
+  width: 21.5%;
+  aspect-ratio: 1 / 1;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0 6%;
+
+  display: grid;
+  place-items: center;
+  text-align: center;
+
+  background: var(--rw-hub);
+  color: var(--rw-hub-texto);
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: clamp(9px, 3.3cqw, 17px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--rw-hub-texto) 12%, transparent),
+    0 8px 20px rgba(0, 0, 0, 0.28),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.10);
+
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.16s ease,
+              filter 0.16s ease;
+}
+
+.rw-boton-txt {
+  display: block;
+  max-width: 100%;
+  // `break-word` y no `anywhere`: este último cuenta para el tamaño mínimo
+  // intrínseco y hacía que el botón partiera «GIRAR» letra a letra.
+  overflow-wrap: break-word;
+}
+
+.rw-boton:not(:disabled):hover {
+  transform: translate(-50%, -50%) scale(1.06);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--rw-acento) 30%, transparent),
+    0 12px 26px rgba(0, 0, 0, 0.34),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.10);
+}
+
+.rw-boton:not(:disabled):active {
+  transform: translate(-50%, -50%) scale(0.97);
+}
+
+.rw-boton:focus-visible {
+  outline: 3px solid var(--rw-acento);
+  outline-offset: 4px;
+}
+
+.rw-boton:disabled {
+  cursor: default;
+  filter: saturate(0.7);
+  opacity: 0.92;
+}
+
+/* Latido en reposo: sin él la tapa central no se lee como algo pulsable. */
+.rw-boton:not(:disabled)::after {
+  content: '';
+  position: absolute;
+  inset: -6%;
+  border-radius: 50%;
+  border: 2px solid var(--rw-acento);
+  opacity: 0;
+  animation: rw-latido 2.6s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes rw-latido {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  70%  { transform: scale(1.35); opacity: 0;    }
+  100% { transform: scale(1.35); opacity: 0;    }
+}
+
+.rw--girando .rw-boton::after { animation: none; }
+
+/* ── Puntos de «girando» ───────────────────────────────────────────────────── */
+
+.rw-puntos {
+  display: flex;
+  align-items: center;
+  gap: 0.34em;
+  font-size: clamp(9px, 3.3cqw, 17px);
+
+  i {
+    width: 0.44em;
+    height: 0.44em;
+    border-radius: 50%;
+    background: currentColor;
+    animation: rw-punto 1s ease-in-out infinite;
+
+    &:nth-child(2) { animation-delay: 0.14s; }
+    &:nth-child(3) { animation-delay: 0.28s; }
+  }
+}
+
+@keyframes rw-punto {
+  0%, 100% { transform: translateY(0);        opacity: 0.4; }
+  50%      { transform: translateY(-0.34em);  opacity: 1;   }
+}
+
+/* ── Pie de estado ─────────────────────────────────────────────────────────── */
+
+.rw-estado {
+  // Altura reservada aunque esté vacío: si apareciera y desapareciera, la
+  // rueda daría un salto al empezar y al terminar cada giro.
+  min-height: 1.5em;
+  margin: var(--s-3) 0 0;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rw-acento);
+}
+
+/* ── Confeti ───────────────────────────────────────────────────────────────── */
+
+.rw-confeti {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  // Entre el fondo del modal (190) y su tarjeta (210): el confeti cae por
+  // delante de la penumbra pero por detrás del texto del premio, que tiene
+  // que quedar legible.
+  z-index: 200;
+  pointer-events: none;
+  display: none;
+
+  &.is-on { display: block; }
+}
+
+/* ── Accesibilidad ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-luz,
+  .rw-boton::after,
+  .rw-puntero.is-hit {
+    animation: none !important;
+  }
+  .rw-boton { transition: none; }
+}

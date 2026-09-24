@@ -12,6 +12,145 @@
   margin-top: 4px;
 }
 
+// ── Categoría nueva ──────────────────────────────────────────────────────────
+.cat-nueva {
+  display: flex; gap: 8px; align-items: center;
+
+  .input { flex: 1; }
+}
+
+.btn-mini {
+  flex-shrink: 0; padding: 7px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--carbon-12); background: transparent; color: var(--carbon-70);
+
+  &:hover { background: var(--cream); color: var(--carbon); }
+}
+
+code {
+  font-family: var(--mono); font-size: 11.5px;
+  background: var(--cream); padding: 1px 5px; border-radius: 4px;
+}
+
+// ── Desglose de la comisión de Bold ──────────────────────────────────────────
+// Todas las clases van con prefijo `bd-`: la hoja global del admin define
+// nombres genéricos como `.main { height: 100vh }`, y un `.bd-row.main` heredaba
+// esa altura y estiraba la fila entera.
+.bd-panel {
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.bd-chips {
+  display: flex; gap: 10px; align-items: stretch;
+
+  // Las dos cifras se leen juntas o no se leen: van en la misma línea y con el
+  // mismo ancho, para poder compararlas de un vistazo.
+  > * { flex: 1 1 0; min-width: 0; }
+}
+
+.bd-chip {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 9px 13px; border-radius: 10px;
+  border: 1px solid var(--carbon-08); background: var(--cream);
+
+  &.is-ganancia {
+    border-color: var(--carbon-12); background: var(--paper);
+  }
+
+  .bd-k {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--carbon-50);
+  }
+
+  .bd-v {
+    // Las dos cifras se comparan de un vistazo, así que se anclan abajo: la
+    // etiqueta de la izquierda es más alta (lleva el botón de editar) y sin
+    // esto los dos números quedaban a distinta altura.
+    margin-top: auto;
+    font-size: 17px; font-weight: 700; line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+
+    &.is-neg { color: var(--terra); }
+  }
+
+  &.is-ganancia .bd-v { color: var(--selva); }
+}
+
+.bd-edit {
+  border: 1px solid var(--carbon-12); background: transparent;
+  padding: 1px 7px; border-radius: var(--r-pill, 999px); cursor: pointer;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: none; color: var(--carbon-70); white-space: nowrap;
+
+  &:hover { background: var(--paper); color: var(--carbon); }
+  &:focus-visible { outline: 2px solid var(--carbon); outline-offset: 1px; }
+}
+
+.bd-editor {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px;
+  padding: 9px 13px; border-radius: 10px;
+  border: 1px dashed var(--carbon-12); background: var(--paper);
+
+  .bd-campo {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12.5px; color: var(--carbon-70); white-space: nowrap;
+  }
+
+  // Clase propia y no `.input`: la global fija width:100% y el campo se comía
+  // la fila entera.
+  .bd-pct {
+    width: 74px; padding: 5px 8px; font-size: 13px;
+    background: var(--cream); border: 1px solid var(--carbon-12);
+    border-radius: 7px; color: var(--carbon); outline: none;
+    font-variant-numeric: tabular-nums;
+
+    &:focus { border-color: var(--carbon); background: #fff; }
+  }
+
+  .bd-nota {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+    color: var(--carbon-30); margin-left: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  .bd-chips { flex-direction: column; }
+  .bd-editor .bd-nota { margin-left: 0; }
+}
+
+// ── Interruptores de visibilidad ─────────────────────────────────────────────
+// Van en la misma línea, pero cada uno con su caja para que se vea a cuál
+// pertenece cada control: sin ella, con el `justify-content: space-between` de
+// .field-toggle-row, el interruptor de la izquierda queda flotando a media fila
+// y parece estar más cerca de la etiqueta de la derecha que de la suya.
+.toggles-fila {
+  align-items: stretch;
+
+  .field-toggle-row {
+    padding: 10px 13px; border-radius: 10px;
+    border: 1px solid var(--carbon-08); background: var(--cream);
+  }
+
+  // Dos líneas cabrían mal en media columna: la etiqueta larga manda el alto.
+  .ftr-label { line-height: 1.35; }
+}
+
+@media (max-width: 620px) {
+  .toggles-fila { grid-template-columns: 1fr; }
+}
+
+// ── Materiales escritos a mano ───────────────────────────────────────────────
+.mat-chips {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px;
+}
+
+.mat-chip {
+  padding: 4px 10px; border-radius: var(--r-pill, 999px);
+  background: var(--cream); border: 1px solid var(--carbon-08);
+  font-size: 12px; line-height: 1.45; color: var(--carbon-70); white-space: nowrap;
+}
+
 .check-opt {
   display: flex;
   align-items: center;
@@ -33,6 +172,21 @@
   border-radius: 8px; height: 160px;
 }
 
+.upload-avisos {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--terra) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--terra) 24%, transparent);
+  color: var(--terra);
+  font-size: 12.5px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 label.upload-btn {
   display: inline-flex;
   align-items: center;
@@ -49,6 +203,12 @@ label.upload-btn {
   cursor: pointer;
   transition: background 0.15s;
   &:hover { background: var(--cream-2); }
+
+  &.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 }
 
 .gallery-grid {

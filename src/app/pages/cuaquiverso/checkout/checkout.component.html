@@ -2,13 +2,13 @@
   <div class="empty-cart">
     <h2>Tu carrito está vacío</h2>
     <p>Agrega productos antes de continuar con la compra.</p>
-    <a class="btn-back" href="/cuaquiverso/tienda">Ir a la tienda →</a>
+    <a class="btn-back" routerLink="/cuaquiverso/tienda">Ir a la tienda →</a>
   </div>
 } @else {
 
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="/cuaquiverso">Cuaqui<em>verso</em></a>
+    <a class="brand" routerLink="/cuaquiverso">Cuaqui<em>verso</em></a>
     <div class="progress-steps">
       <div class="ps-step is-active">
         <div class="ps-num">1</div>
@@ -37,26 +37,38 @@
         <div class="form-grid">
           <div class="field" [class.has-error]="touched('nombre')">
             <label for="nombre">Nombre</label>
-            <input id="nombre" type="text" formControlName="nombre" placeholder="Tu nombre" />
-            @if (touched('nombre')) { <span class="err-msg">Requerido</span> }
+            <input id="nombre" type="text" formControlName="nombre" placeholder="Tu nombre"
+                   autocomplete="given-name"
+                   [attr.aria-invalid]="touched('nombre') ? 'true' : null"
+                   [attr.aria-describedby]="touched('nombre') ? 'nombre-err' : null" />
+            @if (touched('nombre')) { <span class="err-msg" id="nombre-err" role="alert">Requerido</span> }
           </div>
           <div class="field" [class.has-error]="touched('apellido')">
             <label for="apellido">Apellido</label>
-            <input id="apellido" type="text" formControlName="apellido" placeholder="Tu apellido" />
-            @if (touched('apellido')) { <span class="err-msg">Requerido</span> }
+            <input id="apellido" type="text" formControlName="apellido" placeholder="Tu apellido"
+                   autocomplete="family-name"
+                   [attr.aria-invalid]="touched('apellido') ? 'true' : null"
+                   [attr.aria-describedby]="touched('apellido') ? 'apellido-err' : null" />
+            @if (touched('apellido')) { <span class="err-msg" id="apellido-err" role="alert">Requerido</span> }
           </div>
           <div class="field" [class.has-error]="touched('email')">
             <label for="email">Correo electrónico</label>
-            <input id="email" type="email" formControlName="email" placeholder="tu@correo.co" />
-            @if (touched('email')) { <span class="err-msg">Correo inválido</span> }
+            <input id="email" type="email" formControlName="email" placeholder="tu@correo.co"
+                   autocomplete="email" inputmode="email" spellcheck="false"
+                   [attr.aria-invalid]="touched('email') ? 'true' : null"
+                   [attr.aria-describedby]="touched('email') ? 'email-err' : null" />
+            @if (touched('email')) { <span class="err-msg" id="email-err" role="alert">Correo inválido</span> }
           </div>
           <div class="field" [class.has-error]="touched('celular')">
             <label for="celular">Celular</label>
-            <input id="celular" type="tel" formControlName="celular" placeholder="+57 300 000 0000" />
-            @if (touched('celular')) { <span class="err-msg">Mínimo 10 dígitos</span> }
+            <input id="celular" type="tel" formControlName="celular" placeholder="+57 300 000 0000"
+                   autocomplete="tel" inputmode="tel"
+                   [attr.aria-invalid]="touched('celular') ? 'true' : null"
+                   [attr.aria-describedby]="touched('celular') ? 'celular-err' : null" />
+            @if (touched('celular')) { <span class="err-msg" id="celular-err" role="alert">Mínimo 10 dígitos</span> }
           </div>
         </div>
-        <div class="form-grid-3" style="margin-top:14px">
+        <div class="form-grid-doc" style="margin-top:14px">
           <div class="field" [class.has-error]="touched('tipoDoc')">
             <label for="tipoDoc">Tipo de doc.</label>
             <select id="tipoDoc" formControlName="tipoDoc">
@@ -66,10 +78,13 @@
               <option value="PA">Pasaporte</option>
             </select>
           </div>
-          <div class="field form-full" [class.has-error]="touched('numDoc')">
+          <div class="field" [class.has-error]="touched('numDoc')">
             <label for="numDoc">Número de documento</label>
-            <input id="numDoc" type="text" formControlName="numDoc" placeholder="1234567890" />
-            @if (touched('numDoc')) { <span class="err-msg">Requerido</span> }
+            <input id="numDoc" type="text" formControlName="numDoc" placeholder="1234567890"
+                   inputmode="numeric" autocomplete="off"
+                   [attr.aria-invalid]="touched('numDoc') ? 'true' : null"
+                   [attr.aria-describedby]="touched('numDoc') ? 'numDoc-err' : null" />
+            @if (touched('numDoc')) { <span class="err-msg" id="numDoc-err" role="alert">Requerido</span> }
           </div>
         </div>
       </div>
@@ -79,7 +94,9 @@
         <div class="form-grid">
           <div class="field" [class.has-error]="touched('departamento')">
             <label for="departamento">Departamento</label>
-            <select id="departamento" formControlName="departamento">
+            <select id="departamento" formControlName="departamento" autocomplete="address-level1"
+                    [attr.aria-invalid]="touched('departamento') ? 'true' : null"
+                    [attr.aria-describedby]="touched('departamento') ? 'departamento-err' : null">
               <option value="">Selecciona...</option>
               <option>Bogotá D.C.</option>
               <option>Antioquia</option>
@@ -97,41 +114,46 @@
               <option>Meta</option>
               <option>Otro</option>
             </select>
-            @if (touched('departamento')) { <span class="err-msg">Requerido</span> }
+            @if (touched('departamento')) { <span class="err-msg" id="departamento-err" role="alert">Requerido</span> }
           </div>
           <div class="field" [class.has-error]="touched('ciudad')">
             <label for="ciudad">Ciudad / Municipio</label>
             <input id="ciudad" type="text" formControlName="ciudad"
-                   placeholder="Bogotá, Medellín..." (input)="onCiudadChange()" />
-            @if (touched('ciudad')) { <span class="err-msg">Requerido</span> }
+                   placeholder="Bogotá, Medellín..." autocomplete="address-level2"
+                   [attr.aria-invalid]="touched('ciudad') ? 'true' : null"
+                   [attr.aria-describedby]="touched('ciudad') ? 'ciudad-err' : null" />
+            @if (touched('ciudad')) { <span class="err-msg" id="ciudad-err" role="alert">Requerido</span> }
           </div>
           <div class="field form-full" [class.has-error]="touched('direccion')">
             <label for="direccion">Dirección</label>
             <input id="direccion" type="text" formControlName="direccion"
-                   placeholder="Calle 123 #45-67, Apto 8" />
-            @if (touched('direccion')) { <span class="err-msg">Requerido</span> }
+                   placeholder="Calle 123 #45-67, Apto 8" autocomplete="address-line1"
+                   [attr.aria-invalid]="touched('direccion') ? 'true' : null"
+                   [attr.aria-describedby]="touched('direccion') ? 'direccion-err' : null" />
+            @if (touched('direccion')) { <span class="err-msg" id="direccion-err" role="alert">Requerido</span> }
           </div>
           <div class="field">
             <label for="barrio">Barrio</label>
             <input id="barrio" type="text" formControlName="barrio"
-                   placeholder="Chapinero, El Poblado..." />
+                   placeholder="Chapinero, El Poblado..." autocomplete="address-line2" />
           </div>
           <div class="field">
-            <label for="codigoPostal">Código postal <span style="font-weight:400;text-transform:none">(opcional)</span></label>
-            <input id="codigoPostal" type="text" formControlName="codigoPostal" placeholder="110111" />
+            <label for="codigoPostal">Código postal <span class="lbl-opt">(opcional)</span></label>
+            <input id="codigoPostal" type="text" formControlName="codigoPostal" placeholder="110111"
+                   autocomplete="postal-code" inputmode="numeric" />
           </div>
         </div>
 
         <div class="shipping-estimator">
           <span class="est-label">Costo estimado de envío</span>
-          <div class="est-result" style="background:#f5f7fa;color:rgba(21,31,40,.6)">
+          <div class="est-result" [class.is-free]="envioGratis()" aria-live="polite">
             {{ estimadoTexto() }}
           </div>
         </div>
 
-        @if (cart.total() >= ENVIO_GRATIS_DESDE) {
+        @if (envioGratis()) {
           <div class="ship-banner ship-free">
-            <span>✓</span>
+            <span aria-hidden="true">✓</span>
             <div>
               <strong>Envío gratis</strong>
               Tu pedido supera ${{ ENVIO_GRATIS_DESDE.toLocaleString('es-CO') }}.
@@ -140,7 +162,7 @@
           </div>
         } @else {
           <div class="ship-banner ship-cod">
-            <span>📦</span>
+            <span aria-hidden="true">📦</span>
             <div>
               <strong>Envío contra entrega</strong>
               El transportista cobrará el flete al momento de la entrega.
@@ -152,7 +174,7 @@
 
       <div class="form-card" style="padding: 18px 24px">
         <div class="field">
-          <label for="nota">Nota para el pedido <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+          <label for="nota">Nota para el pedido <span class="lbl-opt">(opcional)</span></label>
           <input id="nota" type="text" formControlName="nota"
                  placeholder="Instrucciones especiales, referencias del edificio..." />
         </div>
@@ -163,12 +185,19 @@
 
   <div class="summary-col">
     <div class="summary-card">
-      <div class="sum-title">Tu pedido</div>
+      <div class="sum-head">
+        <div class="sum-title">Tu pedido</div>
+        <!-- Antes el resumen era de sólo lectura y la única forma de corregir
+             una cantidad era salir del checkout y perder los doce campos. -->
+        <button class="btn-editar" type="button" (click)="editarCarrito()">
+          Editar
+        </button>
+      </div>
 
       <div class="sum-items">
         @for (item of cart.items(); track item.id) {
           <div class="sum-item">
-            <div class="sum-swatch" [style.background]="colorHex(item.color)"></div>
+            <div class="sum-swatch" [style.background]="colorHex(item.color)" aria-hidden="true"></div>
             <div class="sum-info">
               <div class="sum-name">{{ item.name }}</div>
               <div class="sum-sub">{{ item.sub }} · ×{{ item.qty }}</div>
@@ -182,9 +211,10 @@
       <div class="discount-section">
         @if (!descuento.codigoAplicado()) {
           <button class="discount-toggle" type="button"
+                  [attr.aria-expanded]="descuentoExpanded()"
                   (click)="descuentoExpanded.update(v => !v)">
             ¿Tienes un código de descuento?
-            <svg class="chevron" [class.open]="descuentoExpanded()"
+            <svg class="chevron" [class.open]="descuentoExpanded()" aria-hidden="true"
                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round">
               <path d="m6 9 6 6 6-6"/>
@@ -192,30 +222,32 @@
           </button>
           @if (descuentoExpanded()) {
             <div class="discount-input-row">
-              <input type="text" class="discount-input"
+              <label class="sr-only" for="codigo-descuento">Código de descuento</label>
+              <input id="codigo-descuento" type="text" class="discount-input"
                      [value]="codigoInput"
                      (input)="onCodigoInput($event)"
-                     placeholder="CUAC20"
+                     placeholder="CUAC20" autocomplete="off" spellcheck="false"
                      [disabled]="descuento.validando()" />
               <button type="button" class="btn-apply"
                       [disabled]="!codigoInput.trim() || descuento.validando()"
                       (click)="aplicarCodigo()">
                 @if (descuento.validando()) {
-                  <span class="spin">⟳</span>
+                  <span class="spin" aria-hidden="true">⟳</span>
+                  <span class="sr-only">Validando código</span>
                 } @else {
                   Aplicar
                 }
               </button>
             </div>
             @if (descuento.error()) {
-              <div class="discount-error">{{ descuento.error() }}</div>
+              <div class="discount-error" role="alert">{{ descuento.error() }}</div>
             }
           }
         } @else {
           <div class="discount-applied-row">
             <span class="discount-pill">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                   stroke-linecap="round" style="width:12px;height:12px">
+                   stroke-linecap="round" style="width:12px;height:12px" aria-hidden="true">
                 <path d="M20 6 9 17l-5-5"/>
               </svg>
               {{ descuento.codigoAplicado() }}
@@ -237,28 +269,56 @@
       }
       <div class="sum-row">
         <span>Envío</span>
-        @if (cart.total() >= ENVIO_GRATIS_DESDE) {
+        @if (envioGratis()) {
           <span class="free-tag">GRATIS</span>
         } @else {
-          <span>Contra entrega</span>
+          <span>Se paga al recibir</span>
         }
       </div>
+      <!-- "Total" a secas prometía que ese número era todo lo que el comprador
+           iba a desembolsar, con el flete cobrándose aparte en la puerta. -->
       <div class="sum-row total">
-        <span>Total</span>
+        <span>Total a pagar ahora</span>
         <span>{{ cart.fmtPrice(totalFinal()) }}</span>
       </div>
+      @if (!envioGratis()) {
+        <p class="total-note">El flete no va incluido: lo cobra el transportista al entregarte.</p>
+      }
 
-      <button class="btn-bold" type="button" (click)="pagar()"
-              [disabled]="checkout.loading()">
-        @if (checkout.loading()) {
-          Procesando...
-        } @else {
-          Pagar con <span class="bold-badge">BOLD</span>
-        }
-      </button>
+      @if (pagoEnCurso()) {
+        <div class="pago-curso" role="status">
+          <strong>Abrimos la ventana de pago de Bold</strong>
+          <p>
+            Completa el pago ahí. Si cerraste la ventana sin pagar, puedes volver
+            a abrirla; tu pedido
+            @if (referenciaEnCurso()) { <span class="ref">{{ referenciaEnCurso() }}</span> }
+            queda reservado mientras tanto.
+          </p>
+          <button class="btn-bold" type="button" (click)="reabrirPago()"
+                  [disabled]="checkout.loading()">
+            @if (checkout.loading()) { Abriendo... } @else { Reabrir el pago }
+          </button>
+          <button class="btn-cancelar" type="button" (click)="cancelarIntento()">
+            Cancelar y editar mi pedido
+          </button>
+        </div>
+      } @else {
+        <button class="btn-bold" type="button" (click)="pagar()"
+                [disabled]="checkout.loading()">
+          @if (checkout.loading()) {
+            Procesando...
+          } @else {
+            Pagar con <span class="bold-badge">BOLD</span>
+          }
+        </button>
+      }
+
+      @if (resumenErrores()) {
+        <div class="error-banner" role="alert">{{ resumenErrores() }}</div>
+      }
 
       @if (checkout.error()) {
-        <div class="error-banner">{{ checkout.error() }}</div>
+        <div class="error-banner" role="alert">{{ checkout.error() }}</div>
       }
 
       <p class="btn-bold-note">
@@ -269,5 +329,7 @@
   </div>
 
 </div>
+
+<app-cart-modal />
 
 }

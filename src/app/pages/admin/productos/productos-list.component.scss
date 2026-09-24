@@ -1,1 +1,15 @@
 :host { display: block; }
+
+// Atajo desde el KPI de agotados al filtro correspondiente.
+.link-inline {
+  font: inherit;
+  color: var(--terra);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover { color: var(--carbon); }
+}

@@ -2,6 +2,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { CartItem } from './cart.service';
+import { mensajeDeErrorEdge } from './edge-error';
 
 @Injectable({ providedIn: 'root' })
 export class DescuentoService {
@@ -31,8 +32,13 @@ export class DescuentoService {
 
     this.validando.set(false);
 
+    // `validar-descuento` explica por qué el código no sirve; ese texto vive en
+    // el cuerpo de la respuesta, no en `error.message`.
     if (error) {
-      this.error.set('Error al validar el código. Intenta de nuevo.');
+      this.error.set(await mensajeDeErrorEdge(
+        error,
+        'No pudimos validar el código. Revisa tu conexión e intenta de nuevo.',
+      ));
       return;
     }
 

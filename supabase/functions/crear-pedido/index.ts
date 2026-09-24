@@ -1,6 +1,7 @@
 // supabase/functions/crear-pedido/index.ts
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.106.1'
 import { BOLD_CURRENCY, firmaIntegridad } from '../_shared/bold.ts'
+import { ENVIO_GRATIS_DESDE } from '../_shared/tienda.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -56,11 +57,11 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // ── Precios autoritativos desde el catálogo ───────────────────────────────
+    // ── Precios y stock autoritativos desde el catálogo ───────────────────────
     const ids = [...new Set(items.map((i: any) => i.id as string))]
     const { data: productos, error: prodError } = await supabase
       .from('productos_evento')
-      .select('id, nombre, categoria, precio, activo')
+      .select('id, nombre, categoria, precio, activo, stock_actual')
       .in('id', ids)
 
     if (prodError) {
@@ -79,8 +80,30 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Alguno de los productos ya no está disponible' }, 422)
     }
 
-    // Líneas con el precio, nombre y categoría que manda el servidor. `sub` y
-    // `color` son cosméticos (variante de color) y sí vienen del cliente.
+    // ── Stock: hasta ahora nadie miraba `stock_actual` en el camino web, así
+    // que se podía comprar un agotado tantas veces como se quisiera. Esto no es
+    // una reserva (el stock se descuenta al aprobarse el pago, en el webhook):
+    // es la comprobación que evita el caso obvio de vender lo que no existe.
+    const pedidoPorProducto = new Map<string, number>()
+    for (const i of items) {
+      pedidoPorProducto.set(i.id, (pedidoPorProducto.get(i.id) ?? 0) + (i.cantidad as number))
+    }
+    for (const [id, cantidad] of pedidoPorProducto) {
+      const p = catalogo.get(id)!
+      const disponible = Number.isInteger(p.stock_actual) ? p.stock_actual : 0
+      if (disponible <= 0) {
+        return json({ ok: false, error: `"${p.nombre}" se agotó mientras comprabas. Quítalo del carrito para continuar.` }, 409)
+      }
+      if (cantidad > disponible) {
+        return json({
+          ok: false,
+          error: `Sólo quedan ${disponible} de "${p.nombre}". Ajusta la cantidad para continuar.`,
+        }, 409)
+      }
+    }
+
+    // Líneas con el id, precio, nombre y categoría que manda el servidor. `sub`
+    // y `color` son cosméticos (variante de color) y sí vienen del cliente.
     const lineas = items.map((i: any) => {
       const p = catalogo.get(i.id)!
       return {
@@ -89,7 +112,9 @@ Deno.serve(async (req) => {
         categoria: p.categoria as string | null,
         precio:   p.precio as number,
         cantidad: i.cantidad as number,
-        sub:      typeof i.sub === 'string' ? i.sub : null,
+        // `sub` es NOT NULL en la tabla: un null aquí reventaba el INSERT de
+        // items después de haber insertado ya el pedido.
+        sub:      typeof i.sub === 'string' ? i.sub : '',
         color:    typeof i.color === 'string' ? i.color : null,
       }
     })
@@ -174,6 +199,10 @@ Deno.serve(async (req) => {
         total,
         codigo_descuento: codigoNormalizado,
         descuento_monto:  montoDescuento,
+        // La promesa de "envío gratis desde $150k" se anunciaba en tres
+        // pantallas y no quedaba en ningún lado del pedido: quien empacaba no
+        // podía saber que ese envío iba prepagado. Lo decide el servidor.
+        envio_gratis:     subtotal >= ENVIO_GRATIS_DESDE,
         estado:           'pendiente',
       })
       .select('id, confirmacion_token')
@@ -184,20 +213,25 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Error al crear el pedido' }, 500)
     }
 
-    // Insertar items con el precio y nombre autoritativos
+    // Insertar items con el id, precio y nombre autoritativos. `producto_id` es
+    // lo que permite descontar inventario al aprobarse el pago: sin él sólo
+    // quedaba el nombre, que es texto libre y cambia al editar el producto.
     const { error: itemsError } = await supabase
       .from('pedido_items')
       .insert(lineas.map(l => ({
-        pedido_id: pedido.id,
-        nombre:    l.nombre,
-        sub:       l.sub,
-        precio:    l.precio,
-        cantidad:  l.cantidad,
-        color:     l.color,
+        pedido_id:   pedido.id,
+        producto_id: l.id,
+        nombre:      l.nombre,
+        sub:         l.sub,
+        precio:      l.precio,
+        cantidad:    l.cantidad,
+        color:       l.color,
       })))
 
     if (itemsError) {
       console.error(itemsError)
+      // Sin este rollback quedaba un pedido 'pendiente' sin líneas en el admin.
+      await supabase.from('pedidos').delete().eq('id', pedido.id)
       return json({ ok: false, error: 'Error al guardar los productos' }, 500)
     }
 

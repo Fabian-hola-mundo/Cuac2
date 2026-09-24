@@ -88,6 +88,11 @@ export const routes: Routes = [
       import('./pages/portafolio/portafolio-detail.component').then(m => m.PortafolioDetailComponent),
   },
   {
+    path: 'ruleta',
+    loadComponent: () =>
+      import('./pages/ruleta/ruleta.component').then(m => m.RuletaComponent),
+  },
+  {
     path: 'terminos',
     loadComponent: () =>
       import('./pages/legal/terminos.component').then(m => m.TerminosComponent),
@@ -234,6 +239,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/admin/personajes/personaje-form.component').then(
             m => m.PersonajeFormComponent,
+          ),
+      },
+      // Ruleta
+      {
+        path: 'ruleta',
+        loadComponent: () =>
+          import('./pages/admin/ruleta/admin-ruleta.component').then(
+            m => m.AdminRuletaComponent,
           ),
       },
       // Ajustes

@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { Router }         from '@angular/router';
@@ -11,6 +11,7 @@ import { EventosService, Evento } from '../../../core/services/eventos.service';
   imports: [CommonModule, FormsModule],
   templateUrl: './ventas-general.component.html',
   styleUrl: './ventas-general.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VentasGeneralComponent implements OnInit {
   private router     = inject(Router);
@@ -94,8 +95,8 @@ export class VentasGeneralComponent implements OnInit {
         canal as 'evento' | 'web' | undefined,
       );
       this.ventas.set(data);
-    } catch (e: any) {
-      this.errorMsg.set(e.message);
+    } catch (e: unknown) {
+      this.errorMsg.set(e instanceof Error ? e.message : 'No se pudieron cargar las ventas.');
     }
     this.cargando.set(false);
   }

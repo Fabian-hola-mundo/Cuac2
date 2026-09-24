@@ -80,5 +80,22 @@ Deno.serve(async (req) => {
     return new Response('Error interno', { status: 500, headers: CORS })
   }
 
+  // Un pago aprobado es lo que mueve inventario. Antes de esto el stock sólo
+  // bajaba con las ventas del POS, así que la web podía vender indefinidamente
+  // un producto agotado. `registrar_venta_web` es idempotente (marca el pedido
+  // con `stock_descontado`), así que un reintento de Bold no descuenta dos
+  // veces.
+  if (estado === 'aprobado') {
+    const { error: stockError } = await supabase.rpc('registrar_venta_web', {
+      p_referencia: referencia,
+    })
+    // No se devuelve 500: el pago ya está cobrado y el evento ya se registró
+    // como procesado, así que un reintento de Bold no arreglaría nada. Queda el
+    // log y el pedido con stock_descontado=false para poder repararlo a mano.
+    if (stockError) {
+      console.error('Error descontando stock del pedido', referencia, stockError)
+    }
+  }
+
   return ok()
 })

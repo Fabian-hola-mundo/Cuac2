@@ -92,6 +92,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   isEventosRoute       = computed(() => this.routerUrl().includes('/admin/eventos'));
   isAjustesRoute       = computed(() => this.routerUrl().includes('/admin/ajustes'));
   isPersonajesRoute    = computed(() => this.routerUrl().includes('/admin/personajes'));
+  isRuletaRoute        = computed(() => this.routerUrl().includes('/admin/ruleta'));
   isMensajesRoute      = computed(() => this.routerUrl().includes('/admin/mensajes'));
   readonly unreadSvc   = inject(MensajesUnreadService);
 
@@ -100,6 +101,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   // sync whenever a new admin route was added.
   activeNavId = computed<string>(() => {
     if (this.isMensajesRoute())   return 'mensajes';
+    if (this.isRuletaRoute())     return 'ruleta';
     if (this.isPersonajesRoute()) return 'contenido';
     if (this.isAjustesRoute())    return 'ajustes';
     if (this.isProductosRoute())  return 'productos';
@@ -116,6 +118,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     if (url.match(/\/personajes\/[^/]+$/))        return ['Universo', 'Personajes', 'Detalle'];
     if (url.includes('/personajes'))              return ['Universo', 'Personajes'];
     if (url.includes('/mensajes')) return ['Tienda', 'Mensajes'];
+    if (url.includes('/ruleta'))   return ['Universo', 'Ruleta'];
     if (url.includes('/ajustes/negocio'))       return ['Sistema', 'Ajustes', 'Negocio'];
     if (url.includes('/ajustes/impuestos'))     return ['Sistema', 'Ajustes', 'Impuestos'];
     if (url.includes('/ajustes/envios'))        return ['Sistema', 'Ajustes', 'Envíos y tarifas'];
@@ -204,7 +207,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
       return;
     }
     this.state.view.set(id);
-    if (this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute() || this.isAjustesRoute() || this.isPersonajesRoute()) {
+    if (this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute() || this.isAjustesRoute() || this.isPersonajesRoute() || this.isRuletaRoute()) {
       this.router.navigate(['/admin']);
     }
   }
@@ -214,6 +217,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   goProductos() { this.closeNav(); this.router.navigate(['/admin/productos']); }
   goEventos()   { this.closeNav(); this.router.navigate(['/admin/eventos']); }
   goPersonajes() { this.closeNav(); this.router.navigate(['/admin/personajes']); }
+  goRuleta()     { this.closeNav(); this.router.navigate(['/admin/ruleta']); }
   goMensajes()   { this.closeNav(); this.router.navigate(['/admin/mensajes']); }
 
   async loginGoogle() {

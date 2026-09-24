@@ -1,12 +1,20 @@
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="/cuaquiverso">Cuaqui<em>verso</em></a>
-    <div class="steps-done">
+    <a class="brand" routerLink="/cuaquiverso">Cuaqui<em>verso</em></a>
+    <div class="steps-done" [class.is-pending]="pendiente()" [class.is-failed]="fallido()">
       <div class="sd-num">✓</div>
       <span>Datos y envío</span>
       <div class="sd-div"></div>
-      <div class="sd-num">✓</div>
-      <span>Pago confirmado</span>
+      @if (aprobado()) {
+        <div class="sd-num">✓</div>
+        <span>Pago confirmado</span>
+      } @else if (fallido()) {
+        <div class="sd-num">!</div>
+        <span>Pago no completado</span>
+      } @else {
+        <div class="sd-num">2</div>
+        <span>Confirmando pago</span>
+      }
     </div>
     <span></span>
   </div>
@@ -20,48 +28,137 @@
   </div>
 }
 
+<!-- Un fallo de lectura no es un pedido inexistente: a quien acaba de pagar con
+     una red inestable no se le puede decir que su pedido no existe. -->
+@if (!loading() && errorCarga()) {
+  <div class="estado-vacio">
+    <h2>No pudimos consultar tu pedido</h2>
+    <p>{{ errorCarga() }}</p>
+    <p class="nota">Tu pago no se ve afectado por esto. Si ya pagaste, tu pedido está registrado.</p>
+    <div class="cta-row cta-centrado">
+      <button class="btn-primary" type="button" (click)="reintentar()">Reintentar</button>
+      <a class="btn-ghost" routerLink="/cuaquiverso/tienda">Ir a la tienda</a>
+    </div>
+  </div>
+}
+
 @if (!loading() && notFound()) {
-  <div class="not-found">
+  <div class="estado-vacio">
     <h2>Pedido no encontrado</h2>
-    <p>No encontramos un pedido con esa referencia.</p>
-    <a class="btn-primary" href="/cuaquiverso/tienda" style="display:inline-block;padding:12px 24px">
-      Ir a la tienda
-    </a>
+    <p>El enlace de confirmación no corresponde a ningún pedido. Puede que esté incompleto o que haya caducado.</p>
+    <p class="nota">Si acabas de pagar, revisa el correo de confirmación: ahí está el enlace correcto.</p>
+    <div class="cta-row cta-centrado">
+      <a class="btn-primary" routerLink="/cuaquiverso/tienda">Ir a la tienda</a>
+    </div>
   </div>
 }
 
 @if (!loading() && pedido()) {
   <div class="page">
 
-    <div class="confirm-hero">
-      <div>
-        <div class="hero-check">✓</div>
-        <div class="hero-eyebrow">Pago aprobado</div>
-        <h1 class="hero-title">Tu pedido está<br>en <em>camino</em>.</h1>
-        <p class="hero-sub">
-          Recibimos tu pago y ya estamos preparando tu pedido.
-          Te llegará un correo a <strong>{{ pedido()!.email }}</strong>
-          con el número de guía cuando salgamos a despachar.
-        </p>
-        <div class="bold-badge">
-          Pago procesado por <span class="wl">BOLD</span>
+    @if (aprobado()) {
+      <div class="confirm-hero">
+        <div>
+          <div class="hero-check ok">✓</div>
+          <div class="hero-eyebrow ok">Pago aprobado</div>
+          <h1 class="hero-title">Tu pedido está<br>en <em>camino</em>.</h1>
+          <p class="hero-sub">
+            Recibimos tu pago y ya estamos preparando tu pedido.
+            Te llegará un correo a <strong>{{ pedido()!.email }}</strong>
+            con el número de guía cuando salgamos a despachar.
+          </p>
+          <div class="bold-badge">
+            Pago procesado por <span class="wl">BOLD</span>
+          </div>
+        </div>
+        <div class="order-ref">
+          <div class="r-lbl">Número de pedido</div>
+          <div class="r-code">{{ pedido()!.referencia }}</div>
+          <div class="r-date">{{ fechaFormateada() }}</div>
         </div>
       </div>
-      <div class="order-ref">
-        <div class="r-lbl">Número de pedido</div>
-        <div class="r-code">{{ pedido()!.referencia }}</div>
-        <div class="r-date">{{ fechaFormateada() }}</div>
+    } @else if (pendiente()) {
+      <div class="confirm-hero">
+        <div>
+          <div class="hero-check wait" aria-hidden="true">⏳</div>
+          <div class="hero-eyebrow wait">
+            @if (esperaAgotada()) { Pago en revisión } @else { Confirmando tu pago }
+          </div>
+          <h1 class="hero-title">
+            @if (esperaAgotada()) {
+              Todavía estamos<br>esperando a <em>Bold</em>.
+            } @else {
+              Estamos confirmando<br>tu <em>pago</em>.
+            }
+          </h1>
+          <p class="hero-sub" role="status">
+            @if (esperaAgotada()) {
+              Tu pedido quedó registrado, pero Bold aún no nos ha confirmado el pago.
+              Si el cobro ya aparece en tu banco, la confirmación llegará en unos
+              minutos y te avisaremos por correo a <strong>{{ pedido()!.email }}</strong>.
+            } @else {
+              Guardamos tu pedido y estamos esperando la confirmación de Bold.
+              Esto suele tardar unos segundos — no cierres esta página.
+            }
+          </p>
+          @if (esperaAgotada()) {
+            <div class="cta-row" style="margin-top:20px">
+              <button class="btn-primary" type="button" (click)="reintentar()">Volver a consultar</button>
+            </div>
+          }
+        </div>
+        <div class="order-ref">
+          <div class="r-lbl">Número de pedido</div>
+          <div class="r-code">{{ pedido()!.referencia }}</div>
+          <div class="r-date">{{ fechaFormateada() }}</div>
+        </div>
       </div>
-    </div>
+    } @else {
+      <div class="confirm-hero">
+        <div>
+          <div class="hero-check fail" aria-hidden="true">×</div>
+          <div class="hero-eyebrow fail">
+            @if (cancelado()) { Pago anulado } @else { Pago rechazado }
+          </div>
+          <h1 class="hero-title">
+            @if (cancelado()) {
+              Este pago se<br><em>anuló</em>.
+            } @else {
+              El pago no se<br>pudo <em>completar</em>.
+            }
+          </h1>
+          <p class="hero-sub">
+            @if (cancelado()) {
+              El cobro de este pedido fue anulado, así que no se te cobró nada.
+            } @else {
+              Bold no aprobó el cobro, así que <strong>no se te cobró nada</strong>.
+              Suele pasar por fondos insuficientes o por un bloqueo del banco.
+            }
+            Tus productos siguen en el carrito: puedes intentarlo de nuevo con otro medio de pago.
+          </p>
+          <div class="cta-row" style="margin-top:20px">
+            <a class="btn-primary" routerLink="/cuaquiverso/checkout">Intentar de nuevo</a>
+            <a class="btn-ghost" routerLink="/cuaquiverso/tienda">Ir a la tienda</a>
+          </div>
+        </div>
+        <div class="order-ref">
+          <div class="r-lbl">Número de pedido</div>
+          <div class="r-code">{{ pedido()!.referencia }}</div>
+          <div class="r-date">{{ fechaFormateada() }}</div>
+        </div>
+      </div>
+    }
 
     <div class="bottom-grid">
 
       <div>
         <div class="card">
-          <div class="card-title">Lo que pediste</div>
+          <div class="card-title">
+            @if (aprobado()) { Lo que pediste } @else { Lo que ibas a llevar }
+          </div>
           @for (item of pedido()!.pedido_items; track item.nombre) {
             <div class="order-item">
-              <div class="oi-swatch" [style.background]="colorHex(item.color)"></div>
+              <div class="oi-swatch" [style.background]="colorHex(item.color)" aria-hidden="true"></div>
               <div class="oi-info">
                 <div class="oi-name">{{ item.nombre }}</div>
                 <div class="oi-sub">{{ item.sub }} · ×{{ item.cantidad }}</div>
@@ -71,33 +168,37 @@
           }
         </div>
 
-        <div class="card">
-          <div class="card-title">Dirección de entrega</div>
-          <div class="addr-grid">
-            <div class="addr-field">
-              <div class="lbl">Nombre</div>
-              <div class="val">{{ pedido()!.nombre }} {{ pedido()!.apellido }}</div>
-            </div>
-            <div class="addr-field">
-              <div class="lbl">Ciudad</div>
-              <div class="val">{{ pedido()!.ciudad }}</div>
-            </div>
-            <div class="addr-field" style="grid-column:span 2">
-              <div class="lbl">Dirección</div>
-              <div class="val">
-                {{ pedido()!.direccion }}
-                @if (pedido()!.barrio) { · {{ pedido()!.barrio }} }
+        @if (!fallido()) {
+          <div class="card">
+            <div class="card-title">Dirección de entrega</div>
+            <div class="addr-grid">
+              <div class="addr-field">
+                <div class="lbl">Nombre</div>
+                <div class="val">{{ pedido()!.nombre }} {{ pedido()!.apellido }}</div>
+              </div>
+              <div class="addr-field">
+                <div class="lbl">Ciudad</div>
+                <div class="val">{{ pedido()!.ciudad }}</div>
+              </div>
+              <div class="addr-field addr-full">
+                <div class="lbl">Dirección</div>
+                <div class="val">
+                  {{ pedido()!.direccion }}
+                  @if (pedido()!.barrio) { · {{ pedido()!.barrio }} }
+                </div>
               </div>
             </div>
+            @if (!pedido()!.envio_gratis) {
+              <div class="ship-note">
+                <span class="sn-icon" aria-hidden="true">📦</span>
+                <div>
+                  <strong>El envío se cobra contra entrega</strong>
+                  <p>El transportista cobrará el flete al momento de la entrega en tu dirección.</p>
+                </div>
+              </div>
+            }
           </div>
-          <div class="ship-note">
-            <span class="sn-icon">📦</span>
-            <div>
-              <strong>El envío se cobra contra entrega</strong>
-              <p>El transportista cobrará el flete al momento de la entrega en tu dirección.</p>
-            </div>
-          </div>
-        </div>
+        }
       </div>
 
       <div>
@@ -109,55 +210,73 @@
           </div>
           <div class="total-row">
             <span>Envío</span>
-            @if (pedido()!.subtotal >= 150000) {
+            @if (pedido()!.envio_gratis) {
               <span class="free-tag">GRATIS</span>
             } @else {
-              <span>Contra entrega</span>
+              <span>Se paga al recibir</span>
             }
           </div>
+          <!-- "Total pagado" sólo es cierto cuando el pago está confirmado. -->
           <div class="total-row main">
-            <span>Total pagado</span>
+            <span>
+              @if (aprobado()) { Total pagado }
+              @else if (fallido()) { Total no cobrado }
+              @else { Total a pagar }
+            </span>
             <span>{{ fmtPrice(pedido()!.total) }}</span>
           </div>
+          @if (!pedido()!.envio_gratis) {
+            <p class="total-note">El flete va aparte y lo cobra el transportista al entregar.</p>
+          }
         </div>
 
-        <div class="card">
-          <div class="card-title">¿Qué sigue?</div>
-          <div class="next-steps">
-            <div class="ns-item">
-              <div class="ns-num">1</div>
-              <div class="ns-body">
-                <strong>Confirmación por correo</strong>
-                <p>Te enviamos los detalles del pedido a {{ pedido()!.email }}</p>
+        @if (aprobado()) {
+          <div class="card">
+            <div class="card-title">¿Qué sigue?</div>
+            <div class="next-steps">
+              <div class="ns-item">
+                <div class="ns-num">1</div>
+                <div class="ns-body">
+                  <strong>Confirmación por correo</strong>
+                  <p>Te enviamos los detalles del pedido a {{ pedido()!.email }}</p>
+                </div>
+              </div>
+              <div class="ns-item">
+                <div class="ns-num">2</div>
+                <div class="ns-body">
+                  <strong>Preparación en taller</strong>
+                  <p>Empacamos tu pedido en nuestro taller en Bogotá. 1–2 días hábiles.</p>
+                </div>
+              </div>
+              <div class="ns-item">
+                <div class="ns-num">3</div>
+                <div class="ns-body">
+                  <strong>Número de guía</strong>
+                  <p>Recibirás el código de seguimiento cuando el paquete salga a despachar.</p>
+                </div>
+              </div>
+              <div class="ns-item">
+                <div class="ns-num">4</div>
+                <div class="ns-body">
+                  <strong>
+                    @if (pedido()!.envio_gratis) { Entrega } @else { Entrega y pago del flete }
+                  </strong>
+                  <p>
+                    @if (pedido()!.envio_gratis) {
+                      El transportista entrega en tu dirección. El envío ya va por nuestra cuenta.
+                    } @else {
+                      El transportista entrega en tu dirección y cobra el envío en efectivo.
+                    }
+                  </p>
+                </div>
               </div>
             </div>
-            <div class="ns-item">
-              <div class="ns-num">2</div>
-              <div class="ns-body">
-                <strong>Preparación en taller</strong>
-                <p>Empacamos tu pedido en nuestro taller en Bogotá. 1–2 días hábiles.</p>
-              </div>
-            </div>
-            <div class="ns-item">
-              <div class="ns-num">3</div>
-              <div class="ns-body">
-                <strong>Número de guía</strong>
-                <p>Recibirás el código de seguimiento cuando el paquete salga a despachar.</p>
-              </div>
-            </div>
-            <div class="ns-item">
-              <div class="ns-num">4</div>
-              <div class="ns-body">
-                <strong>Entrega y pago del flete</strong>
-                <p>El transportista entrega en tu dirección y cobra el envío en efectivo.</p>
-              </div>
+            <div class="cta-row">
+              <a class="btn-primary" routerLink="/cuaquiverso/tienda">Seguir comprando</a>
+              <a class="btn-ghost" routerLink="/cuaquiverso">Inicio</a>
             </div>
           </div>
-          <div class="cta-row">
-            <a class="btn-primary" href="/cuaquiverso/tienda">Seguir comprando</a>
-            <a class="btn-ghost" href="/cuaquiverso">Inicio</a>
-          </div>
-        </div>
+        }
       </div>
 
     </div>

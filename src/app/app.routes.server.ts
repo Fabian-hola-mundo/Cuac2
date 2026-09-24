@@ -15,6 +15,8 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'cuaquiverso/universo', renderMode: RenderMode.Client },
   { path: 'identidadcorporativa', renderMode: RenderMode.Client },
   { path: 'designsystem', renderMode: RenderMode.Client },
+  // La ruleta dibuja con canvas y WebAudio: no tiene sentido prerenderizarla.
+  { path: 'ruleta', renderMode: RenderMode.Client },
 
   // Admin — always client-side
   { path: 'admin/**', renderMode: RenderMode.Client },

@@ -153,6 +153,8 @@ nav.primary { display: flex; gap: 4px;
   font-size: 12px; font-weight: 700; margin-bottom: 16px;
   &.new  { background: #D7EBDD; color: #1F5C39; }
   &.last { background: #FBE0D5; color: #7A2A10; }
+  &.out  { background: rgba(21,31,40,.08); color: var(--carbon); }
+  &.propia { background: #C9D9F6; color: #123A6B; }
 }
 
 .product-desc {
@@ -177,6 +179,15 @@ nav.primary { display: flex; gap: 4px;
   font-size: 13px; color: #7A2A10;
   background: #FBE0D5; border: 1px solid #F5B08E;
   border-radius: 8px; padding: 10px 14px; margin-bottom: 20px;
+
+  &.is-out {
+    color: var(--carbon); background: rgba(21,31,40,.05);
+    border-color: rgba(21,31,40,.14); line-height: 1.5;
+  }
+}
+
+.tope-aviso {
+  margin: -6px 0 14px; font-size: 13px; color: #7A2A10; text-align: center;
 }
 
 .btn-add {
@@ -188,7 +199,13 @@ nav.primary { display: flex; gap: 4px;
   letter-spacing: -0.01em; cursor: pointer;
   transition: background .15s, transform .12s;
 
-  &:hover { background: #d43010; transform: translateY(-1px); }
+  &:hover:not(:disabled) { background: #d43010; transform: translateY(-1px); }
+  &:focus-visible { outline: 2px solid var(--carbon); outline-offset: 3px; }
+
+  &:disabled {
+    background: rgba(21,31,40,.12); color: var(--carbon-50);
+    cursor: not-allowed; transform: none;
+  }
 }
 
 .back-link {
@@ -217,5 +234,8 @@ nav.primary { display: flex; gap: 4px;
 .btn-back-tienda {
   display: inline-block; padding: 12px 24px;
   background: var(--carbon); color: var(--cream);
+  border: none; font-family: var(--sans); cursor: pointer;
   border-radius: 10px; font-weight: 700; text-decoration: none; font-size: 14px;
 }
+
+.not-found .back-link { margin-top: 18px; }
