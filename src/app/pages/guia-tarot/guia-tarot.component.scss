@@ -23,6 +23,17 @@
   --grano: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* Las ilustraciones no se pueden arrastrar, seleccionar ni guardar con clic
+   derecho o pulsación larga: sin eventos, el clic cae en el botón o la figura
+   que las contiene y el menú del navegador no ofrece «Guardar imagen». */
+img {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
 .gt {
   font-family: var(--sans);
   color: var(--tinta);

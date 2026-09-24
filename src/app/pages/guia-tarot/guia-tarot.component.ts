@@ -186,6 +186,14 @@ export class GuiaTarotComponent implements OnInit, OnDestroy {
     if (this.enlaces() && !(e.target as Element | null)?.closest?.('.gt-fab')) this.enlaces.set(false);
   }
 
+  /** Respaldo del CSS: sin menú contextual ni arrastre sobre las ilustraciones. */
+  @HostListener('contextmenu', ['$event'])
+  @HostListener('dragstart', ['$event'])
+  protegerImagenes(e: Event): void {
+    const t = e.target as Element | null;
+    if (t?.closest?.('img, .gt-carta, .gt-modal-img, .gt-sacar-carta, .gt-abanico')) e.preventDefault();
+  }
+
   // ── Saca una carta ────────────────────────────────────────────────────────
 
   sacar(): void {
