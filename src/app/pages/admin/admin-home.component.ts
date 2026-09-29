@@ -85,7 +85,7 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   editorPrice     = '';
   editorStock     = '';
   editorStatus    = 'draft';
-  editorDesc      = 'Tirada corta. Hecho en Bogotá con algodón colombiano y tintas a base de agua. Cada pieza viene firmada por el ilustrador.';
+  editorDesc      = '';
   editorSizes: string[]  = ['S', 'M', 'L'];
   editorColors: string[] = ['#ECEFF3', '#151F28'];
   editorImages: number[] = [0, 1, 2];
@@ -128,12 +128,16 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.gaLoading.set(false);
   }
 
-  readonly GATEWAYS: { name: string; state: string; tone: string; fee: string; count: number; color: string }[] = [
-    { name: 'Bold',           state: 'Conectado', tone: 'ok',   fee: '3.0% + $300', count: 64, color: 'rio'   },
-    { name: 'PSE',            state: 'Conectado', tone: 'ok',   fee: '1.99%',       count: 22, color: 'selva' },
-    { name: 'Nequi',          state: 'Conectado', tone: 'ok',   fee: '1.0%',        count: 12, color: 'rosa'  },
-    { name: 'Contra-entrega', state: 'Manual',    tone: 'warn', fee: '—',           count: 4,  color: 'sol'   },
-  ];
+  /** Pasarelas con el número de pagos reales que pasaron por cada una. */
+  readonly GATEWAYS: { name: string; state: string; tone: string; count: number; color: string }[] = [
+    { name: 'Bold',           state: 'Conectado', tone: 'ok',   color: 'rio'   },
+    { name: 'PSE',            state: 'Vía Bold',  tone: 'ok',   color: 'selva' },
+    { name: 'Nequi',          state: 'Vía Bold',  tone: 'ok',   color: 'rosa'  },
+    { name: 'Contra-entrega', state: 'Manual',    tone: 'warn', color: 'sol'   },
+  ].map(g => ({
+    ...g,
+    count: this.data.PAYMENTS.filter(p => p.method.toLowerCase().startsWith(g.name.toLowerCase())).length,
+  }));
 
   // ── Live clock & greeting ──────────────────────────────────────────────────
   nowTime     = signal('');
@@ -321,12 +325,66 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     return buckets[tab] ?? this.ORDERS;
   });
 
-  // ── Dashboard chart ────────────────────────────────────────────────────────
-  readonly BARS = [42, 58, 36, 71, 95, 64, 88, 102, 76, 124, 158, 142, 187, 220];
-  readonly DAYS = ['L 02','M 03','M 04','J 05','V 06','S 07','D 08','L 09','M 10','M 11','J 12','V 13','S 14','D 15'];
-  readonly MAX_BAR = Math.max(...[42, 58, 36, 71, 95, 64, 88, 102, 76, 124, 158, 142, 187, 220]);
+  // ── KPI de clientes y pagos, calculados desde los registros reales ─────────
+  readonly lowStockCount = this.PRODUCTS.filter(p => p.status === 'low' || (p.stock > 0 && p.stock < 10)).length;
+  readonly pendingShipCount = this.ORDERS.filter(o => o.status === 'paid' && o.shipping === 'pending').length;
 
-  barHeight(b: number): number { return (b / this.MAX_BAR) * 100; }
+  readonly customersByTag = {
+    vip:     this.CUSTOMERS.filter(c => c.tag === 'VIP').length,
+    activos: this.CUSTOMERS.filter(c => c.tag === 'Activo').length,
+    issues:  this.CUSTOMERS.filter(c => c.tag === 'Devolución' || c.tag === 'Fallido').length,
+  };
+  readonly kpiVip = this.CUSTOMERS.filter(c => c.orders >= 3).length;
+  readonly kpiGastoPromedio = this.CUSTOMERS.length
+    ? Math.round(this.CUSTOMERS.reduce((s, c) => s + c.spent, 0) / this.CUSTOMERS.length)
+    : 0;
+
+  private readonly paymentsMes = this.filterPayments('mes');
+  readonly kpiNetoMes     = this.paymentsMes.filter(p => p.status === 'paid').reduce((s, p) => s + p.net, 0);
+  readonly kpiComisiones  = this.paymentsMes.filter(p => p.status === 'paid').reduce((s, p) => s + p.fee, 0);
+  readonly kpiPendiente   = this.PAYMENTS.filter(p => p.status === 'pending');
+  readonly kpiReembolsos  = this.paymentsMes.filter(p => p.status === 'refunded');
+  sumAmount(list: Payment[]): number { return list.reduce((s, p) => s + p.amount, 0); }
+
+  // ── Dashboard chart: ingresos pagados de los últimos 14 días ───────────────
+  private readonly chartDays = (() => {
+    const DOW = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const days: { key: string; label: string; total: number }[] = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(hoy);
+      d.setDate(hoy.getDate() - i);
+      const key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      days.push({ key, label: `${DOW[d.getDay()]} ${pad(d.getDate())}`, total: 0 });
+    }
+    for (const o of this.ORDERS) {
+      if (o.status !== 'paid') continue;
+      const day = days.find(x => x.key === o.date.slice(0, 10));
+      if (day) day.total += o.total;
+    }
+    return days;
+  })();
+
+  /** Ingresos por día, en miles de COP. */
+  readonly BARS = this.chartDays.map(d => Math.round(d.total / 1000));
+  readonly DAYS = this.chartDays.map(d => d.label);
+  readonly MAX_BAR = Math.max(0, ...this.BARS);
+  readonly hasChartData = this.MAX_BAR > 0;
+
+  /** Marcas del eje Y (de mayor a menor), en miles de COP. */
+  readonly Y_TICKS = [1, 0.75, 0.5, 0.25, 0].map(f => Math.round(this.MAX_BAR * f));
+
+  readonly bestDay = (() => {
+    if (!this.hasChartData) return null;
+    const i = this.BARS.indexOf(this.MAX_BAR);
+    return { label: this.DAYS[i], value: this.MAX_BAR };
+  })();
+
+  readonly avgDaily = Math.round(this.BARS.reduce((s, b) => s + b, 0) / this.BARS.length);
+
+  barHeight(b: number): number { return this.MAX_BAR > 0 ? (b / this.MAX_BAR) * 100 : 0; }
 
   trendPoints(): string {
     const n = this.BARS.length;
@@ -445,7 +503,7 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.editorPrice     = p?.price    != null ? String(p.price)  : '';
     this.editorStock     = p?.stock    != null ? String(p.stock)  : '';
     this.editorStatus    = p?.status   ?? 'draft';
-    this.editorDesc      = 'Tirada corta. Hecho en Bogotá con algodón colombiano y tintas a base de agua. Cada pieza viene firmada por el ilustrador.';
+    this.editorDesc      = '';
     this.editorSizes     = ['S', 'M', 'L'];
     this.editorColors    = ['#ECEFF3', '#151F28'];
     this.editorImages    = [0, 1, 2];
@@ -465,6 +523,9 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
 
   fmtDelta(d: number): string { return (d > 0 ? '+' : '') + d.toFixed(1) + '%'; }
 
+  /** Valor ya expresado en miles → "$220k". */
+  fmtK(n: number): string { return '$' + n.toLocaleString('es-CO') + 'k'; }
+
   fmtCOP(n: number): string {
     return (n < 0 ? '-' : '') + '$' + Math.abs(n).toLocaleString('es-CO');
   }
@@ -472,8 +533,8 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   tone(key: string): ToneStyle  { return this.data.TONE[key] ?? this.data.TONE['cream']; }
   sb(s: string): { tone: string; label: string } { return this.data.STATUS_BADGE[s] ?? { tone: '', label: s }; }
 
-  char(id: string): Character { return this.data.CHARACTERS.find(c => c.id === id) ?? this.data.CHARACTERS[0]; }
-  cat(id: string):  Category  { return this.data.CATEGORIES.find(c => c.id === id) ?? this.data.CATEGORIES[0]; }
+  char(id: string): Character { return this.data.getCharacter(id); }
+  cat(id: string):  Category  { return this.data.getCategory(id); }
 
   prodCountForCat(catId: string) { return this.PRODUCTS.filter(p => p.category === catId).length; }
   prodCountForChar(charId: string) { return this.PRODUCTS.filter(p => p.character === charId).length; }

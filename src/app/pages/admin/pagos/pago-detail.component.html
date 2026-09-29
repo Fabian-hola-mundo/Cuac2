@@ -84,5 +84,22 @@
     <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">{{ p.date }}</span>
     <button class="btn-sm ghost" (click)="close.emit()">Cerrar</button>
   </div>
+  } @else {
+  <div class="drawer-h">
+    <div>
+      <div class="crumbs-admin"><span>Pagos</span><span class="sep">/</span><strong>{{ pagoId }}</strong></div>
+      <h2>Pago no encontrado</h2>
+    </div>
+    <button class="drawer-close" (click)="close.emit()" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-b">
+    <div style="padding:var(--s-5);text-align:center;color:var(--carbon-50);font-size:13px">No hay ningún pago con este ID. Puede que se haya eliminado o que aún no exista.</div>
+  </div>
+  <div class="drawer-f">
+    <span></span>
+    <button class="btn-sm ghost" (click)="close.emit()">Cerrar</button>
+  </div>
   }
 </div>

@@ -24,13 +24,9 @@ export class PagoDetailComponent implements OnChanges {
   ngOnChanges() {
     const p = this.data.getPaymentById(this.pagoId) ?? null;
     this.payment.set(p);
-    if (p) {
-      const o = this.data.getOrderById(p.orderId) ?? null;
-      this.order.set(o);
-      if (o) {
-        this.customer.set(this.data.getCustomer(o.customerId) ?? null);
-      }
-    }
+    const o = p ? this.data.getOrderById(p.orderId) ?? null : null;
+    this.order.set(o);
+    this.customer.set(o ? this.data.getCustomer(o.customerId) ?? null : null);
   }
 
   async marcarPagado() {

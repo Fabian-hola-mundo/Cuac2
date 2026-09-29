@@ -25,13 +25,13 @@ export class AjustesIntegracionesComponent implements OnInit {
   private siteSettings = inject(SiteSettingsService);
 
   integraciones = signal<Integracion[]>([
-    { id: 'bold',       nombre: 'Bold',             desc: 'Pasarela de pagos colombiana',        categoria: 'Pagos',      estado: 'conectado',  color: '#2A6FDB', config: { apiKey: 'pk_live_xxxxx', secretKey: '', webhookUrl: '', sandbox: false }, keyVisible: false, expanded: false },
-    { id: 'pse',        nombre: 'PSE',              desc: 'Débito directo a cuentas bancarias',  categoria: 'Pagos',      estado: 'conectado',  color: '#1F8A5B', config: { apiKey: 'pse_live_xxxxx', secretKey: '',                  sandbox: false }, keyVisible: false, expanded: false },
-    { id: 'nequi',      nombre: 'Nequi',            desc: 'Pagos con billetera digital',         categoria: 'Pagos',      estado: 'conectado',  color: '#8B6FD8', config: { apiKey: 'nq_live_xxxxx',  secretKey: '',                  sandbox: false }, keyVisible: false, expanded: false },
+    { id: 'bold',       nombre: 'Bold',             desc: 'Pasarela de pagos colombiana',        categoria: 'Pagos',      estado: 'conectado',  color: '#2A6FDB', config: { apiKey: '', secretKey: '', webhookUrl: '', sandbox: false }, keyVisible: false, expanded: false },
+    { id: 'pse',        nombre: 'PSE',              desc: 'Débito directo a cuentas bancarias',  categoria: 'Pagos',      estado: 'disponible', color: '#1F8A5B', config: { apiKey: '', secretKey: '',                  sandbox: false }, keyVisible: false, expanded: false },
+    { id: 'nequi',      nombre: 'Nequi',            desc: 'Pagos con billetera digital',         categoria: 'Pagos',      estado: 'disponible', color: '#8B6FD8', config: { apiKey: '', secretKey: '',                  sandbox: false }, keyVisible: false, expanded: false },
     { id: 'mailchimp',  nombre: 'Mailchimp',        desc: 'Email marketing y newsletters',       categoria: 'Email',      estado: 'disponible', color: '#FFD43B', config: { apiKey: '', audienceId: '' },                                              keyVisible: false, expanded: false },
     { id: 'ga',         nombre: 'Google Analytics', desc: 'Analítica de tráfico y conversiones', categoria: 'Analytics',  estado: 'disponible', color: '#E8623D', config: { measurementId: '' },                                                      keyVisible: false, expanded: false },
     { id: 'meta',       nombre: 'Meta Pixel',       desc: 'Seguimiento de conversiones de Meta', categoria: 'Marketing',  estado: 'disponible', color: '#151F28', config: { pixelId: '' },                                                            keyVisible: false, expanded: false },
-    { id: 'servi',      nombre: 'Servientrega',     desc: 'Cotización y guías automáticas',      categoria: 'Envíos',     estado: 'conectado',  color: '#E8623D', config: { apiKey: 'SVT-xxxx', sandbox: false },                                     keyVisible: false, expanded: false },
+    { id: 'servi',      nombre: 'Servientrega',     desc: 'Cotización y guías automáticas',      categoria: 'Envíos',     estado: 'disponible', color: '#E8623D', config: { apiKey: '', sandbox: false },                                     keyVisible: false, expanded: false },
     { id: 'coordinad',  nombre: 'Coordinadora',     desc: 'Cobertura nacional, envío exprés',    categoria: 'Envíos',     estado: 'proximo',    color: '#2E8FB8', config: {},                                                                         keyVisible: false, expanded: false },
   ]);
 

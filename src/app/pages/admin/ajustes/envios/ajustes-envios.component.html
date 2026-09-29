@@ -21,7 +21,7 @@
     @if (envioGratis()) {
     <div class="field" style="max-width:220px">
       <label>Monto mínimo (COP)</label>
-      <input class="input" type="number" [value]="montoMinimo()" (input)="montoMinimo.set(+$any($event.target).value)" />
+      <input class="input" type="number" placeholder="Sin configurar" [value]="montoMinimo()" (input)="montoMinimo.set(+$any($event.target).value)" />
     </div>
     }
   </div>
@@ -33,6 +33,9 @@
     <table class="tbl">
       <thead><tr><th>Nombre</th><th>Municipios</th><th>Tarifa (COP)</th><th>Plazo</th><th>Activa</th><th></th></tr></thead>
       <tbody>
+        @if (zonas().length === 0) {
+        <tr><td colspan="6" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Sin configurar · crea una zona para empezar</td></tr>
+        }
         @for (z of zonas(); track z.id) {
         <tr>
           <td><input class="input" style="padding:5px 9px;font-size:13px" [value]="z.nombre" (input)="updateZona(z.id,'nombre',$any($event.target).value)" /></td>
@@ -95,7 +98,7 @@
       <div class="carrier-config">
         <div class="field" style="max-width:200px">
           <label>Recargo adicional (COP)</label>
-          <input class="input" type="number" [value]="recargoContra()" (input)="recargoContra.set(+$any($event.target).value)" />
+          <input class="input" type="number" placeholder="Sin configurar" [value]="recargoContra()" (input)="recargoContra.set(+$any($event.target).value)" />
         </div>
       </div>
       }

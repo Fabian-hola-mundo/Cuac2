@@ -16,14 +16,12 @@ interface Redirect { id: number; origen: string; destino: string; tipo: '301' | 
   styleUrl: './ajustes-dominios.component.scss',
 })
 export class AjustesDominiosComponent {
-  dominios = signal<Dominio[]>([
-    { id: 1, dominio: 'cuaquiverso.co',     tipo: 'principal', ssl: true,  activo: true  },
-    { id: 2, dominio: 'www.cuaquiverso.co', tipo: 'alias',     ssl: true,  activo: true  },
-  ]);
+  /** Dominio público real del sitio. */
+  readonly DOMINIO_PRINCIPAL = 'cuacdesign.com';
 
-  redirects = signal<Redirect[]>([
-    { id: 1, origen: '/tienda-vieja', destino: '/tienda', tipo: '301', activo: true },
-  ]);
+  dominios = signal<Dominio[]>([]);
+
+  redirects = signal<Redirect[]>([]);
 
   newDomain      = signal('');
   newDomainTipo  = signal<TipoDominio>('alias');
@@ -33,14 +31,11 @@ export class AjustesDominiosComponent {
   newRedOrigen   = signal('');
   newRedDestino  = signal('');
   newRedTipo     = signal<'301' | '302'>('301');
-  nextId         = 3;
-  nextRedId      = 2;
+  nextId         = 1;
+  nextRedId      = 1;
 
-  readonly DNS_RECORDS = [
-    { tipo: 'CNAME', host: 'www',  valor: 'cuaquiverso.co.cdn.provider.com' },
-    { tipo: 'A',     host: '@',    valor: '76.223.105.230'                  },
-    { tipo: 'TXT',   host: '@',    valor: 'v=cuac-verify abc123def456'      },
-  ];
+  /** Registros DNS a configurar; se llenan con los que indique el hosting. */
+  readonly DNS_RECORDS: { tipo: string; host: string; valor: string }[] = [];
 
   async verificar() {
     if (!this.newDomain().trim()) return;

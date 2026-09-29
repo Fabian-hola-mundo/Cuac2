@@ -10,11 +10,11 @@
   <div class="panel-h"><h3>Datos fiscales</h3><span class="sub">Lo que aparece en facturas</span></div>
   <div class="panel-b">
     <div class="grid-2">
-      <div class="field"><label>Razón social</label><input class="input" [value]="razonSocial()" (input)="razonSocial.set($any($event.target).value)" /></div>
-      <div class="field"><label>NIT</label><input class="input" [value]="nit()" (input)="nit.set($any($event.target).value)" /></div>
-      <div class="field"><label>Email de contacto</label><input class="input" type="email" [value]="email()" (input)="email.set($any($event.target).value)" /></div>
-      <div class="field"><label>Teléfono</label><input class="input" [value]="telefono()" (input)="telefono.set($any($event.target).value)" /></div>
-      <div class="field" style="grid-column:span 2"><label>Dirección fiscal</label><input class="input" [value]="direccion()" (input)="direccion.set($any($event.target).value)" /></div>
+      <div class="field"><label>Razón social</label><input class="input" placeholder="Sin configurar" [value]="razonSocial()" (input)="razonSocial.set($any($event.target).value)" /></div>
+      <div class="field"><label>NIT</label><input class="input" placeholder="Sin configurar" [value]="nit()" (input)="nit.set($any($event.target).value)" /></div>
+      <div class="field"><label>Email de contacto</label><input class="input" type="email" placeholder="Sin configurar" [value]="email()" (input)="email.set($any($event.target).value)" /></div>
+      <div class="field"><label>Teléfono</label><input class="input" placeholder="Sin configurar" [value]="telefono()" (input)="telefono.set($any($event.target).value)" /></div>
+      <div class="field" style="grid-column:span 2"><label>Dirección fiscal</label><input class="input" placeholder="Sin configurar" [value]="direccion()" (input)="direccion.set($any($event.target).value)" /></div>
       <div class="field"><label>Régimen tributario</label>
         <select class="select" [value]="regimen()" (change)="regimen.set($any($event.target).value)">
           <option value="simple">Régimen Simple</option>
@@ -36,7 +36,7 @@
   <div class="panel-h"><h3>Identidad visual</h3><span class="sub">Nombre y marca en la tienda pública</span></div>
   <div class="panel-b">
     <div class="grid-2">
-      <div class="field"><label>Nombre de la tienda</label><input class="input" [value]="nombreTienda()" (input)="nombreTienda.set($any($event.target).value)" /></div>
+      <div class="field"><label>Nombre de la tienda</label><input class="input" placeholder="Sin configurar" [value]="nombreTienda()" (input)="nombreTienda.set($any($event.target).value)" /></div>
       <div class="field">
         <label>Color primario</label>
         <div class="color-picker-row">

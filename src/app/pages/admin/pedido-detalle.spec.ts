@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { AdminHomeComponent } from './admin-home.component';
 import { AdminStateService } from '../../core/services/admin-state.service';
-import { MockAdminDataService } from '../../core/services/mock-admin-data.service';
+import { MockAdminDataService, Order } from '../../core/services/mock-admin-data.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 
 class GoogleAnalyticsStub {
@@ -13,6 +13,13 @@ class GoogleAnalyticsStub {
     return { configured: false, pages: [], portfolios: [] };
   }
 }
+
+/** Pedidos de prueba: el servicio arranca vacío, así que el spec trae los suyos. */
+const PEDIDOS_DE_PRUEBA: Order[] = [
+  { id: '#T-3', customerId: 'T-1', customer: 'Cliente Tres', email: 'tres@example.com', items: 1, total: 10000, status: 'paid',    shipping: 'delivered', date: '2026-01-03 10:00', city: 'Ciudad A', method: 'Bold' },
+  { id: '#T-2', customerId: 'T-2', customer: 'Cliente Dos',  email: 'dos@example.com',  items: 2, total: 20000, status: 'failed',  shipping: 'pending',   date: '2026-01-02 10:00', city: 'Ciudad B', method: 'Bold' },
+  { id: '#T-1', customerId: 'T-3', customer: 'Cliente Uno',  email: 'uno@example.com',  items: 3, total: 30000, status: 'pending', shipping: 'pending',   date: '2026-01-01 10:00', city: 'Ciudad C', method: 'Nequi' },
+];
 
 async function montarEnPedidos() {
   await TestBed.configureTestingModule({
@@ -23,6 +30,7 @@ async function montarEnPedidos() {
     ],
   }).compileComponents();
 
+  TestBed.inject(MockAdminDataService).ORDERS.push(...PEDIDOS_DE_PRUEBA.map(o => ({ ...o })));
   TestBed.inject(AdminStateService).view.set('pedidos');
 
   const fixture = TestBed.createComponent(AdminHomeComponent);
