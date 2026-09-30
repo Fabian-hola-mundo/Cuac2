@@ -294,13 +294,22 @@
 
       @if (pagoEnCurso()) {
         <div class="pago-curso" role="status">
-          <strong>Abrimos la ventana de pago de Bold</strong>
-          <p>
-            Completa el pago ahí. Si cerraste la ventana sin pagar, puedes volver
-            a abrirla; tu pedido
-            @if (referenciaEnCurso()) { <span class="ref">{{ referenciaEnCurso() }}</span> }
-            queda reservado mientras tanto.
-          </p>
+          @if (boldAbierto()) {
+            <strong>Abrimos la ventana de pago de Bold</strong>
+            <p>
+              Completa el pago ahí. Si cerraste la ventana sin pagar, puedes volver
+              a abrirla; tu pedido
+              @if (referenciaEnCurso()) { <span class="ref">{{ referenciaEnCurso() }}</span> }
+              queda reservado mientras tanto.
+            </p>
+          } @else {
+            <strong>Tus productos están apartados</strong>
+            <p>
+              Continúa el pago para completar tu pedido
+              @if (referenciaEnCurso()) { <span class="ref">{{ referenciaEnCurso() }}</span> }
+              antes de que venza la reserva.
+            </p>
+          }
           <p class="reserva-cuenta" role="timer" aria-live="off">
             Tu reserva vence en <b>{{ cuentaReserva() }}</b>
           </p>

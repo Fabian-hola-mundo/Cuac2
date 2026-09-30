@@ -135,6 +135,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   readonly segundosReserva = signal(0);
   readonly cuentaReserva   = computed(() => formatoCuenta(this.segundosReserva()));
   readonly reservaVencida  = signal(false);
+  /**
+   * Bold se abrió en esta visita. Tras una recarga el pedido sigue apartado
+   * pero la ventana de pago no está abierta, y el panel no debe decir que sí.
+   */
+  readonly boldAbierto     = signal(false);
   private  reloj: ReturnType<typeof setInterval> | null = null;
 
   private get storage(): Storage | null {
@@ -265,7 +270,27 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.cart.open();
   }
 
-  async pagar(): Promise<void> {
+  /**
+   * Identifica formulario + carrito + descuento con que se crea un pedido. La
+   * usan `pagar()` y `reabrirPago()`: si cambia, el pedido apartado ya no es el
+   * que el comprador está viendo.
+   */
+  private datosDelPago(): {
+    form: CheckoutForm; codigoDesc: { codigo: string; monto: number } | undefined; huella: string;
+  } {
+    const codigoDesc = this.descuento.codigoAplicado()
+      ? { codigo: this.descuento.codigoAplicado()!, monto: this.descuento.montoDescuento() }
+      : undefined;
+    const form = this.form.getRawValue() as CheckoutForm;
+    const huella = JSON.stringify([form, this.cart.items(), this.cart.total(), codigoDesc ?? null]);
+    return { form, codigoDesc, huella };
+  }
+
+  /**
+   * @param reemplazarEnCurso lo pasa `reabrirPago()` cuando el pedido apartado
+   * ya no coincide con el carrito: se cancela y se crea uno nuevo.
+   */
+  async pagar(reemplazarEnCurso = false): Promise<void> {
     this.form.markAllAsTouched();
 
     if (this.form.invalid) {
@@ -278,25 +303,20 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
 
     // Dos toques seguidos en un móvil abrían dos modales de Bold encima.
-    if (this.checkout.loading() || this.pagoEnCurso()) return;
+    if (this.checkout.loading() || (this.pagoEnCurso() && !reemplazarEnCurso)) return;
 
     this.resumenErrores.set(null);
     this.checkout.loading.set(true);
     this.checkout.error.set(null);
 
     try {
-      const codigoDesc = this.descuento.codigoAplicado()
-        ? { codigo: this.descuento.codigoAplicado()!, monto: this.descuento.montoDescuento() }
-        : undefined;
-
-      const form = this.form.getRawValue() as CheckoutForm;
+      const { form, codigoDesc, huella } = this.datosDelPago();
 
       // El modal de Bold se cierra sin salir del sitio, así que reintentar es
       // fácil y frecuente. Sin esto, cada reintento crearía otro pedido y
       // quemaría otro uso del código de descuento. La huella se invalida sola
       // cuando el pedido deja de estar 'pendiente' (ver `revisarEstado`), para
       // que un pago rechazado no reabra Bold con una orden ya resuelta.
-      const huella = JSON.stringify([form, this.cart.items(), this.cart.total(), codigoDesc ?? null]);
       let bold = this.pedidoCreado?.huella === huella ? this.pedidoCreado.bold : null;
 
       if (!bold) {
@@ -305,6 +325,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           await this.checkout.cancelarPedidoPendiente(this.pedidoCreado.token).catch(() => false);
           limpiarPedidoPendiente(this.storage);
           this.pedidoCreado = null;
+          // Si crear el nuevo falla, el panel no debe quedar mostrando uno cancelado.
+          this.detenerSondeo();
+          this.detenerReloj();
+          this.pagoEnCurso.set(false);
+          this.referenciaEnCurso.set(null);
+          this.boldAbierto.set(false);
         }
         const creado = await this.checkout.crearPedido(form, this.cart.items(), this.cart.total(), codigoDesc);
         this.pedidoCreado = {
@@ -317,6 +343,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
       await this.bold.abrirCheckout(bold);
 
+      this.boldAbierto.set(true);
       this.referenciaEnCurso.set(bold.orderId);
       this.pagoEnCurso.set(true);
       this.reservaVencida.set(false);
@@ -329,15 +356,26 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Vuelve a abrir el modal de Bold del pedido que ya está creado. */
+  /**
+   * "Continuar pago": vuelve a abrir Bold con el pedido apartado, salvo que el
+   * carrito o el formulario hayan cambiado desde que se creó; entonces cobrar
+   * esa orden sería cobrar otra cosa, y se delega en `pagar()` para que la
+   * cancele y cree una nueva.
+   */
   async reabrirPago(): Promise<void> {
-    const bold = this.pedidoCreado?.bold;
-    if (!bold || this.checkout.loading()) return;
+    const p = this.pedidoCreado;
+    if (!p || this.checkout.loading()) return;
+
+    if (this.datosDelPago().huella !== p.huella) {
+      await this.pagar(true);
+      return;
+    }
 
     this.checkout.loading.set(true);
     this.checkout.error.set(null);
     try {
-      await this.bold.abrirCheckout(bold);
+      await this.bold.abrirCheckout(p.bold);
+      this.boldAbierto.set(true);
     } catch (e: any) {
       this.checkout.error.set(e?.message ?? 'No pudimos reabrir la pasarela de pagos.');
     } finally {
@@ -351,6 +389,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.detenerSondeo();
     this.detenerReloj();
     this.pagoEnCurso.set(false);
+    this.boldAbierto.set(false);
     this.referenciaEnCurso.set(null);
     this.pedidoCreado = null;
     limpiarPedidoPendiente(this.storage);
@@ -364,6 +403,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   private retomar(p: PedidoPendiente): void {
     this.pedidoCreado = p;
+    this.boldAbierto.set(false);
     this.referenciaEnCurso.set(p.referencia);
     this.pagoEnCurso.set(true);
     this.reservaVencida.set(false);
@@ -395,6 +435,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     limpiarPedidoPendiente(this.storage);
     this.pedidoCreado = null;
     this.pagoEnCurso.set(false);
+    this.boldAbierto.set(false);
     this.referenciaEnCurso.set(null);
     this.reservaVencida.set(true);
   }
@@ -457,6 +498,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       limpiarPedidoPendiente(this.storage);
       this.detenerReloj();
       this.pagoEnCurso.set(false);
+      this.boldAbierto.set(false);
       this.referenciaEnCurso.set(null);
       // Se descarta el pedido resuelto: el siguiente intento crea una orden
       // nueva en vez de reabrir Bold con un orderId que ya tiene desenlace.
