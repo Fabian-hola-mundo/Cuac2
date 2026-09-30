@@ -15,10 +15,10 @@ Que el admin pueda definir, por producto, opciones libres (nombre y valores a su
 | POS | También pide la variante. |
 | Fotos | Foto opcional por **valor** de opción, elegida entre las fotos que ya tiene el producto. |
 | Modelo | Tablas de variantes solo para productos que las usan; productos simples no cambian. |
+| Reserva de stock | Al crear el pedido se aparta el stock **15 minutos**. Se avisa al cliente. Recargar la página **no** libera la reserva; se libera al vencer, al rechazarse/cancelarse el pago o si el cliente toca «Cancelar y liberar». |
 
 ## Fuera de alcance
 
-- Reserva de stock durante el pago (sigue sin reservas, como hoy).
 - Descuentos por variante (los códigos siguen aplicando por producto/categoría → a todas sus variantes).
 - Personalización con texto del cliente (bordados, nombres).
 - Vista de pedidos del admin conectada a Supabase (hoy es mock; proyecto aparte).
@@ -163,9 +163,57 @@ Trigger `after insert/update/delete` en `producto_variantes` → `productos_even
 - `obtener_pedido` y la confirmación muestran `variante_label`.
 - `notify-pedido`: selecciona `variante_label` y la muestra en cada línea.
 
-### Límite conocido
+## 4b. Reserva de stock durante el pago (15 min)
 
-- Sin reservas: pagos simultáneos por la última unidad se aprueban ambos; stock queda en 0 (nunca negativo).
+### Datos (misma migración 026)
+
+**`stock_reservas`**
+- `id uuid pk`, `pedido_id uuid not null references pedidos(id) on delete cascade`
+- `producto_id uuid not null references productos_evento(id) on delete cascade`
+- `variante_id uuid null references producto_variantes(id) on delete cascade`
+- `cantidad int not null check (cantidad > 0)`
+- `expira_en timestamptz not null` (creación + 15 min)
+- Índices por `(producto_id, variante_id)` y `expira_en`. Sin acceso público (RLS: solo admin lee).
+- `pedidos.reserva_expira_en timestamptz null` (para mostrar el contador).
+
+Una reserva está **vigente** si `expira_en > now()` y su pedido está `pendiente`. Las vencidas no cuentan en ningún cálculo; no se necesita cron para que dejen de contar.
+
+### Funciones
+
+- **`reservar_stock_pedido(p_pedido_id uuid, p_items jsonb)`** — `security definer`, solo `service_role`. En una transacción:
+  1. Borra reservas vencidas (limpieza oportunista).
+  2. `select … for update` sobre las filas de `productos_evento` / `producto_variantes` involucradas (orden estable por id para evitar deadlocks).
+  3. `disponible = stock_actual − reservas vigentes` por producto (sin variantes) o por variante.
+  4. Si alguna línea no alcanza → `raise` con código y datos (`producto_id`, `variante_id`, `disponible`) para que `crear-pedido` devuelva 409 «Solo quedan N de …».
+  5. Inserta las reservas y fija `pedidos.reserva_expira_en`.
+- **`liberar_reservas_pedido(p_pedido_id uuid)`** — borra las reservas del pedido.
+- **`stock_disponible(p_producto_ids uuid[] default null)`** — `security definer`, pública (anon), solo lectura: `returns table(producto_id, variante_id, disponible)` para productos activos y variantes activas. Es lo que muestra la tienda.
+- **`cancelar_pedido_pendiente(p_token uuid)`** — pública (anon), por `confirmacion_token`: si el pedido está `pendiente`, lo pasa a `cancelado` y libera sus reservas. Si no está pendiente, no hace nada.
+- **`registrar_venta_web`**: además de descontar, borra las reservas del pedido. Si en el momento de aprobar el stock físico no alcanza (reserva vencida y unidad vendida a otro), descuenta hasta 0 y marca `pedidos.sobreventa = true` (columna nueva `boolean default false`).
+
+### Flujo
+
+- `crear-pedido`: inserta el pedido → `reservar_stock_pedido`. Si la reserva falla, borra el pedido y sus ítems (rollback manual, como ya hace hoy) y responde 409. La validación de stock previa de la sección 4 queda reemplazada por esta (la de variante válida/activa se mantiene).
+- `bold-webhook` y `verificar-pago`: `aprobado` → `registrar_venta_web` (descuenta + libera). `rechazado`/`cancelado` → `liberar_reservas_pedido`.
+- Si Bold aprueba un pedido ya cancelado o con reserva vencida: se registra la venta igual (el dinero entró) y, si falta stock, se marca `sobreventa`.
+
+### Cliente
+
+- **Checkout, antes de pagar:** aviso «Al continuar apartamos tus productos por 15 minutos para que completes el pago».
+- Tras `crear-pedido`, el navegador guarda `{ token, referencia, expiraEn }` en `localStorage` (`cuaquiverso.pedido-pendiente`). Sobrevive a recargas.
+- **Si el cliente vuelve al checkout o a la confirmación con ese pedido pendiente y vigente:** banner con contador «Tu reserva vence en 12:34», botón **«Continuar pago»** y botón **«Cancelar y liberar»** (`cancelar_pedido_pendiente`). Recargar no cambia nada; el contador se calcula desde `expiraEn`.
+- «Continuar pago» reabre el checkout de Bold para el **mismo** pedido. Lo firma una acción nueva de `crear-pedido` (o función `reanudar-pago`) a partir del token, solo si el pedido está pendiente y la reserva vigente. **Verificar en implementación** que Bold acepte reintentar con la misma referencia; si no, «Continuar pago» cancela el pendiente y crea un pedido nuevo con el mismo carrito.
+- **Al vencer:** el banner cambia a «Tu reserva venció. Tus productos siguen en el carrito» y se limpia la clave de `localStorage`. El carrito no se borra.
+- La confirmación, si el pedido está pendiente, muestra el mismo contador (`obtener_pedido` devuelve `reserva_expira_en`).
+- Tienda (tarjetas, ficha, selector de variantes, tope del carrito) usa `stock_disponible` en vez de `stock_actual`.
+
+### POS
+
+- Sigue vendiendo del stock físico (`decrementar_stock_seguro` no mira reservas). Muestra un aviso «N reservada(s) en web» junto al producto/variante cuando hay reservas vigentes (lectura vía `stock_disponible` comparado con `stock_actual`).
+
+### Correo al equipo
+
+- `notify-pedido` muestra «⚠ Sobreventa: revisar stock» cuando `pedidos.sobreventa = true`.
 
 ## 5. POS (`pos/index.html`)
 
@@ -177,12 +225,13 @@ Trigger `after insert/update/delete` en `producto_variantes` → `productos_even
 
 ## Pruebas y verificación
 
-- **SQL** (transacción con rollback contra el proyecto): trigger de suma; `registrar_venta_web` por variante e idempotente; productos simples sin cambios; funciones con y sin `p_variante_id`.
+- **SQL** (transacción con rollback contra el proyecto): trigger de suma; `registrar_venta_web` por variante e idempotente; productos simples sin cambios; funciones con y sin `p_variante_id`; `reservar_stock_pedido` rechaza cuando no alcanza, dos reservas concurrentes por la última unidad (solo una gana), reservas vencidas no cuentan, `registrar_venta_web` libera reservas y marca `sobreventa`, `cancelar_pedido_pendiente` solo actúa sobre pendientes.
+- **Reserva en vivo:** crear pedido → la tienda muestra una unidad menos; recargar el checkout mantiene el contador; «Cancelar y liberar» devuelve la unidad.
 - **Unitarias** (lógica pura): `generarCombinaciones`, `claveCombinacion`, `valoresDisponibles`, `varianteDeSeleccion`, clave de línea y migración v1→v2 del carrito.
 - **En vivo** con Chrome headless en este equipo: crear producto con variantes en el admin; elegir combinación en la ficha (foto y precio cambian); dos variantes en el carrito; checkout rechaza variante sin stock.
 
 ## Despliegue
 
 - Migración 026 vía Management API.
-- Funciones `crear-pedido`, `verificar-pago`, `notify-pedido` con `--no-verify-jwt`.
+- Funciones `crear-pedido`, `verificar-pago`, `bold-webhook`, `notify-pedido` (y `reanudar-pago` si se crea) con `--no-verify-jwt`.
 - Hosting: solo cuando el usuario lo pida.
