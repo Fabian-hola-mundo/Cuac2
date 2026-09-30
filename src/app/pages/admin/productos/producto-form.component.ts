@@ -240,6 +240,8 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     const ed = this.editor();
+    // Un valor escrito sin Enter cuenta: la tabla lo refleja antes de validar.
+    if (ed?.activo()) ed.confirmarValoresPendientes();
     const errVariantes = ed?.error();
     if (errVariantes) { this.errorMsg.set(errVariantes); return; }
     // Desactivar combinaciones es fácil de hacer sin querer (quitar un valor);

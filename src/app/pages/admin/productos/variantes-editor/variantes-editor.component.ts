@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { FormsModule } from '@angular/forms';
 import { Combinacion, OpcionDef, normalizarOpciones } from '../../../../../../supabase/functions/_shared/variantes';
 import { ProductoOpcion, ProductoVariante } from '../../../../core/services/inventario.service';
-import { FilaVariante, contarDesactivadas, reconciliarFilas } from './filas';
+import { FilaVariante, agregarValoresPendientes, contarDesactivadas, reconciliarFilas } from './filas';
 
 const MAX_OPCIONES = 3;
 
@@ -120,11 +120,26 @@ export class VariantesEditorComponent {
     this.filas.update(fs => fs.map((f, j) => (j === idx ? { ...f, ...cambios } : f)));
   }
 
+  /**
+   * Suma a sus opciones los valores escritos sin pulsar Enter y regenera la
+   * tabla. El formulario lo llama antes de validar, y `payload()` otra vez por
+   * si acaso (no hace nada si ya no queda nada pendiente).
+   */
+  confirmarValoresPendientes(): void {
+    const antes = this.opciones();
+    const despues = agregarValoresPendientes(antes, this.nuevoValor);
+    for (const k of Object.keys(this.nuevoValor)) this.nuevoValor[+k] = '';
+    if (despues === antes) return;
+    this.opciones.set(despues);
+    this.regenerar();
+  }
+
   payload(): {
     opciones: OpcionDef[];
     variantes: { opciones: Combinacion; precio: number | null; stock_inicial: number; activo: boolean }[];
   } {
     if (!this.activo()) return { opciones: [], variantes: [] };
+    this.confirmarValoresPendientes();
     return {
       opciones: normalizarOpciones(this.opciones()),
       variantes: this.filas().map(f => ({

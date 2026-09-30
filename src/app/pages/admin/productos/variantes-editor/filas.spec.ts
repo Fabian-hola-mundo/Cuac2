@@ -1,5 +1,5 @@
 // src/app/pages/admin/productos/variantes-editor/filas.spec.ts
-import { contarDesactivadas, reconciliarFilas } from './filas';
+import { agregarValoresPendientes, contarDesactivadas, reconciliarFilas } from './filas';
 
 const v = (valor: string) => ({ valor, foto_url: null });
 const EXISTENTES = [
@@ -47,5 +47,22 @@ describe('quitar una opción', () => {
       [{ nombre: '  ', valores: [v('S')] }, { nombre: 'Color', valores: [v('Negro')] }], [], EXISTENTES);
     expect(filas.map(f => [f.etiqueta, f.id, f.stock, f.existente])).toEqual([['Negro', null, 0, false]]);
     expect(contarDesactivadas(EXISTENTES, filas, ['Color'])).toBe(2);
+  });
+});
+
+describe('agregarValoresPendientes', () => {
+  it('suma a cada opción el valor escrito sin Enter, recortado', () => {
+    const ops = [{ nombre: 'Talla', valores: [v('S')] }, { nombre: 'Color', valores: [] }];
+    expect(agregarValoresPendientes(ops, { 0: ' M ', 1: 'Negro' })).toEqual([
+      { nombre: 'Talla', valores: [v('S'), v('M')] },
+      { nombre: 'Color', valores: [v('Negro')] },
+    ]);
+  });
+
+  it('ignora vacíos y repetidos (sin distinguir mayúsculas)', () => {
+    const ops = [{ nombre: 'Talla', valores: [v('S')] }];
+    expect(agregarValoresPendientes(ops, { 0: 's ' })).toBe(ops);
+    expect(agregarValoresPendientes(ops, { 0: '   ' })).toBe(ops);
+    expect(agregarValoresPendientes(ops, {})).toBe(ops);
   });
 });

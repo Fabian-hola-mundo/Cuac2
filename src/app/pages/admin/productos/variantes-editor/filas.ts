@@ -65,3 +65,22 @@ export function contarDesactivadas(existentes: ProductoVariante[], filas: FilaVa
     e.activo && !(mismasClaves(e.opciones, orden) && claves.has(claveCombinacion(e.opciones, orden))),
   ).length;
 }
+
+/**
+ * Valores escritos en el campo de una opción sin pulsar Enter: al guardar se
+ * suman a su opción en vez de perderse en silencio. Vacíos y repetidos (sin
+ * distinguir mayúsculas) se ignoran. Devuelve el mismo arreglo si no cambia nada.
+ */
+export function agregarValoresPendientes(
+  opciones: OpcionDef[], pendientes: Record<number, string>,
+): OpcionDef[] {
+  let cambio = false;
+  const out = opciones.map((o, i) => {
+    const valor = (pendientes[i] ?? '').trim();
+    const k = valor.toLocaleLowerCase('es');
+    if (!valor || o.valores.some(v => v.valor.trim().toLocaleLowerCase('es') === k)) return o;
+    cambio = true;
+    return { ...o, valores: [...o.valores, { valor, foto_url: null }] };
+  });
+  return cambio ? out : opciones;
+}
