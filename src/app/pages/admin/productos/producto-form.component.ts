@@ -1,4 +1,7 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, OnInit,
+  computed, inject, signal, viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule }    from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -9,6 +12,8 @@ import {
   ETIQUETAS_FIJAS,
   MAX_LARGO_ETIQUETA,
   ProductoEvento,
+  ProductoOpcion,
+  ProductoVariante,
   etiquetaCategoria,
   etiquetaFlag,
   slugCategoria,
@@ -23,16 +28,17 @@ import {
   totalGaleria,
   validarImagen,
 } from './galeria';
+import { VariantesEditorComponent } from './variantes-editor/variantes-editor.component';
 
 @Component({
   selector: 'app-producto-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, VariantesEditorComponent],
   templateUrl: './producto-form.component.html',
   styleUrl: './producto-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductoFormComponent implements OnInit, OnDestroy {
+export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
   private router  = inject(Router);
   private route   = inject(ActivatedRoute);
   private fb      = inject(FormBuilder);
@@ -110,7 +116,23 @@ export class ProductoFormComponent implements OnInit, OnDestroy {
    */
   private creadoId: string | null = null;
 
-  form = this.fb.group({
+  // ── Variantes ─────────────────────────────────────────────────────────────
+  readonly editor = viewChild(VariantesEditorComponent);
+  /** Fotos ya guardadas: las únicas que se pueden asignar a un valor. */
+  readonly fotosGuardadas = computed(() => {
+    const g = this.galeria();
+    return [this.coverPreview(), ...g.existentes].filter((u): u is string => !!u && !u.startsWith('blob:'));
+  });
+  /** Si al guardar se van a desactivar combinaciones, cuántas confirmó el admin. */
+  readonly confirmarDesactivar = signal<number | null>(null);
+  /** Con variantes activas antes de editar: apagarlas también hay que guardarlo. */
+  private teniaVariantes = false;
+  /** Sin esto, guardar con el editor vacío desactivaría variantes que no se vieron. */
+  private variantesFallaron = false;
+  /** Variantes leídas antes de que exista el editor en la vista. */
+  private variantesPendientes: { opciones: ProductoOpcion[]; variantes: ProductoVariante[] } | null = null;
+
+  form =this.fb.group({
     nombre:        ['', [Validators.required, Validators.minLength(2)]],
     categoria:     ['tote', Validators.required],
     precio:        [null as number | null, [Validators.required, Validators.min(1)]],
@@ -154,6 +176,26 @@ export class ProductoFormComponent implements OnInit, OnDestroy {
     this.galeria.set({ existentes: p.fotos ?? [], nuevos: [] });
     this.material.set(p.material ?? []);
     this.materialTexto = (p.material ?? []).join(', ');
+
+    try {
+      const { opciones, variantes } = await this.inv.getVariantesAdmin(id);
+      this.teniaVariantes = variantes.some(v => v.activo);
+      const ed = this.editor();
+      if (ed) ed.cargar(opciones, variantes);
+      else this.variantesPendientes = { opciones, variantes };
+    } catch {
+      this.variantesFallaron = true;
+      this.errorMsg.set('No se pudieron cargar las variantes. Recarga la página antes de guardar.');
+    }
+  }
+
+  ngAfterViewInit() {
+    const pendientes = this.variantesPendientes;
+    const ed = this.editor();
+    if (pendientes && ed) {
+      ed.cargar(pendientes.opciones, pendientes.variantes);
+      this.variantesPendientes = null;
+    }
   }
 
   ngOnDestroy() {
@@ -174,6 +216,21 @@ export class ProductoFormComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.variantesFallaron) {
+      this.errorMsg.set('No se pudieron cargar las variantes. Recarga la página antes de guardar.');
+      return;
+    }
+    const ed = this.editor();
+    const errVariantes = ed?.error();
+    if (errVariantes) { this.errorMsg.set(errVariantes); return; }
+    // Desactivar combinaciones es fácil de hacer sin querer (quitar un valor);
+    // el primer clic avisa y el segundo confirma ese mismo número.
+    const desactivadas = ed?.desactivadas() ?? 0;
+    if (desactivadas > 0 && this.confirmarDesactivar() !== desactivadas) {
+      this.errorMsg.set(null);
+      this.confirmarDesactivar.set(desactivadas);
+      return;
+    }
     this.guardando.set(true);
     this.errorMsg.set(null);
     try {
@@ -197,7 +254,8 @@ export class ProductoFormComponent implements OnInit, OnDestroy {
 
       // Primero el registro, después las imágenes: sólo con el id definitivo se
       // pueden subir a la carpeta del producto en vez de a una temporal.
-      const id = await this.asegurarId(datos, v.stock_inicial ?? 0);
+      // Con variantes el stock vive en cada combinación; el del producto es su suma.
+      const id = await this.asegurarId(datos, ed?.activo() ? 0 : v.stock_inicial ?? 0);
       if (!id) return;
 
       const imagenes = await this.subirImagenes(id);
@@ -205,6 +263,13 @@ export class ProductoFormComponent implements OnInit, OnDestroy {
 
       const { error } = await this.inv.updateProducto(id, { ...datos, ...imagenes });
       if (error) { this.errorMsg.set(error); return; }
+
+      if (ed && (ed.activo() || this.teniaVariantes)) {
+        const { opciones, variantes } = ed.payload();
+        const { error: vErr } = await this.inv.guardarVariantes(id, opciones, variantes);
+        if (vErr) { this.errorMsg.set(`El producto se guardó, pero las variantes no: ${vErr}`); return; }
+        await this.inv.cargarTodos();
+      }
 
       this.router.navigate(['/admin/productos']);
     } catch (e: unknown) {

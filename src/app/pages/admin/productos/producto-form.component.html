@@ -105,18 +105,21 @@
           }
         </div>
 
-        <div class="field">
-          <label>Stock inicial <span class="opt">{{ isEdit() ? '' : '*' }}</span></label>
-          <input class="input" type="number" formControlName="stock_inicial" placeholder="0" min="0" />
-          @if (isEdit()) {
-            <span class="help">El POS gestiona el stock actual</span>
-          } @else {
-            <span class="help">El stock actual se igualará a este valor al crear el producto</span>
-          }
-          @if (hasError('stock_inicial')) {
-            <span class="help" style="color:var(--terra)">El stock no puede ser negativo</span>
-          }
-        </div>
+        <!-- Con variantes el stock va por combinación, en la tabla del editor. -->
+        @if (!editor()?.activo()) {
+          <div class="field">
+            <label>Stock inicial <span class="opt">{{ isEdit() ? '' : '*' }}</span></label>
+            <input class="input" type="number" formControlName="stock_inicial" placeholder="0" min="0" />
+            @if (isEdit()) {
+              <span class="help">El POS gestiona el stock actual</span>
+            } @else {
+              <span class="help">El stock actual se igualará a este valor al crear el producto</span>
+            }
+            @if (hasError('stock_inicial')) {
+              <span class="help" style="color:var(--terra)">El stock no puede ser negativo</span>
+            }
+          </div>
+        }
 
         <!-- Los dos interruptores son la misma decisión ("dónde se ve esto"),
              así que van en una sola fila y con la misma forma: etiqueta a la
@@ -138,6 +141,8 @@
             </label>
           </div>
         </div>
+
+        <app-variantes-editor [fotos]="fotosGuardadas()" [esEdicion]="isEdit()" />
 
         <!-- ── APARIENCIA ─────────────────────────────────────────── -->
         <div class="section-sep"></div>
@@ -206,10 +211,19 @@
           <p class="form-error">{{ errorMsg() }}</p>
         }
 
+        @let pideConfirmar = !!confirmarDesactivar() && confirmarDesactivar() === editor()?.desactivadas();
+        @if (pideConfirmar) {
+          <p class="form-error" role="alert">
+            Vas a desactivar {{ confirmarDesactivar() }} combinación(es). Pulsa «Guardar y desactivar» para confirmar.
+          </p>
+        }
+
         <div class="form-footer">
           <button class="btn-sm ghost" type="button" (click)="cancelar()">Cancelar</button>
           <button class="btn-sm solid" type="submit" [disabled]="guardando()">
-            {{ guardando() ? 'Guardando…' : (isEdit() ? 'Actualizar' : 'Crear producto') }}
+            {{ guardando() ? 'Guardando…'
+              : pideConfirmar ? 'Guardar y desactivar'
+              : (isEdit() ? 'Actualizar' : 'Crear producto') }}
           </button>
         </div>
 

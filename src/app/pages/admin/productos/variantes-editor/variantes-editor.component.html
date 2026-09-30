@@ -1,0 +1,89 @@
+<div class="ve">
+  <div class="section-sep"></div>
+  <div class="field-toggle-row">
+    <div>
+      <span class="ftr-label">Este producto tiene variantes</span>
+      <span class="ftr-hint">Talla, color, tamaño… hasta {{ maxOpciones }} opciones.</span>
+    </div>
+    <label class="inv-toggle">
+      <input type="checkbox" aria-label="Este producto tiene variantes"
+             [checked]="activo()" (change)="alternar($any($event.target).checked)" />
+      <span class="inv-slider"></span>
+    </label>
+  </div>
+
+  @if (activo()) {
+    @for (op of opciones(); track $index; let i = $index) {
+      <div class="ve-opcion">
+        <div class="ve-opcion-h">
+          <input class="input ve-nombre" placeholder="Nombre de la opción (ej. Talla)" maxlength="30"
+                 [ngModel]="op.nombre" [ngModelOptions]="{ standalone: true }"
+                 (ngModelChange)="renombrarOpcion(i, $event)" />
+          <button type="button" class="ve-btn" (click)="quitarOpcion(i)">Quitar</button>
+        </div>
+        <div class="ve-valores">
+          @for (val of op.valores; track $index; let k = $index) {
+            <span class="ve-chip">
+              @if (val.foto_url) { <img [src]="val.foto_url" alt="" /> }
+              {{ val.valor }}
+              <button type="button" aria-label="Mover a la izquierda" (click)="moverValor(i, k, -1)">‹</button>
+              <button type="button" aria-label="Mover a la derecha" (click)="moverValor(i, k, 1)">›</button>
+              <button type="button" [attr.aria-label]="'Foto para ' + val.valor"
+                      (click)="fotoAbierta.set({ op: i, val: k })">📷</button>
+              <button type="button" [attr.aria-label]="'Quitar ' + val.valor" (click)="quitarValor(i, k)">×</button>
+            </span>
+          }
+          <input class="input ve-nuevo" placeholder="Escribe un valor y pulsa Enter" maxlength="30"
+                 [(ngModel)]="nuevoValor[i]" [ngModelOptions]="{ standalone: true }"
+                 (keydown.enter)="$event.preventDefault(); agregarValor(i)" />
+        </div>
+        @if (fotoAbierta()?.op === i) {
+          <div class="ve-fotos" role="listbox" aria-label="Elegir foto">
+            <button type="button" class="ve-btn" (click)="asignarFoto(i, fotoAbierta()!.val, null)">Sin foto</button>
+            @for (f of fotos(); track f) {
+              <button type="button" (click)="asignarFoto(i, fotoAbierta()!.val, f)"><img [src]="f" alt="" /></button>
+            }
+            @if (fotos().length === 0) { <small class="help">Guarda primero las fotos del producto para poder asignarlas.</small> }
+          </div>
+        }
+      </div>
+    }
+    @if (opciones().length < maxOpciones) {
+      <button type="button" class="ve-btn ve-agregar" (click)="agregarOpcion()">+ Agregar opción</button>
+    }
+
+    @if (filas().length > 0) {
+      <div class="ve-tabla-wrap">
+        <table class="ve-tabla">
+          <thead><tr><th>Combinación</th><th>Precio</th><th>{{ esEdicion() ? 'Stock' : 'Stock inicial' }}</th><th>Activa</th></tr></thead>
+          <tbody>
+            @for (f of filas(); track f.etiqueta; let j = $index) {
+              <tr [class.is-off]="!f.activo">
+                <td>{{ f.etiqueta }}</td>
+                <td><input class="input" type="number" min="1" placeholder="Precio del producto"
+                           [ngModel]="f.precio" [ngModelOptions]="{ standalone: true }"
+                           (ngModelChange)="editarFila(j, { precio: $event })" /></td>
+                <td>
+                  @if (f.existente) { {{ f.stock }} <small class="help">(reabastece o ajusta desde la lista)</small> }
+                  @else { <input class="input" type="number" min="0"
+                                 [ngModel]="f.stock" [ngModelOptions]="{ standalone: true }"
+                                 (ngModelChange)="editarFila(j, { stock: $event ?? 0 })" /> }
+                </td>
+                <td><input type="checkbox" [attr.aria-label]="'Activa: ' + f.etiqueta" [checked]="f.activo"
+                           (change)="editarFila(j, { activo: $any($event.target).checked })" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="ve-masivo">
+        <button type="button" class="ve-btn" (click)="aplicarATodas('precio', filas()[0].precio)">Poner el precio de la primera a todas</button>
+        <button type="button" class="ve-btn" (click)="aplicarATodas('stock', filas()[0].stock)">Poner el stock de la primera a todas las nuevas</button>
+      </div>
+    }
+    @if (desactivadas() > 0) {
+      <p class="ve-aviso" role="status">Al guardar se desactivarán {{ desactivadas() }} combinación(es) que ya no existen. Su historial se conserva.</p>
+    }
+    @if (error()) { <p class="ve-error">{{ error() }}</p> }
+  }
+</div>
