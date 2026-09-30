@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import type { Combinacion, OpcionDef, ValorOpcion } from '../../../../supabase/functions/_shared/variantes';
 import { SupabaseService } from './supabase.service';
 import { validarImagen } from '../../pages/admin/productos/galeria';
 import { comprimirImagen, conExtension } from '../../pages/admin/productos/comprimir-imagen';
@@ -7,6 +8,23 @@ import {
   planCopiaImagenes,
   rutaImagen,
 } from '../../pages/admin/productos/productos-storage';
+
+export type { Combinacion, OpcionDef, ValorOpcion };
+
+export interface ProductoOpcion { nombre: string; posicion: number; valores: ValorOpcion[] }
+
+export interface ProductoVariante {
+  id: string;
+  producto_id: string;
+  opciones: Combinacion;
+  precio: number | null;
+  stock_actual: number;
+  activo: boolean;
+  posicion: number;
+}
+
+/** Variante como la ve la tienda: `disponible` ya descuenta reservas vigentes. */
+export interface VariantePublica extends ProductoVariante { disponible: number }
 
 export interface ProductoEvento {
   id: string;
@@ -37,7 +55,12 @@ export type ProductoPublico = Pick<
   ProductoEvento,
   | 'id' | 'nombre' | 'categoria' | 'personaje' | 'precio' | 'stock_actual'
   | 'activo' | 'creado_en' | 'cover_url' | 'color' | 'flag' | 'material' | 'destacado'
->;
+> & {
+  /** true si tiene al menos una variante activa: el «+» de la tarjeta lleva a la ficha. */
+  tieneVariantes?: boolean;
+  precioMin?: number;
+  precioMax?: number;
+};
 
 const COLUMNAS_PUBLICAS =
   'id, nombre, categoria, personaje, precio, stock_actual, activo, creado_en, cover_url, color, flag, material, destacado';
@@ -52,6 +75,8 @@ export interface VentaEvento {
   canal: 'evento' | 'web';
   evento_id: string;
   productos_evento?: { nombre: string; categoria: string; precio?: number };
+  variante_id?: string | null;
+  producto_variantes?: { opciones: Combinacion } | null;
 }
 
 export interface MovimientoProducto {
@@ -189,21 +214,39 @@ export class InventarioService {
   async cargarCatalogo(): Promise<void> {
     this.cargandoCatalogo.set(true);
     this.errorCatalogo.set(null);
-    const { data, error } = await this.sb.db
-      .from('productos_evento')
-      .select(COLUMNAS_PUBLICAS)
-      .eq('activo', true)
-      .order('creado_en', { ascending: false });
-    if (error) {
-      this.errorCatalogo.set(error.message);
+    const [prodRes, dispRes] = await Promise.all([
+      this.sb.db
+        .from('productos_evento')
+        .select(`${COLUMNAS_PUBLICAS}, producto_variantes(precio, activo)`)
+        .eq('activo', true)
+        .order('creado_en', { ascending: false }),
+      this.sb.db.rpc('stock_disponible'),
+    ]);
+    if (prodRes.error) {
+      this.errorCatalogo.set(prodRes.error.message);
       this.cargandoCatalogo.set(false);
       return;
     }
+    // Si falla la lectura de reservas se muestra el stock físico: el servidor
+    // vuelve a validar al crear el pedido.
+    const disponible = new Map<string, number>(
+      ((dispRes.data ?? []) as { producto_id: string; variante_id: string | null; disponible: number }[])
+        .filter(r => r.variante_id === null)
+        .map(r => [r.producto_id, r.disponible]),
+    );
     this.catalogo.set(
-      ((data ?? []) as unknown as ProductoPublico[]).map(p => ({
-        ...p,
-        material: p.material ?? [],
-      })),
+      ((prodRes.data ?? []) as any[]).map(({ producto_variantes, ...p }) => {
+        const activas = ((producto_variantes ?? []) as { precio: number | null; activo: boolean }[]).filter(v => v.activo);
+        const precios = activas.map(v => v.precio ?? p.precio);
+        return {
+          ...p,
+          material: p.material ?? [],
+          stock_actual: disponible.get(p.id) ?? p.stock_actual,
+          tieneVariantes: activas.length > 0,
+          precioMin: precios.length ? Math.min(...precios) : p.precio,
+          precioMax: precios.length ? Math.max(...precios) : p.precio,
+        } as ProductoPublico;
+      }),
     );
     this.cargandoCatalogo.set(false);
   }
@@ -286,16 +329,56 @@ export class InventarioService {
    * ante cualquier fallo de red, y el visitante se iba creyendo que el producto
    * había desaparecido.
    */
-  async getProductoPublico(
-    id: string,
-  ): Promise<{ producto: ProductoEvento | null; error: string | null }> {
-    const { data, error } = await this.sb.db
-      .from('productos_evento')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-    if (error) return { producto: null, error: error.message };
-    return { producto: data ?? null, error: null };
+  async getProductoPublico(id: string): Promise<{
+    producto: ProductoEvento | null;
+    opciones: ProductoOpcion[];
+    variantes: VariantePublica[];
+    error: string | null;
+  }> {
+    const vacio = { producto: null, opciones: [], variantes: [] };
+    const [prodRes, opRes, varRes, dispRes] = await Promise.all([
+      this.sb.db.from('productos_evento').select('*').eq('id', id).maybeSingle(),
+      this.sb.db.from('producto_opciones').select('nombre, posicion, valores').eq('producto_id', id).order('posicion'),
+      this.sb.db.from('producto_variantes').select('*').eq('producto_id', id).eq('activo', true).order('posicion'),
+      this.sb.db.rpc('stock_disponible', { p_producto_ids: [id] }),
+    ]);
+    const error = prodRes.error ?? opRes.error ?? varRes.error;
+    if (error) return { ...vacio, error: error.message };
+    if (!prodRes.data) return { ...vacio, error: null };
+
+    const disp = new Map<string | null, number>(
+      ((dispRes.data ?? []) as { variante_id: string | null; disponible: number }[])
+        .map(r => [r.variante_id, r.disponible]),
+    );
+    const producto = { ...prodRes.data, stock_actual: disp.get(null) ?? prodRes.data.stock_actual } as ProductoEvento;
+    const variantes = ((varRes.data ?? []) as ProductoVariante[])
+      .map(v => ({ ...v, disponible: disp.get(v.id) ?? v.stock_actual }));
+    return { producto, opciones: (opRes.data ?? []) as ProductoOpcion[], variantes, error: null };
+  }
+
+  /** Opciones y TODAS las variantes (también inactivas) para el admin. */
+  async getVariantesAdmin(productoId: string): Promise<{ opciones: ProductoOpcion[]; variantes: ProductoVariante[] }> {
+    const [opRes, varRes] = await Promise.all([
+      this.sb.db.from('producto_opciones').select('nombre, posicion, valores').eq('producto_id', productoId).order('posicion'),
+      this.sb.db.from('producto_variantes').select('*').eq('producto_id', productoId).order('posicion'),
+    ]);
+    if (opRes.error) throw opRes.error;
+    if (varRes.error) throw varRes.error;
+    return { opciones: (opRes.data ?? []) as ProductoOpcion[], variantes: (varRes.data ?? []) as ProductoVariante[] };
+  }
+
+  async guardarVariantes(
+    productoId: string,
+    opciones: OpcionDef[],
+    variantes: { opciones: Combinacion; precio: number | null; stock_inicial: number; activo: boolean }[],
+  ): Promise<{ resultado: { creadas: number; actualizadas: number; desactivadas: number } | null; error: string | null }> {
+    const { data, error } = await this.sb.db.rpc('guardar_variantes', {
+      p_producto_id: productoId,
+      p_opciones: opciones,
+      p_variantes: variantes,
+    });
+    if (error) return { resultado: null, error: error.message };
+    return { resultado: data, error: null };
   }
 
   /**
@@ -371,6 +454,17 @@ export class InventarioService {
         .eq('id', data.id);
     }
 
+    // Las fotos por valor apuntan a URLs del original; se conservan (archivos
+    // públicos del original). El admin puede reasignarlas.
+    const { opciones, variantes } = await this.getVariantesAdmin(id);
+    if (opciones.length > 0) {
+      await this.guardarVariantes(
+        data.id as string,
+        opciones.map(o => ({ nombre: o.nombre, valores: o.valores })),
+        variantes.filter(v => v.activo).map(v => ({ opciones: v.opciones, precio: v.precio, stock_inicial: 0, activo: true })),
+      );
+    }
+
     await this.cargarTodos();
     return {
       error: null,
@@ -394,16 +488,23 @@ export class InventarioService {
   async restockProducto(
     productoId: string,
     cantidad: number,
-    nota?: string
+    nota?: string,
+    varianteId: string | null = null,
   ): Promise<{ error: string | null }> {
     const { error } = await this.sb.db.rpc('registrar_restock', {
       p_producto_id: productoId,
       p_cantidad: cantidad,
       p_nota: nota || null,
+      p_variante_id: varianteId,
     });
     if (error) return { error: error.message };
-    const actual = this.productos().find(p => p.id === productoId)?.stock_actual ?? 0;
-    this.parchear(productoId, { stock_actual: actual + cantidad });
+    if (varianteId) {
+      // El trigger cambió el total del producto.
+      await this.cargarTodos();
+    } else {
+      const actual = this.productos().find(p => p.id === productoId)?.stock_actual ?? 0;
+      this.parchear(productoId, { stock_actual: actual + cantidad });
+    }
     return { error: null };
   }
 
@@ -411,15 +512,21 @@ export class InventarioService {
   async ajustarStock(
     productoId: string,
     nuevoStock: number,
-    nota?: string
+    nota?: string,
+    varianteId: string | null = null,
   ): Promise<{ error: string | null }> {
     const { error } = await this.sb.db.rpc('registrar_ajuste', {
       p_producto_id: productoId,
       p_nuevo_stock: nuevoStock,
       p_nota: nota || null,
+      p_variante_id: varianteId,
     });
     if (error) return { error: error.message };
-    this.parchear(productoId, { stock_actual: nuevoStock });
+    if (varianteId) {
+      await this.cargarTodos();
+    } else {
+      this.parchear(productoId, { stock_actual: nuevoStock });
+    }
     return { error: null };
   }
 
@@ -433,17 +540,23 @@ export class InventarioService {
     );
   }
 
-  async getHistorialProducto(productoId: string): Promise<MovimientoProducto[]> {
-    const [movRes, ventasRes] = await Promise.all([
-      this.sb.db
-        .from('producto_movimientos')
-        .select('tipo, cantidad, nota, creado_en')
-        .eq('producto_id', productoId),
-      this.sb.db
-        .from('ventas_evento')
-        .select('cantidad, vendido_en')
-        .eq('producto_id', productoId),
-    ]);
+  async getHistorialProducto(
+    productoId: string,
+    varianteId: string | null = null,
+  ): Promise<MovimientoProducto[]> {
+    let movQ = this.sb.db
+      .from('producto_movimientos')
+      .select('tipo, cantidad, nota, creado_en')
+      .eq('producto_id', productoId);
+    let ventasQ = this.sb.db
+      .from('ventas_evento')
+      .select('cantidad, vendido_en')
+      .eq('producto_id', productoId);
+    if (varianteId) {
+      movQ = movQ.eq('variante_id', varianteId);
+      ventasQ = ventasQ.eq('variante_id', varianteId);
+    }
+    const [movRes, ventasRes] = await Promise.all([movQ, ventasQ]);
     if (movRes.error) throw movRes.error;
     if (ventasRes.error) throw ventasRes.error;
 
@@ -473,7 +586,7 @@ export class InventarioService {
   ): Promise<VentaEvento[]> {
     let q = this.sb.db
       .from('ventas_evento')
-      .select('*, productos_evento(nombre, categoria, precio, evento_id)')
+      .select('*, productos_evento(nombre, categoria, precio, evento_id), producto_variantes(opciones)')
       .order('vendido_en', { ascending: false });
     if (desde) q = q.gte('vendido_en', `${desde}T00:00:00`);
     if (hasta) q = q.lte('vendido_en', `${hasta}T23:59:59`);
