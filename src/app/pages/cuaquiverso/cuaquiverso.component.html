@@ -111,7 +111,8 @@
           <h4>{{ p.nombre }}</h4>
           <div class="row">
             <span class="price">
-              @if (p.tieneVariantes && p.precioMin !== p.precioMax) { Desde {{ cart.fmtPrice(p.precioMin!) }} } @else { {{ cart.fmtPrice(p.precio) }} }
+              @if (p.tieneVariantes && p.precioMin !== p.precioMax) { Desde }
+              {{ cart.fmtPrice(p.tieneVariantes ? (p.precioMin ?? p.precio) : p.precio) }}
             </span>
             <span class="add" (click)="addToCart($event, p)">+</span>
           </div>

@@ -228,7 +228,8 @@
             <h4>{{ p.nombre }}</h4>
             <div class="row">
               <span class="price">
-                @if (p.tieneVariantes && p.precioMin !== p.precioMax) { Desde {{ fmtPrice(p.precioMin!) }} } @else { {{ fmtPrice(p.precio) }} }
+                @if (p.tieneVariantes && p.precioMin !== p.precioMax) { Desde }
+                {{ fmtPrice(p.tieneVariantes ? (p.precioMin ?? p.precio) : p.precio) }}
               </span>
               <button class="add" type="button"
                       [disabled]="agotado(p)"
