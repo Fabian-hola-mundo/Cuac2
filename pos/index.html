@@ -944,26 +944,37 @@
 
       const { data, error } = await query;
       if (error) throw error;
-      products = data || [];
+      const nuevos = data || [];
 
-      const ids = products.map(p => p.id);
+      const ids = nuevos.map(p => p.id);
       const [varRes, opRes, dispRes] = await Promise.all([
         sb.from('producto_variantes').select('*').in('producto_id', ids).eq('activo', true).order('posicion'),
         sb.from('producto_opciones').select('producto_id, nombre, posicion').in('producto_id', ids).order('posicion'),
         sb.rpc('stock_disponible', { p_producto_ids: ids }),
       ]);
-      variantsByProduct = {};
-      (varRes.data || []).forEach(v => (variantsByProduct[v.producto_id] ||= []).push(v));
-      optionOrder = {};
-      (opRes.data || []).forEach(o => (optionOrder[o.producto_id] ||= []).push(o.nombre));
+      // Sin variantes u opciones, un producto con combinaciones se vería como
+      // simple y se vendería sin variante: mejor fallar y dejar lo anterior.
+      if (varRes.error) throw varRes.error;
+      if (opRes.error) throw opRes.error;
+
+      const nuevasVariantes = {};
+      (varRes.data || []).forEach(v => (nuevasVariantes[v.producto_id] ||= []).push(v));
+      const nuevoOrden = {};
+      (opRes.data || []).forEach(o => (nuevoOrden[o.producto_id] ||= []).push(o.nombre));
       // Reservadas en web = físico − disponible (sólo informativo: el POS vende del físico).
-      reservedByVariant = {};
+      const nuevasReservas = {};
       (dispRes.data || []).forEach(r => {
         const fisico = r.variante_id
           ? (varRes.data || []).find(v => v.id === r.variante_id)?.stock_actual
-          : products.find(p => p.id === r.producto_id)?.stock_actual;
-        reservedByVariant[r.variante_id || r.producto_id] = Math.max(0, (fisico ?? 0) - r.disponible);
+          : nuevos.find(p => p.id === r.producto_id)?.stock_actual;
+        nuevasReservas[r.variante_id || r.producto_id] = Math.max(0, (fisico ?? 0) - r.disponible);
       });
+
+      // Todo junto, para que ningún render vea productos nuevos con variantes viejas.
+      products = nuevos;
+      variantsByProduct = nuevasVariantes;
+      optionOrder = nuevoOrden;
+      reservedByVariant = nuevasReservas;
       renderProducts();
     } catch (e) {
       console.error('Load products error:', e);
