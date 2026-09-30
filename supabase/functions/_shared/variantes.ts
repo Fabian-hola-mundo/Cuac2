@@ -97,3 +97,83 @@ export function rangoPrecios(
   if (precios.length === 0) return null;
   return { min: Math.min(...precios), max: Math.max(...precios) };
 }
+
+// ── Líneas de pedido (crear-pedido) ──────────────────────────────────────────
+// Convierte los ítems que manda el navegador en líneas de pedido con precio,
+// nombre y etiqueta de variante tomados del catálogo. Del cliente sólo se
+// confía en qué producto/variante y cuántas unidades.
+
+export interface ItemEntrada { id: string; variante_id?: string | null; cantidad: number; sub?: unknown; color?: unknown }
+interface ProductoCat { id: string; nombre: string; categoria: string | null; precio: number; activo: boolean }
+interface VarianteCat { id: string; producto_id: string; opciones: Combinacion; precio: number | null; activo: boolean }
+interface OpcionCat { producto_id: string; nombre: string; posicion: number }
+
+export interface LineaPedido {
+  id: string;
+  varianteId: string | null;
+  varianteLabel: string | null;
+  nombre: string;
+  categoria: string | null;
+  precio: number;
+  cantidad: number;
+  sub: string;
+  color: string | null;
+}
+
+export type ResultadoLineas =
+  | { ok: true; lineas: LineaPedido[] }
+  | { ok: false; status: 400 | 422; error: string };
+
+export function resolverLineas(
+  items: ItemEntrada[],
+  productos: ProductoCat[],
+  variantes: VarianteCat[],
+  opciones: OpcionCat[],
+): ResultadoLineas {
+  const catalogo = new Map(
+    productos.filter(p => p.activo && Number.isInteger(p.precio) && p.precio > 0).map(p => [p.id, p]),
+  );
+  const lineas: LineaPedido[] = [];
+
+  for (const i of items) {
+    const p = catalogo.get(i.id);
+    if (!p) return { ok: false, status: 422, error: 'Alguno de los productos ya no está disponible' };
+
+    const activas = variantes.filter(v => v.producto_id === p.id && v.activo);
+    let varianteId: string | null = null;
+    let varianteLabel: string | null = null;
+    let precio = p.precio;
+
+    if (activas.length > 0) {
+      if (!i.variante_id) {
+        return { ok: false, status: 400,
+          error: `"${p.nombre}" ahora tiene opciones. Quítalo del carrito y vuelve a agregarlo eligiendo la tuya.` };
+      }
+      const v = activas.find(x => x.id === i.variante_id);
+      if (!v) return { ok: false, status: 400, error: `La opción elegida de "${p.nombre}" ya no está disponible.` };
+      const orden = opciones
+        .filter(o => o.producto_id === p.id)
+        .sort((a, b) => a.posicion - b.posicion)
+        .map(o => o.nombre);
+      varianteId = v.id;
+      varianteLabel = etiquetaVariante(v.opciones, orden.length ? orden : Object.keys(v.opciones));
+      precio = v.precio ?? p.precio;
+    } else if (i.variante_id) {
+      return { ok: false, status: 400, error: `La opción elegida de "${p.nombre}" ya no está disponible.` };
+    }
+
+    lineas.push({
+      id: p.id,
+      varianteId,
+      varianteLabel,
+      nombre: p.nombre,
+      categoria: p.categoria,
+      precio,
+      cantidad: i.cantidad,
+      // `sub` es NOT NULL en la tabla.
+      sub: typeof i.sub === 'string' ? i.sub : '',
+      color: typeof i.color === 'string' ? i.color : null,
+    });
+  }
+  return { ok: true, lineas };
+}

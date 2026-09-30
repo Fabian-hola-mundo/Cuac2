@@ -2,6 +2,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.106.1'
 import { BOLD_CURRENCY, firmaIntegridad } from '../_shared/bold.ts'
 import { ENVIO_GRATIS_DESDE } from '../_shared/tienda.ts'
+import { resolverLineas } from '../_shared/variantes.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -50,6 +51,9 @@ Deno.serve(async (req) => {
       if (!isStr(it?.id) || !Number.isInteger(it?.cantidad) || it.cantidad <= 0) {
         return json({ ok: false, error: 'Ítems del pedido inválidos' }, 400)
       }
+      if (it.variante_id != null && !isStr(it.variante_id)) {
+        return json({ ok: false, error: 'Ítems del pedido inválidos' }, 400)
+      }
     }
 
     const supabase = createClient(
@@ -57,67 +61,21 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // ── Precios y stock autoritativos desde el catálogo ───────────────────────
+    // ── Precios desde el catálogo (productos, variantes y orden de opciones) ──
     const ids = [...new Set(items.map((i: any) => i.id as string))]
-    const { data: productos, error: prodError } = await supabase
-      .from('productos_evento')
-      .select('id, nombre, categoria, precio, activo, stock_actual')
-      .in('id', ids)
-
-    if (prodError) {
-      console.error(prodError)
+    const [prodRes, varRes, opRes] = await Promise.all([
+      supabase.from('productos_evento').select('id, nombre, categoria, precio, activo').in('id', ids),
+      supabase.from('producto_variantes').select('id, producto_id, opciones, precio, activo').in('producto_id', ids),
+      supabase.from('producto_opciones').select('producto_id, nombre, posicion').in('producto_id', ids),
+    ])
+    if (prodRes.error || varRes.error || opRes.error) {
+      console.error(prodRes.error ?? varRes.error ?? opRes.error)
       return json({ ok: false, error: 'No se pudo verificar el catálogo' }, 500)
     }
 
-    const catalogo = new Map(
-      (productos ?? [])
-        .filter((p: any) => p.activo && Number.isInteger(p.precio) && p.precio > 0)
-        .map((p: any) => [p.id, p]),
-    )
-
-    // Todo id pedido debe existir, estar activo y tener precio válido.
-    if (items.some((i: any) => !catalogo.has(i.id))) {
-      return json({ ok: false, error: 'Alguno de los productos ya no está disponible' }, 422)
-    }
-
-    // ── Stock: hasta ahora nadie miraba `stock_actual` en el camino web, así
-    // que se podía comprar un agotado tantas veces como se quisiera. Esto no es
-    // una reserva (el stock se descuenta al aprobarse el pago, en el webhook):
-    // es la comprobación que evita el caso obvio de vender lo que no existe.
-    const pedidoPorProducto = new Map<string, number>()
-    for (const i of items) {
-      pedidoPorProducto.set(i.id, (pedidoPorProducto.get(i.id) ?? 0) + (i.cantidad as number))
-    }
-    for (const [id, cantidad] of pedidoPorProducto) {
-      const p = catalogo.get(id)!
-      const disponible = Number.isInteger(p.stock_actual) ? p.stock_actual : 0
-      if (disponible <= 0) {
-        return json({ ok: false, error: `"${p.nombre}" se agotó mientras comprabas. Quítalo del carrito para continuar.` }, 409)
-      }
-      if (cantidad > disponible) {
-        return json({
-          ok: false,
-          error: `Sólo quedan ${disponible} de "${p.nombre}". Ajusta la cantidad para continuar.`,
-        }, 409)
-      }
-    }
-
-    // Líneas con el id, precio, nombre y categoría que manda el servidor. `sub`
-    // y `color` son cosméticos (variante de color) y sí vienen del cliente.
-    const lineas = items.map((i: any) => {
-      const p = catalogo.get(i.id)!
-      return {
-        id:       i.id as string,
-        nombre:   p.nombre as string,
-        categoria: p.categoria as string | null,
-        precio:   p.precio as number,
-        cantidad: i.cantidad as number,
-        // `sub` es NOT NULL en la tabla: un null aquí reventaba el INSERT de
-        // items después de haber insertado ya el pedido.
-        sub:      typeof i.sub === 'string' ? i.sub : '',
-        color:    typeof i.color === 'string' ? i.color : null,
-      }
-    })
+    const resuelto = resolverLineas(items, prodRes.data ?? [], varRes.data ?? [], opRes.data ?? [])
+    if (!resuelto.ok) return json({ ok: false, error: resuelto.error }, resuelto.status)
+    const lineas = resuelto.lineas
 
     const subtotal = lineas.reduce((acc, l) => acc + l.precio * l.cantidad, 0)
     if (subtotal <= 0) {
@@ -221,6 +179,8 @@ Deno.serve(async (req) => {
       .insert(lineas.map(l => ({
         pedido_id:   pedido.id,
         producto_id: l.id,
+        variante_id:    l.varianteId,
+        variante_label: l.varianteLabel,
         nombre:      l.nombre,
         sub:         l.sub,
         precio:      l.precio,
@@ -233,6 +193,32 @@ Deno.serve(async (req) => {
       // Sin este rollback quedaba un pedido 'pendiente' sin líneas en el admin.
       await supabase.from('pedidos').delete().eq('id', pedido.id)
       return json({ ok: false, error: 'Error al guardar los productos' }, 500)
+    }
+
+    // ── Reserva de 15 minutos ─────────────────────────────────────────────────
+    // Bloquea y aparta el stock en una transacción: si dos personas van por la
+    // última unidad, sólo una pasa. Si no alcanza, el pedido no debe existir.
+    const { data: expira, error: resError } = await supabase.rpc('reservar_stock_pedido', {
+      p_pedido_id: pedido.id,
+    })
+    if (resError) {
+      await supabase.from('pedido_items').delete().eq('pedido_id', pedido.id)
+      await supabase.from('pedidos').delete().eq('id', pedido.id)
+      if (resError.code === 'P0409') {
+        let info: any = {}
+        try { info = JSON.parse(resError.details ?? '{}') } catch { /* sin detalle */ }
+        const l = lineas.find(x => x.id === info.producto_id && (x.varianteId ?? null) === (info.variante_id ?? null))
+        const nombre = l ? (l.varianteLabel ? `${l.nombre} · ${l.varianteLabel}` : l.nombre) : 'un producto'
+        const n = Number(info.disponible) || 0
+        return json({
+          ok: false,
+          error: n <= 0
+            ? `"${nombre}" se agotó mientras comprabas. Quítalo del carrito para continuar.`
+            : `Solo quedan ${n} de "${nombre}". Ajusta la cantidad para continuar.`,
+        }, 409)
+      }
+      console.error(resError)
+      return json({ ok: false, error: 'No pudimos apartar tus productos. Intenta de nuevo.' }, 500)
     }
 
     // ── Incrementar el contador de usos tras ambos inserts ────────────────────
@@ -267,6 +253,8 @@ Deno.serve(async (req) => {
     return json({
       ok: true,
       referencia,
+      reserva_expira_en: expira,
+      token: pedido.confirmacion_token,
       bold: {
         apiKey,
         orderId:  referencia,
