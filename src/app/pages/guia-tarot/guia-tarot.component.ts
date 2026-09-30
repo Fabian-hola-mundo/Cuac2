@@ -11,7 +11,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Location, isPlatformBrowser } from '@angular/common';
+import { Location, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FooterComponent } from '../../layout/footer/footer.component';
 import { SeoService } from '../../core/services/seo.service';
@@ -20,7 +20,7 @@ import { ARCANOS, Arcano, ELEMENTOS, Elemento, TIRADAS } from './tarot.data';
 @Component({
   selector: 'app-guia-tarot',
   standalone: true,
-  imports: [RouterLink, FooterComponent],
+  imports: [RouterLink, FooterComponent, NgTemplateOutlet],
   templateUrl: './guia-tarot.component.html',
   styleUrl: './guia-tarot.component.scss',
 })
@@ -55,6 +55,21 @@ export class GuiaTarotComponent implements OnInit, OnDestroy {
     { id: 'arcanos',   nombre: 'Los 22 arcanos' },
     { id: 'recuerda',  nombre: 'Recuerda' },
   ];
+  /** Enlace de compra del tarot físico. Mientras no exista, el botón no lleva a ningún lado. */
+  readonly tarotFisico: string | null = null;
+
+  /** Estrellas que titilan en la portada: posición (%), tamaño (px) y desfase (s). */
+  readonly estrellas = [
+    { x: 8,  y: 22, t: 13, d: 0 },
+    { x: 4,  y: 88, t: 9,  d: 1.6 },
+    { x: 34, y: 12, t: 10, d: 0.8 },
+    { x: 47, y: 88, t: 8,  d: 2.4 },
+    { x: 58, y: 16, t: 14, d: 1.2 },
+    { x: 71, y: 82, t: 10, d: 3 },
+    { x: 88, y: 28, t: 11, d: 0.4 },
+    { x: 94, y: 64, t: 9,  d: 2 },
+  ];
+
   readonly menu = signal(false);
   /** Botón flotante: en táctil se abre con un toque; con ratón, al pasar. */
   readonly enlaces = signal(false);
@@ -67,7 +82,86 @@ export class GuiaTarotComponent implements OnInit, OnDestroy {
       document.documentElement.classList.add('gt-scroll');
 
       this.alScroll();
+      this.iniciarGiro();
     });
+  }
+
+  // ── Inclinación ───────────────────────────────────────────────────────────
+  // Las piezas marcadas con .gt-giro se inclinan un poco: con el giroscopio en
+  // el celular y con el ratón en escritorio. Aquí solo se escriben --gx y --gy
+  // (de -1 a 1); el CSS decide cuánto gira cada pieza.
+
+  private giroObjetivo = { x: 0, y: 0 };
+  private giroActual   = { x: 0, y: 0 };
+  private giroBase: number | null = null;
+  private giroCuadro = 0;
+  private giroQuitar: (() => void)[] = [];
+
+  private iniciarGiro(): void {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const escuchar = <K extends keyof WindowEventMap>(tipo: K, fn: (e: WindowEventMap[K]) => void) => {
+      window.addEventListener(tipo, fn, { passive: true });
+      this.giroQuitar.push(() => window.removeEventListener(tipo, fn));
+    };
+    const limitar = (v: number) => Math.max(-1, Math.min(1, v));
+
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      escuchar('pointermove', e => {
+        this.giroObjetivo = {
+          x: limitar((e.clientX / window.innerWidth) * 2 - 1),
+          y: limitar((e.clientY / window.innerHeight) * 2 - 1),
+        };
+        this.animarGiro();
+      });
+      return;
+    }
+
+    if (typeof DeviceOrientationEvent === 'undefined') return;
+
+    const alOrientar = (e: DeviceOrientationEvent) => {
+      if (e.beta === null || e.gamma === null) return;
+      // El reposo es como cada quien sostiene el teléfono: la base lo sigue
+      // despacio, así la carta vuelve al centro cuando el celular se queda quieto.
+      this.giroBase = this.giroBase === null ? e.beta : this.giroBase + (e.beta - this.giroBase) * 0.02;
+      this.giroObjetivo = {
+        x: limitar(e.gamma / 22),
+        y: limitar((e.beta - this.giroBase) / 22),
+      };
+      this.animarGiro();
+    };
+
+    // iOS pide permiso, y solo deja pedirlo después de un toque de la persona.
+    const Orientacion = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> };
+    if (typeof Orientacion.requestPermission === 'function') {
+      const pedir = () => {
+        window.removeEventListener('click', pedir);
+        Orientacion.requestPermission!()
+          .then(r => { if (r === 'granted') escuchar('deviceorientation', alOrientar); })
+          .catch(() => {});
+      };
+      window.addEventListener('click', pedir);
+      this.giroQuitar.push(() => window.removeEventListener('click', pedir));
+    } else {
+      escuchar('deviceorientation', alOrientar);
+    }
+  }
+
+  /** Acerca el valor actual al objetivo cuadro a cuadro, para que el giro sea suave. */
+  private animarGiro(): void {
+    if (this.giroCuadro) return;
+    const paso = () => {
+      const a = this.giroActual, o = this.giroObjetivo;
+      a.x += (o.x - a.x) * 0.12;
+      a.y += (o.y - a.y) * 0.12;
+      const quieto = Math.abs(o.x - a.x) < 0.002 && Math.abs(o.y - a.y) < 0.002;
+      document.querySelectorAll<HTMLElement>('.gt-giro').forEach(el => {
+        el.style.setProperty('--gx', a.x.toFixed(3));
+        el.style.setProperty('--gy', a.y.toFixed(3));
+      });
+      this.giroCuadro = quieto ? 0 : requestAnimationFrame(paso);
+    };
+    this.giroCuadro = requestAnimationFrame(paso);
   }
 
   @HostListener('window:scroll')
@@ -97,6 +191,8 @@ export class GuiaTarotComponent implements OnInit, OnDestroy {
   /** Mientras se baraja, los nombres pasan rápido para que se note el azar. */
   readonly barajando = signal(false);
   readonly fugaz     = signal<string>('');
+  /** Chispas que salen de la carta al revelarse, repartidas en círculo. */
+  readonly chispas   = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   private temporizadores: ReturnType<typeof setTimeout>[] = [];
 
   private focoPrevio: HTMLElement | null = null;
@@ -118,6 +214,8 @@ export class GuiaTarotComponent implements OnInit, OnDestroy {
     if (this.esNavegador) document.documentElement.classList.remove('gt-scroll');
     this.soltarScroll();
     this.temporizadores.forEach(t => clearTimeout(t));
+    this.giroQuitar.forEach(fn => fn());
+    if (this.esNavegador && this.giroCuadro) cancelAnimationFrame(this.giroCuadro);
   }
 
   elemento(id: Elemento) {
@@ -229,7 +327,8 @@ export class GuiaTarotComponent implements OnInit, OnDestroy {
         this.barajando.set(false);
         this.fugaz.set('');
         this.sacada.set(nueva);
-        esperar(700, () => this.girando.set(false));
+        // La revelación dura algo más de un segundo; hasta entonces no se puede sacar otra.
+        esperar(1200, () => this.girando.set(false));
       });
     });
   }

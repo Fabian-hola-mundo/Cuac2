@@ -43,6 +43,11 @@
       <span class="gt-glow gt-glow--oro"></span>
       <span class="gt-glow gt-glow--indigo"></span>
       <span class="gt-grano"></span>
+      <!-- Estrellas de cuatro puntas, como las de las esquinas de las cartas. -->
+      @for (e of estrellas; track $index) {
+        <i class="gt-estrella" [style.left.%]="e.x" [style.top.%]="e.y"
+          [style.--tam]="e.t + 'px'" [style.animation-delay.s]="e.d"></i>
+      }
     </div>
 
     <div class="gt-hero-inner">
@@ -57,9 +62,27 @@
           <button type="button" class="gt-btn gt-btn--solid" (click)="irA('arcanos')">Ver los 22 arcanos</button>
           <button type="button" class="gt-btn gt-btn--ghost" (click)="irA('sacar')">Tu carta del día</button>
         </div>
+
+        <!-- Aviso discreto del tarot impreso; el bloque completo está al final de los arcanos. -->
+        <ng-template #fisicoHero>
+          <span class="gt-hero-fisico-mazo" aria-hidden="true">
+            <img src="/tarot/sm/reverso.jpg" alt="" width="360" height="617" />
+            <img src="/tarot/sm/la-estrella.jpg" alt="" width="360" height="617" />
+          </span>
+          <span class="gt-hero-fisico-txt">
+            <small>Nuevo · Tarot impreso</small>
+            <strong>Llévate estas 22 cartas a casa</strong>
+          </span>
+          <span class="gt-hero-fisico-cta">Comprar <span aria-hidden="true">→</span></span>
+        </ng-template>
+        @if (tarotFisico) {
+          <a class="gt-hero-fisico" [href]="tarotFisico"><ng-container *ngTemplateOutlet="fisicoHero" /></a>
+        } @else {
+          <button type="button" class="gt-hero-fisico"><ng-container *ngTemplateOutlet="fisicoHero" /></button>
+        }
       </div>
 
-      <div class="gt-abanico" aria-hidden="true">
+      <div class="gt-abanico gt-giro" aria-hidden="true">
         <img class="gt-abanico-c gt-abanico-c--1" src="/tarot/sm/la-luna.jpg" alt="" width="360" height="617" />
         <img class="gt-abanico-c gt-abanico-c--2" src="/tarot/reverso.jpg" alt="" width="720" height="1233" />
         <img class="gt-abanico-c gt-abanico-c--3" src="/tarot/sm/el-sol.jpg" alt="" width="360" height="617" />
@@ -165,16 +188,28 @@
     </div>
 
     <div class="gt-sacar-inner">
-      <div class="gt-sacar-carta" [class.is-volteada]="sacada()" [class.is-barajando]="barajando()">
+      <div class="gt-sacar-carta gt-giro" [class.is-volteada]="sacada()" [class.is-barajando]="barajando()"
+        [style.--luz]="sacada() ? sacada()!.tono[0] : null">
         <div class="gt-mazo" aria-hidden="true">
           @for (n of [1, 2, 3, 4]; track n) {
             <img class="gt-mazo-c" [class]="'gt-mazo-c--' + n" src="/tarot/sm/reverso.jpg" alt="" width="360" height="617" />
           }
         </div>
+        <!-- La revelación: un destello del color de la carta y chispas que se abren.
+             Nacen con la carta, así que la animación corre una vez por cada tirada. -->
+        @if (sacada()) {
+          <span class="gt-destello" aria-hidden="true"></span>
+          <span class="gt-chispas" aria-hidden="true">
+            @for (n of chispas; track n) {
+              <i [style.--ang]="n * 36 + 'deg'" [style.--dist]="(n % 2 ? 150 : 185) + 'px'"></i>
+            }
+          </span>
+        }
         <div class="gt-flip">
           <img class="gt-flip-cara gt-flip-cara--reverso" src="/tarot/reverso.jpg" alt="Reverso de la baraja" width="720" height="1233" />
           @if (sacada(); as c) {
             <img class="gt-flip-cara gt-flip-cara--frente" [src]="img(c)" [alt]="c.nombre" width="720" height="1233" />
+            <span class="gt-flip-brillo" aria-hidden="true"></span>
           }
         </div>
       </div>
@@ -185,10 +220,10 @@
           <h2 class="gt-fugaz">{{ fugaz() || 'Barajando…' }}</h2>
           <p>El mazo se está mezclando. La carta que salga es completamente al azar.</p>
         } @else if (sacada(); as c) {
-          <h2>{{ c.nombre }}</h2>
-          <p class="gt-claves-linea">{{ c.claves.join(' · ') }}</p>
-          <p>{{ c.general }}</p>
-          <div class="gt-hero-cta">
+          <h2 class="gt-rev" style="--i: 0">{{ c.nombre }}</h2>
+          <p class="gt-claves-linea gt-rev" style="--i: 1">{{ c.claves.join(' · ') }}</p>
+          <p class="gt-rev" style="--i: 2">{{ c.general }}</p>
+          <div class="gt-hero-cta gt-rev" style="--i: 3">
             <button type="button" class="gt-btn gt-btn--solid" (click)="abrir(indice(c))">Ver su significado</button>
             <button type="button" class="gt-btn gt-btn--ghost" (click)="sacar()" [disabled]="girando()">Sacar otra</button>
           </div>
@@ -241,6 +276,24 @@
         </li>
       }
     </ul>
+
+    <!-- Invitación al tarot impreso: discreta, al final de las 22 cartas. -->
+    <aside class="gt-fisico" aria-labelledby="gt-fisico-titulo">
+      <div class="gt-fisico-mazo gt-giro" aria-hidden="true">
+        <img class="gt-fisico-c gt-fisico-c--1" src="/tarot/sm/la-estrella.jpg" alt="" width="360" height="617" loading="lazy" />
+        <img class="gt-fisico-c gt-fisico-c--2" src="/tarot/sm/reverso.jpg" alt="" width="360" height="617" loading="lazy" />
+      </div>
+      <div class="gt-fisico-txt">
+        <span class="gt-eyebrow"><i></i> También en papel</span>
+        <h3 id="gt-fisico-titulo">Llévate el <em>tarot</em> a tu mesa</h3>
+        <p>Las mismas 22 ilustraciones, impresas para barajarlas con tus manos y leerlas cuando quieras.</p>
+      </div>
+      @if (tarotFisico) {
+        <a class="gt-btn gt-btn--solid gt-fisico-btn" [href]="tarotFisico">Comprar el tarot</a>
+      } @else {
+        <button type="button" class="gt-btn gt-btn--solid gt-fisico-btn">Comprar el tarot</button>
+      }
+    </aside>
   </section>
 
   <!-- ── Recuerda ────────────────────────────────────────────────────────── -->
@@ -290,22 +343,39 @@
 
     <div class="gt-modal-grid">
       <figure class="gt-modal-img">
-        <img [src]="img(c)" [alt]="c.nombre" width="720" height="1233" />
+        <!-- Se revela como «Tu carta del día»: el bloque se vuelve a crear con cada
+             carta, así la animación corre también con Anterior y Siguiente. -->
+        @for (x of [c]; track x.slug) {
+          <div class="gt-modal-carta" [style.--luz]="x.tono[0]">
+            <span class="gt-destello" aria-hidden="true"></span>
+            <span class="gt-chispas" aria-hidden="true">
+              @for (n of chispas; track n) {
+                <i [style.--ang]="n * 36 + 'deg'" [style.--dist]="(n % 2 ? 230 : 280) + 'px'"></i>
+              }
+            </span>
+            <div class="gt-modal-flip">
+              <img class="gt-modal-cara gt-modal-cara--frente" [src]="img(x)" [alt]="x.nombre" width="720" height="1233" />
+              <img class="gt-modal-cara gt-modal-cara--reverso" src="/tarot/reverso.jpg" alt="" width="720" height="1233" />
+              <span class="gt-flip-brillo" aria-hidden="true"></span>
+            </div>
+          </div>
+        }
       </figure>
 
       <div class="gt-modal-txt" #modalTxt>
-        <span class="gt-modal-num">Arcano {{ c.romano }}</span>
-        <h2 id="gt-modal-titulo">{{ c.nombre }}</h2>
+        @for (x of [c]; track x.slug) {
+        <span class="gt-modal-num gt-rev" style="--i: 0">Arcano {{ c.romano }}</span>
+        <h2 id="gt-modal-titulo" class="gt-rev" style="--i: 1">{{ c.nombre }}</h2>
 
-        <ul class="gt-modal-claves">
+        <ul class="gt-modal-claves gt-rev" style="--i: 2">
           @for (k of c.claves; track k) { <li>{{ k }}</li> }
         </ul>
 
-        <h3 class="gt-modal-sub">Significado general</h3>
-        <p class="gt-modal-general">{{ c.general }}</p>
+        <h3 class="gt-modal-sub gt-rev" style="--i: 3">Significado general</h3>
+        <p class="gt-modal-general gt-rev" style="--i: 3">{{ c.general }}</p>
 
         @let el = elemento(c.elemento);
-        <article class="gt-lectura" [attr.data-el]="el.id">
+        <article class="gt-lectura gt-rev" style="--i: 4" [attr.data-el]="el.id">
           <header>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="iconos[el.id]" /></svg>
             <div>
@@ -316,12 +386,12 @@
           <p>{{ c.lectura }}</p>
         </article>
 
-        <h3 class="gt-modal-sub">Simbología de la carta</h3>
-        <p class="gt-simb-intro">
+        <h3 class="gt-modal-sub gt-rev" style="--i: 5">Simbología de la carta</h3>
+        <p class="gt-simb-intro gt-rev" style="--i: 5">
           Cada elemento de la ilustración reinterpreta un símbolo del tarot original con la flora,
           la fauna y el paisaje de Colombia.
         </p>
-        <ol class="gt-simbolos">
+        <ol class="gt-simbolos gt-rev" style="--i: 6">
           @for (s of c.simbologia; track s.nombre; let i = $index) {
             <li>
               <span class="gt-n">{{ i + 1 }}</span>
@@ -333,6 +403,7 @@
             </li>
           }
         </ol>
+        }
 
         <nav class="gt-modal-nav" aria-label="Otras cartas">
           <button type="button" (click)="mover(-1)">
