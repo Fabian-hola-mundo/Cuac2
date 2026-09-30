@@ -97,5 +97,12 @@ Deno.serve(async (req) => {
     }
   }
 
+  // Un pago rechazado o anulado devuelve de inmediato lo que el pedido tenía
+  // apartado, en vez de esperar a que la reserva venza.
+  if (estado === 'rechazado' || estado === 'cancelado') {
+    const { error: libError } = await supabase.rpc('liberar_reservas_pedido', { p_referencia: referencia })
+    if (libError) console.error('Error liberando reservas', referencia, libError)
+  }
+
   return ok()
 })

@@ -4,6 +4,8 @@
 // el pedido sigue 'pendiente': preguntamos —servidor a servidor— el estado real
 // de la venta a la API de Bold y, si está pagada, movemos el pedido. Así el
 // pedido se cierra aunque el webhook no llegue (p. ej. si está en modo pruebas).
+// Al aprobar descuenta el stock (registrar_venta_web); al rechazar o anular
+// libera las reservas del pedido (liberar_reservas_pedido).
 //
 // Bold: GET https://payments.api.bold.co/v2/payment-voucher/<id>
 //   Authorization: x-api-key <LLAVE DE IDENTIDAD>   (la pública, no la secreta)
@@ -64,15 +66,19 @@ Deno.serve(async (req) => {
 
     const { data: pedido, error: pErr } = await supabase
       .from('pedidos')
-      .select('id, estado, total, referencia')
+      .select('id, estado, total, referencia, cancelado_por_cliente')
       .eq('referencia', referencia)
       .maybeSingle()
 
     if (pErr) return json({ ok: false, error: 'No se pudo consultar el pedido' }, 500)
     if (!pedido) return json({ ok: false, error: 'Pedido no encontrado' }, 404)
 
-    // Ya resuelto: no hay nada que consultar.
-    if (pedido.estado !== 'pendiente') {
+    // Un pedido que el cliente canceló desde la página puede haberse pagado
+    // igual en el modal de Bold que seguía abierto: ése también se consulta,
+    // pero sólo para pasarlo a aprobado.
+    const reconsultable = pedido.estado === 'pendiente'
+      || (pedido.estado === 'cancelado' && pedido.cancelado_por_cliente)
+    if (!reconsultable) {
       return json({ ok: true, estado: pedido.estado, cambiado: false })
     }
 
@@ -99,6 +105,10 @@ Deno.serve(async (req) => {
       return json({ ok: true, estado: 'pendiente', cambiado: false })
     }
 
+    if (pedido.estado === 'cancelado' && nuevoEstado !== 'aprobado') {
+      return json({ ok: true, estado: pedido.estado, cambiado: false })
+    }
+
     // La venta consultada tiene que ser de ESTE pedido: si el reference_id no
     // cuadra, alguien pasó un bold-order-id de otra orden — no lo tocamos.
     if (isStr(venta.reference_id) && venta.reference_id !== pedido.referencia) {
@@ -116,11 +126,21 @@ Deno.serve(async (req) => {
       .from('pedidos')
       .update({ estado: nuevoEstado, bold_payment_id: isStr(venta.transaction_id) ? venta.transaction_id : null })
       .eq('id', pedido.id)
-      .eq('estado', 'pendiente')
+      .in('estado', ['pendiente', 'cancelado'])
 
     if (uErr) {
       console.error('Error actualizando pedido:', uErr)
       return json({ ok: false, error: 'Error al actualizar el pedido' }, 500)
+    }
+
+    // Este respaldo es el que cierra los pedidos en producción: sin esto las
+    // ventas aprobadas por aquí nunca descontaban stock.
+    if (nuevoEstado === 'aprobado') {
+      const { error: sErr } = await supabase.rpc('registrar_venta_web', { p_referencia: pedido.referencia })
+      if (sErr) console.error('Error descontando stock del pedido', pedido.referencia, sErr)
+    } else {
+      const { error: lErr } = await supabase.rpc('liberar_reservas_pedido', { p_referencia: pedido.referencia })
+      if (lErr) console.error('Error liberando reservas', pedido.referencia, lErr)
     }
 
     return json({ ok: true, estado: nuevoEstado, cambiado: true })

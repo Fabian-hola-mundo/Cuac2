@@ -43,9 +43,13 @@ Deno.serve(async (req) => {
       const supabase = createClient(supaUrl, svc)
       const { data } = await supabase
         .from('pedido_items')
-        .select('nombre, sub, precio, cantidad, color')
+        .select('nombre, sub, precio, cantidad, color, variante_label')
         .eq('pedido_id', p.id)
       items = data ?? []
+      // El trigger manda la fila ANTES de que registrar_venta_web marque
+      // `sobreventa`, así que se relee el flag aquí.
+      const { data: fresco } = await supabase.from('pedidos').select('sobreventa').eq('id', p.id).maybeSingle()
+      if (fresco) p.sobreventa = fresco.sobreventa
     }
 
     if (!RESEND_API_KEY) {
@@ -90,7 +94,7 @@ function buildHtml(p: any, items: any[]): string {
   const filas = (items ?? []).map(i => `
     <tr>
       <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;color:#151F28">
-        ${esc(i.nombre)}${i.sub ? ` · <span style="color:#6b7280">${esc(i.sub)}</span>` : ''}${i.color ? ` · <span style="color:#6b7280">${esc(i.color)}</span>` : ''}
+        ${esc(i.nombre)}${i.sub ? ` · <span style="color:#6b7280">${esc(i.sub)}</span>` : ''}${i.variante_label ? ` · <strong>${esc(i.variante_label)}</strong>` : ''}
       </td>
       <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:center;color:#151F28">${esc(i.cantidad)}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:right;color:#151F28">${fmt((Number(i.precio) || 0) * (Number(i.cantidad) || 0))}</td>
@@ -103,6 +107,10 @@ function buildHtml(p: any, items: any[]): string {
     ? `<tr><td style="padding:4px 12px;color:#1F8A5B;font-size:14px">Descuento${p.codigo_descuento ? ` (${esc(p.codigo_descuento)})` : ''}</td><td style="padding:4px 12px;text-align:right;color:#1F8A5B;font-size:14px">−${fmt(p.descuento_monto)}</td></tr>`
     : ''
 
+  const avisoSobreventa = p.sobreventa
+    ? `<div style="background:#FDECEA;color:#9B1C1C;padding:12px 16px;border-radius:8px;margin:0 0 16px;font-size:14px">⚠ Sobreventa: al aprobarse este pago ya no había stock suficiente de algún producto. Revisa el inventario antes de despachar.</div>`
+    : ''
+
   return `
   <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#f5f5f0;padding:24px">
     <div style="background:#151F28;padding:22px 24px;border-radius:12px 12px 0 0">
@@ -110,6 +118,7 @@ function buildHtml(p: any, items: any[]): string {
       <h1 style="color:#fff;font-size:22px;margin:6px 0 0">🎉 Nueva compra confirmada</h1>
     </div>
     <div style="background:#fff;padding:22px 24px;border-radius:0 0 12px 12px">
+      ${avisoSobreventa}
       <table style="width:100%;border-collapse:collapse;margin-bottom:18px">
         ${row('Pedido', `<strong>${esc(p.referencia)}</strong>`)}
         ${row('Fecha', esc(fecha))}
