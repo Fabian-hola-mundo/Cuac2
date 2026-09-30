@@ -57,6 +57,14 @@ begin
     assert sqlerrm like '%variantes%', 'mensaje de ajuste sin variante: ' || sqlerrm;
   end;
 
+  -- Restock sin variante en producto con variantes activas se rechaza
+  begin
+    perform public.registrar_restock(v_p, 1);
+    assert false, 'restock sin variante debió fallar';
+  exception when others then
+    assert sqlerrm like '%variantes%', 'mensaje de restock sin variante: ' || sqlerrm;
+  end;
+
   -- Decremento por variante
   perform public.decrementar_stock_seguro(v_p, 1, v_m);
   assert (select stock_actual from public.producto_variantes where id = v_m) = 0, 'decremento variante';

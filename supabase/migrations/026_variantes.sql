@@ -68,13 +68,15 @@ create trigger trg_limitar_opciones
 create or replace function public.sincronizar_stock_producto()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
-  v_pid uuid := coalesce(new.producto_id, old.producto_id);
+  v_pid   uuid := coalesce(new.producto_id, old.producto_id);
+  v_total integer;
 begin
-  update public.productos_evento
-     set stock_actual = coalesce((
-           select sum(stock_actual) from public.producto_variantes
-           where producto_id = v_pid and activo), 0)
-   where id = v_pid;
+  -- Se bloquea la fila del producto y luego se suma en otra sentencia: así la
+  -- suma ve los cambios ya confirmados de variantes hermanas (READ COMMITTED).
+  perform 1 from public.productos_evento where id = v_pid for update;
+  select coalesce(sum(stock_actual), 0) into v_total
+    from public.producto_variantes where producto_id = v_pid and activo;
+  update public.productos_evento set stock_actual = v_total where id = v_pid;
   return null;
 end;
 $$;
@@ -129,7 +131,13 @@ create policy producto_variantes_admin_all on public.producto_variantes
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 -- El POS escucha cambios de stock en vivo.
-alter publication supabase_realtime add table public.producto_variantes;
+do $$
+begin
+  if not exists (select 1 from pg_publication_tables
+                 where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'producto_variantes') then
+    alter publication supabase_realtime add table public.producto_variantes;
+  end if;
+end $$;
 
 -- ── Funciones de stock con variante opcional ─────────────────────────────────
 -- Se eliminan por firma: con el parámetro nuevo con default, dejar la versión
@@ -170,6 +178,7 @@ begin
 
   if p_variante_id is not null then
     perform public.variante_de_producto(p_producto_id, p_variante_id);
+    perform 1 from public.productos_evento where id = p_producto_id for update;
     update public.producto_variantes
        set stock_actual = greatest(0, stock_actual - p_cantidad)
      where id = p_variante_id;
@@ -196,6 +205,7 @@ begin
 
   if p_variante_id is not null then
     perform public.variante_de_producto(p_producto_id, p_variante_id);
+    perform 1 from public.productos_evento where id = p_producto_id for update;
     update public.producto_variantes set stock_actual = stock_actual + p_cantidad where id = p_variante_id;
   else
     if public.tiene_variantes(p_producto_id) then
@@ -225,6 +235,7 @@ begin
 
   if p_variante_id is not null then
     perform public.variante_de_producto(p_producto_id, p_variante_id);
+    perform 1 from public.productos_evento where id = p_producto_id for update;
     select stock_actual into v_actual from public.producto_variantes where id = p_variante_id for update;
   else
     if public.tiene_variantes(p_producto_id) then
@@ -266,6 +277,7 @@ declare
   v_desact   integer := 0;
 begin
   if not public.is_admin() then raise exception 'No autorizado'; end if;
+  perform 1 from public.productos_evento where id = p_producto_id for update;
   if jsonb_typeof(p_opciones) <> 'array' or jsonb_typeof(p_variantes) <> 'array' then
     raise exception 'Formato inválido';
   end if;
@@ -305,6 +317,7 @@ $$;
 
 -- ── Permisos ─────────────────────────────────────────────────────────────────
 revoke all on function public.decrementar_stock_seguro(uuid, integer, uuid) from public;
+revoke execute on function public.decrementar_stock_seguro(uuid, integer, uuid) from anon;
 grant execute on function public.decrementar_stock_seguro(uuid, integer, uuid) to authenticated, service_role;
 
 revoke all on function public.registrar_restock(uuid, integer, text, uuid) from public;
@@ -321,11 +334,16 @@ grant execute on function public.guardar_variantes(uuid, jsonb, jsonb) to authen
 
 revoke all on function public.tiene_variantes(uuid) from public;
 revoke all on function public.variante_de_producto(uuid, uuid) from public;
+revoke execute on function public.tiene_variantes(uuid) from anon;
+revoke execute on function public.variante_de_producto(uuid, uuid) from anon;
 grant execute on function public.tiene_variantes(uuid) to authenticated, service_role;
 grant execute on function public.variante_de_producto(uuid, uuid) to authenticated, service_role;
 
 revoke all on function public.sincronizar_stock_producto() from public;
 revoke all on function public.registrar_creacion_variante() from public;
 revoke all on function public.limitar_opciones_producto() from public;
+revoke execute on function public.sincronizar_stock_producto() from anon, authenticated;
+revoke execute on function public.registrar_creacion_variante() from anon, authenticated;
+revoke execute on function public.limitar_opciones_producto() from anon, authenticated;
 
 commit;
