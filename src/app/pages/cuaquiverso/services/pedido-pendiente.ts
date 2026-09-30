@@ -13,6 +13,23 @@ export interface PedidoPendiente {
   /** Huella del formulario + carrito con que se creó: si cambian, es otro pedido. */
   huella: string;
   bold: BoldCheckoutConfig;
+  /**
+   * Descuento con que se creó el pedido. Al retomarlo se restaura tal cual: el
+   * uso del código ya se descontó en el servidor y la huella lo incluye.
+   * Opcional: las entradas guardadas antes de existir este campo no lo traen.
+   */
+  descuento?: DescuentoPendiente;
+}
+
+export interface DescuentoPendiente {
+  codigo: string;
+  monto: number;
+}
+
+function esDescuentoValido(d: unknown): d is DescuentoPendiente {
+  const x = d as DescuentoPendiente | null;
+  return !!x && typeof x.codigo === 'string' && x.codigo !== ''
+    && typeof x.monto === 'number' && Number.isFinite(x.monto);
 }
 
 export function segundosRestantes(expiraEn: string, ahora = Date.now()): number {
@@ -36,6 +53,7 @@ export function leerPedidoPendiente(storage: Storage | null, ahora = Date.now())
       storage.removeItem(CLAVE_PEDIDO_PENDIENTE);
       return null;
     }
+    if (p.descuento !== undefined && !esDescuentoValido(p.descuento)) delete p.descuento;
     return p;
   } catch {
     return null;

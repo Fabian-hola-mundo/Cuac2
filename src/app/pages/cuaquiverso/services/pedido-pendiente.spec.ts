@@ -32,6 +32,29 @@ describe('pedido pendiente', () => {
     expect(s.getItem(CLAVE_PEDIDO_PENDIENTE)).toBeNull();
   });
 
+  it('conserva el descuento aplicado al pedido', () => {
+    const s = storageFalso();
+    const conDesc: PedidoPendiente = { ...P, descuento: { codigo: 'CUAC10', monto: 5000 } };
+    guardarPedidoPendiente(s, conDesc);
+    expect(leerPedidoPendiente(s, AHORA)).toEqual(conDesc);
+  });
+
+  it('lee entradas viejas sin descuento', () => {
+    const s = storageFalso();
+    s.setItem(CLAVE_PEDIDO_PENDIENTE, JSON.stringify(P));
+    const leido = leerPedidoPendiente(s, AHORA);
+    expect(leido).toEqual(P);
+    expect(leido?.descuento).toBeUndefined();
+  });
+
+  it('descarta un descuento mal formado sin perder el pedido', () => {
+    const s = storageFalso();
+    s.setItem(CLAVE_PEDIDO_PENDIENTE, JSON.stringify({ ...P, descuento: { codigo: 5 } }));
+    const leido = leerPedidoPendiente(s, AHORA);
+    expect(leido?.token).toBe('t');
+    expect(leido?.descuento).toBeUndefined();
+  });
+
   it('tolera JSON corrupto y storage ausente', () => {
     const s = storageFalso();
     s.setItem(CLAVE_PEDIDO_PENDIENTE, '{no');

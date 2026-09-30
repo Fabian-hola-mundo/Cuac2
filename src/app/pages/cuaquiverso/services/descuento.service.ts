@@ -51,6 +51,17 @@ export class DescuentoService {
     this.montoDescuento.set(data.monto_descuento);
   }
 
+  /**
+   * Repone un descuento ya aceptado por el servidor (pedido apartado que se
+   * retoma) sin volver a validarlo: su uso ya se contó y, si era el último,
+   * validar de nuevo lo rechazaría.
+   */
+  restaurar(codigo: string, monto: number): void {
+    this.codigoAplicado.set(codigo);
+    this.montoDescuento.set(monto);
+    this.error.set(null);
+  }
+
   limpiar(): void {
     this.codigoAplicado.set(null);
     this.montoDescuento.set(0);

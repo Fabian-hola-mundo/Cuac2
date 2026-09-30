@@ -335,7 +335,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         const creado = await this.checkout.crearPedido(form, this.cart.items(), this.cart.total(), codigoDesc);
         this.pedidoCreado = {
           token: creado.token, referencia: creado.referencia, expiraEn: creado.reservaExpiraEn,
-          huella, bold: creado.bold,
+          huella, bold: creado.bold, descuento: codigoDesc,
         };
         guardarPedidoPendiente(this.storage, this.pedidoCreado);
         bold = creado.bold;
@@ -403,6 +403,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   private retomar(p: PedidoPendiente): void {
     this.pedidoCreado = p;
+    // El descuento entra en la huella: sin reponerlo, "Continuar pago" vería
+    // otro pedido y cancelaría éste (cuyo uso del código ya se gastó).
+    if (p.descuento) {
+      this.descuento.restaurar(p.descuento.codigo, p.descuento.monto);
+      this.codigoInput = p.descuento.codigo;
+    }
     this.boldAbierto.set(false);
     this.referenciaEnCurso.set(p.referencia);
     this.pagoEnCurso.set(true);
