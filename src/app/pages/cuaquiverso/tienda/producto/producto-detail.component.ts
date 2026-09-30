@@ -65,8 +65,10 @@ export class ProductoDetailComponent implements OnInit {
   readonly precioVisible = computed(() => {
     const p = this.producto();
     if (!p) return 0;
-    return this.variante()?.precio
-      ?? (this.tieneVariantes() ? (this.rango()?.min ?? p.precio) : p.precio);
+    // Una combinación elegida sin precio propio cuesta lo que el producto, no el mínimo del rango.
+    const v = this.variante();
+    if (v) return v.precio ?? p.precio;
+    return this.tieneVariantes() ? (this.rango()?.min ?? p.precio) : p.precio;
   });
 
   /** Sin nada que se pueda comprar: producto simple agotado o todas las variantes sin stock. */
