@@ -165,7 +165,7 @@ Trigger `after insert/update/delete` en `producto_variantes` → `productos_even
 
 ## 4b. Reserva de stock durante el pago (15 min)
 
-### Datos (misma migración 026)
+### Datos (migración `027_reservas_stock.sql`)
 
 **`stock_reservas`**
 - `id uuid pk`, `pedido_id uuid not null references pedidos(id) on delete cascade`
@@ -195,6 +195,7 @@ Una reserva está **vigente** si `expira_en > now()` y su pedido está `pendient
 
 - `crear-pedido`: inserta el pedido → `reservar_stock_pedido`. Si la reserva falla, borra el pedido y sus ítems (rollback manual, como ya hace hoy) y responde 409. La validación de stock previa de la sección 4 queda reemplazada por esta (la de variante válida/activa se mantiene).
 - `bold-webhook` y `verificar-pago`: `aprobado` → `registrar_venta_web` (descuenta + libera). `rechazado`/`cancelado` → `liberar_reservas_pedido`.
+- `cancelar_pedido_pendiente` marca `pedidos.cancelado_por_cliente = true`; `verificar-pago` sigue consultando a Bold esos pedidos (sólo para pasarlos a aprobado), porque el modal pudo seguir abierto.
 - Si Bold aprueba un pedido ya cancelado o con reserva vencida: se registra la venta igual (el dinero entró) y, si falta stock, se marca `sobreventa`.
 
 ### Cliente
@@ -202,7 +203,7 @@ Una reserva está **vigente** si `expira_en > now()` y su pedido está `pendient
 - **Checkout, antes de pagar:** aviso «Al continuar apartamos tus productos por 15 minutos para que completes el pago».
 - Tras `crear-pedido`, el navegador guarda `{ token, referencia, expiraEn }` en `localStorage` (`cuaquiverso.pedido-pendiente`). Sobrevive a recargas.
 - **Si el cliente vuelve al checkout o a la confirmación con ese pedido pendiente y vigente:** banner con contador «Tu reserva vence en 12:34», botón **«Continuar pago»** y botón **«Cancelar y liberar»** (`cancelar_pedido_pendiente`). Recargar no cambia nada; el contador se calcula desde `expiraEn`.
-- «Continuar pago» reabre el checkout de Bold para el **mismo** pedido. Lo firma una acción nueva de `crear-pedido` (o función `reanudar-pago`) a partir del token, solo si el pedido está pendiente y la reserva vigente. **Verificar en implementación** que Bold acepte reintentar con la misma referencia; si no, «Continuar pago» cancela el pendiente y crea un pedido nuevo con el mismo carrito.
+- «Continuar pago» reabre el modal de Bold para el **mismo** pedido con la configuración firmada que ya devolvió `crear-pedido` (guardada junto al pedido pendiente en `localStorage`; no contiene secretos). No hace falta una función nueva. **Verificar en implementación** que Bold acepte reintentar con la misma referencia; si no, «Continuar pago» cancela el pendiente y crea un pedido nuevo con el mismo carrito.
 - **Al vencer:** el banner cambia a «Tu reserva venció. Tus productos siguen en el carrito» y se limpia la clave de `localStorage`. El carrito no se borra.
 - La confirmación, si el pedido está pendiente, muestra el mismo contador (`obtener_pedido` devuelve `reserva_expira_en`).
 - Tienda (tarjetas, ficha, selector de variantes, tope del carrito) usa `stock_disponible` en vez de `stock_actual`.
@@ -233,5 +234,5 @@ Una reserva está **vigente** si `expira_en > now()` y su pedido está `pendient
 ## Despliegue
 
 - Migración 026 vía Management API.
-- Funciones `crear-pedido`, `verificar-pago`, `bold-webhook`, `notify-pedido` (y `reanudar-pago` si se crea) con `--no-verify-jwt`.
+- Funciones `crear-pedido`, `verificar-pago`, `bold-webhook`, `notify-pedido` con `--no-verify-jwt`.
 - Hosting: solo cuando el usuario lo pida.
