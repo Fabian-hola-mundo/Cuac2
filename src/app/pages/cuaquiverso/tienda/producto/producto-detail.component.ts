@@ -65,8 +65,13 @@ export class ProductoDetailComponent implements OnInit {
   readonly precioVisible = computed(() => {
     const p = this.producto();
     if (!p) return 0;
-    return this.variante()?.precio ?? p.precio;
+    return this.variante()?.precio
+      ?? (this.tieneVariantes() ? (this.rango()?.min ?? p.precio) : p.precio);
   });
+
+  /** Sin nada que se pueda comprar: producto simple agotado o todas las variantes sin stock. */
+  readonly sinExistencias = computed(() =>
+    this.tieneVariantes() ? this.variantes().every(v => v.disponible <= 0) : this.agotado());
 
   readonly rango = computed(() => {
     const p = this.producto();

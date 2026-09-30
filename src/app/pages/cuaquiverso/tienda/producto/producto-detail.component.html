@@ -113,7 +113,7 @@
         }
       </div>
 
-      @for (op of opciones(); track op.nombre) {
+      @for (op of tieneVariantes() ? opciones() : []; track op.nombre) {
         <fieldset class="variant-group">
           <legend class="variant-label">
             {{ op.nombre }}@if (seleccion()[op.nombre]) {: <b>{{ seleccion()[op.nombre] }}</b>}
@@ -176,7 +176,8 @@
       <button class="btn-add" type="button"
               [disabled]="agotado() || (tieneVariantes() && !variante())"
               (click)="addToCart()">
-        @if (tieneVariantes() && faltaElegir()) { Elige {{ faltaElegir() }} }
+        @if (sinExistencias()) { Agotado }
+        @else if (tieneVariantes() && faltaElegir()) { Elige {{ faltaElegir() }} }
         @else if (agotado()) { Agotado }
         @else { Agregar al carrito }
       </button>
