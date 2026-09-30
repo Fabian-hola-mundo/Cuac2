@@ -80,7 +80,7 @@
         @for (v of ventas(); track v.id) {
         <tr (click)="verDetalle(v)" style="cursor:pointer">
           <td class="id">{{ fmtFecha(v.vendido_en) }}</td>
-          <td><strong>{{ v.productos_evento?.nombre ?? '—' }}</strong></td>
+          <td><strong>{{ v.productos_evento?.nombre ?? '—' }}</strong>@if (v.producto_variantes) { · {{ etiquetaVenta(v) }} }</td>
           <td class="num">{{ v.cantidad }}</td>
           <td>
             @if (v.canal === 'web') {
@@ -145,7 +145,7 @@
     <div class="drawer-h">
       <div>
         <div class="eyebrow"><span class="dot"></span> Detalle de venta</div>
-        <h2>{{ v.productos_evento?.nombre ?? v.producto_id }}</h2>
+        <h2>{{ v.productos_evento?.nombre ?? v.producto_id }}@if (v.producto_variantes) { · {{ etiquetaVenta(v) }} }</h2>
       </div>
       <button class="drawer-close" (click)="cerrarDetalle()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -154,7 +154,7 @@
     <div class="drawer-b">
       <div class="kv-list">
         <div class="kv"><span class="k">Fecha / Hora</span><span class="v">{{ fmtFecha(v.vendido_en) }}</span></div>
-        <div class="kv"><span class="k">Producto</span><span class="v">{{ v.productos_evento?.nombre ?? v.producto_id }}</span></div>
+        <div class="kv"><span class="k">Producto</span><span class="v">{{ v.productos_evento?.nombre ?? v.producto_id }}@if (v.producto_variantes) { · {{ etiquetaVenta(v) }} }</span></div>
         <div class="kv"><span class="k">Categoría</span><span class="v">{{ v.productos_evento?.categoria ?? '—' }}</span></div>
         <div class="kv"><span class="k">Cantidad</span><span class="v">{{ v.cantidad }}</span></div>
         <div class="kv">

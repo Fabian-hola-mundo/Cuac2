@@ -110,5 +110,10 @@ export class VentasGeneralComponent implements OnInit {
     });
   }
 
+  /** Sin orden de opciones a mano: Object.values respeta el orden guardado por guardar_variantes. */
+  etiquetaVenta(v: VentaEvento): string {
+    return v.producto_variantes ? Object.values(v.producto_variantes.opciones).join(' · ') : '';
+  }
+
   fmtCOP(n: number) { return '$' + n.toLocaleString('es-CO'); }
 }

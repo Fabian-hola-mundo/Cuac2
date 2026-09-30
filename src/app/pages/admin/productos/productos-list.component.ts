@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effec
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
 import { Router }       from '@angular/router';
-import { InventarioService, ProductoEvento, MovimientoProducto, CATEGORIAS, CAT_TONES } from '../../../core/services/inventario.service';
+import { InventarioService, ProductoEvento, ProductoVariante, MovimientoProducto, CATEGORIAS, CAT_TONES } from '../../../core/services/inventario.service';
+import { etiquetaVariante } from '../../../../../supabase/functions/_shared/variantes';
 import { EventosService, Evento } from '../../../core/services/eventos.service';
 import {
   EstadoFiltro,
@@ -90,8 +91,15 @@ export class ProductosListComponent implements OnInit {
   readonly drawerProduct = signal<ProductoEvento | null>(null);
   readonly historial         = signal<MovimientoProducto[]>([]);
   readonly historialCargando = signal(false);
+  /** Combinación cuyo historial se muestra en el drawer (null = todo el producto). */
+  readonly historialVariante = signal<ProductoVariante | null>(null);
+
+  /** Variantes por producto (todas), para el badge y las acciones por combinación. */
+  readonly variantesPorProducto = signal<Map<string, { orden: string[]; variantes: ProductoVariante[] }>>(new Map());
 
   // ── Restock / ajuste ──────────────────────────────────────────────────────
+  /** Combinación sobre la que actúa el modal abierto (null = producto sin variantes). */
+  readonly varianteTarget = signal<ProductoVariante | null>(null);
   readonly restockOpen    = signal(false);
   readonly restockTarget  = signal<ProductoEvento | null>(null);
   restockCantidad: number | null = null;
@@ -111,7 +119,7 @@ export class ProductosListComponent implements OnInit {
     const p = this.ajusteTarget();
     const nuevo = this.ajusteStock();
     if (!p || nuevo === null) return 0;
-    return nuevo - p.stock_actual;
+    return nuevo - (this.varianteTarget()?.stock_actual ?? p.stock_actual);
   });
 
   /** Cualquier capa por encima de la página: bloquea el scroll de fondo. */
@@ -130,7 +138,24 @@ export class ProductosListComponent implements OnInit {
 
   ngOnInit() {
     this.inv.cargarTodos();
+    this.cargarVariantes();
     this.cargarEventoActivo();
+  }
+
+  private async cargarVariantes(): Promise<void> {
+    try {
+      this.variantesPorProducto.set(await this.inv.getVariantesTodas());
+    } catch (err) {
+      console.error('Error cargando variantes:', err);
+    }
+  }
+
+  activasDe(id: string): ProductoVariante[] {
+    return this.variantesPorProducto().get(id)?.variantes.filter(v => v.activo) ?? [];
+  }
+
+  etiqueta(id: string, v: ProductoVariante): string {
+    return etiquetaVariante(v.opciones, this.variantesPorProducto().get(id)?.orden ?? Object.keys(v.opciones));
   }
 
   /** Escape cierra la capa más superficial primero. */
@@ -179,14 +204,21 @@ export class ProductosListComponent implements OnInit {
   verDetalle(p: ProductoEvento, event: Event) {
     event.stopPropagation();
     this.drawerProduct.set(p);
+    this.historialVariante.set(null);
     this.drawerOpen.set(true);
+    this.cargarHistorial(p.id);
+  }
+
+  /** Historial de una sola combinación (null vuelve al del producto completo). */
+  verHistorial(p: ProductoEvento, v: ProductoVariante | null) {
+    this.historialVariante.set(v);
     this.cargarHistorial(p.id);
   }
 
   private async cargarHistorial(productoId: string) {
     this.historialCargando.set(true);
     try {
-      this.historial.set(await this.inv.getHistorialProducto(productoId));
+      this.historial.set(await this.inv.getHistorialProducto(productoId, this.historialVariante()?.id ?? null));
     } catch (err) {
       console.error('Error cargando historial:', err);
       this.historial.set([]);
@@ -202,6 +234,7 @@ export class ProductosListComponent implements OnInit {
     event.stopPropagation();
     const { error, aviso } = await this.inv.duplicarProducto(p.id);
     this.flash(error ? `Error: ${error}` : (aviso ?? `"${p.nombre}" duplicado.`));
+    if (!error) this.cargarVariantes();
   }
 
   async toggleActivo(p: ProductoEvento, event: Event) {
@@ -211,16 +244,17 @@ export class ProductosListComponent implements OnInit {
     this.flash(error ? `Error: ${error}` : (p.activo ? 'Producto ocultado.' : 'Producto activado.'));
   }
 
-  abrirRestock(p: ProductoEvento, event: Event) {
+  abrirRestock(p: ProductoEvento, event: Event, v: ProductoVariante | null = null) {
     event.stopPropagation();
     this.restockTarget.set(p);
+    this.varianteTarget.set(v);
     this.restockCantidad = null;
     this.restockNota = '';
     this.restockError.set(null);
     this.restockOpen.set(true);
   }
 
-  cerrarRestock() { this.restockOpen.set(false); }
+  cerrarRestock() { this.restockOpen.set(false); this.varianteTarget.set(null); }
 
   async confirmarRestock() {
     const p = this.restockTarget();
@@ -232,24 +266,27 @@ export class ProductosListComponent implements OnInit {
     }
     this.restockLoading.set(true);
     this.restockError.set(null);
-    const { error } = await this.inv.restockProducto(p.id, cantidad, this.restockNota.trim() || undefined);
+    const v = this.varianteTarget();
+    const { error } = await this.inv.restockProducto(p.id, cantidad, this.restockNota.trim() || undefined, v?.id ?? null);
     this.restockLoading.set(false);
     if (error) { this.restockError.set(error); return; }
     this.cerrarRestock();
-    this.flash(`+${cantidad} unidades agregadas a "${p.nombre}".`);
+    this.flash(`+${cantidad} unidades agregadas a "${p.nombre}"${v ? ' · ' + this.etiqueta(p.id, v) : ''}.`);
+    this.cargarVariantes();
     this.refrescarDrawer(p.id);
   }
 
-  abrirAjuste(p: ProductoEvento, event: Event) {
+  abrirAjuste(p: ProductoEvento, event: Event, v: ProductoVariante | null = null) {
     event.stopPropagation();
     this.ajusteTarget.set(p);
-    this.ajusteStock.set(p.stock_actual);
+    this.varianteTarget.set(v);
+    this.ajusteStock.set(v?.stock_actual ?? p.stock_actual);
     this.ajusteNota = '';
     this.ajusteError.set(null);
     this.ajusteOpen.set(true);
   }
 
-  cerrarAjuste() { this.ajusteOpen.set(false); }
+  cerrarAjuste() { this.ajusteOpen.set(false); this.varianteTarget.set(null); }
 
   async confirmarAjuste() {
     const p = this.ajusteTarget();
@@ -265,17 +302,19 @@ export class ProductosListComponent implements OnInit {
       this.ajusteError.set('Explica el motivo del ajuste.');
       return;
     }
-    if (nuevo === p.stock_actual) {
+    const v = this.varianteTarget();
+    if (nuevo === (v?.stock_actual ?? p.stock_actual)) {
       this.ajusteError.set('El stock es el mismo; no hay nada que ajustar.');
       return;
     }
     this.ajusteLoading.set(true);
     this.ajusteError.set(null);
-    const { error } = await this.inv.ajustarStock(p.id, nuevo, this.ajusteNota.trim());
+    const { error } = await this.inv.ajustarStock(p.id, nuevo, this.ajusteNota.trim(), v?.id ?? null);
     this.ajusteLoading.set(false);
     if (error) { this.ajusteError.set(error); return; }
     this.cerrarAjuste();
-    this.flash(`Stock de "${p.nombre}" ajustado a ${nuevo}.`);
+    this.flash(`Stock de "${p.nombre}"${v ? ' · ' + this.etiqueta(p.id, v) : ''} ajustado a ${nuevo}.`);
+    this.cargarVariantes();
     this.refrescarDrawer(p.id);
   }
 

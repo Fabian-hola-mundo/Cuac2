@@ -153,6 +153,9 @@
             <div class="meta">
               <strong>{{ p.nombre }}</strong>
               <span>{{ labelCategoria(p.categoria) }}</span>
+              @if (activasDe(p.id).length > 0) {
+                <span class="badge-variantes">{{ activasDe(p.id).length }} variantes</span>
+              }
             </div>
           </div>
         </td>
@@ -183,12 +186,19 @@
           <button class="icon-act" title="Duplicar" [attr.aria-label]="'Duplicar ' + p.nombre" (click)="duplicar(p, $event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
-          <button class="icon-act" title="Restock" [attr.aria-label]="'Agregar stock a ' + p.nombre" (click)="abrirRestock(p, $event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
-          </button>
-          <button class="icon-act" title="Ajustar stock" [attr.aria-label]="'Ajustar el stock de ' + p.nombre" (click)="abrirAjuste(p, $event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
-          </button>
+          @if (activasDe(p.id).length > 0) {
+            <!-- Con variantes el stock se mueve por combinación, desde el detalle. -->
+            <button class="icon-act" title="Stock por combinación" [attr.aria-label]="'Ver el stock por combinación de ' + p.nombre" (click)="verDetalle(p, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+            </button>
+          } @else {
+            <button class="icon-act" title="Restock" [attr.aria-label]="'Agregar stock a ' + p.nombre" (click)="abrirRestock(p, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+            </button>
+            <button class="icon-act" title="Ajustar stock" [attr.aria-label]="'Ajustar el stock de ' + p.nombre" (click)="abrirAjuste(p, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+            </button>
+          }
           @if (p.activo) {
             <button class="icon-act" title="Ocultar producto" [attr.aria-label]="'Ocultar ' + p.nombre" (click)="toggleActivo(p, $event)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -267,7 +277,27 @@
         <p style="color:var(--carbon-70);font-size:13.5px;line-height:1.6">{{ prod.descripcion }}</p>
       }
 
-      <h3 style="font-family:var(--display);font-size:16px;margin:var(--s-5) 0 var(--s-2)">Historial</h3>
+      @if (activasDe(prod.id).length > 0) {
+        <h3 style="font-family:var(--display);font-size:16px;margin:var(--s-5) 0 var(--s-2)">Stock por combinación</h3>
+        <ul class="stock-variantes">
+          @for (v of activasDe(prod.id); track v.id) {
+            <li [class.is-sel]="historialVariante()?.id === v.id">
+              <span class="sv-nombre">{{ etiqueta(prod.id, v) }}</span>
+              <b class="sv-stock">{{ v.stock_actual }}</b>
+              <button type="button" class="btn-sm ghost" (click)="abrirRestock(prod, $event, v)">Reabastecer</button>
+              <button type="button" class="btn-sm ghost" (click)="abrirAjuste(prod, $event, v)">Ajustar</button>
+              <button type="button" class="btn-sm ghost" [attr.aria-pressed]="historialVariante()?.id === v.id"
+                      (click)="verHistorial(prod, v)">Historial</button>
+            </li>
+          }
+        </ul>
+      }
+
+      <h3 style="font-family:var(--display);font-size:16px;margin:var(--s-5) 0 var(--s-2)">
+        Historial@if (historialVariante(); as hv) { · {{ etiqueta(prod.id, hv) }}
+          <button type="button" class="link-inline" (click)="verHistorial(prod, null)">ver todo</button>
+        }
+      </h3>
       @if (historialCargando()) {
         <p style="color:var(--carbon-50);font-size:13px;padding:8px 0">Cargando historial…</p>
       } @else if (historial().length === 0) {
@@ -346,7 +376,8 @@
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="dlg-restock">
     <h3 id="dlg-restock">Restock</h3>
     <p class="modal-sub">
-      Agregar unidades a <strong>{{ restockTarget()?.nombre }}</strong>. Stock actual: {{ restockTarget()?.stock_actual }}.
+      Agregar unidades a <strong>{{ restockTarget()?.nombre }}</strong>@if (varianteTarget()) { · <strong>{{ etiqueta(restockTarget()!.id, varianteTarget()!) }}</strong> }.
+      Stock actual: {{ varianteTarget()?.stock_actual ?? restockTarget()?.stock_actual }}.
     </p>
     <div class="field">
       <label for="in-restock-cant">Cantidad a agregar</label>
@@ -373,8 +404,8 @@
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="dlg-ajuste">
     <h3 id="dlg-ajuste">Ajustar stock</h3>
     <p class="modal-sub">
-      Corrige el stock de <strong>{{ ajusteTarget()?.nombre }}</strong> al conteo real.
-      Hoy figuran <strong>{{ ajusteTarget()?.stock_actual }}</strong> unidades.
+      Corrige el stock de <strong>{{ ajusteTarget()?.nombre }}</strong>@if (varianteTarget()) { · <strong>{{ etiqueta(ajusteTarget()!.id, varianteTarget()!) }}</strong> } al conteo real.
+      Hoy figuran <strong>{{ varianteTarget()?.stock_actual ?? ajusteTarget()?.stock_actual }}</strong> unidades.
     </p>
     <div class="field">
       <label for="in-ajuste-stock">Stock real contado</label>

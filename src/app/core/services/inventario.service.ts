@@ -367,6 +367,25 @@ export class InventarioService {
     return { opciones: (opRes.data ?? []) as ProductoOpcion[], variantes: (varRes.data ?? []) as ProductoVariante[] };
   }
 
+  /** Variantes (todas) y orden de opciones de cada producto, para la lista del admin. */
+  async getVariantesTodas(): Promise<Map<string, { orden: string[]; variantes: ProductoVariante[] }>> {
+    const [opRes, varRes] = await Promise.all([
+      this.sb.db.from('producto_opciones').select('producto_id, nombre, posicion'),
+      this.sb.db.from('producto_variantes').select('*').order('posicion'),
+    ]);
+    if (opRes.error) throw opRes.error;
+    if (varRes.error) throw varRes.error;
+    const m = new Map<string, { orden: string[]; variantes: ProductoVariante[] }>();
+    for (const v of (varRes.data ?? []) as ProductoVariante[]) {
+      if (!m.has(v.producto_id)) m.set(v.producto_id, { orden: [], variantes: [] });
+      m.get(v.producto_id)!.variantes.push(v);
+    }
+    const ops = ((opRes.data ?? []) as { producto_id: string; nombre: string; posicion: number }[])
+      .sort((a, b) => a.posicion - b.posicion);
+    for (const o of ops) m.get(o.producto_id)?.orden.push(o.nombre);
+    return m;
+  }
+
   async guardarVariantes(
     productoId: string,
     opciones: OpcionDef[],

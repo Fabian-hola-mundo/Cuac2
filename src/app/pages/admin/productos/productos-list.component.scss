@@ -13,3 +13,37 @@
 
   &:hover { color: var(--carbon); }
 }
+
+// Cantidad de combinaciones activas, bajo el nombre del producto.
+.badge-variantes {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--carbon-10, #eef0f2);
+  color: var(--carbon-70);
+  font-size: 11.5px;
+}
+
+// Combinaciones del producto en el detalle: stock y acciones por fila.
+.stock-variantes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--carbon-10, #e3e6e9);
+    border-radius: 8px;
+    margin-bottom: 6px;
+
+    &.is-sel { border-color: var(--terra); }
+  }
+
+  .sv-nombre { flex: 1 1 140px; min-width: 0; font-size: 13.5px; }
+  .sv-stock  { min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+}
