@@ -31,24 +31,24 @@
       </div>
     } @else {
       <div class="items-list">
-        @for (item of cart.items(); track item.id) {
+        @for (item of cart.items(); track claveLinea(item)) {
           <div class="cart-item">
             <div class="item-swatch" [style.background]="colorHex(item.color)"></div>
             <div class="item-info">
               <span class="item-name">{{ item.name }}</span>
-              <span class="item-sub">{{ item.sub }}</span>
+              <span class="item-sub">{{ item.sub }}@if (item.varianteLabel) { · {{ item.varianteLabel }} }</span>
               <span class="item-price">{{ cart.fmtPrice(item.price) }}</span>
             </div>
             <div class="item-right">
               <div class="qty-row">
-                <button class="qty-btn" (click)="cart.updateQty(item.id, item.qty - 1)" aria-label="Quitar uno">−</button>
+                <button class="qty-btn" (click)="cart.updateQty(claveLinea(item), item.qty - 1)" aria-label="Quitar uno">−</button>
                 <span class="qty-val">{{ item.qty }}</span>
                 <!-- Sin tope se podían pedir 99 unidades de algo de lo que hay 3. -->
                 <button class="qty-btn" [disabled]="cart.enTope(item)"
-                        (click)="cart.updateQty(item.id, item.qty + 1)"
+                        (click)="cart.updateQty(claveLinea(item), item.qty + 1)"
                         [attr.aria-label]="cart.enTope(item) ? 'No quedan más unidades' : 'Agregar uno'">+</button>
               </div>
-              <button class="rm-btn" (click)="cart.remove(item.id)" aria-label="Eliminar producto">
+              <button class="rm-btn" (click)="cart.remove(claveLinea(item))" aria-label="Eliminar producto">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
                 </svg>

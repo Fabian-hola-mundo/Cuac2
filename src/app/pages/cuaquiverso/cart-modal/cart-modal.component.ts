@@ -1,7 +1,7 @@
 import { Component, ElementRef, HostListener, effect, inject, viewChild } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { CartService } from '../services/cart.service';
+import { CartService, claveLinea } from '../services/cart.service';
 
 const COLOR_MAP: Record<string, string> = {
   rio: '#2A6FDB', rosa: '#FF6FA8', sol: '#FFC93C', bone: '#D4DCE4',
@@ -22,6 +22,7 @@ const FOCUSABLES = [
 })
 export class CartModalComponent {
   readonly cart = inject(CartService);
+  readonly claveLinea = claveLinea;
   private doc   = inject(DOCUMENT);
 
   private panel = viewChild<ElementRef<HTMLElement>>('panel');

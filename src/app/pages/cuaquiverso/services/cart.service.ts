@@ -9,17 +9,49 @@ export interface CartItem {
   color: string;
   qty: number;
   categoria: string;
-  /** Stock conocido al agregar. Tope local; el servidor revalida al pagar. */
+  /** Stock conocido al agregar (el de la variante si la hay). Tope local; el servidor revalida al pagar. */
   stock?: number;
+  /** Combinación elegida, p. ej. Talla M · Negro. Sin variante = producto simple. */
+  varianteId?: string | null;
+  varianteLabel?: string | null;
 }
 
-const STORAGE_KEY = 'cuaquiverso.cart.v1';
+const STORAGE_KEY = 'cuaquiverso.cart.v2';
+const STORAGE_KEY_V1 = 'cuaquiverso.cart.v1';
 
 /**
  * Un carrito viejo resucitado es peor que un carrito vacío: los precios y el
  * stock ya no son los mismos y el comprador no recuerda haberlo llenado.
  */
 const TTL_MS = 14 * 24 * 60 * 60 * 1000;
+
+/** Una línea es producto + variante: la misma camiseta en M y en L son dos. */
+export function claveLinea(i: { id: string; varianteId?: string | null }): string {
+  return `${i.id}|${i.varianteId ?? ''}`;
+}
+
+function lineasValidas(items: unknown): CartItem[] {
+  if (!Array.isArray(items)) return [];
+  return items.filter(
+    (i: any) =>
+      typeof i?.id === 'string' &&
+      typeof i?.name === 'string' &&
+      Number.isFinite(i?.price) &&
+      Number.isInteger(i?.qty) && i.qty > 0,
+  );
+}
+
+/** El carrito v1 sólo tenía productos simples: sus líneas valen tal cual. */
+export function migrarCarritoV1(crudo: string | null): CartItem[] {
+  if (!crudo) return [];
+  try {
+    const g = JSON.parse(crudo);
+    if (Date.now() - (g?.guardadoEn ?? 0) > TTL_MS) return [];
+    return lineasValidas(g?.items);
+  } catch {
+    return [];
+  }
+}
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
@@ -59,7 +91,8 @@ export class CartService {
    */
   add(item: Omit<CartItem, 'qty'>): boolean {
     const curr = this._items();
-    const idx  = curr.findIndex(i => i.id === item.id);
+    const k    = claveLinea(item);
+    const idx  = curr.findIndex(i => claveLinea(i) === k);
     const tope = this.tope(item.stock);
 
     if (idx >= 0) {
@@ -78,10 +111,10 @@ export class CartService {
     return true;
   }
 
-  updateQty(id: string, qty: number) {
-    if (qty <= 0) { this.remove(id); return; }
+  updateQty(clave: string, qty: number) {
+    if (qty <= 0) { this.remove(clave); return; }
     this._items.set(this._items().map(i =>
-      i.id === id ? { ...i, qty: Math.min(qty, this.tope(i.stock)) } : i
+      claveLinea(i) === clave ? { ...i, qty: Math.min(qty, this.tope(i.stock)) } : i
     ));
   }
 
@@ -90,8 +123,8 @@ export class CartService {
     return item.qty >= this.tope(item.stock);
   }
 
-  remove(id: string) {
-    this._items.set(this._items().filter(i => i.id !== id));
+  remove(clave: string) {
+    this._items.set(this._items().filter(i => claveLinea(i) !== clave));
   }
 
   clear() {
@@ -111,21 +144,19 @@ export class CartService {
   private restaurar(): CartItem[] {
     if (!this.esNavegador) return [];
     try {
+      const v1 = localStorage.getItem(STORAGE_KEY_V1);
+      if (v1 !== null) {
+        localStorage.removeItem(STORAGE_KEY_V1);
+        return migrarCarritoV1(v1);
+      }
       const crudo = localStorage.getItem(STORAGE_KEY);
       if (!crudo) return [];
       const guardado = JSON.parse(crudo);
-      if (!Array.isArray(guardado?.items)) return [];
-      if (Date.now() - (guardado.guardadoEn ?? 0) > TTL_MS) {
+      if (Date.now() - (guardado?.guardadoEn ?? 0) > TTL_MS) {
         localStorage.removeItem(STORAGE_KEY);
         return [];
       }
-      return guardado.items.filter(
-        (i: any) =>
-          typeof i?.id === 'string' &&
-          typeof i?.name === 'string' &&
-          Number.isFinite(i?.price) &&
-          Number.isInteger(i?.qty) && i.qty > 0,
-      );
+      return lineasValidas(guardado?.items);
     } catch {
       return [];
     }
