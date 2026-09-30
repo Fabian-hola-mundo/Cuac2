@@ -14,7 +14,7 @@ do $$
 declare
   v_p uuid; v_simple uuid; v_var uuid;
   v_ped1 uuid; v_ped2 uuid; v_ped3 uuid;
-  v_disp int; v_tok text; v_ok boolean;
+  v_disp int; v_tok text; v_ok boolean; v_det text; v_ped4 uuid; v_ped5 uuid; v_raised boolean;
 begin
   insert into public.productos_evento (nombre, categoria, precio, stock_inicial, stock_actual, activo, evento_id)
   values ('TEST gorra', 'gorra', 40000, 0, 0, true, 'Venta-regular') returning id into v_p;
@@ -50,7 +50,9 @@ begin
     perform public.reservar_stock_pedido(v_ped2);
     assert false, 'segunda reserva debió fallar';
   exception when sqlstate 'P0409' then
+    get stacked diagnostics v_det = pg_exception_detail;
     assert (sqlerrm = 'sin_stock'), sqlerrm;
+    assert (v_det::jsonb->>'variante_id')::uuid = v_var and (v_det::jsonb->>'disponible')::int = 0, 'detail JSON: ' || v_det;
   end;
 
   -- Reserva vencida deja de contar
@@ -58,7 +60,7 @@ begin
   select disponible into v_disp from public.stock_disponible(array[v_p]) where variante_id = v_var;
   assert v_disp = 1, 'vencida no cuenta';
   perform public.reservar_stock_pedido(v_ped2);   -- ahora sí
-  assert (select count(*) from public.stock_reservas where pedido_id = v_ped1) = 0, 'limpieza oportunista';
+  assert (select count(*) from public.stock_reservas where pedido_id = v_ped1 and producto_id = v_p) = 0, 'limpieza oportunista (productos bloqueados)';
 
   -- Cancelar y liberar (sólo pendientes)
   select confirmacion_token::text into v_tok from public.pedidos where id = v_ped2;
@@ -98,5 +100,36 @@ begin
   assert exists (select 1 from jsonb_array_elements(public.obtener_pedido(v_tok)->'pedido_items') e where e->>'variante_label' = 'Negro'), 'label en obtener_pedido';
   assert (public.obtener_pedido(v_tok) ? 'reserva_expira_en'), 'reserva_expira_en';
 
+  -- Aprobado sin descontar todavía: la unidad sigue retenida
+  v_ped4 := pg_temp.pedido_test('TEST-4');
+  insert into public.pedido_items (pedido_id, producto_id, nombre, sub, precio, cantidad)
+  values (v_ped4, v_simple, 'TEST sticker', '', 5000, 1);
+  perform public.reservar_stock_pedido(v_ped4);
+  select disponible into v_disp from public.stock_disponible(array[v_simple]) where variante_id is null;
+  assert v_disp = 2, 'reservado baja de 3 a 2';
+  update public.pedidos set estado = 'aprobado' where id = v_ped4;
+  select disponible into v_disp from public.stock_disponible(array[v_simple]) where variante_id is null;
+  assert v_disp = 2, 'aprobado sin descontar sigue retenido';
+  assert public.registrar_venta_web('TEST-4') = 1, 'descuenta';
+  assert (select count(*) from public.stock_reservas where pedido_id = v_ped4) = 0, 'reserva liberada al descontar';
+  select disponible into v_disp from public.stock_disponible(array[v_simple]) where variante_id is null;
+  assert v_disp = 2, 'físico 2 tras descontar';
+
+  -- Validaciones de reservar_stock_pedido
+  v_raised := false;
+  begin perform public.reservar_stock_pedido(v_ped4);
+  exception when others then v_raised := true; end;
+  assert v_raised, 'pedido no pendiente debe fallar';
+
+  v_ped5 := pg_temp.pedido_test('TEST-5');
+  insert into public.pedido_items (pedido_id, producto_id, nombre, sub, precio, cantidad)
+  values (v_ped5, v_simple, 'TEST sticker', '', 5000, 1);
+  perform public.reservar_stock_pedido(v_ped5);
+  v_raised := false;
+  begin perform public.reservar_stock_pedido(v_ped5);
+  exception when others then v_raised := true; end;
+  assert v_raised, 'doble reserva del mismo pedido debe fallar';
+
   raise notice 'OK 027';
+
 end $$;
