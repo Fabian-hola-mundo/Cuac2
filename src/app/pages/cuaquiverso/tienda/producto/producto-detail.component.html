@@ -105,7 +105,34 @@
       </div>
 
       <h1 class="product-name">{{ producto()!.nombre }}</h1>
-      <div class="product-price">{{ fmtPrice(producto()!.precio) }} COP</div>
+      <div class="product-price">
+        @if (tieneVariantes() && !variante() && rango() && rango()!.min !== rango()!.max) {
+          Desde {{ fmtPrice(rango()!.min) }} COP
+        } @else {
+          {{ fmtPrice(precioVisible()) }} COP
+        }
+      </div>
+
+      @for (op of opciones(); track op.nombre) {
+        <fieldset class="variant-group">
+          <legend class="variant-label">
+            {{ op.nombre }}@if (seleccion()[op.nombre]) {: <b>{{ seleccion()[op.nombre] }}</b>}
+          </legend>
+          <div class="variant-pills">
+            @for (val of op.valores; track val.valor) {
+              <button type="button" class="variant-pill"
+                      [class.is-selected]="seleccion()[op.nombre] === val.valor"
+                      [class.is-out]="!disponible(op.nombre, val.valor)"
+                      [disabled]="!disponible(op.nombre, val.valor)"
+                      [attr.aria-pressed]="seleccion()[op.nombre] === val.valor"
+                      (click)="elegir(op.nombre, val.valor, val.foto_url)">
+                @if (val.foto_url) { <img [src]="val.foto_url" alt="" class="variant-thumb" /> }
+                {{ val.valor }}
+              </button>
+            }
+          </div>
+        </fieldset>
+      }
 
       <!-- La disponibilidad sale del stock, no de la etiqueta manual del admin:
            antes un producto con stock 0 y flag 'last' se anunciaba como
@@ -135,19 +162,23 @@
 
       @if (pocasUnidades()) {
         <div class="stock-warning">
-          ⚠ Quedan solo {{ producto()!.stock_actual }} unidades
+          ⚠ Quedan solo {{ stockVisible() }} unidades
         </div>
       }
 
-      @if (agotado()) {
+      @if (agotado() && (!tieneVariantes() || variante())) {
         <div class="stock-warning is-out">
           Este producto está agotado por ahora. Escríbenos si quieres que te
           avisemos cuando vuelva.
         </div>
       }
 
-      <button class="btn-add" type="button" [disabled]="agotado()" (click)="addToCart()">
-        {{ agotado() ? 'Agotado' : 'Agregar al carrito' }}
+      <button class="btn-add" type="button"
+              [disabled]="agotado() || (tieneVariantes() && !variante())"
+              (click)="addToCart()">
+        @if (tieneVariantes() && faltaElegir()) { Elige {{ faltaElegir() }} }
+        @else if (agotado()) { Agotado }
+        @else { Agregar al carrito }
       </button>
 
       @if (avisoTope()) {

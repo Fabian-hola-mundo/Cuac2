@@ -239,3 +239,16 @@ nav.primary { display: flex; gap: 4px;
 }
 
 .not-found .back-link { margin-top: 18px; }
+
+.variant-group { border: 0; padding: 0; margin: 0 0 16px; }
+.variant-label { font-size: 14px; margin-bottom: 8px; }
+.variant-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.variant-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 40px; padding: 6px 14px; border-radius: 999px;
+  border: 1.5px solid currentColor; background: transparent; cursor: pointer; font: inherit;
+  &.is-selected { background: #151F28; color: #fff; border-color: #151F28; }
+  &.is-out { opacity: .4; text-decoration: line-through; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid #2A6FDB; outline-offset: 2px; }
+}
+.variant-thumb { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }

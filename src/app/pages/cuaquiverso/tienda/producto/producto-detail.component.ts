@@ -3,6 +3,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   InventarioService,
   ProductoEvento,
+  ProductoOpcion,
+  VariantePublica,
   esEtiquetaPropia,
   etiquetaCategoria,
   etiquetaFlag,
@@ -11,6 +13,13 @@ import { CartService } from '../../services/cart.service';
 import { CartModalComponent } from '../../cart-modal/cart-modal.component';
 import { SeoService } from '../../../../core/services/seo.service';
 import { UMBRAL_POCAS_UNIDADES } from '../../services/tienda.constants';
+import {
+  Combinacion,
+  etiquetaVariante,
+  rangoPrecios,
+  valorDisponible,
+  varianteDeSeleccion,
+} from '../../../../../../supabase/functions/_shared/variantes';
 
 const CAT_SHORT: Record<string, string> = {
   tee:'Camiseta', tote:'Tote bag', libreta:'Libreta', sticker:'Sticker',
@@ -39,10 +48,51 @@ export class ProductoDetailComponent implements OnInit {
   readonly producto    = signal<ProductoEvento | null>(null);
   readonly selectedImg = signal<string | null>(null);
 
-  readonly agotado = computed(() => (this.producto()?.stock_actual ?? 0) <= 0);
+  readonly opciones   = signal<ProductoOpcion[]>([]);
+  readonly variantes  = signal<VariantePublica[]>([]);
+  readonly seleccion  = signal<Combinacion>({});
+
+  readonly tieneVariantes = computed(() => this.variantes().length > 0);
+  readonly orden = computed(() => this.opciones().map(o => o.nombre));
+
+  readonly variante = computed(() =>
+    varianteDeSeleccion(this.variantes(), this.seleccion(), this.orden()));
+
+  /** Stock que manda: el de la combinación elegida o el total del producto. */
+  readonly stockVisible = computed(() =>
+    this.variante()?.disponible ?? this.producto()?.stock_actual ?? 0);
+
+  readonly precioVisible = computed(() => {
+    const p = this.producto();
+    if (!p) return 0;
+    return this.variante()?.precio ?? p.precio;
+  });
+
+  readonly rango = computed(() => {
+    const p = this.producto();
+    return p && this.tieneVariantes() ? rangoPrecios(this.variantes(), p.precio) : null;
+  });
+
+  /** Nombre (en minúscula) de la primera opción sin elegir, para el botón. */
+  readonly faltaElegir = computed(() => {
+    const n = this.orden().find(o => !this.seleccion()[o]);
+    return n ? n.toLocaleLowerCase('es') : null;
+  });
+
+  disponible(opcion: string, valor: string): boolean {
+    return valorDisponible(this.variantes(), this.seleccion(), opcion, valor);
+  }
+
+  elegir(opcion: string, valor: string, foto: string | null): void {
+    this.avisoTope.set(false);
+    this.seleccion.update(s => ({ ...s, [opcion]: s[opcion] === valor ? '' : valor }));
+    if (foto && this.seleccion()[opcion]) this.selectedImg.set(foto);
+  }
+
+  readonly agotado = computed(() => this.stockVisible() <= 0);
 
   readonly pocasUnidades = computed(() => {
-    const s = this.producto()?.stock_actual ?? 0;
+    const s = this.stockVisible();
     return s > 0 && s <= UMBRAL_POCAS_UNIDADES;
   });
 
@@ -52,6 +102,9 @@ export class ProductoDetailComponent implements OnInit {
     const imgs: string[] = [];
     if (p.cover_url) imgs.push(p.cover_url);
     p.fotos.forEach(f => { if (f && f !== p.cover_url) imgs.push(f); });
+    this.opciones().forEach(o => o.valores.forEach(v => {
+      if (v.foto_url && !imgs.includes(v.foto_url)) imgs.push(v.foto_url);
+    }));
     return imgs;
   });
 
@@ -71,7 +124,7 @@ export class ProductoDetailComponent implements OnInit {
     this.errorCarga.set(null);
     this.notFound.set(false);
 
-    const { producto, error } = await this.inv.getProductoPublico(id);
+    const { producto, opciones, variantes, error } = await this.inv.getProductoPublico(id);
 
     if (error) {
       // Antes cualquier fallo de PostgREST —incluido un fetch caído— se
@@ -88,6 +141,9 @@ export class ProductoDetailComponent implements OnInit {
       });
     } else {
       this.producto.set(producto);
+      this.opciones.set(opciones);
+      this.variantes.set(variantes);
+      this.seleccion.set({});
       this.aplicarSeo(producto, id);
     }
     this.loading.set(false);
@@ -110,6 +166,11 @@ export class ProductoDetailComponent implements OnInit {
       ogType:      'article',
     });
 
+    const rango = this.rango();
+    const availability = p.stock_actual > 0
+      ? 'https://schema.org/InStock'
+      : 'https://schema.org/OutOfStock';
+
     this.seo.setJsonLd({
       '@context': 'https://schema.org',
       '@type': 'Product',
@@ -117,15 +178,22 @@ export class ProductoDetailComponent implements OnInit {
       description: desc,
       image: this.allImgs(),
       brand: { '@type': 'Brand', name: 'Cuaquiverso' },
-      offers: {
-        '@type': 'Offer',
-        url,
-        priceCurrency: 'COP',
-        price: p.precio,
-        availability: p.stock_actual > 0
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
-      },
+      offers: rango && rango.min !== rango.max
+        ? {
+            '@type': 'AggregateOffer',
+            priceCurrency: 'COP',
+            lowPrice: rango.min,
+            highPrice: rango.max,
+            offerCount: this.variantes().length,
+            availability,
+          }
+        : {
+            '@type': 'Offer',
+            url,
+            priceCurrency: 'COP',
+            price: rango?.min ?? p.precio,
+            availability,
+          },
     });
   }
 
@@ -138,14 +206,18 @@ export class ProductoDetailComponent implements OnInit {
   addToCart(): void {
     const p = this.producto();
     if (!p || this.agotado()) return;
+    const v = this.variante();
+    if (this.tieneVariantes() && !v) return;
     const agregado = this.cart.add({
-      id:        p.id,
-      name:      p.nombre,
-      sub:       this.catLabel(p.categoria),
-      price:     p.precio,
-      color:     p.color ?? '#3D4856',
-      categoria: p.categoria,
-      stock:     p.stock_actual,
+      id:            p.id,
+      name:          p.nombre,
+      sub:           this.catLabel(p.categoria),
+      price:         v?.precio ?? p.precio,
+      color:         p.color ?? '#3D4856',
+      categoria:     p.categoria,
+      stock:         this.stockVisible(),
+      varianteId:    v?.id ?? null,
+      varianteLabel: v ? etiquetaVariante(v.opciones, this.orden()) : null,
     });
     // En la ficha sí se abre el carrito: es el final del recorrido del producto,
     // no una interrupción de la exploración como en la grilla.
