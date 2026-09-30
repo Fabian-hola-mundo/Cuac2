@@ -456,23 +456,31 @@ export class InventarioService {
 
     // Las fotos por valor apuntan a URLs del original; se conservan (archivos
     // públicos del original). El admin puede reasignarlas.
-    const { opciones, variantes } = await this.getVariantesAdmin(id);
-    if (opciones.length > 0) {
-      await this.guardarVariantes(
-        data.id as string,
-        opciones.map(o => ({ nombre: o.nombre, valores: o.valores })),
-        variantes.filter(v => v.activo).map(v => ({ opciones: v.opciones, precio: v.precio, stock_inicial: 0, activo: true })),
-      );
+    let variantesFallaron = false;
+    try {
+      const { opciones, variantes } = await this.getVariantesAdmin(id);
+      if (opciones.length > 0) {
+        const { error: errVar } = await this.guardarVariantes(
+          data.id as string,
+          opciones.map(o => ({ nombre: o.nombre, valores: o.valores })),
+          variantes.filter(v => v.activo).map(v => ({ opciones: v.opciones, precio: v.precio, stock_inicial: 0, activo: true })),
+        );
+        if (errVar) variantesFallaron = true;
+      }
+    } catch {
+      variantesFallaron = true;
     }
 
     await this.cargarTodos();
-    return {
-      error: null,
-      // El duplicado existe y es editable; sólo hay que avisar si le faltan fotos.
-      aviso: copiadas.includes(false)
-        ? 'Duplicado creado, pero alguna imagen no se copió. Revísalo antes de publicarlo.'
-        : null,
-    };
+    // El duplicado existe y es editable; sólo hay que avisar si le faltan fotos o variantes.
+    const avisos: string[] = [];
+    if (copiadas.includes(false)) {
+      avisos.push('Duplicado creado, pero alguna imagen no se copió. Revísalo antes de publicarlo.');
+    }
+    if (variantesFallaron) {
+      avisos.push('Duplicado creado, pero no se copiaron las variantes. Revísalas antes de publicarlo.');
+    }
+    return { error: null, aviso: avisos.length ? avisos.join(' ') : null };
   }
 
   async toggleActivo(id: string, activo: boolean): Promise<{ error: string | null }> {
