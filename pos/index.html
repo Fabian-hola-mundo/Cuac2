@@ -511,6 +511,7 @@
         transition-duration: 0.001ms !important;
       }
     }
+    .variant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin:12px 0}.variant-grid[hidden]{display:none}.variant-btn{min-height:56px;border-radius:12px;border:2px solid #D4DCE4;background:#fff;font:inherit;font-weight:600}.variant-btn.sel{border-color:#151F28;background:#151F28;color:#fff}.variant-btn:disabled{opacity:.35}.variant-btn small{display:block;font-weight:400}
   </style>
 </head>
 <body>
@@ -630,6 +631,7 @@
       <span class="sheet-product" id="modal-product-name">—</span>
       <span class="sheet-stock" id="modal-product-stock">Stock disponible: —</span>
     </div>
+    <div id="modal-variants" class="variant-grid" hidden></div>
     <div class="qty-block">
       <span class="qty-label">Cantidad</span>
       <div class="qty-controls">
@@ -666,7 +668,16 @@
   let products = [];
   let eventoActivo = null;
   let selectedProduct = null;
+  let variantsByProduct = {};
+  let optionOrder = {};
+  let reservedByVariant = {};
+  let selectedVariant = null;
   let currentQty = 1;
+
+  function variantLabel(v) {
+    const order = optionOrder[v.producto_id] || Object.keys(v.opciones);
+    return order.map(n => v.opciones[n]).filter(Boolean).join(' · ');
+  }
   let isOnline = navigator.onLine;
   let realtimeChannel = null;
 
@@ -796,6 +807,7 @@
       try {
         const { error: insertError } = await sb.from('ventas_evento').insert({
           producto_id: item.producto_id,
+          variante_id: item.variante_id ?? null,
           cantidad: item.cantidad,
           dispositivo: item.dispositivo,
           vendido_en: item.vendido_en,
@@ -806,7 +818,8 @@
 
         const { error: rpcError } = await sb.rpc('decrementar_stock_seguro', {
           p_producto_id: item.producto_id,
-          p_cantidad: item.cantidad
+          p_cantidad: item.cantidad,
+          p_variante_id: item.variante_id ?? null
         });
         if (rpcError) throw rpcError;
 
@@ -932,6 +945,25 @@
       const { data, error } = await query;
       if (error) throw error;
       products = data || [];
+
+      const ids = products.map(p => p.id);
+      const [varRes, opRes, dispRes] = await Promise.all([
+        sb.from('producto_variantes').select('*').in('producto_id', ids).eq('activo', true).order('posicion'),
+        sb.from('producto_opciones').select('producto_id, nombre, posicion').in('producto_id', ids).order('posicion'),
+        sb.rpc('stock_disponible', { p_producto_ids: ids }),
+      ]);
+      variantsByProduct = {};
+      (varRes.data || []).forEach(v => (variantsByProduct[v.producto_id] ||= []).push(v));
+      optionOrder = {};
+      (opRes.data || []).forEach(o => (optionOrder[o.producto_id] ||= []).push(o.nombre));
+      // Reservadas en web = físico − disponible (sólo informativo: el POS vende del físico).
+      reservedByVariant = {};
+      (dispRes.data || []).forEach(r => {
+        const fisico = r.variante_id
+          ? (varRes.data || []).find(v => v.id === r.variante_id)?.stock_actual
+          : products.find(p => p.id === r.producto_id)?.stock_actual;
+        reservedByVariant[r.variante_id || r.producto_id] = Math.max(0, (fisico ?? 0) - r.disponible);
+      });
       renderProducts();
     } catch (e) {
       console.error('Load products error:', e);
@@ -968,6 +1000,7 @@
           renderProducts();
         }
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'producto_variantes' }, () => loadProducts())
       .subscribe();
   }
 
@@ -1002,55 +1035,96 @@
   }
 
   // ── MODAL ──
+  function unitPrice() {
+    return selectedVariant?.precio ?? selectedProduct?.precio ?? 0;
+  }
+  function maxQty() {
+    return selectedVariant ? selectedVariant.stock_actual : selectedProduct.stock_actual;
+  }
+
   function refreshQtyControls() {
     if (!selectedProduct) return;
     document.getElementById('qty-minus').disabled = currentQty <= 1;
-    document.getElementById('qty-plus').disabled = currentQty >= selectedProduct.stock_actual;
+    document.getElementById('qty-plus').disabled = currentQty >= maxQty();
   }
 
   window.openSaleModal = function(productId) {
     selectedProduct = products.find(p => p.id === productId);
     if (!selectedProduct || selectedProduct.stock_actual <= 0) return;
-
+    selectedVariant = null;
     currentQty = 1;
+    const variants = variantsByProduct[productId] || [];
+    const box = document.getElementById('modal-variants');
     document.getElementById('modal-product-name').textContent = selectedProduct.nombre;
-    document.getElementById('modal-product-stock').innerHTML = `Stock disponible: <b>${selectedProduct.stock_actual}</b>`;
+
+    if (variants.length > 0) {
+      box.hidden = false;
+      box.innerHTML = variants.map(v => {
+        const res = reservedByVariant[v.id] || 0;
+        return `<button type="button" class="variant-btn" data-id="${v.id}" ${v.stock_actual <= 0 ? 'disabled' : ''}
+                  onclick="selectVariant('${v.id}')">${escapeHtml(variantLabel(v))}
+                  <small>${v.stock_actual} disp.${res ? ` · ${res} reservada${res > 1 ? 's' : ''} en web` : ''}</small></button>`;
+      }).join('');
+      document.getElementById('modal-product-stock').textContent = 'Elige la combinación';
+      document.getElementById('confirm-sale-btn').disabled = true;
+    } else {
+      box.hidden = true;
+      box.innerHTML = '';
+      const res = reservedByVariant[productId] || 0;
+      document.getElementById('modal-product-stock').innerHTML =
+        `Stock disponible: <b>${selectedProduct.stock_actual}</b>${res ? ` · ${res} reservada${res > 1 ? 's' : ''} en web` : ''}`;
+      document.getElementById('confirm-sale-btn').disabled = false;
+    }
     document.getElementById('modal-qty').value = 1;
-    document.getElementById('modal-total').textContent = formatCOP(selectedProduct.precio);
-    document.getElementById('confirm-sale-btn').disabled = false;
+    document.getElementById('modal-total').textContent = formatCOP(unitPrice());
     document.getElementById('confirm-sale-btn').textContent = 'Registrar venta';
     refreshQtyControls();
     document.getElementById('sale-modal').classList.add('open');
   };
 
+  window.selectVariant = function(id) {
+    selectedVariant = (variantsByProduct[selectedProduct.id] || []).find(v => v.id === id) || null;
+    document.querySelectorAll('#modal-variants .variant-btn').forEach(b => b.classList.toggle('sel', b.dataset.id === id));
+    currentQty = 1;
+    document.getElementById('modal-qty').value = 1;
+    document.getElementById('modal-product-stock').innerHTML = `Stock de ${escapeHtml(variantLabel(selectedVariant))}: <b>${selectedVariant.stock_actual}</b>`;
+    document.getElementById('modal-total').textContent = formatCOP(unitPrice());
+    document.getElementById('confirm-sale-btn').disabled = false;
+    refreshQtyControls();
+  };
+
   window.closeModal = function() {
     document.getElementById('sale-modal').classList.remove('open');
     selectedProduct = null;
+    selectedVariant = null;
     currentQty = 1;
   };
 
   window.changeQty = function(delta) {
     if (!selectedProduct) return;
-    const max = selectedProduct.stock_actual;
+    const max = maxQty();
     currentQty = Math.max(1, Math.min(max, currentQty + delta));
     document.getElementById('modal-qty').value = currentQty;
-    document.getElementById('modal-total').textContent = formatCOP(selectedProduct.precio * currentQty);
+    document.getElementById('modal-total').textContent = formatCOP(unitPrice() * currentQty);
     refreshQtyControls();
   };
 
   // ── CONFIRM SALE ──
   window.confirmSale = async function() {
     if (!selectedProduct || currentQty < 1) return;
+    if ((variantsByProduct[selectedProduct.id] || []).length && !selectedVariant) return;
 
     const btn = document.getElementById('confirm-sale-btn');
     const soldProduct = selectedProduct;
+    const soldVariant = selectedVariant;
     const soldQty = currentQty;
-    const lineTotal = soldProduct.precio * soldQty;
+    const lineTotal = unitPrice() * soldQty;
     btn.disabled = true;
     btn.textContent = 'Procesando…';
 
     const saleRecord = {
       producto_id: soldProduct.id,
+      variante_id: soldVariant?.id ?? null,
       cantidad: soldQty,
       dispositivo: getDeviceName(),
       vendido_en: new Date().toISOString(),
@@ -1065,11 +1139,13 @@
 
         const { error: rpcError } = await sb.rpc('decrementar_stock_seguro', {
           p_producto_id: soldProduct.id,
-          p_cantidad: soldQty
+          p_cantidad: soldQty,
+          p_variante_id: soldVariant?.id ?? null
         });
         if (rpcError) throw rpcError;
 
         // Optimistic local update
+        if (soldVariant) soldVariant.stock_actual = Math.max(0, soldVariant.stock_actual - soldQty);
         const idx = products.findIndex(p => p.id === soldProduct.id);
         if (idx !== -1) {
           products[idx].stock_actual = Math.max(0, products[idx].stock_actual - soldQty);
@@ -1095,6 +1171,7 @@
       q.push(saleRecord);
       saveOfflineQueue(q);
 
+      if (soldVariant) soldVariant.stock_actual = Math.max(0, soldVariant.stock_actual - soldQty);
       const idx = products.findIndex(p => p.id === soldProduct.id);
       if (idx !== -1) {
         products[idx].stock_actual = Math.max(0, products[idx].stock_actual - soldQty);
