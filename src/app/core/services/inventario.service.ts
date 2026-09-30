@@ -558,6 +558,24 @@ export class InventarioService {
   }
 
   /**
+   * Escucha los cambios de stock que hacen otros (POS, tienda web, otro admin)
+   * y los aplica sobre la señal. Devuelve la función para dejar de escuchar.
+   */
+  escucharStock(onVariante?: (v: ProductoVariante) => void): () => void {
+    const canal = this.sb.db
+      .channel(`stock-${crypto.randomUUID()}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'productos_evento' }, payload => {
+        const p = payload.new as ProductoEvento;
+        this.parchear(p.id, { stock_actual: p.stock_actual });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'producto_variantes' }, payload => {
+        onVariante?.(payload.new as ProductoVariante);
+      })
+      .subscribe();
+    return () => { this.sb.db.removeChannel(canal); };
+  }
+
+  /**
    * Aplica el cambio sobre la señal en vez de recargar el catálogo entero.
    * Un toggle de visibilidad no justifica volver a bajar toda la tabla.
    */

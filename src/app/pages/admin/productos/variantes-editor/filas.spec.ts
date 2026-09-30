@@ -24,6 +24,14 @@ describe('reconciliarFilas', () => {
     const filas = reconciliarFilas([{ nombre: 'Talla', valores: [v('M'), v('L')] }], previas, []);
     expect(filas.map(f => [f.etiqueta, f.stock, f.precio])).toEqual([['M', 7, 60000], ['L', 0, null]]);
   });
+
+  it('conserva el stock escrito a mano en una existente y recuerda su base', () => {
+    const opciones = [{ nombre: 'Talla', valores: [v('S')] }, { nombre: 'Color', valores: [v('Negro')] }];
+    const previas = reconciliarFilas(opciones, [], EXISTENTES);
+    previas[0].stock = 10;
+    const filas = reconciliarFilas(opciones, previas, EXISTENTES);
+    expect(filas.map(f => [f.etiqueta, f.stock, f.stockBase])).toEqual([['S · Negro', 10, 3]]);
+  });
 });
 
 describe('contarDesactivadas', () => {

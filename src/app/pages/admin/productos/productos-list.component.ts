@@ -134,6 +134,30 @@ export class ProductosListComponent implements OnInit {
       document.body.style.overflow = this.hayOverlay() ? 'hidden' : '';
     });
     destroyRef.onDestroy(() => { document.body.style.overflow = ''; });
+
+    // Ventas del POS o de la web mueven el stock mientras la lista está abierta.
+    const dejarDeEscuchar = this.inv.escucharStock(v => this.parchearVariante(v));
+    destroyRef.onDestroy(dejarDeEscuchar);
+    // El drawer guarda una copia del producto: la mantiene al día con la lista.
+    effect(() => {
+      const abierto = this.drawerProduct();
+      if (!abierto) return;
+      const actual = this.inv.productos().find(p => p.id === abierto.id);
+      if (actual && actual !== abierto) this.drawerProduct.set(actual);
+    });
+  }
+
+  private parchearVariante(v: ProductoVariante) {
+    this.variantesPorProducto.update(m => {
+      const entrada = m.get(v.producto_id);
+      if (!entrada) return m;
+      const copia = new Map(m);
+      copia.set(v.producto_id, {
+        ...entrada,
+        variantes: entrada.variantes.map(x => (x.id === v.id ? { ...x, ...v } : x)),
+      });
+      return copia;
+    });
   }
 
   ngOnInit() {

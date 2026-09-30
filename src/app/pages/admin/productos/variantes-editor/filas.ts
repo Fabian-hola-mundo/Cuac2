@@ -13,8 +13,10 @@ export interface FilaVariante {
   etiqueta: string;
   id: string | null;
   precio: number | null;
-  /** Existentes: stock actual (sólo lectura). Nuevas: stock inicial editable. */
+  /** Existentes: stock actual, editable (se guarda como ajuste). Nuevas: el stock con el que nacen. */
   stock: number;
+  /** Stock en la base de una existente; null en las nuevas. Contra él se mide el ajuste. */
+  stockBase: number | null;
   activo: boolean;
   existente: boolean;
 }
@@ -52,7 +54,9 @@ export function reconciliarFilas(
       etiqueta: etiquetaVariante(c, orden),
       id: e?.id ?? null,
       precio: p ? p.precio : (e?.precio ?? null),
-      stock: e ? e.stock_actual : (p?.stock ?? 0),
+      // Lo escrito a mano sobrevive a regenerar la tabla, también en las existentes.
+      stock: p ? p.stock : (e?.stock_actual ?? 0),
+      stockBase: e ? e.stock_actual : null,
       activo: p ? p.activo : (e?.activo ?? true),
       existente: !!e,
     };

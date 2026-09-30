@@ -57,6 +57,14 @@
 // La tabla puede ser más ancha que el panel en móvil: el scroll se queda aquí
 // dentro y no empuja la página. `contain: inline-size` evita que su ancho de
 // contenido ensanche la columna de la grilla del formulario (min-width: auto).
+.ve-stock {
+  display: flex; gap: 6px; align-items: center;
+
+  .input { min-width: 70px; }
+  .ve-btn { flex-shrink: 0; align-self: center; }
+}
+.ve-restock { margin-top: 6px; }
+
 .ve-tabla-wrap { overflow-x: auto; width: 100%; contain: inline-size; }
 
 .ve-tabla {

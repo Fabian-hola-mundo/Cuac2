@@ -136,7 +136,8 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     nombre:        ['', [Validators.required, Validators.minLength(2)]],
     categoria:     ['tote', Validators.required],
     precio:        [null as number | null, [Validators.required, Validators.min(1)]],
-    stock_inicial: [0, [Validators.required, Validators.min(0)]],
+    /** Al crear es el stock inicial; al editar, el stock actual. */
+    stock:         [0 as number | null, [Validators.required, Validators.min(0)]],
     activo:        [true],
     color:         [null as string | null],
     flag:          [null as string | null],
@@ -144,16 +145,26 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     destacado:     [false],
   });
 
+  // ── Stock ─────────────────────────────────────────────────────────────────
+  /** Stock actual en la base al cargar (o tras un restock): contra él se mide el ajuste. */
+  private stockBase: number | null = null;
+  readonly restockAbierto   = signal(false);
+  readonly restockGuardando = signal(false);
+  readonly restockError     = signal<string | null>(null);
+  readonly restockOk        = signal<string | null>(null);
+  restockCantidad: number | null = null;
+  restockNota = '';
+
   constructor() {
-    // Al crear con variantes el campo de stock se oculta: un valor inválido
-    // escrito antes bloquearía el guardado sin nada visible. En edición el
-    // control ya está deshabilitado siempre.
+    // Con variantes el campo de stock se oculta (va por combinación): un valor
+    // inválido escrito antes bloquearía el guardado sin nada visible.
     effect(() => {
       const conVariantes = this.editor()?.activo() ?? false;
-      if (this.isEdit()) return;
-      const c = this.form.get('stock_inicial')!;
-      if (conVariantes) { c.setValue(0, { emitEvent: false }); c.disable({ emitEvent: false }); }
-      else c.enable({ emitEvent: false });
+      const c = this.form.get('stock')!;
+      if (conVariantes) {
+        if (!this.isEdit()) c.setValue(0, { emitEvent: false });
+        c.disable({ emitEvent: false });
+      } else c.enable({ emitEvent: false });
     });
     // La confirmación vale para un número concreto de desactivadas: si cambia,
     // hay que volver a confirmar.
@@ -180,16 +191,15 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
       nombre:        p.nombre,
       categoria:     p.categoria,
       precio:        p.precio,
-      stock_inicial: p.stock_inicial,
+      stock:         p.stock_actual,
       activo:        p.activo,
       color:         p.color,
       flag:          p.flag,
       destacado:     p.destacado ?? false,
       descripcion:   p.descripcion ?? '',
     });
-    // El stock actual lo mueven el POS, el restock y los ajustes; editar el
-    // inicial a mano desincronizaría el historial.
-    this.form.get('stock_inicial')?.disable();
+    // Editar el número a mano se guarda como ajuste, así el historial cuadra.
+    this.stockBase = p.stock_actual;
     this.coverGuardada = p.cover_url;
     this.coverPreview.set(p.cover_url);
     this.galeria.set({ existentes: p.fotos ?? [], nuevos: [] });
@@ -276,7 +286,7 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
       // Primero el registro, después las imágenes: sólo con el id definitivo se
       // pueden subir a la carpeta del producto en vez de a una temporal.
       // Con variantes el stock vive en cada combinación; el del producto es su suma.
-      const id = await this.asegurarId(datos, ed?.activo() ? 0 : v.stock_inicial ?? 0);
+      const id = await this.asegurarId(datos, ed?.activo() ? 0 : v.stock ?? 0);
       if (!id) return;
 
       const imagenes = await this.subirImagenes(id);
@@ -285,10 +295,23 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
       const { error } = await this.inv.updateProducto(id, { ...datos, ...imagenes });
       if (error) { this.errorMsg.set(error); return; }
 
+      // Con variantes el stock del producto es la suma de las combinaciones.
+      const stock = v.stock ?? 0;
+      if (this.isEdit() && !ed?.activo() && this.stockBase !== null && stock !== this.stockBase) {
+        const { error: sErr } = await this.inv.ajustarStock(id, stock, 'Ajuste desde el formulario');
+        if (sErr) { this.errorMsg.set(`El producto se guardó, pero el stock no: ${sErr}`); return; }
+        this.stockBase = stock;
+      }
+
       if (ed && (ed.activo() || this.teniaVariantes)) {
         const { opciones, variantes } = ed.payload();
         const { error: vErr } = await this.inv.guardarVariantes(id, opciones, variantes);
         if (vErr) { this.errorMsg.set(`El producto se guardó, pero las variantes no: ${vErr}`); return; }
+        for (const a of ed.ajustes()) {
+          const { error: aErr } = await this.inv.ajustarStock(id, a.stock, 'Ajuste desde el formulario', a.varianteId);
+          if (aErr) { this.errorMsg.set(`El producto se guardó, pero el stock de una combinación no: ${aErr}`); return; }
+        }
+        ed.confirmarAjustes();
         await this.inv.cargarTodos();
       }
 
@@ -363,6 +386,39 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   cancelar() { this.router.navigate(['/admin/productos']); }
+
+  // ── Restock ───────────────────────────────────────────────────────────────
+  abrirRestock() {
+    this.restockCantidad = null;
+    this.restockNota = '';
+    this.restockError.set(null);
+    this.restockOk.set(null);
+    this.restockAbierto.set(true);
+  }
+
+  /** Se registra en el momento, no al guardar: es un movimiento, no un dato del formulario. */
+  async registrarRestock() {
+    const id = this.editId();
+    const cantidad = this.restockCantidad;
+    if (!id || this.restockGuardando()) return;
+    if (!cantidad || cantidad <= 0 || !Number.isInteger(cantidad)) {
+      this.restockError.set('Ingresa una cantidad entera mayor a 0.');
+      return;
+    }
+    this.restockGuardando.set(true);
+    this.restockError.set(null);
+    const { error } = await this.inv.restockProducto(id, cantidad, this.restockNota.trim() || undefined);
+    this.restockGuardando.set(false);
+    if (error) { this.restockError.set(error); return; }
+    // Si había un número escrito a mano se conserva la diferencia que el admin
+    // quería ajustar; sin cambios pendientes el campo queda en el stock real.
+    const c = this.form.get('stock')!;
+    const pendiente = (c.value ?? 0) - (this.stockBase ?? 0);
+    this.stockBase = (this.stockBase ?? 0) + cantidad;
+    c.setValue(this.stockBase + pendiente);
+    this.restockAbierto.set(false);
+    this.restockOk.set(`Restock de ${cantidad} registrado. Stock: ${this.stockBase}.`);
+  }
 
   hasError(field: string) {
     const c = this.form.get(field);

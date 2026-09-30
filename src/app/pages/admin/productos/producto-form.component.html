@@ -108,14 +108,38 @@
         <!-- Con variantes el stock va por combinación, en la tabla del editor. -->
         @if (!editor()?.activo()) {
           <div class="field">
-            <label>Stock inicial <span class="opt">{{ isEdit() ? '' : '*' }}</span></label>
-            <input class="input" type="number" formControlName="stock_inicial" placeholder="0" min="0" />
-            @if (isEdit()) {
-              <span class="help">El POS gestiona el stock actual</span>
-            } @else {
-              <span class="help">El stock actual se igualará a este valor al crear el producto</span>
+            <label for="in-stock">Stock <span class="opt">*</span></label>
+            <div class="cat-nueva">
+              <input id="in-stock" class="input" type="number" formControlName="stock" placeholder="0" min="0" />
+              @if (isEdit() && !restockAbierto()) {
+                <button class="btn-mini ghost" type="button" (click)="abrirRestock()">+ Restock</button>
+              }
+            </div>
+            @if (restockAbierto()) {
+              <div class="cat-nueva restock-fila">
+                <input class="input" type="number" min="1" placeholder="Unidades a agregar"
+                       aria-label="Unidades a agregar"
+                       [(ngModel)]="restockCantidad" [ngModelOptions]="{ standalone: true }"
+                       (keydown.enter)="$event.preventDefault(); registrarRestock()" autofocus />
+                <input class="input" type="text" placeholder="Nota (opcional)" aria-label="Nota del restock"
+                       [(ngModel)]="restockNota" [ngModelOptions]="{ standalone: true }"
+                       (keydown.enter)="$event.preventDefault(); registrarRestock()" />
+                <button class="btn-mini" type="button" [disabled]="restockGuardando()" (click)="registrarRestock()">
+                  {{ restockGuardando() ? 'Guardando…' : 'Registrar' }}
+                </button>
+                <button class="btn-mini ghost" type="button" (click)="restockAbierto.set(false)">Cancelar</button>
+              </div>
+              @if (restockError()) {
+                <span class="help" style="color:var(--terra)" role="alert">{{ restockError() }}</span>
+              }
             }
-            @if (hasError('stock_inicial')) {
+            @if (restockOk()) {
+              <span class="help" role="status">{{ restockOk() }}</span>
+            }
+            @if (isEdit()) {
+              <span class="help">Cambiar el número a mano queda como ajuste en el historial al guardar</span>
+            }
+            @if (hasError('stock')) {
               <span class="help" style="color:var(--terra)">El stock no puede ser negativo</span>
             }
           </div>
@@ -142,7 +166,7 @@
           </div>
         </div>
 
-        <app-variantes-editor [fotos]="fotosGuardadas()" [esEdicion]="isEdit()" />
+        <app-variantes-editor [fotos]="fotosGuardadas()" [esEdicion]="isEdit()" [productoId]="editId()" />
 
         <!-- ── APARIENCIA ─────────────────────────────────────────── -->
         <div class="section-sep"></div>

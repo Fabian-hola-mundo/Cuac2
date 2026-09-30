@@ -1,12 +1,12 @@
 // src/app/pages/admin/productos/variantes-editor/variantes-editor.component.ts
 //
 // Opciones (Talla, Color…) y la tabla de combinaciones que salen de ellas. El
-// formulario de producto le pide `payload()` al guardar; aquí no se persiste
-// nada.
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+// formulario de producto le pide `payload()` y `ajustes()` al guardar; aquí sólo
+// se persiste el restock de una combinación, que es un movimiento inmediato.
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Combinacion, OpcionDef, normalizarOpciones } from '../../../../../../supabase/functions/_shared/variantes';
-import { ProductoOpcion, ProductoVariante } from '../../../../core/services/inventario.service';
+import { InventarioService, ProductoOpcion, ProductoVariante } from '../../../../core/services/inventario.service';
 import { FilaVariante, agregarValoresPendientes, contarDesactivadas, reconciliarFilas } from './filas';
 
 const MAX_OPCIONES = 3;
@@ -23,6 +23,10 @@ export class VariantesEditorComponent {
   /** Fotos ya guardadas del producto (portada + galería) para asignar a valores. */
   readonly fotos = input.required<string[]>();
   readonly esEdicion = input(false);
+  /** Id del producto ya guardado; sin él no hay restock por combinación. */
+  readonly productoId = input<string | null>(null);
+
+  private inv = inject(InventarioService);
 
   readonly activo = signal(false);
   readonly opciones = signal<OpcionDef[]>([]);
@@ -112,8 +116,62 @@ export class VariantesEditorComponent {
 
   aplicarATodas(campo: 'precio' | 'stock', valor: number | null): void {
     this.filas.update(fs => fs.map(f =>
-      campo === 'precio' ? { ...f, precio: valor }
-        : f.existente ? f : { ...f, stock: Math.max(0, valor ?? 0) }));
+      campo === 'precio' ? { ...f, precio: valor } : { ...f, stock: Math.max(0, valor ?? 0) }));
+  }
+
+  // ── Restock por combinación ───────────────────────────────────────────────
+  /** Etiqueta de la fila con el restock abierto (las filas se regeneran; la etiqueta no). */
+  readonly restockFila = signal<string | null>(null);
+  readonly restockGuardando = signal(false);
+  readonly restockError = signal<string | null>(null);
+  readonly restockOk = signal<string | null>(null);
+  restockCantidad: number | null = null;
+
+  abrirRestock(f: FilaVariante): void {
+    this.restockCantidad = null;
+    this.restockError.set(null);
+    this.restockOk.set(null);
+    this.restockFila.set(f.etiqueta);
+  }
+
+  /** Se registra en el momento, como el restock de la lista. */
+  async registrarRestock(f: FilaVariante): Promise<void> {
+    const productoId = this.productoId();
+    const cantidad = this.restockCantidad;
+    if (!productoId || !f.id || this.restockGuardando()) return;
+    if (!cantidad || cantidad <= 0 || !Number.isInteger(cantidad)) {
+      this.restockError.set('Ingresa una cantidad entera mayor a 0.');
+      return;
+    }
+    this.restockGuardando.set(true);
+    this.restockError.set(null);
+    const { error } = await this.inv.restockProducto(productoId, cantidad, undefined, f.id);
+    this.restockGuardando.set(false);
+    if (error) { this.restockError.set(error); return; }
+    // Lo escrito a mano en la fila conserva su diferencia con la base.
+    this.existentes = this.existentes.map(e =>
+      e.id === f.id ? { ...e, stock_actual: e.stock_actual + cantidad } : e);
+    this.filas.update(fs => fs.map(x => x.id !== f.id ? x : {
+      ...x, stock: x.stock + cantidad, stockBase: (x.stockBase ?? 0) + cantidad,
+    }));
+    this.restockFila.set(null);
+    this.restockOk.set(`Restock de ${cantidad} en ${f.etiqueta} registrado.`);
+  }
+
+  /** Combinaciones existentes cuyo stock se cambió a mano: se guardan como ajuste. */
+  ajustes(): { varianteId: string; stock: number }[] {
+    if (!this.activo()) return [];
+    return this.filas()
+      .filter(f => f.id && f.stockBase !== null && f.stock !== f.stockBase)
+      .map(f => ({ varianteId: f.id!, stock: Math.max(0, f.stock) }));
+  }
+
+  /** Tras guardar los ajustes, lo escrito pasa a ser la base. */
+  confirmarAjustes(): void {
+    const porId = new Map(this.filas().filter(f => f.id).map(f => [f.id!, f.stock]));
+    this.existentes = this.existentes.map(e =>
+      porId.has(e.id) ? { ...e, stock_actual: porId.get(e.id)! } : e);
+    this.filas.update(fs => fs.map(f => f.id ? { ...f, stockBase: f.stock } : f));
   }
 
   editarFila(idx: number, cambios: Partial<FilaVariante>): void {

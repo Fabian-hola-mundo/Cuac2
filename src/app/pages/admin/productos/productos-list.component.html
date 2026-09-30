@@ -120,10 +120,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
           </button>
         </th>
-        <th class="num">Stock inicial</th>
         <th class="sortable num" [attr.aria-sort]="ariaSort('stock_actual')">
           <button type="button" (click)="ordenarPor('stock_actual')">
-            Stock actual
+            Stock
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
           </button>
         </th>
@@ -161,7 +160,6 @@
         </td>
         <td>{{ labelPersonaje(p.personaje) }}</td>
         <td class="num">{{ fmtCOP(p.precio) }}</td>
-        <td class="num">{{ p.stock_inicial }}</td>
         <td class="num">
           @if (p.stock_actual === 0) {
             <span class="badge err"><span class="pdot"></span>Agotado</span>
@@ -258,8 +256,7 @@
         <div class="kv"><span class="k">Categoría</span><span class="v">{{ labelCategoria(prod.categoria) }}</span></div>
         <div class="kv"><span class="k">Personaje</span><span class="v">{{ labelPersonaje(prod.personaje) }}</span></div>
         <div class="kv"><span class="k">Precio</span><span class="v">{{ fmtCOP(prod.precio) }}</span></div>
-        <div class="kv"><span class="k">Stock inicial</span><span class="v">{{ prod.stock_inicial }}</span></div>
-        <div class="kv"><span class="k">Stock actual</span><span class="v">{{ prod.stock_actual }}</span></div>
+        <div class="kv"><span class="k">Stock</span><span class="v">{{ prod.stock_actual }}</span></div>
         <div class="kv"><span class="k">Valor en stock</span><span class="v">{{ fmtCOP(prod.precio * prod.stock_actual) }}</span></div>
         <div class="kv"><span class="k">Estado</span><span class="v">{{ prod.activo ? 'Activo' : 'Inactivo' }}</span></div>
         <div class="kv"><span class="k">En home</span><span class="v">{{ prod.destacado ? 'Destacado' : 'No' }}</span></div>
@@ -377,7 +374,7 @@
     <h3 id="dlg-restock">Restock</h3>
     <p class="modal-sub">
       Agregar unidades a <strong>{{ restockTarget()?.nombre }}</strong>@if (varianteTarget()) { · <strong>{{ etiqueta(restockTarget()!.id, varianteTarget()!) }}</strong> }.
-      Stock actual: {{ varianteTarget()?.stock_actual ?? restockTarget()?.stock_actual }}.
+      Stock: {{ varianteTarget()?.stock_actual ?? restockTarget()?.stock_actual }}.
     </p>
     <div class="field">
       <label for="in-restock-cant">Cantidad a agregar</label>
