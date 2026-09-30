@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
     const { data: pedido, error: pErr } = await supabase
       .from('pedidos')
-      .select('id, estado, total, referencia, cancelado_por_cliente')
+      .select('id, estado, total, referencia, cancelado_por_cliente, stock_descontado')
       .eq('referencia', referencia)
       .maybeSingle()
 
@@ -79,6 +79,12 @@ Deno.serve(async (req) => {
     const reconsultable = pedido.estado === 'pendiente'
       || (pedido.estado === 'cancelado' && pedido.cancelado_por_cliente)
     if (!reconsultable) {
+      // Si el descuento de stock falló al aprobar (error transitorio), se
+      // reintenta aquí: registrar_venta_web es idempotente.
+      if (pedido.estado === 'aprobado' && !pedido.stock_descontado) {
+        const { error: rErr } = await supabase.rpc('registrar_venta_web', { p_referencia: pedido.referencia })
+        if (rErr) console.error('Error descontando stock del pedido', pedido.referencia, rErr)
+      }
       return json({ ok: true, estado: pedido.estado, cambiado: false })
     }
 
@@ -122,15 +128,21 @@ Deno.serve(async (req) => {
       return json({ ok: true, estado: 'pendiente', cambiado: false })
     }
 
-    const { error: uErr } = await supabase
+    const { data: filas, error: uErr } = await supabase
       .from('pedidos')
       .update({ estado: nuevoEstado, bold_payment_id: isStr(venta.transaction_id) ? venta.transaction_id : null })
       .eq('id', pedido.id)
       .in('estado', ['pendiente', 'cancelado'])
+      .select('id')
 
     if (uErr) {
       console.error('Error actualizando pedido:', uErr)
       return json({ ok: false, error: 'Error al actualizar el pedido' }, 500)
+    }
+
+    // Otro proceso movió el pedido entre la lectura y el update: no se toca stock.
+    if (!filas || filas.length === 0) {
+      return json({ ok: true, estado: pedido.estado, cambiado: false })
     }
 
     // Este respaldo es el que cierra los pedidos en producción: sin esto las
