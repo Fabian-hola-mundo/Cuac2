@@ -159,7 +159,7 @@
           <div class="card-title">
             @if (aprobado()) { Lo que pediste } @else { Lo que ibas a llevar }
           </div>
-          @for (item of pedido()!.pedido_items; track item.nombre) {
+          @for (item of pedido()!.pedido_items; track $index) {
             <div class="order-item">
               <div class="oi-swatch" [style.background]="colorHex(item.color)" aria-hidden="true"></div>
               <div class="oi-info">
