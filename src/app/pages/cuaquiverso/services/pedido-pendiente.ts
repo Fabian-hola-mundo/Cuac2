@@ -49,3 +49,12 @@ export function guardarPedidoPendiente(storage: Storage | null, p: PedidoPendien
 export function limpiarPedidoPendiente(storage: Storage | null): void {
   try { storage?.removeItem(CLAVE_PEDIDO_PENDIENTE); } catch { /* nada */ }
 }
+
+/**
+ * Borra el pedido pendiente guardado sólo si es el de `token`: la confirmación
+ * de un pedido viejo no debe tirar la reserva de uno nuevo.
+ */
+export function limpiarPedidoPendienteDe(storage: Storage | null, token: string): void {
+  const p = leerPedidoPendiente(storage);
+  if (p && p.token === token) limpiarPedidoPendiente(storage);
+}

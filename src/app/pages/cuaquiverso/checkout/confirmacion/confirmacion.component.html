@@ -101,6 +101,9 @@
               Esto suele tardar unos segundos — no cierres esta página.
             }
           </p>
+          @if (segundosReserva() > 0) {
+            <p class="reserva-cuenta">Tus productos siguen apartados por <b>{{ cuentaReserva() }}</b>.</p>
+          }
           @if (esperaAgotada()) {
             <div class="cta-row" style="margin-top:20px">
               <button class="btn-primary" type="button" (click)="reintentar()">Volver a consultar</button>
@@ -160,7 +163,7 @@
             <div class="order-item">
               <div class="oi-swatch" [style.background]="colorHex(item.color)" aria-hidden="true"></div>
               <div class="oi-info">
-                <div class="oi-name">{{ item.nombre }}</div>
+                <div class="oi-name">{{ item.nombre }}@if (item.variante_label) { · {{ item.variante_label }} }</div>
                 <div class="oi-sub">{{ item.sub }} · ×{{ item.cantidad }}</div>
               </div>
               <div class="oi-price">{{ fmtPrice(item.precio * item.cantidad) }}</div>

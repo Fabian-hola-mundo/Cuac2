@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CheckoutService, PedidoDetalle } from '../../services/checkout.service';
 import { CartService } from '../../services/cart.service';
 import { SeoService } from '../../../../core/services/seo.service';
+import { formatoCuenta, limpiarPedidoPendienteDe, segundosRestantes } from '../../services/pedido-pendiente';
 
 const COLOR_MAP: Record<string, string> = {
   rio: '#2A6FDB', rosa: '#FF6FA8', sol: '#FFC93C', bone: '#D4DCE4',
@@ -63,6 +64,12 @@ export class ConfirmacionComponent implements OnInit, OnDestroy {
   private boldOrderId: string | null = null;
   private sondeo: ReturnType<typeof setTimeout> | null = null;
   private desde = 0;
+  /** La consulta a Bold por un pedido cancelado se hace una sola vez por visita. */
+  private reconsultado = false;
+
+  readonly segundosReserva = signal(0);
+  readonly cuentaReserva = computed(() => formatoCuenta(this.segundosReserva()));
+  private reloj: ReturnType<typeof setInterval> | null = null;
 
   async ngOnInit(): Promise<void> {
     // `ref` lo ponemos nosotros en la redirectionUrl y lleva el token de
@@ -83,6 +90,7 @@ export class ConfirmacionComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.detenerSondeo();
+    this.detenerReloj();
   }
 
   async cargar(): Promise<void> {
@@ -118,6 +126,25 @@ export class ConfirmacionComponent implements OnInit, OnDestroy {
   private aplicar(p: PedidoDetalle): void {
     this.pedido.set(p);
 
+    // Bold devuelve al comprador a esta página, así que el checkout nunca llega a
+    // limpiar el pedido guardado: si no se borra aquí, volver al checkout dentro
+    // de la reserva rebota a esta confirmación vieja y vacía el carrito nuevo.
+    if (p.estado !== 'pendiente') {
+      this.detenerReloj();
+      this.segundosReserva.set(0);
+      if (this.esNavegador) {
+        try { limpiarPedidoPendienteDe(localStorage, this.token); } catch { /* sin storage */ }
+      }
+    }
+
+    // Canceló la reserva pero pudo haber pagado igual: se le pregunta a Bold una vez.
+    if (p.estado === 'cancelado' && p.cancelado_por_cliente && !this.reconsultado) {
+      this.reconsultado = true;
+      this.checkout.verificarPago(p.referencia, this.boldOrderId).then(estado => {
+        if (estado === 'aprobado') this.cargar();
+      }).catch(() => { /* se queda como cancelado */ });
+    }
+
     if (p.estado === 'aprobado') {
       this.detenerSondeo();
       // El carrito sólo se vacía con un pago confirmado.
@@ -128,6 +155,7 @@ export class ConfirmacionComponent implements OnInit, OnDestroy {
 
     if (p.estado === 'pendiente') {
       this.aplicarSeo('Confirmando tu pago');
+      this.iniciarReloj(p.reserva_expira_en);
       this.programarSondeo();
       return;
     }
@@ -164,6 +192,19 @@ export class ConfirmacionComponent implements OnInit, OnDestroy {
         this.programarSondeo();
       }
     }, SONDEO_MS);
+  }
+
+  private iniciarReloj(expiraEn: string | null): void {
+    this.detenerReloj();
+    if (!expiraEn || !this.esNavegador) return;
+    const tick = () => this.segundosReserva.set(segundosRestantes(expiraEn));
+    tick();
+    this.reloj = setInterval(tick, 1000);
+  }
+
+  private detenerReloj(): void {
+    if (this.reloj) clearInterval(this.reloj);
+    this.reloj = null;
   }
 
   private detenerSondeo(): void {

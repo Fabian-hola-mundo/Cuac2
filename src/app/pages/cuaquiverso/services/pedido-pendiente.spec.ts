@@ -1,6 +1,6 @@
 import {
   CLAVE_PEDIDO_PENDIENTE, PedidoPendiente, formatoCuenta, guardarPedidoPendiente,
-  leerPedidoPendiente, limpiarPedidoPendiente, segundosRestantes,
+  leerPedidoPendiente, limpiarPedidoPendiente, limpiarPedidoPendienteDe, segundosRestantes,
 } from './pedido-pendiente';
 
 function storageFalso(): Storage {
@@ -52,5 +52,25 @@ describe('pedido pendiente', () => {
     expect(segundosRestantes(P.expiraEn, Date.parse('2026-09-29T12:20:00Z'))).toBe(0);
     expect(formatoCuenta(754)).toBe('12:34');
     expect(formatoCuenta(5)).toBe('0:05');
+  });
+});
+
+describe('limpiarPedidoPendienteDe', () => {
+  it('borra el pedido guardado si el token coincide', () => {
+    const s = storageFalso();
+    guardarPedidoPendiente(s, { ...P, expiraEn: new Date(Date.now() + 600_000).toISOString() });
+    limpiarPedidoPendienteDe(s, 't');
+    expect(s.getItem(CLAVE_PEDIDO_PENDIENTE)).toBeNull();
+  });
+
+  it('no toca el pedido guardado si es de otro token', () => {
+    const s = storageFalso();
+    guardarPedidoPendiente(s, { ...P, expiraEn: new Date(Date.now() + 600_000).toISOString() });
+    limpiarPedidoPendienteDe(s, 'otro');
+    expect(s.getItem(CLAVE_PEDIDO_PENDIENTE)).not.toBeNull();
+  });
+
+  it('tolera storage nulo', () => {
+    expect(() => limpiarPedidoPendienteDe(null, 't')).not.toThrow();
   });
 });
