@@ -32,3 +32,20 @@ describe('contarDesactivadas', () => {
     expect(contarDesactivadas(EXISTENTES, filas, ['Talla', 'Color'])).toBe(1);
   });
 });
+
+// La base compara las opciones como JSON exacto: { Color: 'Negro' } no es
+// { Talla: 'S', Color: 'Negro' }. Una variante con claves de más no es la misma.
+describe('quitar una opción', () => {
+  it('las filas que quedan son nuevas y todas las existentes activas se desactivan', () => {
+    const filas = reconciliarFilas([{ nombre: 'Color', valores: [v('Negro')] }], [], EXISTENTES);
+    expect(filas.map(f => [f.etiqueta, f.id, f.stock, f.existente])).toEqual([['Negro', null, 0, false]]);
+    expect(contarDesactivadas(EXISTENTES, filas, ['Color'])).toBe(2);
+  });
+
+  it('una opción sin nombre cuenta igual que quitarla', () => {
+    const filas = reconciliarFilas(
+      [{ nombre: '  ', valores: [v('S')] }, { nombre: 'Color', valores: [v('Negro')] }], [], EXISTENTES);
+    expect(filas.map(f => [f.etiqueta, f.id, f.stock, f.existente])).toEqual([['Negro', null, 0, false]]);
+    expect(contarDesactivadas(EXISTENTES, filas, ['Color'])).toBe(2);
+  });
+});

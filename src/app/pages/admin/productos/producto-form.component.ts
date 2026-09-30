@@ -1,6 +1,6 @@
 import {
   AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, OnInit,
-  computed, inject, signal, viewChild,
+  computed, effect, inject, signal, untracked, viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule }    from '@angular/common';
@@ -144,6 +144,25 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     destacado:     [false],
   });
 
+  constructor() {
+    // Al crear con variantes el campo de stock se oculta: un valor inválido
+    // escrito antes bloquearía el guardado sin nada visible. En edición el
+    // control ya está deshabilitado siempre.
+    effect(() => {
+      const conVariantes = this.editor()?.activo() ?? false;
+      if (this.isEdit()) return;
+      const c = this.form.get('stock_inicial')!;
+      if (conVariantes) { c.setValue(0, { emitEvent: false }); c.disable({ emitEvent: false }); }
+      else c.enable({ emitEvent: false });
+    });
+    // La confirmación vale para un número concreto de desactivadas: si cambia,
+    // hay que volver a confirmar.
+    effect(() => {
+      this.editor()?.desactivadas();
+      untracked(() => this.confirmarDesactivar.set(null));
+    });
+  }
+
   async ngOnInit() {
     this.form.get('precio')!.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -276,6 +295,8 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
       this.errorMsg.set(e instanceof Error ? e.message : 'Error inesperado');
     } finally {
       this.guardando.set(false);
+      // Cada intento consume la confirmación: el siguiente vuelve a pedirla.
+      this.confirmarDesactivar.set(null);
     }
   }
 

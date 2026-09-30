@@ -33,9 +33,10 @@ export class VariantesEditorComponent {
   readonly nuevoValor: Record<number, string> = {};
   readonly fotoAbierta = signal<{ op: number; val: number } | null>(null);
 
+  /** Mismo orden que las filas: el de las opciones normalizadas. */
   readonly desactivadas = computed(() =>
     contarDesactivadas(this.existentes, this.activo() ? this.filas() : [],
-      this.opciones().map(o => o.nombre)));
+      normalizarOpciones(this.opciones()).map(o => o.nombre)));
 
   readonly error = computed(() => {
     if (!this.activo()) return null;
