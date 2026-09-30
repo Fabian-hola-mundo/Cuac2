@@ -195,11 +195,11 @@
       </div>
 
       <div class="sum-items">
-        @for (item of cart.items(); track item.id) {
+        @for (item of cart.items(); track claveLinea(item)) {
           <div class="sum-item">
             <div class="sum-swatch" [style.background]="colorHex(item.color)" aria-hidden="true"></div>
             <div class="sum-info">
-              <div class="sum-name">{{ item.name }}</div>
+              <div class="sum-name">{{ item.name }}@if (item.varianteLabel) { <span class="item-variante"> · {{ item.varianteLabel }}</span> }</div>
               <div class="sum-sub">{{ item.sub }} · ×{{ item.qty }}</div>
             </div>
             <div class="sum-price">{{ cart.fmtPrice(item.price * item.qty) }}</div>
@@ -285,6 +285,13 @@
         <p class="total-note">El flete no va incluido: lo cobra el transportista al entregarte.</p>
       }
 
+      @if (!pagoEnCurso()) {
+        <p class="aviso-reserva">Al continuar apartamos tus productos por 15 minutos para que completes el pago.</p>
+      }
+      @if (reservaVencida()) {
+        <p class="aviso-reserva is-vencida" role="status">Tu reserva venció. Tus productos siguen en el carrito: puedes intentarlo de nuevo.</p>
+      }
+
       @if (pagoEnCurso()) {
         <div class="pago-curso" role="status">
           <strong>Abrimos la ventana de pago de Bold</strong>
@@ -294,12 +301,15 @@
             @if (referenciaEnCurso()) { <span class="ref">{{ referenciaEnCurso() }}</span> }
             queda reservado mientras tanto.
           </p>
+          <p class="reserva-cuenta" role="timer" aria-live="off">
+            Tu reserva vence en <b>{{ cuentaReserva() }}</b>
+          </p>
           <button class="btn-bold" type="button" (click)="reabrirPago()"
                   [disabled]="checkout.loading()">
-            @if (checkout.loading()) { Abriendo... } @else { Reabrir el pago }
+            @if (checkout.loading()) { Abriendo... } @else { Continuar pago }
           </button>
           <button class="btn-cancelar" type="button" (click)="cancelarIntento()">
-            Cancelar y editar mi pedido
+            Cancelar y liberar
           </button>
         </div>
       } @else {

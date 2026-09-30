@@ -4,10 +4,14 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { CartService } from '../services/cart.service';
-import { CheckoutService, CheckoutForm, tokenDeConfirmacion } from '../services/checkout.service';
+import { CartService, claveLinea } from '../services/cart.service';
+import { CheckoutService, CheckoutForm } from '../services/checkout.service';
 import { DescuentoService } from '../services/descuento.service';
-import { BoldService, BoldCheckoutConfig } from '../services/bold.service';
+import { BoldService } from '../services/bold.service';
+import {
+  PedidoPendiente, leerPedidoPendiente, guardarPedidoPendiente, limpiarPedidoPendiente,
+  segundosRestantes, formatoCuenta,
+} from '../services/pedido-pendiente';
 import { CartModalComponent } from '../cart-modal/cart-modal.component';
 import { SeoService } from '../../../core/services/seo.service';
 import { ENVIO_GRATIS_DESDE as UMBRAL_ENVIO_GRATIS } from '../services/tienda.constants';
@@ -105,6 +109,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   readonly ENVIO_GRATIS_DESDE = UMBRAL_ENVIO_GRATIS;
 
+  /** Dos variantes del mismo producto comparten id: la línea se identifica por ambos. */
+  readonly claveLinea = claveLinea;
+
   private ciudadActual = signal('');
   private deptoActual  = signal('');
 
@@ -122,8 +129,23 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   readonly pagoEnCurso      = signal(false);
   readonly referenciaEnCurso = signal<string | null>(null);
 
-  /** Pedido ya creado en este intento, para no duplicarlo si se reabre el modal. */
-  private pedidoCreado: { huella: string; bold: BoldCheckoutConfig } | null = null;
+  /** Pedido con stock apartado; sobrevive a recargas vía localStorage. */
+  private pedidoCreado: PedidoPendiente | null = null;
+
+  readonly segundosReserva = signal(0);
+  readonly cuentaReserva   = computed(() => formatoCuenta(this.segundosReserva()));
+  readonly reservaVencida  = signal(false);
+  private  reloj: ReturnType<typeof setInterval> | null = null;
+
+  private get storage(): Storage | null {
+    if (!this.esNavegador) return null;
+    try {
+      return this.doc.defaultView?.localStorage ?? null;
+    } catch {
+      // Almacenamiento bloqueado: acceder a localStorage lanza SecurityError.
+      return null;
+    }
+  }
 
   private sondeo: ReturnType<typeof setTimeout> | null = null;
 
@@ -202,10 +224,15 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Se trae la librería de Bold mientras el comprador rellena el formulario,
     // no después de haber creado ya el pedido.
     this.bold.precargar();
+
+    // Volvió o recargó con un pedido apartado: se retoma, no se pierde.
+    const pendiente = leerPedidoPendiente(this.storage);
+    if (pendiente) this.retomar(pendiente);
   }
 
   ngOnDestroy(): void {
     this.detenerSondeo();
+    this.detenerReloj();
   }
 
   touched(field: string): boolean {
@@ -273,16 +300,28 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       let bold = this.pedidoCreado?.huella === huella ? this.pedidoCreado.bold : null;
 
       if (!bold) {
+        // Un pedido anterior con otro carrito no debe seguir apartando stock.
+        if (this.pedidoCreado) {
+          await this.checkout.cancelarPedidoPendiente(this.pedidoCreado.token).catch(() => false);
+          limpiarPedidoPendiente(this.storage);
+          this.pedidoCreado = null;
+        }
         const creado = await this.checkout.crearPedido(form, this.cart.items(), this.cart.total(), codigoDesc);
+        this.pedidoCreado = {
+          token: creado.token, referencia: creado.referencia, expiraEn: creado.reservaExpiraEn,
+          huella, bold: creado.bold,
+        };
+        guardarPedidoPendiente(this.storage, this.pedidoCreado);
         bold = creado.bold;
-        this.pedidoCreado = { huella, bold };
       }
 
       await this.bold.abrirCheckout(bold);
 
       this.referenciaEnCurso.set(bold.orderId);
       this.pagoEnCurso.set(true);
-      this.iniciarSondeo(tokenDeConfirmacion(bold.redirectionUrl));
+      this.reservaVencida.set(false);
+      this.iniciarReloj();
+      this.iniciarSondeo(this.pedidoCreado!.token);
     } catch (e: any) {
       this.checkout.error.set(e?.message ?? 'Error al procesar el pedido. Intenta de nuevo.');
     } finally {
@@ -306,12 +345,58 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Descarta el intento en curso para poder editar el pedido y empezar de cero. */
-  cancelarIntento(): void {
+  /** "Cancelar y liberar": devuelve lo apartado y deja editar el pedido. */
+  async cancelarIntento(): Promise<void> {
+    const p = this.pedidoCreado;
     this.detenerSondeo();
+    this.detenerReloj();
     this.pagoEnCurso.set(false);
     this.referenciaEnCurso.set(null);
     this.pedidoCreado = null;
+    limpiarPedidoPendiente(this.storage);
+    if (p) {
+      try { await this.checkout.cancelarPedidoPendiente(p.token); }
+      catch (e: any) { this.checkout.error.set(e?.message ?? 'No pudimos liberar tu reserva.'); }
+    }
+  }
+
+  // ── Reserva de stock (15 min) ───────────────────────────────────────────────
+
+  private retomar(p: PedidoPendiente): void {
+    this.pedidoCreado = p;
+    this.referenciaEnCurso.set(p.referencia);
+    this.pagoEnCurso.set(true);
+    this.reservaVencida.set(false);
+    this.iniciarReloj();
+    this.iniciarSondeo(p.token);
+  }
+
+  private iniciarReloj(): void {
+    this.detenerReloj();
+    if (!this.esNavegador || !this.pedidoCreado) return;
+    const tick = () => {
+      const s = segundosRestantes(this.pedidoCreado!.expiraEn);
+      this.segundosReserva.set(s);
+      if (s <= 0) this.alVencer();
+    };
+    tick();
+    this.reloj = setInterval(tick, 1000);
+  }
+
+  private detenerReloj(): void {
+    if (this.reloj) clearInterval(this.reloj);
+    this.reloj = null;
+  }
+
+  /** La reserva venció: el carrito queda intacto para volver a intentarlo. */
+  private alVencer(): void {
+    this.detenerReloj();
+    this.detenerSondeo();
+    limpiarPedidoPendiente(this.storage);
+    this.pedidoCreado = null;
+    this.pagoEnCurso.set(false);
+    this.referenciaEnCurso.set(null);
+    this.reservaVencida.set(true);
   }
 
   // ── Estado del pedido mientras Bold está abierto ────────────────────────────
@@ -319,7 +404,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   // La librería de Bold no avisa de que el comprador cerró el modal, así que la
   // única señal fiable de qué pasó es el propio pedido: el webhook lo mueve a
   // 'aprobado' o 'rechazado'. Se pregunta cada vez más despacio y se deja de
-  // preguntar a los ~9 minutos, cuando ya no es plausible que siga pagando.
+  // preguntar a los 15 minutos, cuando vence la reserva de stock.
 
   private iniciarSondeo(token: string | null): void {
     this.detenerSondeo();
@@ -342,7 +427,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   private intervaloSondeo(transcurridoMs: number): number | null {
     if (transcurridoMs <  60_000) return  4_000;
     if (transcurridoMs < 240_000) return 10_000;
-    if (transcurridoMs < 540_000) return 30_000;
+    if (transcurridoMs < 900_000) return 30_000;
     return null;
   }
 
@@ -359,6 +444,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     if (pedido.estado === 'aprobado') {
       this.detenerSondeo();
+      limpiarPedidoPendiente(this.storage);
+      this.detenerReloj();
       // Bold normalmente redirige solo; esto rescata a quien cerró el modal
       // después de pagar y se quedó mirando el checkout.
       this.router.navigate(['/cuaquiverso/checkout/confirmacion'], { queryParams: { ref: token } });
@@ -367,6 +454,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     if (pedido.estado === 'rechazado' || pedido.estado === 'cancelado') {
       this.detenerSondeo();
+      limpiarPedidoPendiente(this.storage);
+      this.detenerReloj();
       this.pagoEnCurso.set(false);
       this.referenciaEnCurso.set(null);
       // Se descarta el pedido resuelto: el siguiente intento crea una orden

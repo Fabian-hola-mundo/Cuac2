@@ -26,6 +26,7 @@ export interface PedidoItem {
   precio:   number;
   cantidad: number;
   color:    string;
+  variante_label: string | null;
 }
 
 /** Los cuatro valores que admite `pedidos.estado` (ver 005_pedidos.sql). */
@@ -57,6 +58,9 @@ export interface PedidoDetalle {
    * prepagado: quien empacaba no tenía cómo saberlo.
    */
   envio_gratis: boolean;
+  /** Cuándo vence el stock apartado mientras el pedido sigue 'pendiente'. */
+  reserva_expira_en: string | null;
+  cancelado_por_cliente: boolean;
   pedido_items: PedidoItem[];
 }
 
@@ -86,7 +90,7 @@ export class CheckoutService {
     items:    CartItem[],
     subtotal: number,
     codigoDescuento?: { codigo: string; monto: number },
-  ): Promise<{ referencia: string; bold: BoldCheckoutConfig }> {
+  ): Promise<{ referencia: string; token: string; reservaExpiraEn: string; bold: BoldCheckoutConfig }> {
     const { data, error } = await this.supabase.db.functions.invoke('crear-pedido', {
       body: {
         form,
@@ -99,6 +103,7 @@ export class CheckoutService {
           precio:   i.price,
           cantidad: i.qty,
           color:    i.color,
+          variante_id: i.varianteId ?? null,
         })),
         subtotal,
         codigo_descuento: codigoDescuento?.codigo ?? null,
@@ -113,8 +118,22 @@ export class CheckoutService {
         'No pudimos crear tu pedido. Revisa tu conexión e intenta de nuevo.',
       ));
     }
-    if (!data?.bold?.integritySignature) throw new Error('Respuesta inválida del servidor');
-    return data as { referencia: string; bold: BoldCheckoutConfig };
+    if (!data?.bold?.integritySignature || !data?.token || !data?.reserva_expira_en) {
+      throw new Error('Respuesta inválida del servidor');
+    }
+    return {
+      referencia: data.referencia,
+      token: data.token,
+      reservaExpiraEn: data.reserva_expira_en,
+      bold: data.bold as BoldCheckoutConfig,
+    };
+  }
+
+  /** "Cancelar y liberar": devuelve el stock apartado de un pedido aún pendiente. */
+  async cancelarPedidoPendiente(token: string): Promise<boolean> {
+    const { data, error } = await this.supabase.db.rpc('cancelar_pedido_pendiente', { p_token: token });
+    if (error) throw new Error('No pudimos cancelar el pedido. Intenta de nuevo.');
+    return data === true;
   }
 
   // Va por RPC y no por la tabla: 'pedidos' ya no tiene lectura anónima, porque
