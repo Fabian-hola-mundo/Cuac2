@@ -227,12 +227,16 @@
             </div>
             <h4>{{ p.nombre }}</h4>
             <div class="row">
-              <span class="price">{{ fmtPrice(p.precio) }}</span>
+              <span class="price">
+                @if (p.tieneVariantes && p.precioMin !== p.precioMax) { Desde {{ fmtPrice(p.precioMin!) }} } @else { {{ fmtPrice(p.precio) }} }
+              </span>
               <button class="add" type="button"
                       [disabled]="agotado(p)"
                       [attr.aria-label]="agotado(p)
                         ? p.nombre + ' está agotado'
-                        : 'Agregar ' + p.nombre + ' al carrito'"
+                        : p.tieneVariantes
+                          ? 'Elegir opciones de ' + p.nombre
+                          : 'Agregar ' + p.nombre + ' al carrito'"
                       (click)="addToCart($event, p)">+</button>
             </div>
           </div>

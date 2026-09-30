@@ -7,7 +7,7 @@ import { CuaquiversoFooterComponent } from './footer/cuaquiverso-footer.componen
 import { HelpModalComponent } from './help-modal/help-modal.component';
 import {
   InventarioService,
-  ProductoEvento,
+  ProductoPublico,
   esEtiquetaPropia,
   etiquetaFlag,
 } from '../../core/services/inventario.service';
@@ -44,12 +44,13 @@ export class CuaquiversoComponent implements OnInit {
   private  seo           = inject(SeoService);
 
   readonly showcaseProducts = computed(() => {
-    const activos    = this.inv.productos().filter(p => p.activo);
+    // El catálogo público ya trae sólo activos, con stock disponible y variantes.
+    const activos    = this.inv.catalogo();
     const destacados = activos.filter(p => p.destacado);
     return (destacados.length > 0 ? destacados : activos).slice(0, 5);
   });
 
-  readonly activeProductCount = computed(() => this.inv.productos().filter(p => p.activo).length);
+  readonly activeProductCount = computed(() => this.inv.catalogo().length);
 
   async ngOnInit(): Promise<void> {
     await this.personajesSvc.load();
@@ -58,7 +59,7 @@ export class CuaquiversoComponent implements OnInit {
       description: 'Personajes colombianos traducidos a objetos: camisetas, libretas, stickers y más.',
       canonical:   'https://cuacdesign.com/cuaquiverso',
     });
-    this.inv.cargarTodos();
+    this.inv.cargarCatalogo();
   }
 
   constructor() {
@@ -74,9 +75,14 @@ export class CuaquiversoComponent implements OnInit {
   etiquetaFlag = etiquetaFlag;
   esEtiquetaPropia = esEtiquetaPropia;
 
-  addToCart(event: Event, p: ProductoEvento): void {
+  addToCart(event: Event, p: ProductoPublico): void {
     event.preventDefault();
     event.stopPropagation();
+    // Con variantes hay que elegir talla/color: el «+» lleva a la ficha.
+    if (p.tieneVariantes) {
+      this.router.navigate(['/cuaquiverso/tienda', p.id]);
+      return;
+    }
     this.cart.add({
       id:        p.id,
       name:      p.nombre,
@@ -84,6 +90,7 @@ export class CuaquiversoComponent implements OnInit {
       price:     p.precio,
       color:     p.color ?? '#3D4856',
       categoria: p.categoria,
+      stock:     p.stock_actual,
     });
   }
 

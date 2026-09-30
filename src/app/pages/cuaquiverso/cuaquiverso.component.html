@@ -88,7 +88,7 @@
   </div>
 
   <div class="showcase">
-    @if (inv.cargando() && showcaseProducts().length === 0) {
+    @if (inv.cargandoCatalogo() && showcaseProducts().length === 0) {
       @for (_ of [1,2,3,4,5]; track $index) {
         <div class="pcard" style="background:rgba(21,31,40,.05);border-radius:12px;animation:blink 1.4s ease-in-out infinite"></div>
       }
@@ -110,7 +110,9 @@
           <div class="meta">{{ catLabel(p.categoria) }}</div>
           <h4>{{ p.nombre }}</h4>
           <div class="row">
-            <span class="price">{{ cart.fmtPrice(p.precio) }}</span>
+            <span class="price">
+              @if (p.tieneVariantes && p.precioMin !== p.precioMax) { Desde {{ cart.fmtPrice(p.precioMin!) }} } @else { {{ cart.fmtPrice(p.precio) }} }
+            </span>
             <span class="add" (click)="addToCart($event, p)">+</span>
           </div>
         </div>

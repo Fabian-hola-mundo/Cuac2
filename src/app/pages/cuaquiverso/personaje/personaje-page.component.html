@@ -200,9 +200,9 @@
             <div class="prod-info">
               <span class="prod-name">{{ pr.nombre }}</span>
               <span class="prod-sub">{{ pr.categoria }}</span>
-              <span class="prod-price">${{ pr.precio | number:'1.0-0' }}</span>
+              <span class="prod-price">@if (pr.tieneVariantes && pr.precioMin !== pr.precioMax) { Desde ${{ pr.precioMin! | number:'1.0-0' }} } @else { ${{ pr.precio | number:'1.0-0' }} }</span>
             </div>
-            <button type="button" class="prod-cart" (click)="addToCart($event, pr)" aria-label="Agregar {{ pr.nombre }} al carrito">+ Carrito</button>
+            <button type="button" class="prod-cart" (click)="addToCart($event, pr)" [attr.aria-label]="pr.tieneVariantes ? 'Elegir opciones de ' + pr.nombre : 'Agregar ' + pr.nombre + ' al carrito'">{{ pr.tieneVariantes ? 'Elegir opciones' : '+ Carrito' }}</button>
           </a>
         }
       </div>

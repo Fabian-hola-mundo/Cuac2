@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit, computed, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../../core/services/seo.service';
@@ -28,6 +28,7 @@ export type Disponibilidad = 'agotado' | 'last' | 'stock';
 })
 export class TiendaComponent implements OnInit {
   private route    = inject(ActivatedRoute);
+  private router   = inject(Router);
   private location = inject(Location);
   private seo      = inject(SeoService);
   private inv    = inject(InventarioService);
@@ -241,6 +242,11 @@ export class TiendaComponent implements OnInit {
   addToCart(ev: Event, p: ProductoPublico) {
     ev.preventDefault();
     ev.stopPropagation();
+    // Con variantes hay que elegir talla/color: el «+» lleva a la ficha.
+    if (p.tieneVariantes) {
+      this.router.navigate(['/cuaquiverso/tienda', p.id]);
+      return;
+    }
     if (this.agotado(p)) return;
 
     const agregado = this.cart.add({
