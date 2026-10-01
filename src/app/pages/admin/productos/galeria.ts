@@ -13,15 +13,22 @@ export const MAX_BYTES = 5 * 1024 * 1024;
 
 export const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
+/** Una foto de la galería: ya guardada en Storage, o elegida y sin subir. */
+export type ItemGaleria = { url: string } | { file: File };
+
+/**
+ * La galería en el orden que ve el admin. Antes eran dos listas (guardadas
+ * primero, nuevas después), y por eso una foto ya subida no podía cambiarse
+ * por otra versión —p. ej. girada— sin saltar al final.
+ */
 export interface EstadoGaleria {
-  /** URLs ya guardadas en Supabase Storage. */
-  existentes: string[];
-  /** Archivos elegidos en esta sesión, todavía sin subir. */
-  nuevos: File[];
+  items: ItemGaleria[];
 }
 
+export const esArchivo = (it: ItemGaleria): it is { file: File } => 'file' in it;
+
 export function totalGaleria(estado: EstadoGaleria): number {
-  return estado.existentes.length + estado.nuevos.length;
+  return estado.items.length;
 }
 
 /** Devuelve el mensaje de error, o null si la imagen sirve. */
@@ -44,47 +51,46 @@ export function agregarAGaleria(
   estado: EstadoGaleria,
   seleccion: readonly File[],
 ): { estado: EstadoGaleria; rechazados: string[] } {
-  const nuevos = [...estado.nuevos];
+  const items = [...estado.items];
   const rechazados: string[] = [];
-  let disponibles = MAX_FOTOS - estado.existentes.length - nuevos.length;
 
   for (const file of seleccion) {
     const error = validarImagen(file);
     if (error) { rechazados.push(error); continue; }
-    if (disponibles <= 0) {
+    if (items.length >= MAX_FOTOS) {
       rechazados.push(`"${file.name}" no cabe: máximo ${MAX_FOTOS} fotos.`);
       continue;
     }
-    nuevos.push(file);
-    disponibles--;
+    items.push({ file });
   }
 
-  return { estado: { existentes: [...estado.existentes], nuevos }, rechazados };
+  return { estado: { items }, rechazados };
 }
 
-/**
- * Quita por el índice que ve el usuario en la grilla (existentes primero).
- * Informa qué archivo salió para que el componente revoque su object URL.
- */
+/** Quita por el índice que ve el usuario en la grilla y dice qué salió. */
 export function quitarDeGaleria(
   estado: EstadoGaleria,
   index: number,
-): { estado: EstadoGaleria; archivoQuitado: File | null } {
-  if (index < estado.existentes.length) {
-    return {
-      estado: {
-        existentes: estado.existentes.filter((_, i) => i !== index),
-        nuevos: [...estado.nuevos],
-      },
-      archivoQuitado: null,
-    };
-  }
-  const iNuevo = index - estado.existentes.length;
+): { estado: EstadoGaleria; quitado: ItemGaleria | null } {
   return {
-    estado: {
-      existentes: [...estado.existentes],
-      nuevos: estado.nuevos.filter((_, i) => i !== iNuevo),
-    },
-    archivoQuitado: estado.nuevos[iNuevo] ?? null,
+    estado: { items: estado.items.filter((_, i) => i !== index) },
+    quitado: estado.items[index] ?? null,
+  };
+}
+
+/**
+ * Cambia la foto de una posición por otro archivo (p. ej. la misma girada) sin
+ * moverla de lugar. Devuelve la anterior para revocar su blob o, si ya estaba
+ * subida, borrarla de Storage al guardar.
+ */
+export function reemplazarEnGaleria(
+  estado: EstadoGaleria,
+  index: number,
+  file: File,
+): { estado: EstadoGaleria; anterior: ItemGaleria | null } {
+  if (index < 0 || index >= estado.items.length) return { estado, anterior: null };
+  return {
+    estado: { items: estado.items.map((it, i) => (i === index ? { file } : it)) },
+    anterior: estado.items[index],
   };
 }

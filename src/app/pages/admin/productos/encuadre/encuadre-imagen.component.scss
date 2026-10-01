@@ -46,4 +46,7 @@
   .btn-sm { width: 34px; justify-content: center; padding: 6px 0; }
 }
 
-.enc-atajos { display: flex; gap: 8px; margin-top: var(--s-3); flex-wrap: wrap; }
+.enc-atajos {
+  display: flex; gap: 8px; margin-top: var(--s-3); flex-wrap: wrap;
+  svg { width: 14px; height: 14px; }
+}

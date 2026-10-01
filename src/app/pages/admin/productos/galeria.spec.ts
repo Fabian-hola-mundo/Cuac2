@@ -2,10 +2,13 @@
 // se acumula la selección. Estaban implícitas en el componente (que reemplazaba
 // la selección anterior y no validaba nada) y ahora viven aparte para probarse.
 import {
+  EstadoGaleria,
   MAX_FOTOS,
   MAX_BYTES,
   agregarAGaleria,
+  esArchivo,
   quitarDeGaleria,
+  reemplazarEnGaleria,
   totalGaleria,
   validarImagen,
 } from './galeria';
@@ -13,6 +16,7 @@ import {
 function archivo(nombre: string, tipo = 'image/jpeg', bytes = 1024): File {
   return new File([new Uint8Array(bytes)], nombre, { type: tipo });
 }
+const nombres = (e: EstadoGaleria) => e.items.map(it => (esArchivo(it) ? it.file.name : it.url));
 
 describe('validarImagen', () => {
   it('acepta JPG, PNG y WebP', () => {
@@ -37,70 +41,63 @@ describe('validarImagen', () => {
 
 describe('agregarAGaleria', () => {
   it('acumula la nueva selección en vez de reemplazar la anterior', () => {
-    const inicial = agregarAGaleria({ existentes: [], nuevos: [] }, [archivo('1.jpg')]);
+    const inicial = agregarAGaleria({ items: [] }, [archivo('1.jpg')]);
     const final = agregarAGaleria(inicial.estado, [archivo('2.jpg')]);
-    expect(final.estado.nuevos.map(f => f.name)).toEqual(['1.jpg', '2.jpg']);
+    expect(nombres(final.estado)).toEqual(['1.jpg', '2.jpg']);
   });
 
   it('conserva las fotos ya subidas al agregar nuevas', () => {
-    const { estado } = agregarAGaleria(
-      { existentes: ['https://cdn/1.jpg'], nuevos: [] },
-      [archivo('2.jpg')],
-    );
-    expect(estado.existentes).toEqual(['https://cdn/1.jpg']);
-    expect(estado.nuevos).toHaveLength(1);
+    const { estado } = agregarAGaleria({ items: [{ url: 'https://cdn/1.jpg' }] }, [archivo('2.jpg')]);
+    expect(nombres(estado)).toEqual(['https://cdn/1.jpg', '2.jpg']);
   });
 
   it('rechaza los archivos inválidos y deja pasar los válidos', () => {
-    const { estado, rechazados } = agregarAGaleria({ existentes: [], nuevos: [] }, [
+    const { estado, rechazados } = agregarAGaleria({ items: [] }, [
       archivo('ok.jpg'),
       archivo('malo.pdf', 'application/pdf'),
     ]);
-    expect(estado.nuevos.map(f => f.name)).toEqual(['ok.jpg']);
+    expect(nombres(estado)).toEqual(['ok.jpg']);
     expect(rechazados).toHaveLength(1);
   });
 
   it('corta en el máximo de fotos contando las ya subidas', () => {
-    const existentes = Array.from({ length: MAX_FOTOS - 1 }, (_, i) => `https://cdn/${i}.jpg`);
-    const { estado, rechazados } = agregarAGaleria({ existentes, nuevos: [] }, [
-      archivo('cabe.jpg'),
-      archivo('sobra.jpg'),
-    ]);
+    const items = Array.from({ length: MAX_FOTOS - 1 }, (_, i) => ({ url: `https://cdn/${i}.jpg` }));
+    const { estado, rechazados } = agregarAGaleria({ items }, [archivo('cabe.jpg'), archivo('sobra.jpg')]);
     expect(totalGaleria(estado)).toBe(MAX_FOTOS);
-    expect(estado.nuevos.map(f => f.name)).toEqual(['cabe.jpg']);
+    expect(nombres(estado).at(-1)).toBe('cabe.jpg');
     expect(rechazados.join(' ')).toContain('sobra.jpg');
   });
 
   it('no muta el estado que recibe', () => {
-    const previo = { existentes: [] as string[], nuevos: [] as File[] };
+    const previo: EstadoGaleria = { items: [] };
     agregarAGaleria(previo, [archivo('1.jpg')]);
-    expect(previo.nuevos).toHaveLength(0);
+    expect(previo.items).toHaveLength(0);
   });
 });
 
 describe('quitarDeGaleria', () => {
-  it('quita una foto ya subida por su posición', () => {
-    const estado = { existentes: ['https://cdn/a.jpg', 'https://cdn/b.jpg'], nuevos: [archivo('c.jpg')] };
-    const out = quitarDeGaleria(estado, 0);
-    expect(out.estado.existentes).toEqual(['https://cdn/b.jpg']);
-    expect(out.estado.nuevos).toHaveLength(1);
+  it('quita por la posición de la grilla, sea subida o nueva', () => {
+    const c = archivo('c.jpg');
+    const estado: EstadoGaleria = { items: [{ url: 'https://cdn/a.jpg' }, { file: c }, { url: 'https://cdn/b.jpg' }] };
+    expect(nombres(quitarDeGaleria(estado, 0).estado)).toEqual(['c.jpg', 'https://cdn/b.jpg']);
+    const out = quitarDeGaleria(estado, 1);
+    expect(nombres(out.estado)).toEqual(['https://cdn/a.jpg', 'https://cdn/b.jpg']);
+    expect(out.quitado).toEqual({ file: c });   // para revocar su blob
+  });
+});
+
+describe('reemplazarEnGaleria', () => {
+  it('cambia una foto ya subida por un archivo sin moverla de lugar', () => {
+    const girada = archivo('girada.webp', 'image/webp');
+    const estado: EstadoGaleria = { items: [{ url: 'https://cdn/a.jpg' }, { url: 'https://cdn/b.jpg' }, { file: archivo('c.jpg') }] };
+    const out = reemplazarEnGaleria(estado, 1, girada);
+    expect(nombres(out.estado)).toEqual(['https://cdn/a.jpg', 'girada.webp', 'c.jpg']);
+    expect(out.anterior).toEqual({ url: 'https://cdn/b.jpg' });
+    expect(nombres(estado)[1]).toBe('https://cdn/b.jpg');   // no muta
   });
 
-  it('quita un archivo nuevo usando el índice global de la grilla', () => {
-    const estado = { existentes: ['https://cdn/a.jpg'], nuevos: [archivo('b.jpg'), archivo('c.jpg')] };
-    const out = quitarDeGaleria(estado, 2);
-    expect(out.estado.existentes).toEqual(['https://cdn/a.jpg']);
-    expect(out.estado.nuevos.map(f => f.name)).toEqual(['b.jpg']);
-  });
-
-  it('informa cuál archivo nuevo salió, para poder revocar su blob', () => {
-    const b = archivo('b.jpg');
-    const out = quitarDeGaleria({ existentes: [], nuevos: [b] }, 0);
-    expect(out.archivoQuitado).toBe(b);
-  });
-
-  it('no reporta archivo quitado cuando se elimina una foto ya subida', () => {
-    const out = quitarDeGaleria({ existentes: ['https://cdn/a.jpg'], nuevos: [] }, 0);
-    expect(out.archivoQuitado).toBeNull();
+  it('ignora un índice fuera de rango', () => {
+    const estado: EstadoGaleria = { items: [{ url: 'https://cdn/a.jpg' }] };
+    expect(reemplazarEnGaleria(estado, 3, archivo('x.jpg'))).toEqual({ estado, anterior: null });
   });
 });

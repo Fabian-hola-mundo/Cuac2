@@ -22,12 +22,16 @@ import { IVA, comisionBold, guardarComision, leerComisionGuardada } from './comi
 import { EventosService } from '../../../core/services/eventos.service';
 import {
   EstadoGaleria,
+  ItemGaleria,
   MAX_FOTOS,
   agregarAGaleria,
+  esArchivo,
   quitarDeGaleria,
+  reemplazarEnGaleria,
   totalGaleria,
   validarImagen,
 } from './galeria';
+import { girarImagen } from './girar-imagen';
 import { VariantesEditorComponent } from './variantes-editor/variantes-editor.component';
 import { EncuadreImagenComponent } from './encuadre/encuadre-imagen.component';
 
@@ -102,20 +106,26 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly coverPreview = signal<string | null>(null);
   /** Foto completa elegida (sin recortar), para poder reencuadrarla. */
   private coverOriginal: string | null = null;
+  /** Si `coverOriginal` es un blob propio (se revoca) o una foto de la galería (no). */
+  private coverOriginalPropio = false;
+  /** Selector de "usar una foto de la galería como portada" abierto. */
+  readonly eligiendoDeGaleria = signal(false);
   /** URL que se está encuadrando; null = diálogo cerrado. */
   readonly encuadrando = signal<string | null>(null);
   /** Portada anterior a borrar de Storage cuando la nueva quede guardada. */
   private coverReemplazada: string | null = null;
 
   // ── Galería ───────────────────────────────────────────────────────────────
-  readonly galeria = signal<EstadoGaleria>({ existentes: [], nuevos: [] });
+  readonly galeria = signal<EstadoGaleria>({ items: [] });
   /** Object URLs vivos, para revocarlos y no dejar blobs colgando. */
   private blobs = new Map<File, string>();
-  readonly galeriaPreviews = computed(() => {
-    const g = this.galeria();
-    return [...g.existentes, ...g.nuevos.map(f => this.blobs.get(f) ?? '')];
-  });
+  readonly galeriaPreviews = computed(() =>
+    this.galeria().items.map(it => (esArchivo(it) ? this.blobs.get(it.file) ?? '' : it.url)));
   readonly galeriaLlena = computed(() => totalGaleria(this.galeria()) >= MAX_FOTOS);
+  /** Índices de la galería que se están girando (para deshabilitar el botón). */
+  readonly girando = signal<ReadonlySet<number>>(new Set());
+  /** Fotos ya subidas que se reemplazaron (giradas): se borran al guardar. */
+  private fotosReemplazadas: string[] = [];
 
   /**
    * Id del producto ya insertado en un intento previo de guardado. Si la subida
@@ -127,8 +137,8 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly editor = viewChild(VariantesEditorComponent);
   /** Fotos ya guardadas: las únicas que se pueden asignar a un valor. */
   readonly fotosGuardadas = computed(() => {
-    const g = this.galeria();
-    return [this.coverPreview(), ...g.existentes].filter((u): u is string => !!u && !u.startsWith('blob:'));
+    const urls = this.galeria().items.flatMap(it => (esArchivo(it) ? [] : [it.url]));
+    return [this.coverPreview(), ...urls].filter((u): u is string => !!u && !u.startsWith('blob:'));
   });
   /** Si al guardar se van a desactivar combinaciones, cuántas confirmó el admin. */
   readonly confirmarDesactivar = signal<number | null>(null);
@@ -209,7 +219,7 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     this.stockBase = p.stock_actual;
     this.coverGuardada = p.cover_url;
     this.coverPreview.set(p.cover_url);
-    this.galeria.set({ existentes: p.fotos ?? [], nuevos: [] });
+    this.galeria.set({ items: (p.fotos ?? []).map(url => ({ url })) });
     this.material.set(p.material ?? []);
     this.materialTexto = (p.material ?? []).join(', ');
 
@@ -309,6 +319,11 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         this.coverReemplazada = null;
       }
+      // Fotos de galería cambiadas por su versión girada: el producto ya no las usa.
+      for (const url of this.fotosReemplazadas) {
+        if (!imagenes.fotos.includes(url) && url !== imagenes.cover_url) await this.inv.borrarImagenProducto(url);
+      }
+      this.fotosReemplazadas = [];
 
       // Con variantes el stock del producto es la suma de las combinaciones.
       const stock = v.stock ?? 0;
@@ -388,18 +403,20 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
       if (blob?.startsWith('blob:')) URL.revokeObjectURL(blob);
     }
 
-    const g = this.galeria();
-    const fotos = [...g.existentes];
-    for (const file of g.nuevos) {
-      const ext = file.name.split('.').pop() ?? 'jpg';
-      const nombre = `foto_${Date.now()}_${fotos.length}.${ext}`;
-      const { url, error } = await this.inv.uploadProductoImage(id, file, nombre);
-      if (error) { this.errorMsg.set(`Error al subir "${file.name}": ${error}`); return null; }
-      if (url) fotos.push(url);
+    // En el orden de la grilla: una foto girada vuelve a su mismo lugar.
+    const items = this.galeria().items;
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (!esArchivo(it)) continue;
+      const ext = it.file.name.split('.').pop() ?? 'jpg';
+      const nombre = `foto_${Date.now()}_${i}.${ext}`;
+      const { url, error } = await this.inv.uploadProductoImage(id, it.file, nombre);
+      if (error || !url) { this.errorMsg.set(`Error al subir "${it.file.name}": ${error ?? 'sin URL'}`); return null; }
+      // Cada subida buena pasa a ser una foto guardada: un reintento no la repite.
+      this.revocar(it.file);
+      this.galeria.update(g => ({ items: g.items.map((x, j) => (j === i ? { url } : x)) }));
     }
-    // Las nuevas ya son existentes; un reintento no las vuelve a subir.
-    this.galeria.set({ existentes: fotos, nuevos: [] });
-    this.revocarGaleria();
+    const fotos = this.galeria().items.map(it => (esArchivo(it) ? '' : it.url)).filter(Boolean);
 
     return { cover_url: cover, fotos };
   }
@@ -457,9 +474,24 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // La foto no se usa tal cual: primero se encuadra en el cuadro de la tienda.
     this.avisos.set([]);
+    this.abrirEncuadreDesde(URL.createObjectURL(file), true);
+  }
+
+  /** Usa una foto de la galería (subida o no) como punto de partida de la portada. */
+  usarFotoDeGaleria(index: number) {
+    const it = this.galeria().items[index];
+    if (!it) return;
+    this.eligiendoDeGaleria.set(false);
+    // Un archivo sin subir tiene su propio blob: la galería lo suelta al subirlo.
+    if (esArchivo(it)) this.abrirEncuadreDesde(URL.createObjectURL(it.file), true);
+    else this.abrirEncuadreDesde(it.url, false);
+  }
+
+  private abrirEncuadreDesde(src: string, propio: boolean) {
     this.soltarOriginal();
-    this.coverOriginal = URL.createObjectURL(file);
-    this.encuadrando.set(this.coverOriginal);
+    this.coverOriginal = src;
+    this.coverOriginalPropio = propio;
+    this.encuadrando.set(src);
   }
 
   /** Reencuadra partiendo de la foto completa, no del recorte anterior. */
@@ -483,8 +515,9 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private soltarOriginal() {
-    if (this.coverOriginal) URL.revokeObjectURL(this.coverOriginal);
+    if (this.coverOriginal && this.coverOriginalPropio) URL.revokeObjectURL(this.coverOriginal);
     this.coverOriginal = null;
+    this.coverOriginalPropio = false;
   }
 
   onGalleryChange(event: Event) {
@@ -494,17 +527,43 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!seleccion.length) return;
 
     const { estado, rechazados } = agregarAGaleria(this.galeria(), seleccion);
-    for (const file of estado.nuevos) {
-      if (!this.blobs.has(file)) this.blobs.set(file, URL.createObjectURL(file));
+    for (const it of estado.items) {
+      if (esArchivo(it) && !this.blobs.has(it.file)) this.blobs.set(it.file, URL.createObjectURL(it.file));
     }
     this.galeria.set(estado);
     this.avisos.set(rechazados);
   }
 
   removeGalleryItem(index: number) {
-    const { estado, archivoQuitado } = quitarDeGaleria(this.galeria(), index);
-    if (archivoQuitado) this.revocar(archivoQuitado);
+    const { estado, quitado } = quitarDeGaleria(this.galeria(), index);
+    if (quitado && esArchivo(quitado)) this.revocar(quitado.file);
     this.galeria.set(estado);
+  }
+
+  /**
+   * Gira 90° una foto de la galería. Una ya subida se cambia por un archivo
+   * nuevo en la misma posición; la vieja se borra de Storage al guardar.
+   */
+  async girarFoto(index: number, grados: -90 | 90) {
+    const src = this.galeriaPreviews()[index];
+    if (!src || this.girando().has(index)) return;
+    this.girando.update(s => new Set(s).add(index));
+    try {
+      const file = await girarImagen(src, grados, `foto_${index + 1}`);
+      this.blobs.set(file, URL.createObjectURL(file));
+      const { estado, anterior } = reemplazarEnGaleria(this.galeria(), index, file);
+      this.galeria.set(estado);
+      if (anterior) this.soltarItem(anterior);
+    } catch {
+      this.avisos.set([`No se pudo girar la foto ${index + 1}.`]);
+    } finally {
+      this.girando.update(s => { const n = new Set(s); n.delete(index); return n; });
+    }
+  }
+
+  private soltarItem(it: ItemGaleria) {
+    if (esArchivo(it)) this.revocar(it.file);
+    else this.fotosReemplazadas.push(it.url);
   }
 
   private revocar(file: File) {

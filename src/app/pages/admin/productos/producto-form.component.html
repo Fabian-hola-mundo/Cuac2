@@ -289,7 +289,24 @@
               Encuadrar
             </button>
           }
+          @if (galeriaPreviews().length > 0) {
+            <button type="button" class="upload-btn" (click)="eligiendoDeGaleria.set(!eligiendoDeGaleria())"
+                    [attr.aria-expanded]="eligiendoDeGaleria()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              Usar una foto de la galería
+            </button>
+          }
         </div>
+        @if (eligiendoDeGaleria() && galeriaPreviews().length > 0) {
+          <div class="cover-desde-galeria" role="group" aria-label="Elegir la portada entre las fotos de la galería">
+            @for (url of galeriaPreviews(); track $index; let i = $index) {
+              <button type="button" class="gallery-thumb" [style.backgroundImage]="'url(' + url + ')'"
+                      (click)="usarFotoDeGaleria(i)" [attr.aria-label]="'Usar la foto ' + (i + 1) + ' como portada'"></button>
+            }
+          </div>
+        }
         <input id="prod-cover-input" type="file" accept="image/jpeg,image/png,image/webp" (change)="onCoverChange($event)" style="display:none" />
         <span class="help">JPG, PNG o WebP · máx 5 MB · se guarda cuadrada (1:1) y tú eliges el encuadre</span>
         @if (encuadrando(); as src) {
@@ -302,10 +319,20 @@
         @if (galeriaPreviews().length > 0) {
           <div class="gallery-grid">
             @for (url of galeriaPreviews(); track $index; let i = $index) {
-              <div style="position:relative">
+              <div class="gallery-item" [class.is-busy]="girando().has(i)">
                 <div class="gallery-thumb" [style.backgroundImage]="'url(' + url + ')'"></div>
                 <button type="button" class="gallery-remove" [attr.aria-label]="'Quitar foto ' + (i + 1)"
                         (click)="removeGalleryItem(i)">×</button>
+                <div class="gallery-girar">
+                  <button type="button" [disabled]="girando().has(i)" (click)="girarFoto(i, -90)"
+                          [attr.aria-label]="'Girar a la izquierda la foto ' + (i + 1)" title="Girar a la izquierda">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                  </button>
+                  <button type="button" [disabled]="girando().has(i)" (click)="girarFoto(i, 90)"
+                          [attr.aria-label]="'Girar a la derecha la foto ' + (i + 1)" title="Girar a la derecha">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+                  </button>
+                </div>
               </div>
             }
           </div>

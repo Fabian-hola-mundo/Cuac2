@@ -3,10 +3,15 @@
 // Diálogo para encuadrar la portada: se arrastra la foto y se ajusta el zoom
 // dentro de un cuadro igual al de la tarjeta de la tienda. Al confirmar se
 // dibuja ese encuadre en un lienzo de 1600×1600 y se entrega como archivo.
+// La foto se puede girar en pasos de 90° antes de encuadrar.
 import {
-  ChangeDetectionStrategy, Component, ElementRef, OnInit, computed, input, output, signal, viewChild,
+  ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, computed, input, output, signal, viewChild,
 } from '@angular/core';
 import { Encuadre, LADO_SALIDA, ZOOM_MAX, limitar, rectDibujo, zoomEntera } from './encuadre';
+import { Giro, cargarImagen, lienzoAArchivo, lienzoGirado, normalizarGiro } from '../girar-imagen';
+
+/** Lado máximo del lienzo girado: holgura para hacer zoom sin perder nitidez. */
+const LADO_GIRO = 4096;
 
 @Component({
   selector: 'app-encuadre-imagen',
@@ -16,7 +21,7 @@ import { Encuadre, LADO_SALIDA, ZOOM_MAX, limitar, rectDibujo, zoomEntera } from
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'cancelar.emit()' },
 })
-export class EncuadreImagenComponent implements OnInit {
+export class EncuadreImagenComponent implements OnInit, OnDestroy {
   /** URL de la foto: un blob recién elegido o la portada ya guardada. */
   readonly src = input.required<string>();
   readonly listo = output<File>();
@@ -24,7 +29,12 @@ export class EncuadreImagenComponent implements OnInit {
 
   readonly ZOOM_MAX = ZOOM_MAX;
   private readonly cuadro = viewChild.required<ElementRef<HTMLDivElement>>('cuadro');
-  private img: HTMLImageElement | null = null;
+  private original: HTMLImageElement | null = null;
+  /** Lo que se dibuja: la foto tal cual o un lienzo con la foto girada. */
+  private fuente: HTMLImageElement | HTMLCanvasElement | null = null;
+  /** Object URL de la vista girada, para soltarlo al cambiar o cerrar. */
+  private blobVista: string | null = null;
+  readonly giro = signal<Giro>(0);
 
   readonly dims = signal<{ ancho: number; alto: number } | null>(null);
   /** x, y en fracciones del lado del cuadro: así no depende de su tamaño en pantalla. */
@@ -48,20 +58,43 @@ export class EncuadreImagenComponent implements OnInit {
 
   private arrastre: { id: number; x: number; y: number; e: Encuadre } | null = null;
 
-  ngOnInit(): void {
-    const src = this.src();
-    // Una portada ya guardada puede estar en caché sin cabeceras CORS (se cargó
-    // en un <img> normal) y eso bloquearía exportar el lienzo: se pide aparte.
-    const url = /^(blob|data):/.test(src) ? src : `${src}${src.includes('?') ? '&' : '?'}encuadre=${Date.now()}`;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      this.img = img;
-      this.dims.set({ ancho: img.naturalWidth, alto: img.naturalHeight });
-      this.urlVista.set(url);
-    };
-    img.onerror = () => this.error.set('No se pudo cargar la imagen.');
-    img.src = url;
+  async ngOnInit(): Promise<void> {
+    try {
+      this.original = await cargarImagen(this.src());
+      await this.aplicarGiro(0);
+    } catch {
+      this.error.set('No se pudo cargar la imagen.');
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.blobVista) URL.revokeObjectURL(this.blobVista);
+  }
+
+  /** Gira 90° a la izquierda (-90) o a la derecha (90) y vuelve a llenar el cuadro. */
+  async girar(delta: -90 | 90): Promise<void> {
+    if (!this.original) return;
+    await this.aplicarGiro(normalizarGiro(this.giro() + delta));
+  }
+
+  private async aplicarGiro(g: Giro): Promise<void> {
+    const img = this.original!;
+    let fuente: HTMLImageElement | HTMLCanvasElement = img, url = img.src;
+    if (g !== 0) {
+      fuente = lienzoGirado(img, g, LADO_GIRO);
+      const blob = await new Promise<Blob | null>(r => (fuente as HTMLCanvasElement).toBlob(r, 'image/png'));
+      if (!blob) { this.error.set('No se pudo girar la imagen.'); return; }
+      url = URL.createObjectURL(blob);
+    }
+    if (this.blobVista) URL.revokeObjectURL(this.blobVista);
+    this.blobVista = g !== 0 ? url : null;
+    this.fuente = fuente;
+    this.giro.set(g);
+    const ancho = fuente instanceof HTMLImageElement ? fuente.naturalWidth : fuente.width;
+    const alto = fuente instanceof HTMLImageElement ? fuente.naturalHeight : fuente.height;
+    this.dims.set({ ancho, alto });
+    this.encuadre.set({ zoom: 1, x: 0, y: 0 });
+    this.urlVista.set(url);
   }
 
   private fijar(e: Encuadre): void {
@@ -116,8 +149,8 @@ export class EncuadreImagenComponent implements OnInit {
 
   // ── Exportar ──────────────────────────────────────────────────────────────
   async confirmar(): Promise<void> {
-    const img = this.img, d = this.dims();
-    if (!img || !d || this.guardando()) return;
+    const fuente = this.fuente, d = this.dims();
+    if (!fuente || !d || this.guardando()) return;
     this.guardando.set(true);
     this.error.set(null);
     try {
@@ -127,21 +160,13 @@ export class EncuadreImagenComponent implements OnInit {
       if (!ctx) throw new Error('canvas');
       ctx.imageSmoothingQuality = 'high';
       const r = rectDibujo(this.encuadre(), d.ancho, d.alto, 1, LADO_SALIDA);
-      ctx.drawImage(img, r.x, r.y, r.ancho, r.alto);
-      let blob = await aBlob(canvas, 'image/webp');
-      if (!blob || blob.type !== 'image/webp') blob = await aBlob(canvas, 'image/jpeg');
-      if (!blob) throw new Error('blob');
-      const ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
-      this.listo.emit(new File([blob], `portada.${ext}`, { type: blob.type }));
+      ctx.drawImage(fuente, r.x, r.y, r.ancho, r.alto);
+      this.listo.emit(await lienzoAArchivo(canvas, 'portada'));
     } catch {
       this.error.set('No se pudo generar el encuadre. Prueba subiendo la foto de nuevo.');
     } finally {
       this.guardando.set(false);
     }
   }
-}
-
-function aBlob(canvas: HTMLCanvasElement, tipo: string): Promise<Blob | null> {
-  return new Promise(resolve => canvas.toBlob(resolve, tipo, 0.86));
 }
 
