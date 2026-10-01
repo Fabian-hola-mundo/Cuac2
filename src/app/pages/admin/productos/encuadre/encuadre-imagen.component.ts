@@ -24,6 +24,7 @@ const LADO_GIRO = 4096;
 export class EncuadreImagenComponent implements OnInit, OnDestroy {
   /** URL de la foto: un blob recién elegido o la portada ya guardada. */
   readonly src = input.required<string>();
+  readonly titulo = input('Editar imagen');
   readonly listo = output<File>();
   readonly cancelar = output<void>();
 

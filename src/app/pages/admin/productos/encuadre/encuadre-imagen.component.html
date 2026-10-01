@@ -1,10 +1,10 @@
 <div class="drawer-back on" (click)="cancelar.emit()"></div>
 <div class="modal-card enc-card" role="dialog" aria-modal="true" aria-labelledby="enc-titulo">
-  <h3 id="enc-titulo">Encuadrar portada</h3>
-  <p class="modal-sub">Arrastra la foto, ajusta el zoom o gírala. El cuadro es exactamente lo que se ve en la tarjeta y en la ficha de la tienda.</p>
+  <h3 id="enc-titulo">{{ titulo() }}</h3>
+  <p class="modal-sub">Arrastra para encuadrar, ajusta el zoom o gira la foto. El cuadro es lo que se ve en la tienda.</p>
 
   <div #cuadro class="enc-cuadro" tabindex="0"
-       aria-label="Encuadre de la portada. Flechas para mover, más y menos para el zoom."
+       aria-label="Encuadre de la imagen. Flechas para mover, más y menos para el zoom."
        (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
        (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)"
        (wheel)="onWheel($event)" (keydown)="onKey($event)">
@@ -37,7 +37,7 @@
   <div class="modal-f">
     <button type="button" class="btn-sm ghost" (click)="cancelar.emit()">Cancelar</button>
     <button type="button" class="btn-sm solid" [disabled]="!urlVista() || guardando()" (click)="confirmar()">
-      {{ guardando() ? 'Preparando…' : 'Usar este encuadre' }}
+      {{ guardando() ? 'Aplicando…' : 'Aplicar' }}
     </button>
   </div>
 </div>

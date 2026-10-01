@@ -1,5 +1,5 @@
-// Giro de fotos en el navegador del admin, en pasos de 90°. Lo usan la galería
-// (girar una foto ya subida o recién elegida) y el editor de encuadre.
+// Giro de fotos en el navegador del admin, en pasos de 90°, y carga de imágenes
+// aptas para editarse en un lienzo. Lo usa el editor de imagen (portada y galería).
 import { MAX_LADO } from './comprimir-imagen';
 
 export type Giro = 0 | 90 | 180 | 270;
@@ -60,10 +60,4 @@ export async function lienzoAArchivo(canvas: HTMLCanvasElement, nombre: string):
   if (!blob) throw new Error('No se pudo exportar la imagen.');
   const ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
   return new File([blob], `${nombre.replace(/\.[^.]+$/, '')}.${ext}`, { type: blob.type });
-}
-
-/** Devuelve la foto girada como archivo nuevo, listo para subir. */
-export async function girarImagen(src: string, grados: number, nombre = 'foto'): Promise<File> {
-  const img = await cargarImagen(src);
-  return lienzoAArchivo(lienzoGirado(img, grados), nombre);
 }

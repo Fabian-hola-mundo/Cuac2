@@ -22,7 +22,6 @@ import { IVA, comisionBold, guardarComision, leerComisionGuardada } from './comi
 import { EventosService } from '../../../core/services/eventos.service';
 import {
   EstadoGaleria,
-  ItemGaleria,
   MAX_FOTOS,
   agregarAGaleria,
   esArchivo,
@@ -31,9 +30,14 @@ import {
   totalGaleria,
   validarImagen,
 } from './galeria';
-import { girarImagen } from './girar-imagen';
 import { VariantesEditorComponent } from './variantes-editor/variantes-editor.component';
 import { EncuadreImagenComponent } from './encuadre/encuadre-imagen.component';
+
+/** Foto completa de la que sale una imagen editada. `propio`: blob que hay que revocar. */
+interface Origen { src: string; propio: boolean }
+
+/** Qué se está editando: la portada o la foto N de la galería. */
+interface Edicion { destino: 'portada' | number; origen: Origen; titulo: string }
 
 @Component({
   selector: 'app-producto-form',
@@ -104,16 +108,16 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
   private coverGuardada: string | null = null;
   private coverFile: File | null = null;
   readonly coverPreview = signal<string | null>(null);
-  /** Foto completa elegida (sin recortar), para poder reencuadrarla. */
-  private coverOriginal: string | null = null;
-  /** Si `coverOriginal` es un blob propio (se revoca) o una foto de la galería (no). */
-  private coverOriginalPropio = false;
+  /** Foto completa de la que sale la portada, para volver a editarla sin perder calidad. */
+  private origenPortada: Origen | null = null;
   /** Selector de "usar una foto de la galería como portada" abierto. */
   readonly eligiendoDeGaleria = signal(false);
-  /** URL que se está encuadrando; null = diálogo cerrado. */
-  readonly encuadrando = signal<string | null>(null);
   /** Portada anterior a borrar de Storage cuando la nueva quede guardada. */
   private coverReemplazada: string | null = null;
+
+  // ── Editor de imagen (portada y galería) ─────────────────────────────────
+  /** Imagen abierta en el editor; null = cerrado. */
+  readonly edicion = signal<Edicion | null>(null);
 
   // ── Galería ───────────────────────────────────────────────────────────────
   readonly galeria = signal<EstadoGaleria>({ items: [] });
@@ -122,9 +126,9 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly galeriaPreviews = computed(() =>
     this.galeria().items.map(it => (esArchivo(it) ? this.blobs.get(it.file) ?? '' : it.url)));
   readonly galeriaLlena = computed(() => totalGaleria(this.galeria()) >= MAX_FOTOS);
-  /** Índices de la galería que se están girando (para deshabilitar el botón). */
-  readonly girando = signal<ReadonlySet<number>>(new Set());
-  /** Fotos ya subidas que se reemplazaron (giradas): se borran al guardar. */
+  /** Foto completa de la que sale cada archivo editado de la galería. */
+  private origenes = new Map<File, Origen>();
+  /** Fotos ya subidas que se reemplazaron por su versión editada: se borran al guardar. */
   private fotosReemplazadas: string[] = [];
 
   /**
@@ -472,9 +476,9 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     const invalida = validarImagen(file);
     if (invalida) { this.avisos.set([invalida]); return; }
 
-    // La foto no se usa tal cual: primero se encuadra en el cuadro de la tienda.
+    // La portada no se usa tal cual: primero se encuadra en el cuadro de la tienda.
     this.avisos.set([]);
-    this.abrirEncuadreDesde(URL.createObjectURL(file), true);
+    this.abrirEdicion('portada', { src: URL.createObjectURL(file), propio: true });
   }
 
   /** Usa una foto de la galería (subida o no) como punto de partida de la portada. */
@@ -482,42 +486,76 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     const it = this.galeria().items[index];
     if (!it) return;
     this.eligiendoDeGaleria.set(false);
-    // Un archivo sin subir tiene su propio blob: la galería lo suelta al subirlo.
-    if (esArchivo(it)) this.abrirEncuadreDesde(URL.createObjectURL(it.file), true);
-    else this.abrirEncuadreDesde(it.url, false);
+    // Si la foto ya se editó, se parte de su original completo (compartido: sólo
+    // se suelta cuando ni la portada ni la galería lo usan).
+    this.abrirEdicion('portada', esArchivo(it)
+      ? this.origenes.get(it.file) ?? { src: URL.createObjectURL(it.file), propio: true }
+      : { src: it.url, propio: false });
   }
 
-  private abrirEncuadreDesde(src: string, propio: boolean) {
-    this.soltarOriginal();
-    this.coverOriginal = src;
-    this.coverOriginalPropio = propio;
-    this.encuadrando.set(src);
+  /** Ícono de edición de la portada: parte de la foto completa, no del recorte. */
+  editarPortada() {
+    const actual = this.coverPreview();
+    const origen = this.origenPortada ?? (actual ? { src: actual, propio: false } : null);
+    if (origen) this.abrirEdicion('portada', origen);
   }
 
-  /** Reencuadra partiendo de la foto completa, no del recorte anterior. */
-  encuadrarPortada() {
-    const src = this.coverOriginal ?? this.coverPreview();
-    if (src) this.encuadrando.set(src);
+  /** Ícono de edición de una foto de la galería. */
+  editarFoto(index: number) {
+    const it = this.galeria().items[index];
+    if (!it) return;
+    const origen = esArchivo(it)
+      ? this.origenes.get(it.file) ?? { src: URL.createObjectURL(it.file), propio: true }
+      : { src: it.url, propio: false };
+    this.abrirEdicion(index, origen);
   }
 
-  onEncuadreListo(file: File) {
-    const previo = this.coverPreview();
-    if (previo?.startsWith('blob:')) URL.revokeObjectURL(previo);
-    this.coverFile = file;
-    this.coverPreview.set(URL.createObjectURL(file));
-    this.encuadrando.set(null);
+  private abrirEdicion(destino: Edicion['destino'], origen: Origen) {
+    const titulo = destino === 'portada' ? 'Editar portada' : `Editar foto ${destino + 1}`;
+    this.edicion.set({ destino, origen, titulo });
   }
 
-  /** Cancelar una foto recién elegida la descarta; cancelar un reencuadre no toca nada. */
-  cancelarEncuadre() {
-    if (!this.coverFile && this.encuadrando() === this.coverOriginal) this.soltarOriginal();
-    this.encuadrando.set(null);
+  onEdicionLista(file: File) {
+    const e = this.edicion();
+    if (!e) return;
+    this.edicion.set(null);
+    if (e.destino === 'portada') {
+      const previo = this.coverPreview();
+      if (previo?.startsWith('blob:')) URL.revokeObjectURL(previo);
+      const previoOrigen = this.origenPortada;
+      this.origenPortada = e.origen;
+      if (previoOrigen && previoOrigen !== e.origen) this.liberarSiLibre(previoOrigen);
+      this.coverFile = file;
+      this.coverPreview.set(URL.createObjectURL(file));
+      return;
+    }
+    // Galería: la versión editada ocupa el mismo lugar que la anterior.
+    this.blobs.set(file, URL.createObjectURL(file));
+    this.origenes.set(file, e.origen);
+    const { estado, anterior } = reemplazarEnGaleria(this.galeria(), e.destino, file);
+    this.galeria.set(estado);
+    if (!anterior) return;
+    if (esArchivo(anterior)) {
+      this.revocar(anterior.file);
+      const previo = this.origenes.get(anterior.file);
+      this.origenes.delete(anterior.file);
+      if (previo && previo !== e.origen) this.liberarSiLibre(previo);
+    } else {
+      this.fotosReemplazadas.push(anterior.url);
+    }
   }
 
-  private soltarOriginal() {
-    if (this.coverOriginal && this.coverOriginalPropio) URL.revokeObjectURL(this.coverOriginal);
-    this.coverOriginal = null;
-    this.coverOriginalPropio = false;
+  /** Cerrar sin aplicar: sólo se suelta el blob si nadie más lo usa. */
+  cancelarEdicion() {
+    const e = this.edicion();
+    this.edicion.set(null);
+    if (e) this.liberarSiLibre(e.origen);
+  }
+
+  /** Revoca el blob de un original sólo si ya no lo usa la portada ni ninguna foto. */
+  private liberarSiLibre(o: Origen) {
+    const enUso = o === this.origenPortada || [...this.origenes.values()].includes(o);
+    if (o.propio && !enUso) URL.revokeObjectURL(o.src);
   }
 
   onGalleryChange(event: Event) {
@@ -536,34 +574,13 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
 
   removeGalleryItem(index: number) {
     const { estado, quitado } = quitarDeGaleria(this.galeria(), index);
-    if (quitado && esArchivo(quitado)) this.revocar(quitado.file);
     this.galeria.set(estado);
-  }
-
-  /**
-   * Gira 90° una foto de la galería. Una ya subida se cambia por un archivo
-   * nuevo en la misma posición; la vieja se borra de Storage al guardar.
-   */
-  async girarFoto(index: number, grados: -90 | 90) {
-    const src = this.galeriaPreviews()[index];
-    if (!src || this.girando().has(index)) return;
-    this.girando.update(s => new Set(s).add(index));
-    try {
-      const file = await girarImagen(src, grados, `foto_${index + 1}`);
-      this.blobs.set(file, URL.createObjectURL(file));
-      const { estado, anterior } = reemplazarEnGaleria(this.galeria(), index, file);
-      this.galeria.set(estado);
-      if (anterior) this.soltarItem(anterior);
-    } catch {
-      this.avisos.set([`No se pudo girar la foto ${index + 1}.`]);
-    } finally {
-      this.girando.update(s => { const n = new Set(s); n.delete(index); return n; });
+    if (quitado && esArchivo(quitado)) {
+      this.revocar(quitado.file);
+      const origen = this.origenes.get(quitado.file);
+      this.origenes.delete(quitado.file);
+      if (origen) this.liberarSiLibre(origen);
     }
-  }
-
-  private soltarItem(it: ItemGaleria) {
-    if (esArchivo(it)) this.revocar(it.file);
-    else this.fotosReemplazadas.push(it.url);
   }
 
   private revocar(file: File) {
@@ -578,7 +595,8 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private revocarTodos() {
     this.revocarGaleria();
-    this.soltarOriginal();
+    const origenes = new Set([...this.origenes.values(), ...(this.origenPortada ? [this.origenPortada] : [])]);
+    for (const o of origenes) if (o.propio) URL.revokeObjectURL(o.src);
     const cover = this.coverPreview();
     if (cover?.startsWith('blob:')) URL.revokeObjectURL(cover);
   }
