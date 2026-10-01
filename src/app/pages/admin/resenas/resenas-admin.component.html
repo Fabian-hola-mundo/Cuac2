@@ -17,47 +17,115 @@
   } @else if (items().length === 0) {
     <div class="ra-state">Todavía no hay reseñas. Llegan desde el formulario de la página principal.</div>
   } @else {
-    <div class="ra-list">
-      @for (r of items(); track r.id) {
-        <div class="ra-row" [class.oculta]="!r.visible">
-          <div class="ra-main">
-            <p class="ra-coment">“{{ r.comentario }}”</p>
-            <div class="ra-meta">
-              <strong>{{ r.nombre }}</strong>
-              @if (r.cargo_empresa) { <span>· {{ r.cargo_empresa }}</span> }
-              @if (r.correo) { <a [href]="'mailto:' + r.correo">· {{ r.correo }}</a> }
-              <span class="ra-fecha">· {{ fecha(r.created_at) }}</span>
-            </div>
-          </div>
+    <div class="ra-toolbar">
+      <div class="chips" role="group" aria-label="Filtrar reseñas">
+        <button type="button" class="chip" [class.is-on]="filtro() === 'todas'" (click)="setFiltro('todas')">
+          Todas <span class="ct">{{ items().length }}</span>
+        </button>
+        <button type="button" class="chip" [class.is-on]="filtro() === 'pendientes'" (click)="setFiltro('pendientes')">
+          Sin publicar <span class="ct">{{ pendientes() }}</span>
+        </button>
+        <button type="button" class="chip" [class.is-on]="filtro() === 'publicadas'" (click)="setFiltro('publicadas')">
+          Publicadas <span class="ct">{{ visibles() }}</span>
+        </button>
+        @if (nuevas() > 0) {
+          <button type="button" class="chip chip--nueva" [class.is-on]="filtro() === 'nuevas'" (click)="setFiltro('nuevas')">
+            Nuevas <span class="ct">{{ nuevas() }}</span>
+          </button>
+        }
+      </div>
 
-          <div class="ra-ctrls">
-            <label class="ra-switch" [class.on]="r.visible">
-              <input type="checkbox" [checked]="r.visible" [disabled]="guardandoId() === r.id"
-                (change)="toggleVisible(r)" />
-              <span class="ra-knob"></span>
-              <span class="ra-switch-label">{{ r.visible ? 'En el home' : 'Oculta' }}</span>
-            </label>
+      <div class="ra-tools">
+        <input type="search" class="ra-search" placeholder="Buscar por nombre, empresa, correo o texto…"
+          [value]="busqueda()" (input)="setBusqueda($any($event.target).value)" aria-label="Buscar reseñas" />
 
-            <select [value]="r.proyecto_id ?? ''" [disabled]="guardandoId() === r.id"
-              (change)="asignarProyecto(r, $any($event.target).value)" aria-label="Proyecto del portafolio">
-              <option value="">— Sin proyecto —</option>
-              @for (p of proyectos(); track p.id) {
-                <option [value]="p.id" [selected]="p.id === r.proyecto_id">{{ p.title }}</option>
-              }
-            </select>
+        <select [value]="proyectoSel()" (change)="setProyecto($any($event.target).value)" aria-label="Filtrar por proyecto">
+          <option value="">Todos los proyectos</option>
+          <option value="ninguno">Sin proyecto</option>
+          @for (p of proyectos(); track p.id) {
+            <option [value]="p.id">{{ p.title }}</option>
+          }
+        </select>
 
-            @if (confirmarId() === r.id) {
-              <span class="ra-confirm">
-                ¿Eliminar?
-                <button type="button" class="ra-del" (click)="eliminar(r)">Sí</button>
-                <button type="button" class="ra-btn" (click)="confirmarId.set(null)">No</button>
-              </span>
-            } @else {
-              <button type="button" class="ra-btn" (click)="confirmarId.set(r.id)">Eliminar</button>
-            }
-          </div>
-        </div>
+        <select [value]="orden()" (change)="setOrden($any($event.target).value)" aria-label="Ordenar">
+          <option value="recientes">Más recientes</option>
+          <option value="antiguas">Más antiguas</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ra-count">
+      {{ filtradas().length }} {{ filtradas().length === 1 ? 'reseña' : 'reseñas' }}
+      @if (hayFiltros()) {
+        <button type="button" class="ra-link" (click)="limpiarFiltros()">Quitar filtros</button>
       }
     </div>
+
+    @if (filtradas().length === 0) {
+      <div class="ra-state">Ninguna reseña coincide con estos filtros.</div>
+    } @else {
+      @for (g of grupos(); track g.mes) {
+        <h2 class="ra-mes">{{ g.mes }}</h2>
+        <div class="ra-list">
+          @for (r of g.items; track r.id) {
+            <div class="ra-row" [class.oculta]="!r.visible" [class.nueva]="esNueva(r)">
+              <div class="ra-main">
+                <div class="ra-tags">
+                  @if (esNueva(r)) { <span class="ra-tag ra-tag--nueva">Nueva</span> }
+                  @if (r.visible) {
+                    <span class="ra-tag ra-tag--pub">Publicada</span>
+                  } @else {
+                    <span class="ra-tag">Sin publicar</span>
+                  }
+                  @if (nombreProyecto(r.proyecto_id); as proy) { <span class="ra-tag ra-tag--proy">{{ proy }}</span> }
+                </div>
+                <div class="ra-coment"><app-resena-texto [texto]="r.comentario" [nombre]="r.nombre" [detalle]="r.cargo_empresa" [max]="260" /></div>
+                <div class="ra-meta">
+                  <strong>{{ r.nombre }}</strong>
+                  @if (r.cargo_empresa) { <span>· {{ r.cargo_empresa }}</span> }
+                  @if (r.correo) { <a [href]="'mailto:' + r.correo">· {{ r.correo }}</a> }
+                  <span class="ra-fecha">· {{ fecha(r.created_at) }}</span>
+                </div>
+              </div>
+
+              <div class="ra-ctrls">
+                <label class="ra-switch" [class.on]="r.visible">
+                  <input type="checkbox" [checked]="r.visible" [disabled]="guardandoId() === r.id"
+                    (change)="toggleVisible(r)" />
+                  <span class="ra-knob"></span>
+                  <span class="ra-switch-label">{{ r.visible ? 'En el home' : 'Oculta' }}</span>
+                </label>
+
+                <select [value]="r.proyecto_id ?? ''" [disabled]="guardandoId() === r.id"
+                  (change)="asignarProyecto(r, $any($event.target).value)" aria-label="Proyecto del portafolio">
+                  <option value="">— Sin proyecto —</option>
+                  @for (p of proyectos(); track p.id) {
+                    <option [value]="p.id" [selected]="p.id === r.proyecto_id">{{ p.title }}</option>
+                  }
+                </select>
+
+                @if (confirmarId() === r.id) {
+                  <span class="ra-confirm">
+                    ¿Eliminar?
+                    <button type="button" class="ra-del" (click)="eliminar(r)">Sí</button>
+                    <button type="button" class="ra-btn" (click)="confirmarId.set(null)">No</button>
+                  </span>
+                } @else {
+                  <button type="button" class="ra-btn" (click)="confirmarId.set(r.id)">Eliminar</button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (restantes() > 0) {
+        <div class="ra-more">
+          <button type="button" class="ra-btn" (click)="mostrarMas()">
+            Mostrar más ({{ restantes() }} {{ restantes() === 1 ? 'restante' : 'restantes' }})
+          </button>
+        </div>
+      }
+    }
   }
 </div>

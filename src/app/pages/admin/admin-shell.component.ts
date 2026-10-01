@@ -7,6 +7,7 @@ import { filter, map, startWith } from 'rxjs';
 import { SupabaseService }        from '../../core/services/supabase.service';
 import { AdminStateService, ViewId } from '../../core/services/admin-state.service';
 import { MensajesUnreadService } from './mensajes/mensajes-unread.service';
+import { ResenasNuevasService }  from './resenas/resenas-nuevas.service';
 import { AdminSearchComponent }  from './search/admin-search.component';
 import { NotificationsService }            from './notifications/notifications.service';
 import { NotificationsDropdownComponent }  from './notifications/notifications-dropdown.component';
@@ -96,6 +97,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   isMensajesRoute      = computed(() => this.routerUrl().includes('/admin/mensajes'));
   isResenasRoute       = computed(() => this.routerUrl().includes('/admin/resenas'));
   readonly unreadSvc   = inject(MensajesUnreadService);
+  readonly resenasNuevas = inject(ResenasNuevasService);
 
   // Single source of truth for the highlighted sidebar item — avoids the
   // previous per-link chains of "!isXRoute()" exclusions getting out of

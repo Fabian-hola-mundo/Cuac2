@@ -2,10 +2,11 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { SupabaseService } from '../../../core/services/supabase.service';
+import { ResenasNuevasService } from '../resenas/resenas-nuevas.service';
 
 export interface AdminNotif {
   id: string;
-  type: 'mensaje' | 'cotizacion' | 'stock' | 'evento';
+  type: 'mensaje' | 'cotizacion' | 'stock' | 'evento' | 'resena';
   title: string;
   sub: string;       // subtítulo breve
   time: string;      // ISO timestamp
@@ -16,23 +17,56 @@ export interface AdminNotif {
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
   private sb = inject(SupabaseService);
+  private resenas = inject(ResenasNuevasService);
   private channel: RealtimeChannel | null = null;
+  // Las reseñas no van por realtime (la columna del correo está restringida),
+  // así que se consultan cada minuto.
+  private pollResenas: ReturnType<typeof setInterval> | null = null;
 
   readonly items = signal<AdminNotif[]>([]);
   readonly count = computed(() => this.items().length);
 
   async load(): Promise<void> {
     if (!this.sb.session()) return;
-    const [mensajes, cotizaciones, stock, eventos] = await Promise.all([
+    const [mensajes, cotizaciones, stock, eventos, resenas] = await Promise.all([
       this.fetchMensajes().catch(() => [] as AdminNotif[]),
       this.fetchCotizaciones().catch(() => [] as AdminNotif[]),
       this.fetchStock().catch(() => [] as AdminNotif[]),
       this.fetchEventos().catch(() => [] as AdminNotif[]),
+      this.fetchResenas().catch(() => [] as AdminNotif[]),
     ]);
-    const all = [...mensajes, ...cotizaciones, ...stock, ...eventos]
+    const all = [...mensajes, ...cotizaciones, ...stock, ...eventos, ...resenas]
       .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
       .slice(0, 20);
     this.items.set(all);
+  }
+
+  private async fetchResenas(): Promise<AdminNotif[]> {
+    const nuevas = await this.resenas.cargar();
+    return nuevas.map(r => ({
+      id: `res-${r.id}`,
+      type: 'resena' as const,
+      title: `Nueva reseña de ${r.nombre}`,
+      sub: r.comentario.slice(0, 60),
+      time: r.created_at,
+      route: ['/admin/resenas'],
+      tone: 'sol' as const,
+    }));
+  }
+
+  /** Vuelve a pedir las reseñas nuevas sin tocar el resto de la lista. */
+  async refrescarResenas(): Promise<void> {
+    if (!this.sb.session()) return;
+    const resenas = await this.fetchResenas().catch(() => null);
+    if (!resenas) return;
+    this.items.update(list =>
+      [...resenas, ...list.filter(n => n.type !== 'resena')]
+        .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+        .slice(0, 20));
+  }
+
+  quitarTipo(type: AdminNotif['type']): void {
+    this.items.update(list => list.filter(n => n.type !== type));
   }
 
   private async fetchMensajes(): Promise<AdminNotif[]> {
@@ -171,9 +205,15 @@ export class NotificationsService {
         }
       )
       .subscribe();
+
+    this.pollResenas ??= setInterval(() => this.refrescarResenas(), 60_000);
   }
 
   cleanup(): void {
+    if (this.pollResenas) {
+      clearInterval(this.pollResenas);
+      this.pollResenas = null;
+    }
     if (this.channel) {
       this.sb.db.removeChannel(this.channel);
       this.channel = null;
