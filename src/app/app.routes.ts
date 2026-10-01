@@ -222,6 +222,13 @@ export const routes: Routes = [
             m => m.MensajesAdminComponent,
           ),
       },
+      {
+        path: 'resenas',
+        loadComponent: () =>
+          import('./pages/admin/resenas/resenas-admin.component').then(
+            m => m.ResenasAdminComponent,
+          ),
+      },
       // Personajes
       {
         path: 'personajes',

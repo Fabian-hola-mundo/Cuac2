@@ -1,38 +1,85 @@
-@if (!loading() && testimonials().length > 0) {
+@if (!loading()) {
   <div class="section" id="testi">
     <div class="eyebrow"><span class="dot"></span> 05 &mdash; Lo que dicen</div>
-    <h2 class="h-section">Proyectos que <em>dejaron huella</em>.</h2>
 
-    <div class="testi-layout">
-      @if (testimonials()[0]) {
-        <a class="testi-featured" [routerLink]="['/portafolio', testimonials()[0].slug]">
-          <p class="q-featured">{{ testimonials()[0].quote }}</p>
-          <div class="a">
-            <div class="av" [style.background]="testimonials()[0].avatarBg" [style.color]="testimonials()[0].avatarColor">{{ testimonials()[0].initials }}</div>
-            <div class="a-meta">
-              <div class="n">{{ testimonials()[0].name }}</div>
-              <div class="r">{{ testimonials()[0].role }}</div>
-            </div>
+    @if (testimonials().length > 0) {
+      <div class="testi-head">
+        <h2 class="h-section">Proyectos que <em>dejaron huella</em>.</h2>
+        @if (testimonials().length > 1) {
+          <div class="testi-nav">
+            <button type="button" aria-label="Reseña anterior" (click)="scroll(-1)">&larr;</button>
+            <button type="button" aria-label="Reseña siguiente" (click)="scroll(1)">&rarr;</button>
           </div>
-        </a>
-      }
+        }
+      </div>
 
-      @if (testimonials().length > 1) {
-        <div class="testi-secondary">
-          @for (t of testimonials().slice(1); track $index) {
+      <div class="testi-track" #track>
+        @for (t of testimonials(); track t.id) {
+          @if (t.slug) {
             <a class="testi" [routerLink]="['/portafolio', t.slug]">
-              <p class="q">{{ t.quote }}</p>
-              <div class="a">
-                <div class="av" [style.background]="t.avatarBg" [style.color]="t.avatarColor">{{ t.initials }}</div>
-                <div class="a-meta">
-                  <div class="n">{{ t.name }}</div>
-                  <div class="r">{{ t.role }}</div>
-                </div>
-              </div>
+              <ng-container *ngTemplateOutlet="card; context: { $implicit: t }" />
             </a>
+          } @else {
+            <div class="testi">
+              <ng-container *ngTemplateOutlet="card; context: { $implicit: t }" />
+            </div>
           }
-        </div>
+        }
+      </div>
+    }
+
+    <div class="resena" [class.solo]="testimonials().length === 0">
+      @if (enviado()) {
+        <p class="resena-ok">¡Gracias! Recibimos tu reseña; la publicaremos después de revisarla.</p>
+      } @else if (!formAbierto()) {
+        <p class="resena-cta">
+          ¿Trabajamos juntos? Cuéntanos cómo te fue.
+          <button type="button" class="resena-link" (click)="formAbierto.set(true)">Deja tu reseña &rarr;</button>
+        </p>
+      } @else {
+        <form class="resena-form" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+          <div class="resena-row">
+            <label>
+              <span>Nombre *</span>
+              <input formControlName="nombre" autocomplete="name" [class.err]="invalido('nombre')" />
+            </label>
+            <label>
+              <span>Cargo o empresa</span>
+              <input formControlName="cargo_empresa" autocomplete="organization" />
+            </label>
+            <label>
+              <span>Correo (no se publica)</span>
+              <input formControlName="correo" type="email" autocomplete="email" [class.err]="invalido('correo')" />
+            </label>
+          </div>
+          <label>
+            <span>Tu reseña *</span>
+            <textarea formControlName="comentario" rows="3" maxlength="800" [class.err]="invalido('comentario')"
+              placeholder="¿Cómo fue trabajar con Cuac?"></textarea>
+          </label>
+          <input class="hp" formControlName="web" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          @if (invalido('comentario')) { <p class="resena-err">Escribe al menos 10 caracteres.</p> }
+          @if (errorEnvio()) { <p class="resena-err">{{ errorEnvio() }}</p> }
+          <div class="resena-actions">
+            <button type="button" class="resena-link" (click)="formAbierto.set(false)">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="enviando()">
+              {{ enviando() ? 'Enviando…' : 'Enviar reseña' }}
+            </button>
+          </div>
+        </form>
       }
     </div>
   </div>
 }
+
+<ng-template #card let-t>
+  <p class="q">{{ t.quote }}</p>
+  <div class="a">
+    <div class="av" [style.background]="t.avatarBg" [style.color]="t.avatarColor">{{ t.initials }}</div>
+    <div class="a-meta">
+      <div class="n">{{ t.name }}</div>
+      @if (t.role) { <div class="r">{{ t.role }}</div> }
+      @if (t.project) { <div class="p">{{ t.project }} &rarr;</div> }
+    </div>
+  </div>
+</ng-template>
