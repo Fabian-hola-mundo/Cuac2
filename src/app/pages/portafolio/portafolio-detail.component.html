@@ -157,13 +157,11 @@
         </dl>
       </div>
 
-      @if (p.client_comment) {
+      @if (resena(); as r) {
         <figure class="sidebar-quote">
           <span class="sq-mark" aria-hidden="true">“</span>
-          <blockquote>{{ p.client_comment }}</blockquote>
-          @if (p.client_name) {
-            <figcaption>{{ p.client_name }}</figcaption>
-          }
+          <blockquote>{{ r.comentario }}</blockquote>
+          <figcaption>{{ r.nombre }}{{ r.cargo_empresa ? ' · ' + r.cargo_empresa : '' }}</figcaption>
         </figure>
       }
 
@@ -210,7 +208,8 @@
 
   <!-- ── Lightbox ──────────────────────────────────────────────────────────── -->
   @if (lightboxIdx() !== null) {
-    <div class="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
+    <div class="lightbox" (click)="onLbBackdrop()"
+         (touchstart)="onLbTouchStart($event)" (touchend)="onLbTouchEnd($event)" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
       <button class="lb-close" (click)="closeLightbox()" aria-label="Cerrar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>

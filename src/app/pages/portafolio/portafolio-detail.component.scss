@@ -800,16 +800,34 @@
 @media (max-width: 640px) {
   .back-nav           { left: var(--s-5); right: var(--s-5); flex-wrap: wrap; }
   .detail-hero-inner  { padding: 0 var(--s-5); }
-  .scroll-hint        { right: var(--s-5); }
+  // En celular el texto ocupa todo el ancho: la guía vertical se le montaba encima
+  .scroll-hint        { display: none; }
+  // El texto cubre casi todo el hero: el velo oscuro sube más para que se lea
+  .detail-hero-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(21, 31, 40, 0.88) 0%,
+      rgba(21, 31, 40, 0.62) 55%,
+      rgba(21, 31, 40, 0.30) 80%,
+      rgba(21, 31, 40, 0.45) 100%
+    );
+  }
   .detail-body        { padding: var(--s-6) var(--s-5); gap: var(--s-6); }
   .detail-footer-inner { padding: var(--s-6) var(--s-5); flex-direction: column; align-items: stretch; gap: var(--s-5); }
   .detail-gallery     { grid-template-columns: 1fr; }
-  .gallery-item.span-full { grid-column: span 1; aspect-ratio: 4 / 3; }
-  .gallery-zoom       { opacity: 1; }
+  // Una columna: 16:9 muestra las láminas completas en vez de recortarles los lados
+  .gallery-item, .gallery-item.span-full { grid-column: span 1; aspect-ratio: 16 / 9; }
+  .gallery-item:hover { transform: none; }
+  .gallery-zoom       { opacity: 1; width: 32px; height: 32px; }
   .detail-sidebar     { flex-direction: column; }
+  .detail-sidebar > * { min-width: 0 !important; }
   .detail-hero-meta   { gap: var(--s-4) var(--s-6); }
   .footer-next        { max-width: 100%; }
-  .lb-arrow           { width: 36px; height: 36px; }
-  .lb-prev            { left: 8px; }
-  .lb-next            { right: 8px; }
+  // Flechas abajo, a los lados del contador, para no tapar la imagen
+  .lb-img             { max-width: 100%; max-height: 72vh; }
+  .lb-arrow           { top: auto; bottom: 16px; transform: none; }
+  .lb-prev            { left: calc(50% - 96px); }
+  .lb-next            { right: calc(50% - 96px); }
+  .lb-counter         { bottom: 28px; }
+  .lb-close           { top: 12px; right: 12px; }
 }

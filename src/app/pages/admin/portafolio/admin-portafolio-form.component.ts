@@ -28,7 +28,6 @@ export class AdminPortafolioFormComponent implements OnInit {
   readonly editId     = signal<string | null>(null);
   readonly guardando  = signal(false);
   readonly errorMsg        = signal<string | null>(null);
-  readonly testimonialError = signal<string | null>(null);
   readonly isEdit           = computed(() => this.editId() !== null);
 
   readonly coverPreview    = signal<string | null>(null);
@@ -59,10 +58,6 @@ export class AdminPortafolioFormComponent implements OnInit {
     headline:         [''],
     client_name:      [''],
     description:      [''],
-    client_comment:   [''],
-    client_person:    [''],
-    client_role:      [''],
-    show_testimonial: [false],
     featured:         [false],
     published:        [false],
   });
@@ -80,10 +75,6 @@ export class AdminPortafolioFormComponent implements OnInit {
           headline:         p.headline ?? '',
           client_name:      p.client_name ?? '',
           description:      p.description ?? '',
-          client_comment:   p.client_comment ?? '',
-          client_person:    p.client_person ?? '',
-          client_role:      p.client_role ?? '',
-          show_testimonial: p.show_testimonial,
           featured:         p.featured,
           published:        p.published,
         });
@@ -115,21 +106,6 @@ export class AdminPortafolioFormComponent implements OnInit {
       if (current.length > 1) this.selectedAuthors.set(current.filter(x => x !== a));
     } else {
       this.selectedAuthors.set([...current, a]);
-    }
-  }
-
-  async onShowTestimonialChange(checked: boolean) {
-    this.testimonialError.set(null);
-    if (!checked) return;
-    try {
-      const count = await this.portfolio.countActiveTestimonials(this.editId() ?? undefined);
-      if (count >= 3) {
-        this.form.patchValue({ show_testimonial: false });
-        this.testimonialError.set('Ya tienes 3 testimonios activos. Desactiva uno antes de agregar otro.');
-      }
-    } catch {
-      this.form.patchValue({ show_testimonial: false });
-      this.testimonialError.set('No se pudo validar el límite de testimonios. Intenta de nuevo.');
     }
   }
 
@@ -177,17 +153,8 @@ export class AdminPortafolioFormComponent implements OnInit {
 
   async guardar() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    if (this.form.value.show_testimonial) {
-      const count = await this.portfolio.countActiveTestimonials(this.editId() ?? undefined);
-      if (count >= 3) {
-        this.form.patchValue({ show_testimonial: false });
-        this.testimonialError.set('Ya tienes 3 testimonios activos. Desactiva uno antes de agregar otro.');
-        return;
-      }
-    }
     this.guardando.set(true);
     this.errorMsg.set(null);
-    this.testimonialError.set(null);
 
     try {
       const v    = this.form.value;
@@ -220,10 +187,6 @@ export class AdminPortafolioFormComponent implements OnInit {
         headline:       v.headline || null,
         client_name:    v.client_name || null,
         description:    v.description || null,
-        client_comment:   v.client_comment || null,
-        client_person:    v.client_person || null,
-        client_role:      v.client_role || null,
-        show_testimonial: v.show_testimonial ?? false,
         cover_url:        coverUrl,
         images,
         tags:           this.tags(),

@@ -58,19 +58,6 @@
         </div>
 
         <div class="field">
-          <label>Persona de contacto <span class="opt">opcional</span></label>
-          <input class="input" formControlName="client_person"
-            placeholder="Nombre y apellido" />
-          <span class="help">Nombre que aparece en el testimonio.</span>
-        </div>
-
-        <div class="field">
-          <label>Cargo <span class="opt">opcional</span></label>
-          <input class="input" formControlName="client_role"
-            placeholder="Fundadora · Marca de skincare" />
-        </div>
-
-        <div class="field">
           <label>Autores <span class="opt">*</span></label>
           <div class="author-checks">
             @for (a of authors; track a.id) {
@@ -91,12 +78,7 @@
             placeholder="Contexto del proyecto, proceso, entregables, impacto…"></textarea>
         </div>
 
-        <div class="field">
-          <label>Comentario del cliente <span class="opt">opcional</span></label>
-          <textarea class="input" formControlName="client_comment" rows="3"
-            placeholder="«El resultado superó nuestras expectativas…» — Cliente, Empresa"></textarea>
-          <span class="help">Aparece como cita destacada en la página del proyecto.</span>
-        </div>
+        <p class="help">Los comentarios de clientes se gestionan en <strong>Reseñas</strong>: ahí puedes ligar una reseña a este proyecto.</p>
 
         <div class="field">
           <label>Tags</label>
@@ -162,18 +144,7 @@
               <span class="inv-slider"></span>
             </label>
           </div>
-          <div class="field-toggle-row">
-            <div><span class="ftr-label">En testimonios</span></div>
-            <label class="inv-toggle">
-              <input type="checkbox" formControlName="show_testimonial"
-                (change)="onShowTestimonialChange($any($event.target).checked)" />
-              <span class="inv-slider"></span>
-            </label>
-          </div>
         </div>
-        @if (testimonialError()) {
-          <p class="form-error">{{ testimonialError() }}</p>
-        }
 
         @if (errorMsg()) {
           <p class="form-error">{{ errorMsg() }}</p>

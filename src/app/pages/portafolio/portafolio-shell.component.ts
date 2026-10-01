@@ -11,6 +11,7 @@ import {
   PORTFOLIO_CATEGORIES,
 } from '../../core/services/portfolio.service';
 import { PortfolioShaderComponent } from './shader/portfolio-shader.component';
+import { CuacSeguidorComponent } from './cuac-seguidor/cuac-seguidor.component';
 import { SeoService } from '../../core/services/seo.service';
 
 type Theme = 'cuac' | 'natalia' | 'nathali';
@@ -93,7 +94,7 @@ function assignSpans(projects: PortfolioProject[]): SpanProject[] {
 @Component({
   selector: 'app-portafolio-shell',
   standalone: true,
-  imports: [CommonModule, RouterLink, PortfolioShaderComponent],
+  imports: [CommonModule, RouterLink, PortfolioShaderComponent, CuacSeguidorComponent],
   templateUrl: './portafolio-shell.component.html',
   styleUrl: './portafolio-shell.component.scss',
   host: { '[attr.data-theme]': 'theme()' },

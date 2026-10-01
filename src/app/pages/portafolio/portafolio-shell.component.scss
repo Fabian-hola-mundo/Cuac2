@@ -145,7 +145,8 @@
 .hero-portrait {
   position: absolute;
   bottom: 0;
-  right: var(--s-8);
+  // Clears the scroll-hint column (right: --s-7) with ~--s-7 of breathing room
+  right: calc(var(--s-7) * 2 + 16px);
   width: clamp(200px, 22vw, 320px);
   aspect-ratio: 3 / 4;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
@@ -775,10 +776,13 @@
 // Allowed span values from assignSpans(): 4, 5, 7, 8, 12 only.
 @media (max-width: 1024px) {
   .port-grid { grid-template-columns: repeat(6, 1fr); }
+  // Cada fila debe sumar 6: 8+4 → 4+2, 4+4+4 → 2+2+2, 5+7 → 2+4
   .port-card[style*="span 8"]  { grid-column: span 4 !important; }
   .port-card[style*="span 7"]  { grid-column: span 4 !important; }
   .port-card[style*="span 5"]  { grid-column: span 2 !important; }
-  .port-card[style*="span 4"]  { grid-column: span 3 !important; }
+  .port-card[style*="span 4"]  { grid-column: span 2 !important; }
+  // La vertical que acompaña a la grande toma la altura de la fila (sin hueco abajo)
+  .port-card[style*="3 / 4"]   { aspect-ratio: auto !important; }
   .port-card[style*="span 12"] { grid-column: span 6 !important; }
 }
 
@@ -812,9 +816,18 @@
   }
   .about-row     { flex-direction: column; gap: var(--s-5); }
   .about-col-bio { flex: 1 1 auto; }
-  .filter-bar   { margin: 0 calc(-1 * var(--s-5)) var(--s-6); padding: 0 var(--s-5); }
+  .filter-bar   { margin: 0 calc(-1 * var(--s-5)) var(--s-6); padding: 0; }
+  // Las pestañas se desplazan: el padding va dentro del scroll y el borde derecho
+  // se desvanece para que se note que hay más categorías
+  .filter-bar-inner {
+    padding: 0 var(--s-5);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+            mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  }
+  .filter-item  { padding: 0 var(--s-4); }
   .port-grid    { grid-template-columns: 1fr; gap: var(--s-4); }
-  .port-card    { grid-column: span 1 !important; aspect-ratio: 4/3 !important; }
+  // [style] iguala la especificidad de los overrides de 1024px para ganarles
+  .port-card[style] { grid-column: 1 / -1 !important; aspect-ratio: 4/3 !important; }
   .pf-link {
     grid-template-columns: 8px 1fr 24px;
     grid-template-areas: "dot main go" "dot tag go";

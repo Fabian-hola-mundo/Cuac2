@@ -1,12 +1,14 @@
 import { Component, HostListener, signal, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import {
   PortfolioService,
   PortfolioProject,
   PORTFOLIO_CATEGORIES,
 } from '../../core/services/portfolio.service';
 import { SeoService } from '../../core/services/seo.service';
+import { ResenasService, Resena } from '../../core/services/resenas.service';
 
 type Theme = 'cuac' | 'natalia' | 'nathali';
 
@@ -23,17 +25,21 @@ export class PortafolioDetailComponent implements OnInit, OnDestroy {
   private route        = inject(ActivatedRoute);
   private router       = inject(Router);
   private seo          = inject(SeoService);
+  private resenasSvc   = inject(ResenasService);
 
   readonly categorias   = PORTFOLIO_CATEGORIES;
   theme: Theme          = 'cuac';
 
   readonly project      = signal<PortfolioProject | null>(null);
+  readonly resena       = signal<Resena | null>(null);
   readonly cargando     = signal(false);
   readonly notFound     = signal(false);
   readonly lightboxIdx  = signal<number | null>(null);
   readonly nextProject  = signal<PortfolioProject | null>(null);
   readonly prevProject  = signal<PortfolioProject | null>(null);
   private lastFocusedItem: HTMLElement | null = null;
+  private paramSub?: Subscription;
+  private loadToken = 0;
 
   // ── Navigation ───────────────────────────────────────────────────────────────
   get backUrl(): string {
@@ -121,6 +127,33 @@ export class PortafolioDetailComponent implements OnInit, OnDestroy {
     this.lightboxIdx.set((cur + 1) % images.length);
   }
 
+  // Deslizar en táctil: izquierda → siguiente, derecha → anterior
+  private swipeStart: { x: number; y: number } | null = null;
+  private swiped = false;
+
+  onLbTouchStart(e: TouchEvent) {
+    const t = e.changedTouches[0];
+    this.swipeStart = { x: t.clientX, y: t.clientY };
+    this.swiped = false;
+  }
+
+  onLbTouchEnd(e: TouchEvent) {
+    if (!this.swipeStart) return;
+    const t  = e.changedTouches[0];
+    const dx = t.clientX - this.swipeStart.x;
+    const dy = t.clientY - this.swipeStart.y;
+    this.swipeStart = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+    this.swiped = true;
+    if (dx < 0) this.nextImage(); else this.prevImage();
+  }
+
+  // El clic sobre el fondo cierra, salvo que venga justo de un deslizamiento
+  onLbBackdrop() {
+    if (this.swiped) { this.swiped = false; return; }
+    this.closeLightbox();
+  }
+
   @HostListener('document:keydown', ['$event'])
   onKeydown(e: KeyboardEvent) {
     if (this.lightboxIdx() === null) return;
@@ -130,15 +163,29 @@ export class PortafolioDetailComponent implements OnInit, OnDestroy {
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────────
-  async ngOnInit() {
-    const slug = this.route.snapshot.paramMap.get('slug');
-    if (!slug) { this.router.navigate(['/portafolio']); return; }
+  // El router reutiliza este componente al ir de un proyecto a otro (anterior /
+  // siguiente), así que el slug se escucha en vez de leerse una sola vez.
+  ngOnInit() {
+    this.paramSub = this.route.paramMap.subscribe(params => this.load(params.get('slug')));
+  }
 
+  private async load(slug: string | null) {
+    if (!slug) { this.router.navigate(['/portafolio']); return; }
+    const token = ++this.loadToken;
+
+    if (this.lightboxIdx() !== null) this.closeLightbox();
+    this.project.set(null);
+    this.resena.set(null);
+    this.prevProject.set(null);
+    this.nextProject.set(null);
+    this.notFound.set(false);
     this.cargando.set(true);
     const p = await this.portfolioSvc.getBySlug(slug);
+    if (token !== this.loadToken) return;
     this.cargando.set(false);
 
     if (!p) { this.notFound.set(true); return; }
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0 });
     this.project.set(p);
     this.seo.setProject(p);
     this.seo.setJsonLd({
@@ -152,13 +199,24 @@ export class PortafolioDetailComponent implements OnInit, OnDestroy {
     });
     this.theme = this.deriveTheme(p.authors);
 
-    const siblings = await this.portfolioSvc.getPublished(this.theme);
+    this.resenasSvc.getPorProyecto(p.id).then(r => {
+      if (token === this.loadToken) this.resena.set(r[0] ?? null);
+    });
+
+    // Hermanos del mismo portafolio; si el proyecto no está en esa lista (p. ej.
+    // autoría natalia + nathali sin cuac), se navega por todos los publicados.
+    let siblings = await this.portfolioSvc.getPublished(this.theme);
+    if (!siblings.some(s => s.id === p.id)) siblings = await this.portfolioSvc.getPublished();
+    if (token !== this.loadToken) return;
     const idx = siblings.findIndex(s => s.id === p.id);
-    this.prevProject.set(siblings[idx - 1] ?? null);
-    this.nextProject.set(siblings[idx + 1] ?? null);
+    const n = siblings.length;
+    if (idx === -1 || n < 2) return;
+    this.prevProject.set(siblings[(idx - 1 + n) % n]);
+    this.nextProject.set(siblings[(idx + 1) % n]);
   }
 
   ngOnDestroy() {
+    this.paramSub?.unsubscribe();
     document.body.style.overflow = '';
   }
 
