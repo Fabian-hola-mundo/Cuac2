@@ -11,6 +11,7 @@ import {
   OrdenDir,
   UMBRAL_STOCK_BAJO,
   calcularKpis,
+  chipStock,
   contarPorEstado,
   filtrarProductos,
   ordenarProductos,
@@ -173,6 +174,8 @@ export class ProductosListComponent implements OnInit {
       console.error('Error cargando variantes:', err);
     }
   }
+
+  readonly chipStock = chipStock;
 
   activasDe(id: string): ProductoVariante[] {
     return this.variantesPorProducto().get(id)?.variantes.filter(v => v.activo) ?? [];

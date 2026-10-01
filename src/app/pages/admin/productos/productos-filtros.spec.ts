@@ -3,6 +3,7 @@
 // igual que bold-shared.spec.ts prueba las piezas puras de las edge functions.
 import {
   UMBRAL_STOCK_BAJO,
+  chipStock,
   calcularKpis,
   contarPorEstado,
   filtrarProductos,
@@ -174,5 +175,18 @@ describe('contarPorEstado', () => {
       producto({ id: 'c', activo: false, stock_actual: 2 }),
     ];
     expect(contarPorEstado(list)).toEqual({ all: 3, activo: 2, inactivo: 1, bajo: 1, agotado: 1 });
+  });
+});
+
+describe('chipStock', () => {
+  it('todo valor de stock sale como chip, con el tono según el umbral', () => {
+    expect([0, 1, 2, 3, 5, 120].map(chipStock)).toEqual([
+      { tono: 'err',  texto: 'Agotado' },
+      { tono: 'warn', texto: '1 ud.' },
+      { tono: 'warn', texto: '2 ud.' },
+      { tono: 'ok',   texto: '3 ud.' },
+      { tono: 'ok',   texto: '5 ud.' },
+      { tono: 'ok',   texto: '120 ud.' },
+    ]);
   });
 });

@@ -45,5 +45,5 @@
   }
 
   .sv-nombre { flex: 1 1 140px; min-width: 0; font-size: 13.5px; }
-  .sv-stock  { min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+  .sv-stock  { min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 }

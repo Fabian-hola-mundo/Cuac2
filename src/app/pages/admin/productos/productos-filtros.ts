@@ -8,6 +8,12 @@ import type { ProductoEvento } from '../../../core/services/inventario.service';
 /** Bajo este número de unidades el producto se marca en amarillo en la tabla. */
 export const UMBRAL_STOCK_BAJO = 3;
 
+/** Todo stock va en chip: el tono dice si está agotado, bajo o disponible. */
+export function chipStock(n: number): { tono: 'err' | 'warn' | 'ok'; texto: string } {
+  if (n <= 0) return { tono: 'err', texto: 'Agotado' };
+  return { tono: n < UMBRAL_STOCK_BAJO ? 'warn' : 'ok', texto: `${n} ud.` };
+}
+
 export type EstadoFiltro = 'all' | 'activo' | 'inactivo' | 'bajo' | 'agotado';
 export type OrdenCampo = 'nombre' | 'precio' | 'stock_actual' | 'creado_en';
 export type OrdenDir = 'asc' | 'desc';
