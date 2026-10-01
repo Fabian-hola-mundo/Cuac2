@@ -366,10 +366,12 @@
   }
 }
 
-// ── Sidebar — sticky ficha + conversion CTA ────────────────────────────────────
+// ── Sidebar — ficha + reseña + conversion CTA ─────────────────────────────────
+// La columna ocupa todo el alto del cuerpo; ficha y reseña se desplazan con la
+// página y solo el CTA (corto, siempre cabe) acompaña el scroll. Si la columna
+// entera fuera sticky, al ser más alta que la ventana su final quedaría cortado.
 .detail-sidebar {
-  position: sticky;
-  top: var(--s-7);
+  align-self: stretch;
   display: flex;
   flex-direction: column;
   gap: var(--s-6);
@@ -485,6 +487,8 @@
 
 // ── Sidebar conversion CTA ──────────────────────────────────────────────────────
 .sidebar-cta {
+  position: sticky;
+  top: var(--s-7);
   padding: var(--s-6);
   border-radius: var(--r-md);
   background: var(--ink, #151F28);
@@ -785,7 +789,6 @@
   }
 
   .detail-sidebar {
-    position: static;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: stretch;
@@ -793,7 +796,7 @@
 
     .sidebar-card  { flex: 1; min-width: 240px; }
     .sidebar-quote { flex: 1; min-width: 240px; }
-    .sidebar-cta   { flex: 1; min-width: 240px; }
+    .sidebar-cta   { flex: 1; min-width: 240px; position: static; }
   }
 }
 
