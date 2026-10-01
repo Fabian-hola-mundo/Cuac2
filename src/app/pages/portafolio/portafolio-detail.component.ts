@@ -8,6 +8,7 @@ import {
   PORTFOLIO_CATEGORIES,
 } from '../../core/services/portfolio.service';
 import { SeoService } from '../../core/services/seo.service';
+import { varsFoco } from '../../core/utils/encuadre-foco';
 import { ResenasService, Resena } from '../../core/services/resenas.service';
 import { ResenaTextoComponent } from '../../shared/resena-texto/resena-texto.component';
 
@@ -77,6 +78,9 @@ export class PortafolioDetailComponent implements OnInit, OnDestroy {
   catLabel(id: string): string {
     return this.categorias.find(c => c.id === id)?.label ?? id;
   }
+
+  /** Encuadre guardado (punto y zoom), como variables CSS. */
+  readonly varsFoco = varsFoco;
 
   safeBg(url: string | null): string {
     if (!url || !/^https?:\/\//.test(url)) return 'none';

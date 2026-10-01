@@ -133,7 +133,7 @@
           [attr.aria-label]="p.title + ' · ' + catLabel(p.category)">
 
           @if (p.cover_url) {
-            <div class="card-bg" [style.backgroundImage]="safeBg(p.cover_url)"></div>
+            <div class="card-bg" [style]="varsFoco(p.cover_focus_card)" [style.backgroundImage]="safeBg(p.cover_url)"></div>
             <div class="card-scrim" aria-hidden="true"></div>
           }
 

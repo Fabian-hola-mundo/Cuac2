@@ -1,6 +1,7 @@
 // src/app/core/services/portfolio.service.ts
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { Foco } from '../utils/encuadre-foco';
 
 export interface ProjectLink {
   label: string;
@@ -50,7 +51,12 @@ export interface PortfolioProject {
   client_name:    string | null;
   description:    string | null;
   cover_url:      string | null;
+  /** Encuadre de la portada en la tarjeta del grid y en el hero (ver encuadre-foco.ts). */
+  cover_focus_card: Foco | null;
+  cover_focus_hero: Foco | null;
   images:         string[];
+  /** Encuadre de cada foto de la galería, en el mismo orden que `images`. */
+  images_focus:   (Foco | null)[] | null;
   tags:           string[];
   links:          ProjectLink[];
   featured:       boolean;
