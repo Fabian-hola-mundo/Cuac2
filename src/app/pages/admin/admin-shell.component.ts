@@ -339,5 +339,4 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   }
 
   get userEmail(): string  { return this.sb.session()?.user?.email ?? ''; }
-  get userInitial(): string { return (this.sb.session()?.user?.email?.[0] ?? 'C').toUpperCase(); }
 }
