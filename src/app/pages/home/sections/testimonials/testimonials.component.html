@@ -15,15 +15,24 @@
 
       <div class="testi-track" #track>
         @for (t of testimonials(); track t.id) {
-          @if (t.slug) {
-            <a class="testi" [routerLink]="['/portafolio', t.slug]">
-              <ng-container *ngTemplateOutlet="card; context: { $implicit: t }" />
-            </a>
-          } @else {
-            <div class="testi">
-              <ng-container *ngTemplateOutlet="card; context: { $implicit: t }" />
+          <div class="testi" [class.con-link]="t.slug">
+            <div class="q">
+              <app-resena-texto [texto]="t.quote" [nombre]="t.name" [detalle]="t.role || t.project" [max]="180" />
             </div>
-          }
+            <div class="a">
+              <div class="av" aria-hidden="true"
+                [style.--av-bg]="t.avatar.bg" [style.--av-color]="t.avatar.color" [style.--av-ring]="t.avatar.ring">
+                {{ t.initials }}
+              </div>
+              <div class="a-meta">
+                <div class="n">{{ t.name }}</div>
+                @if (t.role) { <div class="r">{{ t.role }}</div> }
+                @if (t.slug) {
+                  <a class="p" [routerLink]="['/portafolio', t.slug]">{{ t.project }} &rarr;</a>
+                }
+              </div>
+            </div>
+          </div>
         }
       </div>
     }
@@ -71,15 +80,3 @@
     </div>
   </div>
 }
-
-<ng-template #card let-t>
-  <p class="q">{{ t.quote }}</p>
-  <div class="a">
-    <div class="av" [style.background]="t.avatarBg" [style.color]="t.avatarColor">{{ t.initials }}</div>
-    <div class="a-meta">
-      <div class="n">{{ t.name }}</div>
-      @if (t.role) { <div class="r">{{ t.role }}</div> }
-      @if (t.project) { <div class="p">{{ t.project }} &rarr;</div> }
-    </div>
-  </div>
-</ng-template>

@@ -1,8 +1,8 @@
 import { Component, OnInit, ElementRef, signal, inject, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { NgTemplateOutlet } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ResenasService, Resena } from '../../../../core/services/resenas.service';
+import { ResenaTextoComponent } from '../../../../shared/resena-texto/resena-texto.component';
 
 interface TestimonialDisplay {
   id:          string;
@@ -10,32 +10,43 @@ interface TestimonialDisplay {
   name:        string;
   role:        string;
   initials:    string;
-  avatarBg:    string;
-  avatarColor: string;
+  avatar:      AvatarTone;
   slug:        string | null;
   project:     string | null;
 }
 
-const AVATAR_PALETTE: Array<{ bg: string; color: string }> = [
-  { bg: 'var(--ember)', color: 'white'           },
-  { bg: 'var(--deep)',  color: 'white'           },
-  { bg: 'var(--coral)', color: 'var(--carbon)'   },
+// Tinte suave de fondo, iniciales en el tono oscuro y aro fino exterior.
+interface AvatarTone { bg: string; color: string; ring: string; }
+
+const AVATAR_PALETTE: AvatarTone[] = [
+  { bg: 'rgba(192, 232, 253, 0.45)', color: 'var(--deep)',   ring: 'rgba(1, 30, 84, 0.18)'   },
+  { bg: 'rgba(255, 141, 117, 0.16)', color: '#B8341A',       ring: 'rgba(236, 56, 19, 0.22)' },
+  { bg: 'rgba(1, 30, 84, 0.06)',     color: 'var(--deep)',   ring: 'rgba(1, 30, 84, 0.16)'   },
+  { bg: 'rgba(21, 31, 40, 0.05)',    color: 'var(--carbon)', ring: 'rgba(21, 31, 40, 0.16)'  },
 ];
 
+// Mismo nombre → mismo color, aunque cambie el orden de las reseñas.
+function toneFor(name: string | null): AvatarTone {
+  let h = 0;
+  for (const ch of name ?? '') h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
+}
+
+// «Valentina Brand y Oscar Carvajal» → «VO»: si firman varias personas,
+// una inicial por persona; si es una sola, nombre y apellido.
 function toInitials(name: string | null): string {
   if (!name) return '?';
-  return name.split(' ')
-    .filter(Boolean)
-    .map(w => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const personas = name.split(/\s+(?:y|e|&)\s+|,\s*/i).filter(Boolean);
+  const letras = personas.length > 1
+    ? personas.map(p => p.trim()[0])
+    : name.split(/\s+/).filter(Boolean).map(w => w[0]);
+  return letras.join('').slice(0, 2).toUpperCase();
 }
 
 @Component({
   selector: 'app-testimonials',
   standalone: true,
-  imports: [RouterLink, NgTemplateOutlet, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, ResenaTextoComponent],
   templateUrl: './testimonials.component.html',
   styleUrl: './testimonials.component.scss',
 })
@@ -65,20 +76,16 @@ export class TestimonialsComponent implements OnInit {
   async ngOnInit() {
     try {
       const resenas = await this.resenas.getVisibles();
-      this.testimonials.set(resenas.map((r: Resena, i: number) => {
-        const palette = AVATAR_PALETTE[i % AVATAR_PALETTE.length];
-        return {
-          id:          r.id,
-          quote:       r.comentario,
-          name:        r.nombre,
-          role:        r.cargo_empresa ?? '',
-          initials:    toInitials(r.nombre),
-          avatarBg:    palette.bg,
-          avatarColor: palette.color,
-          slug:        r.proyecto?.slug ?? null,
-          project:     r.proyecto?.title ?? null,
-        };
-      }));
+      this.testimonials.set(resenas.map((r: Resena) => ({
+        id:       r.id,
+        quote:    r.comentario,
+        name:     r.nombre,
+        role:     r.cargo_empresa ?? '',
+        initials: toInitials(r.nombre),
+        avatar:   toneFor(r.nombre),
+        slug:     r.proyecto?.slug ?? null,
+        project:  r.proyecto?.title ?? null,
+      })));
     } finally {
       this.loading.set(false);
     }

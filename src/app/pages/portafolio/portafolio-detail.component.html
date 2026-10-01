@@ -160,7 +160,9 @@
       @if (resena(); as r) {
         <figure class="sidebar-quote">
           <span class="sq-mark" aria-hidden="true">“</span>
-          <blockquote>{{ r.comentario }}</blockquote>
+          <blockquote>
+            <app-resena-texto [texto]="r.comentario" [nombre]="r.nombre" [detalle]="r.cargo_empresa" [max]="220" />
+          </blockquote>
           <figcaption>{{ r.nombre }}{{ r.cargo_empresa ? ' · ' + r.cargo_empresa : '' }}</figcaption>
         </figure>
       }

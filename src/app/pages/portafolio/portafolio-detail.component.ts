@@ -9,13 +9,14 @@ import {
 } from '../../core/services/portfolio.service';
 import { SeoService } from '../../core/services/seo.service';
 import { ResenasService, Resena } from '../../core/services/resenas.service';
+import { ResenaTextoComponent } from '../../shared/resena-texto/resena-texto.component';
 
 type Theme = 'cuac' | 'natalia' | 'nathali';
 
 @Component({
   selector: 'app-portafolio-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ResenaTextoComponent],
   templateUrl: './portafolio-detail.component.html',
   styleUrl: './portafolio-detail.component.scss',
   host: { '[attr.data-theme]': 'theme' },
