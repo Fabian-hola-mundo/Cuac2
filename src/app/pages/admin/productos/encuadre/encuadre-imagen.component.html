@@ -1,0 +1,37 @@
+<div class="drawer-back on" (click)="cancelar.emit()"></div>
+<div class="modal-card enc-card" role="dialog" aria-modal="true" aria-labelledby="enc-titulo">
+  <h3 id="enc-titulo">Encuadrar portada</h3>
+  <p class="modal-sub">Arrastra la foto y ajusta el zoom. El cuadro es exactamente lo que se ve en la tarjeta y en la ficha de la tienda.</p>
+
+  <div #cuadro class="enc-cuadro" tabindex="0"
+       aria-label="Encuadre de la portada. Flechas para mover, más y menos para el zoom."
+       (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
+       (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)"
+       (wheel)="onWheel($event)" (keydown)="onKey($event)">
+    @if (urlVista(); as url) {
+      <img class="enc-foto" [src]="url" alt="" draggable="false" [style]="estiloFoto()" />
+      <div class="enc-guias" aria-hidden="true"></div>
+    } @else if (!error()) {
+      <span class="enc-cargando">Cargando…</span>
+    }
+  </div>
+
+  <div class="enc-zoom">
+    <button type="button" class="btn-sm ghost" (click)="setZoom(encuadre().zoom / 1.15)" aria-label="Alejar">−</button>
+    <input type="range" [min]="zoomMin()" [max]="ZOOM_MAX" step="0.01" aria-label="Zoom"
+           [value]="encuadre().zoom" (input)="setZoom(+$any($event.target).value)" [disabled]="!urlVista()" />
+    <button type="button" class="btn-sm ghost" (click)="setZoom(encuadre().zoom * 1.15)" aria-label="Acercar">+</button>
+  </div>
+  <div class="enc-atajos">
+    <button type="button" class="btn-sm ghost" (click)="llenar()" [disabled]="!urlVista()">Llenar el cuadro</button>
+    <button type="button" class="btn-sm ghost" (click)="entera()" [disabled]="!urlVista()">Foto entera</button>
+  </div>
+
+  @if (error()) { <p class="modal-err" role="alert">{{ error() }}</p> }
+  <div class="modal-f">
+    <button type="button" class="btn-sm ghost" (click)="cancelar.emit()">Cancelar</button>
+    <button type="button" class="btn-sm solid" [disabled]="!urlVista() || guardando()" (click)="confirmar()">
+      {{ guardando() ? 'Preparando…' : 'Usar este encuadre' }}
+    </button>
+  </div>
+</div>

@@ -161,12 +161,18 @@ code {
   cursor: pointer;
 }
 
+// Cuadrada y con la foto entera, como la tarjeta de la tienda: antes recortaba
+// a 200px de alto y no mostraba cómo iba a quedar de verdad.
 .img-preview {
   border-radius: 8px;
   overflow: hidden;
-  max-height: 200px;
-  img { width: 100%; height: 200px; object-fit: cover; display: block; }
+  aspect-ratio: 1 / 1;
+  max-width: 260px;
+  background: var(--cream);
+  img { width: 100%; height: 100%; object-fit: contain; display: block; }
 }
+
+.cover-acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
 .img-placeholder {
   display: flex; align-items: center; justify-content: center;
@@ -189,7 +195,8 @@ code {
   gap: 4px;
 }
 
-label.upload-btn {
+label.upload-btn, button.upload-btn {
+  background: transparent;
   display: inline-flex;
   align-items: center;
   gap: 6px;

@@ -29,11 +29,12 @@ import {
   validarImagen,
 } from './galeria';
 import { VariantesEditorComponent } from './variantes-editor/variantes-editor.component';
+import { EncuadreImagenComponent } from './encuadre/encuadre-imagen.component';
 
 @Component({
   selector: 'app-producto-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, VariantesEditorComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, VariantesEditorComponent, EncuadreImagenComponent],
   templateUrl: './producto-form.component.html',
   styleUrl: './producto-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -99,6 +100,12 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
   private coverGuardada: string | null = null;
   private coverFile: File | null = null;
   readonly coverPreview = signal<string | null>(null);
+  /** Foto completa elegida (sin recortar), para poder reencuadrarla. */
+  private coverOriginal: string | null = null;
+  /** URL que se está encuadrando; null = diálogo cerrado. */
+  readonly encuadrando = signal<string | null>(null);
+  /** Portada anterior a borrar de Storage cuando la nueva quede guardada. */
+  private coverReemplazada: string | null = null;
 
   // ── Galería ───────────────────────────────────────────────────────────────
   readonly galeria = signal<EstadoGaleria>({ existentes: [], nuevos: [] });
@@ -294,6 +301,14 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const { error } = await this.inv.updateProducto(id, { ...datos, ...imagenes });
       if (error) { this.errorMsg.set(error); return; }
+      if (this.coverReemplazada) {
+        // Si también está en la galería sigue en uso. Si el borrado falla queda
+        // un archivo huérfano, no un producto roto: no se avisa.
+        if (!imagenes.fotos.includes(this.coverReemplazada)) {
+          await this.inv.borrarImagenProducto(this.coverReemplazada);
+        }
+        this.coverReemplazada = null;
+      }
 
       // Con variantes el stock del producto es la suma de las combinaciones.
       const stock = v.stock ?? 0;
@@ -357,8 +372,12 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     let cover = this.coverGuardada;
     if (this.coverFile) {
       const ext = this.coverFile.name.split('.').pop() ?? 'jpg';
-      const { url, error } = await this.inv.uploadProductoImage(id, this.coverFile, `cover.${ext}`);
+      // Nombre nuevo en cada cambio: con uno fijo (`cover.webp`) la URL no
+      // cambiaba y el navegador y la CDN seguían mostrando la portada vieja.
+      const { url, error } = await this.inv.uploadProductoImage(id, this.coverFile, `cover_${Date.now()}.${ext}`);
       if (error) { this.errorMsg.set(`Error al subir portada: ${error}`); return null; }
+      // La anterior se borra sólo cuando el producto ya apunte a la nueva.
+      if (this.coverGuardada && this.coverGuardada !== url) this.coverReemplazada ??= this.coverGuardada;
       cover = url;
       // Subida buena: no repetirla si el guardado se reintenta. La vista previa
       // pasa a apuntar al archivo real para poder soltar el object URL.
@@ -436,11 +455,36 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     const invalida = validarImagen(file);
     if (invalida) { this.avisos.set([invalida]); return; }
 
+    // La foto no se usa tal cual: primero se encuadra en el cuadro de la tienda.
+    this.avisos.set([]);
+    this.soltarOriginal();
+    this.coverOriginal = URL.createObjectURL(file);
+    this.encuadrando.set(this.coverOriginal);
+  }
+
+  /** Reencuadra partiendo de la foto completa, no del recorte anterior. */
+  encuadrarPortada() {
+    const src = this.coverOriginal ?? this.coverPreview();
+    if (src) this.encuadrando.set(src);
+  }
+
+  onEncuadreListo(file: File) {
     const previo = this.coverPreview();
     if (previo?.startsWith('blob:')) URL.revokeObjectURL(previo);
-    this.avisos.set([]);
     this.coverFile = file;
     this.coverPreview.set(URL.createObjectURL(file));
+    this.encuadrando.set(null);
+  }
+
+  /** Cancelar una foto recién elegida la descarta; cancelar un reencuadre no toca nada. */
+  cancelarEncuadre() {
+    if (!this.coverFile && this.encuadrando() === this.coverOriginal) this.soltarOriginal();
+    this.encuadrando.set(null);
+  }
+
+  private soltarOriginal() {
+    if (this.coverOriginal) URL.revokeObjectURL(this.coverOriginal);
+    this.coverOriginal = null;
   }
 
   onGalleryChange(event: Event) {
@@ -475,6 +519,7 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private revocarTodos() {
     this.revocarGaleria();
+    this.soltarOriginal();
     const cover = this.coverPreview();
     if (cover?.startsWith('blob:')) URL.revokeObjectURL(cover);
   }

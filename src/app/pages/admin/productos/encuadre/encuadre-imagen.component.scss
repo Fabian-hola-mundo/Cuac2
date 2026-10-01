@@ -1,0 +1,49 @@
+// El diálogo usa .modal-card y .drawer-back del admin; aquí sólo lo propio.
+.enc-card { width: 460px; }
+
+.enc-cuadro {
+  position: relative; width: 100%; aspect-ratio: 1 / 1;
+  overflow: hidden; border-radius: 10px;
+  cursor: grab; touch-action: none; user-select: none;
+  // Damero: deja ver las zonas transparentes de una ilustración sin fondo.
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, var(--cream-2) 25%, transparent 25%, transparent 75%, var(--cream-2) 75%),
+    linear-gradient(45deg, var(--cream-2) 25%, transparent 25%, transparent 75%, var(--cream-2) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  outline-offset: 3px;
+
+  &:active { cursor: grabbing; }
+  &:focus-visible { outline: 2px solid var(--rio); }
+}
+
+.enc-foto {
+  position: absolute; max-width: none; pointer-events: none;
+}
+
+// Tercios, para centrar el motivo a ojo.
+.enc-guias {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to right, transparent calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% + .5px), transparent calc(33.33% + .5px),
+                              transparent calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% + .5px), transparent calc(66.66% + .5px)),
+    linear-gradient(to bottom, transparent calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% + .5px), transparent calc(33.33% + .5px),
+                               transparent calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% + .5px), transparent calc(66.66% + .5px));
+  box-shadow: inset 0 0 0 1px rgba(21,31,40,.12);
+  border-radius: 10px;
+}
+
+.enc-cargando {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: var(--carbon-50); font-size: 13px;
+}
+
+.enc-zoom {
+  display: flex; align-items: center; gap: 10px; margin-top: var(--s-4);
+
+  input[type="range"] { flex: 1; accent-color: var(--carbon); }
+  .btn-sm { width: 34px; justify-content: center; padding: 6px 0; }
+}
+
+.enc-atajos { display: flex; gap: 8px; margin-top: var(--s-3); flex-wrap: wrap; }

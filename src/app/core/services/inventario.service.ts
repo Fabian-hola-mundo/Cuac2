@@ -6,6 +6,7 @@ import { comprimirImagen, conExtension } from '../../pages/admin/productos/compr
 import {
   BUCKET_PRODUCTOS,
   planCopiaImagenes,
+  rutaDesdeUrlPublica,
   rutaImagen,
 } from '../../pages/admin/productos/productos-storage';
 
@@ -667,6 +668,14 @@ export class InventarioService {
       .from(BUCKET_PRODUCTOS)
       .getPublicUrl(path);
     return { url: data.publicUrl, error: null };
+  }
+
+  /** Borra un archivo del bucket a partir de su URL pública. Ignora URLs ajenas. */
+  async borrarImagenProducto(url: string): Promise<{ error: string | null }> {
+    const ruta = rutaDesdeUrlPublica(url);
+    if (!ruta) return { error: null };
+    const { error } = await this.sb.db.storage.from(BUCKET_PRODUCTOS).remove([ruta]);
+    return { error: error?.message ?? null };
   }
 
 }
