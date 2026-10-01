@@ -194,6 +194,36 @@
     </div>
 
   </div>
+
+  <!-- Sugeridos: al final y sin botones de compra, para que no compita con
+       «Agregar al carrito». Sólo enlaces a otras fichas. -->
+  @if (sugeridos().length) {
+    <section class="sugeridos" aria-labelledby="sugeridos-titulo">
+      <div class="sug-head">
+        <div>
+          <span class="sug-eyebrow">Sugeridos</span>
+          <h2 id="sugeridos-titulo">También te puede gustar</h2>
+        </div>
+        <a class="sug-todo" routerLink="/cuaquiverso/tienda">Ver toda la tienda →</a>
+      </div>
+      <ul class="sug-list">
+        @for (p of sugeridos(); track p.id) {
+          <li>
+            <a class="sug-card" [attr.data-color]="p.color" [routerLink]="['/cuaquiverso/tienda', p.id]">
+              <div class="sug-img">
+                @if (p.cover_url) {
+                  <img [src]="p.cover_url" [alt]="p.nombre" loading="lazy" decoding="async" />
+                }
+              </div>
+              <span class="sug-cat">{{ catLabel(p.categoria) }}</span>
+              <span class="sug-name">{{ p.nombre }}</span>
+              <span class="sug-price">{{ precioSugerido(p) }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+  }
 }
 
 <app-cart-modal></app-cart-modal>

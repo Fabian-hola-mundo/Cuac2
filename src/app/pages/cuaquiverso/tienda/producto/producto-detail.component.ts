@@ -1,9 +1,11 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   InventarioService,
   ProductoEvento,
   ProductoOpcion,
+  ProductoPublico,
   VariantePublica,
   esEtiquetaPropia,
   etiquetaCategoria,
@@ -27,6 +29,24 @@ const CAT_SHORT: Record<string, string> = {
   llavero:'Llavero', pañoleta:'Pañoleta', amigurumi:'Amigurumi', charm:'Charm',
 };
 
+/** Hash corto y determinista (djb2) para ordenar sugeridos sin azar. */
+function hash(s: string): number {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return h >>> 0;
+}
+
+const CONECTORES = new Set(['para', 'con', 'del', 'las', 'los', 'una', 'uno', 'mini']);
+
+/** Palabras con significado de un nombre de producto, sin tildes ni mayúsculas. */
+function palabras(nombre: string): Set<string> {
+  return new Set(
+    nombre.toLocaleLowerCase('es').normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .split(/[^a-z0-9ñ]+/)
+      .filter(w => w.length >= 3 && !CONECTORES.has(w)),
+  );
+}
+
 @Component({
   selector: 'app-producto-detail',
   standalone: true,
@@ -40,6 +60,7 @@ export class ProductoDetailComponent implements OnInit {
   private inv   = inject(InventarioService);
   readonly cart = inject(CartService);
   private seo   = inject(SeoService);
+  private destroyRef = inject(DestroyRef);
 
   readonly loading     = signal(true);
   readonly notFound    = signal(false);
@@ -120,10 +141,54 @@ export class ProductoDetailComponent implements OnInit {
     return this.selectedImg() ?? imgs[0] ?? null;
   });
 
-  async ngOnInit(): Promise<void> {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) { this.router.navigate(['/cuaquiverso/tienda']); return; }
-    await this.cargar(id);
+  ngOnInit(): void {
+    // paramMap y no snapshot: al ir de una ficha a otra desde «Sugeridos»
+    // Angular reutiliza el componente y el snapshot se quedaba con la primera.
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const id = params.get('id');
+      if (!id) { this.router.navigate(['/cuaquiverso/tienda']); return; }
+      this.selectedImg.set(null);
+      this.avisoTope.set(false);
+      void this.cargar(id);
+    });
+    // El catálogo alimenta los sugeridos. Si se llega directo a la ficha (link
+    // compartido) no está cargado; se pide sin bloquear el producto.
+    if (!this.inv.catalogo().length && !this.inv.cargandoCatalogo()) {
+      void this.inv.cargarCatalogo();
+    }
+  }
+
+  /**
+   * Hasta cuatro productos para la parte baja de la ficha: sólo con stock y que
+   * no estén ya en el carrito. Primero el mismo personaje o motivo en otra
+   * categoría (la Gorra Cuy sugiere el Pesquero Cuy), luego otras categorías y
+   * los destacados. El motivo sale del nombre porque `personaje` casi nunca se
+   * llena. El desempate es estable por par de productos: cada ficha muestra
+   * una mezcla distinta, pero no cambia al recargar.
+   */
+  readonly sugeridos = computed<ProductoPublico[]>(() => {
+    const actual = this.producto();
+    if (!actual) return [];
+    const enCarrito = new Set(this.cart.items().map(i => i.id));
+    const motivo = palabras(actual.nombre);
+    const puntaje = (p: ProductoPublico): number => {
+      const otraCat = p.categoria !== actual.categoria;
+      return (actual.personaje && p.personaje === actual.personaje ? 4 : 0) +
+        (otraCat && [...palabras(p.nombre)].some(w => motivo.has(w)) ? 3 : 0) +
+        (otraCat ? 2 : 0) +
+        (p.destacado ? 1 : 0);
+    };
+    return this.inv.catalogo()
+      .filter(p => p.id !== actual.id && p.stock_actual > 0 && !enCarrito.has(p.id))
+      .map(p => ({ p, s: puntaje(p), h: hash(actual.id + p.id) }))
+      .sort((a, b) => b.s - a.s || a.h - b.h)
+      .slice(0, 4)
+      .map(x => x.p);
+  });
+
+  precioSugerido(p: ProductoPublico): string {
+    const desde = p.tieneVariantes && p.precioMin !== p.precioMax ? 'Desde ' : '';
+    return desde + this.fmtPrice(p.tieneVariantes ? (p.precioMin ?? p.precio) : p.precio);
   }
 
   async cargar(id = this.route.snapshot.paramMap.get('id')!): Promise<void> {
