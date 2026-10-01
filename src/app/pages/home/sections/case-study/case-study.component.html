@@ -38,8 +38,10 @@
       <!-- ── Collage de imágenes ───────────────────────────────────────────── -->
       @if (collageImages().length) {
         <div class="case-collage" [class]="'n' + collageImages().length" aria-hidden="true">
-          @for (img of collageImages(); track img) {
-            <img [src]="img" [alt]="p.title" loading="lazy" (error)="marcarRota(img)" />
+          @for (img of collageImages(); track img.url) {
+            <div class="case-cell">
+              <img [src]="img.url" [alt]="p.title" [style]="varsFoco(img.foco)" loading="lazy" (error)="marcarRota(img.url)" />
+            </div>
           }
         </div>
       }

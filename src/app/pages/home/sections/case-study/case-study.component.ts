@@ -6,6 +6,10 @@ import {
   PortfolioProject,
   PORTFOLIO_CATEGORIES,
 } from '../../../../core/services/portfolio.service';
+import { Foco, varsFoco } from '../../../../core/utils/encuadre-foco';
+
+/** Una celda del collage: la foto y el encuadre que se le dio en el admin. */
+interface CollageImg { url: string; foco: Foco | null; }
 
 @Component({
   selector: 'app-case-study',
@@ -28,15 +32,28 @@ export class CaseStudyComponent implements OnInit {
   /** URLs que fallaron al cargar: se sacan del collage para no dejar huecos. */
   private readonly imagenesRotas = signal<ReadonlySet<string>>(new Set());
 
-  readonly collageImages = computed<string[]>(() => {
+  readonly collageImages = computed<CollageImg[]>(() => {
     const p = this.project();
     if (!p) return [];
     const rotas = this.imagenesRotas();
+    // La portada lleva el encuadre de la tarjeta; cada foto de la galería, el suyo.
+    const todas: CollageImg[] = [
+      ...(p.cover_url ? [{ url: p.cover_url, foco: p.cover_focus_card }] : []),
+      ...(p.images ?? []).map((url, i) => ({ url, foco: p.images_focus?.[i] ?? null })),
+    ];
     // Sin duplicados (la portada suele repetirse en la galería) ni rotas.
-    return [...new Set([p.cover_url, ...(p.images ?? [])])]
-      .filter((u): u is string => !!u && !rotas.has(u))
+    const vistas = new Set<string>();
+    return todas
+      .filter(img => {
+        if (!img.url || rotas.has(img.url) || vistas.has(img.url)) return false;
+        vistas.add(img.url);
+        return true;
+      })
       .slice(0, 5);
   });
+
+  /** Encuadre guardado (punto y zoom), como variables CSS. */
+  readonly varsFoco = varsFoco;
 
   marcarRota(url: string) {
     this.imagenesRotas.update(s => new Set(s).add(url));
