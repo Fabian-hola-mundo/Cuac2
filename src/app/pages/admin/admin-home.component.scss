@@ -59,3 +59,59 @@
     background: var(--cream-2);
   }
 }
+
+// ── Artículos del pedido (drawer) ────────────────────────────────────────────
+.ol-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ol-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px var(--s-5);
+  border-bottom: 1px solid var(--carbon-06);
+
+  &:last-child { border-bottom: 0; }
+}
+
+.ol-qty {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--carbon-70);
+  font-variant-numeric: tabular-nums;
+}
+
+.ol-info { min-width: 0; }
+
+.ol-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ol-meta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--carbon-50);
+
+  strong { color: var(--carbon-70); font-weight: 600; }
+}
+
+.ol-price {
+  text-align: right;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ol-unit {
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--carbon-50);
+}

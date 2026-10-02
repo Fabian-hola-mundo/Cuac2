@@ -647,6 +647,28 @@
   <div class="drawer-b">
     <div class="split-1-280">
       <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+        <div class="panel order-lines">
+          <div class="panel-h"><h3>Artículos</h3><span class="sub">{{ ord.items }} {{ ord.items === 1 ? 'unidad' : 'unidades' }}</span></div>
+          @if (ord.lines.length === 0) {
+            <div class="panel-b" style="font-size:13px;color:var(--carbon-50)">Este pedido no tiene artículos registrados.</div>
+          } @else {
+            <ul class="ol-list">
+              @for (l of ord.lines; track $index) {
+              <li class="ol-row">
+                <span class="ol-qty">{{ l.qty }}×</span>
+                <div class="ol-info">
+                  <div class="ol-name">{{ l.name }}</div>
+                  <div class="ol-meta">{{ l.detail }}@if (l.detail && l.variant) { · }@if (l.variant) {<strong>{{ l.variant }}</strong>}</div>
+                </div>
+                <div class="ol-price">
+                  <div>{{ fmtCOP(l.price * l.qty) }}</div>
+                  @if (l.qty > 1) { <div class="ol-unit">{{ fmtCOP(l.price) }} c/u</div> }
+                </div>
+              </li>
+              }
+            </ul>
+          }
+        </div>
         <div class="panel">
           <div class="panel-h"><h3>Resumen</h3><span class="sub">{{ ord.items }} {{ ord.items === 1 ? 'item' : 'items' }}</span></div>
           <div class="panel-b">

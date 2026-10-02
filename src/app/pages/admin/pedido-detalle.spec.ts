@@ -17,9 +17,9 @@ class GoogleAnalyticsStub {
 
 /** Pedidos de prueba: el servicio arranca vacío, así que el spec trae los suyos. */
 const PEDIDOS_DE_PRUEBA: Order[] = [
-  { id: '#T-3', customerId: 'T-1', customer: 'Cliente Tres', email: 'tres@example.com', items: 1, total: 10000, status: 'paid',    shipping: 'delivered', date: '2026-01-03 10:00', city: 'Ciudad A', method: 'Bold' },
-  { id: '#T-2', customerId: 'T-2', customer: 'Cliente Dos',  email: 'dos@example.com',  items: 2, total: 20000, status: 'failed',  shipping: 'pending',   date: '2026-01-02 10:00', city: 'Ciudad B', method: 'Bold' },
-  { id: '#T-1', customerId: 'T-3', customer: 'Cliente Uno',  email: 'uno@example.com',  items: 3, total: 30000, status: 'pending', shipping: 'pending',   date: '2026-01-01 10:00', city: 'Ciudad C', method: 'Nequi' },
+  { id: '#T-3', customerId: 'T-1', customer: 'Cliente Tres', email: 'tres@example.com', items: 1, total: 10000, status: 'paid',    shipping: 'delivered', date: '2026-01-03 10:00', city: 'Ciudad A', method: 'Bold', lines: [{ name: 'Camiseta Pato', detail: 'Camiseta', variant: 'L · Negro', price: 10000, qty: 1 }] },
+  { id: '#T-2', customerId: 'T-2', customer: 'Cliente Dos',  email: 'dos@example.com',  items: 2, total: 20000, status: 'failed',  shipping: 'pending',   date: '2026-01-02 10:00', city: 'Ciudad B', method: 'Bold', lines: [] },
+  { id: '#T-1', customerId: 'T-3', customer: 'Cliente Uno',  email: 'uno@example.com',  items: 3, total: 30000, status: 'pending', shipping: 'pending',   date: '2026-01-01 10:00', city: 'Ciudad C', method: 'Nequi', lines: [] },
 ];
 
 async function montarEnPedidos() {
@@ -81,6 +81,18 @@ describe('Detalle de pedido en el admin', () => {
     expect(texto).toContain(orders[2].id);
     expect(texto).toContain(orders[2].customer);
     expect(texto).not.toContain(orders[0].id);
+  });
+
+  it('el drawer lista los artículos del pedido', async () => {
+    const fixture = await montarEnPedidos();
+    const orders = TestBed.inject(AdminDataService).ORDERS;
+
+    ojos(fixture)[orders.findIndex(o => o.lines.length > 0)].click();
+    await fixture.whenStable();
+
+    const texto = textoDelDrawer(fixture);
+    expect(texto).toContain('Camiseta Pato');
+    expect(texto).toContain('L · Negro');
   });
 
   it('cerrar el drawer limpia el pedido seleccionado', async () => {

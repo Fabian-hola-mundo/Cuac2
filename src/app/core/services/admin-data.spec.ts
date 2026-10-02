@@ -15,7 +15,10 @@ const fila = (over: Record<string, unknown>) => ({
   total: 50000,
   bold_payment_id: 'BOLD-1',
   creado_en: '2026-10-01T15:00:00Z',
-  pedido_items: [{ cantidad: 2 }, { cantidad: 1 }],
+  pedido_items: [
+    { nombre: 'Camiseta Cuac', sub: 'Camiseta', variante_label: 'M · Rosa', precio: 20000, cantidad: 2 },
+    { nombre: 'Sticker Kiki', sub: 'Sticker', variante_label: null, precio: 10000, cantidad: 1 },
+  ],
   ...over,
 }) as any;
 
@@ -29,6 +32,15 @@ describe('mapearPedidos', () => {
     ]);
     expect(orders.map(o => o.status)).toEqual(['paid', 'pending', 'failed', 'cancelled']);
     expect(orders[0]).toMatchObject({ id: 'CUAC-1', customer: 'Ana Pérez', items: 3, total: 50000 });
+  });
+
+  it('trae los artículos del pedido con su variante y precio', () => {
+    const { orders } = mapearPedidos([fila({}), fila({ id: 'b', referencia: 'CUAC-2', pedido_items: null })]);
+    expect(orders[0].lines).toEqual([
+      { name: 'Camiseta Cuac', detail: 'Camiseta', variant: 'M · Rosa', price: 20000, qty: 2 },
+      { name: 'Sticker Kiki', detail: 'Sticker', variant: null, price: 10000, qty: 1 },
+    ]);
+    expect(orders[1].lines).toEqual([]);
   });
 
   it('agrupa los pedidos de un mismo correo en un cliente', () => {

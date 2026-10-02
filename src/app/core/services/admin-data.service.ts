@@ -16,6 +16,13 @@ export interface Order {
   id: string; customerId: string; customer: string; email: string;
   items: number; total: number; status: string; shipping: string;
   date: string; city: string; method: string;
+  /** Los artículos tal como se compraron: nombre y precio del momento de la compra. */
+  lines: OrderLine[];
+}
+
+export interface OrderLine {
+  name: string; detail: string; variant: string | null;
+  price: number; qty: number;
 }
 
 export interface Payment {
@@ -51,7 +58,15 @@ interface PedidoFila {
   total: number;
   bold_payment_id: string | null;
   creado_en: string;
-  pedido_items: { cantidad: number }[] | null;
+  pedido_items: PedidoItemFila[] | null;
+}
+
+interface PedidoItemFila {
+  nombre: string;
+  sub: string | null;
+  variante_label: string | null;
+  precio: number;
+  cantidad: number;
 }
 
 const ESTADO_A_STATUS: Record<PedidoFila['estado'], string> = {
@@ -86,6 +101,13 @@ export function mapearPedidos(filas: PedidoFila[]): { orders: Order[]; customers
       date:       fechaLocal(p.creado_en),
       city:       p.ciudad ?? '—',
       method:     'Bold',
+      lines:      (p.pedido_items ?? []).map(i => ({
+        name:    i.nombre,
+        detail:  i.sub ?? '',
+        variant: i.variante_label,
+        price:   i.precio,
+        qty:     i.cantidad,
+      })),
     };
   });
 
@@ -189,7 +211,7 @@ export class AdminDataService {
     this.cargando.set(true);
     const { data, error } = await this.sb.db
       .from('pedidos')
-      .select('id, referencia, estado, nombre, apellido, email, celular, ciudad, direccion, total, bold_payment_id, creado_en, pedido_items(cantidad)')
+      .select('id, referencia, estado, nombre, apellido, email, celular, ciudad, direccion, total, bold_payment_id, creado_en, pedido_items(nombre, sub, variante_label, precio, cantidad)')
       .order('creado_en', { ascending: false });
     this.cargando.set(false);
     if (error) {
