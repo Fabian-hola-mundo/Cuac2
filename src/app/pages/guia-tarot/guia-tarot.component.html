@@ -80,6 +80,9 @@
         } @else {
           <button type="button" class="gt-hero-fisico"><ng-container *ngTemplateOutlet="fisicoHero" /></button>
         }
+        @if (tarotMini) {
+          <a class="gt-hero-mini" [routerLink]="tarotMini">o el mini de bolsillo <span aria-hidden="true">→</span></a>
+        }
       </div>
 
       <div class="gt-abanico gt-giro" aria-hidden="true">

@@ -326,6 +326,24 @@ h1, h2, h3, h4 {
   span { transition: translate 0.18s; }
 }
 
+.gt-hero-mini {
+  display: table;
+  margin-top: 10px;
+  padding-left: 12px;
+  font-size: 13px;
+  color: rgba(255, 243, 200, 0.7);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 243, 200, 0.3);
+  text-underline-offset: 3px;
+  transition: color 0.2s, text-decoration-color 0.2s;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--oro);
+    text-decoration-color: currentColor;
+  }
+}
+
 .gt-abanico {
   position: relative;
   height: clamp(340px, 42vw, 520px);
@@ -1852,6 +1870,7 @@ h1, h2, h3, h4 {
   .gt-hero-inner { grid-template-columns: minmax(0, 1fr); text-align: center; }
   .gt-lede { margin-left: auto; margin-right: auto; }
   .gt-hero-cta { justify-content: center; }
+  .gt-hero-mini { margin-left: auto; margin-right: auto; padding-left: 0; }
   /* En columna el texto ocupa la mitad baja: ahí las estrellas lo taparían. */
   .gt-estrella:nth-of-type(even) { display: none; }
   /* Sin alto mínimo: en móvil el título tiene que asomar en el primer pantallazo. */
@@ -1932,6 +1951,7 @@ h1, h2, h3, h4 {
   .gt-hero-inner { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); text-align: left; }
   .gt-lede { margin-left: 0; }
   .gt-hero-cta { justify-content: flex-start; }
+  .gt-hero-mini { margin-left: 0; padding-left: 12px; }
   .gt-abanico { order: 0; --cw: min(130px, 17vw); }
 
   .gt-sacar-inner { grid-template-columns: auto minmax(0, 1fr); text-align: left; }
