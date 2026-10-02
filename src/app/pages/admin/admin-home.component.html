@@ -228,19 +228,7 @@
             <span class="sub" style="align-self:center">{{ pendingShipCount() }} por despachar</span>
           </div>
         </div>
-        <!-- Sub-navegación Pedidos / Descuentos -->
-        <div class="section-switcher">
-          <button class="ssw-btn" [class.on]="pedidosSubTab()==='pedidos'"
-                  (click)="pedidosSubTab.set('pedidos')">
-            Pedidos
-          </button>
-          <button class="ssw-btn" [class.on]="pedidosSubTab()==='descuentos'"
-                  (click)="pedidosSubTab.set('descuentos')">
-            Descuentos
-          </button>
-        </div>
-
-        @if (pedidosSubTab() === 'pedidos') {
+        <!-- Los códigos de descuento viven en Productos (/admin/productos?seccion=descuentos). -->
           <div class="tabs">
             <button class="tab" [class.on]="orderTab()==='all'"     (click)="orderTab.set('all')">Todos     <span class="ct">{{ ordersByTab().all.length }}</span></button>
             <button class="tab" [class.on]="orderTab()==='paid'"    (click)="orderTab.set('paid')">Pagados   <span class="ct">{{ ordersByTab().paid.length }}</span></button>
@@ -283,9 +271,6 @@
               </table>
             </div>
           </div>
-        } @else {
-          <app-descuentos-tab />
-        }
         }
 
         <!-- ══ CUSTOMERS ══════════════════════════════════════════════════ -->

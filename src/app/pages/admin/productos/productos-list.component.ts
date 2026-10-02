@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
-import { Router }       from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DescuentosTabComponent } from '../descuentos/descuentos-tab.component';
 import { InventarioService, ProductoEvento, ProductoVariante, MovimientoProducto, CAT_TONES, etiquetaCategoria } from '../../../core/services/inventario.service';
 import { etiquetaVariante } from '../../../../../supabase/functions/_shared/variantes';
 import { EventosService, Evento } from '../../../core/services/eventos.service';
@@ -28,7 +30,7 @@ const ESTADOS: { id: EstadoFiltro; label: string }[] = [
 @Component({
   selector: 'app-productos-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DescuentosTabComponent],
   templateUrl: './productos-list.component.html',
   styleUrl: './productos-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,6 +38,18 @@ const ESTADOS: { id: EstadoFiltro; label: string }[] = [
 })
 export class ProductosListComponent implements OnInit {
   private router     = inject(Router);
+  private route      = inject(ActivatedRoute);
+
+  // ── Sección: catálogo o códigos de descuento ─────────────────────────────
+  readonly seccion = signal<'catalogo' | 'descuentos'>('catalogo');
+
+  irASeccion(s: 'catalogo' | 'descuentos'): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { seccion: s === 'descuentos' ? 'descuentos' : null },
+      replaceUrl: true,
+    });
+  }
   readonly inv       = inject(InventarioService);
   private eventosSvc = inject(EventosService);
 
@@ -134,6 +148,10 @@ export class ProductosListComponent implements OnInit {
 
   constructor() {
     const destroyRef = inject(DestroyRef);
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(q =>
+      this.seccion.set(q.get('seccion') === 'descuentos' ? 'descuentos' : 'catalogo'),
+    );
+
     effect(() => {
       document.body.style.overflow = this.hayOverlay() ? 'hidden' : '';
     });

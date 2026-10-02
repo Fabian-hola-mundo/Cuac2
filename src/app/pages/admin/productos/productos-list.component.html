@@ -1,228 +1,240 @@
-<!-- Page Header -->
-<div class="ph">
-  <div class="ph-l">
-    <div class="eyebrow"><span class="dot"></span> Tienda · Productos</div>
-    <h1>Catálogo de <em>productos</em>.</h1>
-    <p class="sub">Gestiona stock, visibilidad y variantes del catálogo.</p>
-  </div>
-  <div class="ph-r">
-    <button class="btn-sm ghost" (click)="verVentas()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-4"/></svg>
-      Registro de ventas
-    </button>
-    @if (!eventoActivo()) {
-      <button class="btn-sm ghost" (click)="abrirCrearEvento()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
-        Nuevo evento
-      </button>
-    }
-    @if (eventoActivo()) {
-      <span class="badge rio" style="align-self:center"><span class="pdot"></span>{{ eventoActivo()!.nombre }}</span>
-      <button class="btn-sm danger" (click)="abrirFinalizarEvento()">Finalizar evento</button>
-    }
-    <button class="btn-sm solid" (click)="nuevo()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
-      Nuevo producto
-    </button>
-  </div>
+<!-- Catálogo y códigos de descuento comparten página; la sección va en ?seccion= para poder enlazarla. -->
+<div class="section-switcher" role="tablist" aria-label="Sección de productos">
+  <button class="ssw-btn" role="tab" [class.on]="seccion() === 'catalogo'"
+          [attr.aria-selected]="seccion() === 'catalogo'" (click)="irASeccion('catalogo')">Catálogo</button>
+  <button class="ssw-btn" role="tab" [class.on]="seccion() === 'descuentos'"
+          [attr.aria-selected]="seccion() === 'descuentos'" (click)="irASeccion('descuentos')">Descuentos</button>
 </div>
 
-<!-- KPIs -->
-@if (!inv.cargando() && kpis().total > 0) {
-  <div class="kpi-strip">
-    <div class="kpi-item" data-tone="rio">
-      <div class="kpi-k">Productos</div>
-      <div class="kpi-n">{{ kpis().total }}</div>
-      <div class="kpi-delta">{{ kpis().activos }} visibles en tienda</div>
+@if (seccion() === 'descuentos') {
+  <app-descuentos-tab />
+} @else {
+  <!-- Page Header -->
+  <div class="ph">
+    <div class="ph-l">
+      <div class="eyebrow"><span class="dot"></span> Tienda · Productos</div>
+      <h1>Catálogo de <em>productos</em>.</h1>
+      <p class="sub">Gestiona stock, visibilidad y variantes del catálogo.</p>
     </div>
-    <div class="kpi-item" data-tone="selva">
-      <div class="kpi-k">Valor de inventario</div>
-      <div class="kpi-n">{{ fmtCOPCorto(kpis().valorInventario) }}</div>
-      <div class="kpi-delta">{{ fmtCOP(kpis().valorInventario) }} en stock</div>
+    <div class="ph-r">
+      <button class="btn-sm ghost" (click)="verVentas()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-4"/></svg>
+        Registro de ventas
+      </button>
+      @if (!eventoActivo()) {
+        <button class="btn-sm ghost" (click)="abrirCrearEvento()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo evento
+        </button>
+      }
+      @if (eventoActivo()) {
+        <span class="badge rio" style="align-self:center"><span class="pdot"></span>{{ eventoActivo()!.nombre }}</span>
+        <button class="btn-sm danger" (click)="abrirFinalizarEvento()">Finalizar evento</button>
+      }
+      <button class="btn-sm solid" (click)="nuevo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo producto
+      </button>
     </div>
-    <div class="kpi-item" data-tone="sol">
-      <div class="kpi-k">Stock bajo</div>
-      <div class="kpi-n">{{ kpis().bajos }}</div>
-      <div class="kpi-delta">menos de {{ umbralBajo }} unidades</div>
-    </div>
-    <div class="kpi-item" data-tone="terra">
-      <div class="kpi-k">Agotados</div>
-      <div class="kpi-n">{{ kpis().agotados }}</div>
-      <div class="kpi-delta">
-        @if (kpis().agotados > 0) {
-          <button class="link-inline" (click)="estadoFiltro.set('agotado')">ver cuáles</button>
-        } @else { sin faltantes }
+  </div>
+
+  <!-- KPIs -->
+  @if (!inv.cargando() && kpis().total > 0) {
+    <div class="kpi-strip">
+      <div class="kpi-item" data-tone="rio">
+        <div class="kpi-k">Productos</div>
+        <div class="kpi-n">{{ kpis().total }}</div>
+        <div class="kpi-delta">{{ kpis().activos }} visibles en tienda</div>
+      </div>
+      <div class="kpi-item" data-tone="selva">
+        <div class="kpi-k">Valor de inventario</div>
+        <div class="kpi-n">{{ fmtCOPCorto(kpis().valorInventario) }}</div>
+        <div class="kpi-delta">{{ fmtCOP(kpis().valorInventario) }} en stock</div>
+      </div>
+      <div class="kpi-item" data-tone="sol">
+        <div class="kpi-k">Stock bajo</div>
+        <div class="kpi-n">{{ kpis().bajos }}</div>
+        <div class="kpi-delta">menos de {{ umbralBajo }} unidades</div>
+      </div>
+      <div class="kpi-item" data-tone="terra">
+        <div class="kpi-k">Agotados</div>
+        <div class="kpi-n">{{ kpis().agotados }}</div>
+        <div class="kpi-delta">
+          @if (kpis().agotados > 0) {
+            <button class="link-inline" (click)="estadoFiltro.set('agotado')">ver cuáles</button>
+          } @else { sin faltantes }
+        </div>
       </div>
     </div>
-  </div>
-}
+  }
 
-<!-- Filter Toolbar -->
-<div class="tlb">
-  <div class="chips" role="group" aria-label="Filtrar por estado">
-    @for (e of estados; track e.id) {
-      <button class="chip" [class.is-on]="estadoFiltro() === e.id"
-              [attr.aria-pressed]="estadoFiltro() === e.id"
-              (click)="estadoFiltro.set(e.id)">
-        {{ e.label }} <span class="ct">{{ conteos()[e.id] }}</span>
-      </button>
-    }
-  </div>
-  <div class="spacer"></div>
-  <div class="search-min">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-    <input placeholder="Buscar por nombre, personaje o categoría…" aria-label="Buscar producto"
-           [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
-  </div>
-</div>
-
-@if (categoriasConProductos().length > 1) {
+  <!-- Filter Toolbar -->
   <div class="tlb">
-    <div class="chips" role="group" aria-label="Filtrar por categoría">
-      <button class="chip" [class.is-on]="catFiltro() === 'all'"
-              [attr.aria-pressed]="catFiltro() === 'all'" (click)="catFiltro.set('all')">Todas</button>
-      @for (c of categoriasConProductos(); track c.id) {
-        <button class="chip" [class.is-on]="catFiltro() === c.id"
-                [attr.aria-pressed]="catFiltro() === c.id" (click)="catFiltro.set(c.id)">{{ c.label }}</button>
+    <div class="chips" role="group" aria-label="Filtrar por estado">
+      @for (e of estados; track e.id) {
+        <button class="chip" [class.is-on]="estadoFiltro() === e.id"
+                [attr.aria-pressed]="estadoFiltro() === e.id"
+                (click)="estadoFiltro.set(e.id)">
+          {{ e.label }} <span class="ct">{{ conteos()[e.id] }}</span>
+        </button>
       }
     </div>
+    <div class="spacer"></div>
+    <div class="search-min">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+      <input placeholder="Buscar por nombre, personaje o categoría…" aria-label="Buscar producto"
+             [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
+    </div>
   </div>
-}
 
-<!-- Loading / Error states -->
-@if (inv.cargando()) {
-  <p style="color:var(--carbon-50);font-size:14px;padding:12px 0">Cargando productos…</p>
-}
-@if (inv.error()) {
-  <p style="color:var(--terra);font-size:14px;padding:12px 0" role="alert">{{ inv.error() }}</p>
-}
+  @if (categoriasConProductos().length > 1) {
+    <div class="tlb">
+      <div class="chips" role="group" aria-label="Filtrar por categoría">
+        <button class="chip" [class.is-on]="catFiltro() === 'all'"
+                [attr.aria-pressed]="catFiltro() === 'all'" (click)="catFiltro.set('all')">Todas</button>
+        @for (c of categoriasConProductos(); track c.id) {
+          <button class="chip" [class.is-on]="catFiltro() === c.id"
+                  [attr.aria-pressed]="catFiltro() === c.id" (click)="catFiltro.set(c.id)">{{ c.label }}</button>
+        }
+      </div>
+    </div>
+  }
 
-<!-- Table -->
-@if (!inv.cargando() && productosFiltrados().length > 0) {
-<div class="panel tbl-page">
-  <div class="tbl-wrap">
-  <table class="tbl">
-    <caption class="sr-only">
-      {{ productosFiltrados().length }} de {{ kpis().total }} productos. Enter sobre una fila abre su edición.
-    </caption>
-    <thead>
-      <tr>
-        <th class="sortable" [attr.aria-sort]="ariaSort('nombre')">
-          <button type="button" (click)="ordenarPor('nombre')">
-            Nombre
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
-          </button>
-        </th>
-        <th>Personaje</th>
-        <th class="sortable num" [attr.aria-sort]="ariaSort('precio')">
-          <button type="button" (click)="ordenarPor('precio')">
-            Precio COP
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
-          </button>
-        </th>
-        <th class="sortable num" [attr.aria-sort]="ariaSort('stock_actual')">
-          <button type="button" (click)="ordenarPor('stock_actual')">
-            Stock
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
-          </button>
-        </th>
-        <th class="sortable" [attr.aria-sort]="ariaSort('creado_en')">
-          <button type="button" (click)="ordenarPor('creado_en')">
-            Creado
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
-          </button>
-        </th>
-        <th>Estado</th>
-        <th class="actions">Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (p of productosFiltrados(); track p.id) {
-      <tr tabindex="0" role="button" [attr.aria-label]="'Editar ' + p.nombre"
-          (click)="editar(p)" (keydown.enter)="editar(p)" (keydown.space)="$event.preventDefault(); editar(p)">
-        <td>
-          <div class="pname">
-            @if (p.cover_url) {
-              <div class="thumb" style="overflow:hidden">
-                <img [src]="p.cover_url" [alt]="p.nombre" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
-              </div>
-            } @else {
-              <div class="thumb" [style.background]="toneForCat(p.categoria)" aria-hidden="true">{{ p.nombre[0] }}</div>
-            }
-            <div class="meta">
-              <strong>{{ p.nombre }}</strong>
-              <span>{{ labelCategoria(p.categoria) }}</span>
-              @if (activasDe(p.id).length > 0) {
-                <span class="badge-variantes">{{ activasDe(p.id).length }} variantes</span>
+  <!-- Loading / Error states -->
+  @if (inv.cargando()) {
+    <p style="color:var(--carbon-50);font-size:14px;padding:12px 0">Cargando productos…</p>
+  }
+  @if (inv.error()) {
+    <p style="color:var(--terra);font-size:14px;padding:12px 0" role="alert">{{ inv.error() }}</p>
+  }
+
+  <!-- Table -->
+  @if (!inv.cargando() && productosFiltrados().length > 0) {
+  <div class="panel tbl-page">
+    <div class="tbl-wrap">
+    <table class="tbl">
+      <caption class="sr-only">
+        {{ productosFiltrados().length }} de {{ kpis().total }} productos. Enter sobre una fila abre su edición.
+      </caption>
+      <thead>
+        <tr>
+          <th class="sortable" [attr.aria-sort]="ariaSort('nombre')">
+            <button type="button" (click)="ordenarPor('nombre')">
+              Nombre
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+            </button>
+          </th>
+          <th>Personaje</th>
+          <th class="sortable num" [attr.aria-sort]="ariaSort('precio')">
+            <button type="button" (click)="ordenarPor('precio')">
+              Precio COP
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+            </button>
+          </th>
+          <th class="sortable num" [attr.aria-sort]="ariaSort('stock_actual')">
+            <button type="button" (click)="ordenarPor('stock_actual')">
+              Stock
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+            </button>
+          </th>
+          <th class="sortable" [attr.aria-sort]="ariaSort('creado_en')">
+            <button type="button" (click)="ordenarPor('creado_en')">
+              Creado
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+            </button>
+          </th>
+          <th>Estado</th>
+          <th class="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of productosFiltrados(); track p.id) {
+        <tr tabindex="0" role="button" [attr.aria-label]="'Editar ' + p.nombre"
+            (click)="editar(p)" (keydown.enter)="editar(p)" (keydown.space)="$event.preventDefault(); editar(p)">
+          <td>
+            <div class="pname">
+              @if (p.cover_url) {
+                <div class="thumb" style="overflow:hidden">
+                  <img [src]="p.cover_url" [alt]="p.nombre" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                </div>
+              } @else {
+                <div class="thumb" [style.background]="toneForCat(p.categoria)" aria-hidden="true">{{ p.nombre[0] }}</div>
               }
+              <div class="meta">
+                <strong>{{ p.nombre }}</strong>
+                <span>{{ labelCategoria(p.categoria) }}</span>
+                @if (activasDe(p.id).length > 0) {
+                  <span class="badge-variantes">{{ activasDe(p.id).length }} variantes</span>
+                }
+              </div>
             </div>
-          </div>
-        </td>
-        <td>{{ labelPersonaje(p.personaje) }}</td>
-        <td class="num">{{ fmtCOP(p.precio) }}</td>
-        <td class="num">
-          @let chip = chipStock(p.stock_actual);
-          <span class="badge" [class]="chip.tono"><span class="pdot"></span>{{ chip.texto }}</span>
-        </td>
-        <td class="id">{{ fmtFecha(p.creado_en) }}</td>
-        <td>
-          @if (p.activo) { <span class="badge ok"><span class="pdot"></span>Activo</span> }
-          @else { <span class="badge"><span class="pdot"></span>Inactivo</span> }
-        </td>
-        <td class="actions">
-          <button class="icon-act" title="Ver detalle" [attr.aria-label]="'Ver detalle de ' + p.nombre" (click)="verDetalle(p, $event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-          <button class="icon-act" title="Editar" [attr.aria-label]="'Editar ' + p.nombre" (click)="$event.stopPropagation(); editar(p)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
-          </button>
-          <button class="icon-act" title="Duplicar" [attr.aria-label]="'Duplicar ' + p.nombre" (click)="duplicar(p, $event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          </button>
-          @if (activasDe(p.id).length > 0) {
-            <!-- Con variantes el stock se mueve por combinación, desde el detalle. -->
-            <button class="icon-act" title="Stock por combinación" [attr.aria-label]="'Ver el stock por combinación de ' + p.nombre" (click)="verDetalle(p, $event)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+          </td>
+          <td>{{ labelPersonaje(p.personaje) }}</td>
+          <td class="num">{{ fmtCOP(p.precio) }}</td>
+          <td class="num">
+            @let chip = chipStock(p.stock_actual);
+            <span class="badge" [class]="chip.tono"><span class="pdot"></span>{{ chip.texto }}</span>
+          </td>
+          <td class="id">{{ fmtFecha(p.creado_en) }}</td>
+          <td>
+            @if (p.activo) { <span class="badge ok"><span class="pdot"></span>Activo</span> }
+            @else { <span class="badge"><span class="pdot"></span>Inactivo</span> }
+          </td>
+          <td class="actions">
+            <button class="icon-act" title="Ver detalle" [attr.aria-label]="'Ver detalle de ' + p.nombre" (click)="verDetalle(p, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
-          } @else {
-            <button class="icon-act" title="Restock" [attr.aria-label]="'Agregar stock a ' + p.nombre" (click)="abrirRestock(p, $event)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+            <button class="icon-act" title="Editar" [attr.aria-label]="'Editar ' + p.nombre" (click)="$event.stopPropagation(); editar(p)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
             </button>
-            <button class="icon-act" title="Ajustar stock" [attr.aria-label]="'Ajustar el stock de ' + p.nombre" (click)="abrirAjuste(p, $event)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+            <button class="icon-act" title="Duplicar" [attr.aria-label]="'Duplicar ' + p.nombre" (click)="duplicar(p, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             </button>
-          }
-          @if (p.activo) {
-            <button class="icon-act" title="Ocultar producto" [attr.aria-label]="'Ocultar ' + p.nombre" (click)="toggleActivo(p, $event)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            </button>
-          } @else {
-            <button class="icon-act" title="Activar producto" [attr.aria-label]="'Activar ' + p.nombre" (click)="toggleActivo(p, $event)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 3 14 9-14 9V3z"/></svg>
-            </button>
-          }
-        </td>
-      </tr>
-      }
-    </tbody>
-  </table>
+            @if (activasDe(p.id).length > 0) {
+              <!-- Con variantes el stock se mueve por combinación, desde el detalle. -->
+              <button class="icon-act" title="Stock por combinación" [attr.aria-label]="'Ver el stock por combinación de ' + p.nombre" (click)="verDetalle(p, $event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+              </button>
+            } @else {
+              <button class="icon-act" title="Restock" [attr.aria-label]="'Agregar stock a ' + p.nombre" (click)="abrirRestock(p, $event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+              </button>
+              <button class="icon-act" title="Ajustar stock" [attr.aria-label]="'Ajustar el stock de ' + p.nombre" (click)="abrirAjuste(p, $event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+              </button>
+            }
+            @if (p.activo) {
+              <button class="icon-act" title="Ocultar producto" [attr.aria-label]="'Ocultar ' + p.nombre" (click)="toggleActivo(p, $event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+            } @else {
+              <button class="icon-act" title="Activar producto" [attr.aria-label]="'Activar ' + p.nombre" (click)="toggleActivo(p, $event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 3 14 9-14 9V3z"/></svg>
+              </button>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    </div>
   </div>
-</div>
-}
+  }
 
-<!-- Empty states -->
-@if (!inv.cargando() && productosFiltrados().length === 0 && !inv.error()) {
-  <div class="panel" style="padding:64px 32px;text-align:center">
-    @if (hayFiltroActivo()) {
-      <p style="font-family:var(--display);font-size:22px;margin-bottom:8px">Ningún producto coincide.</p>
-      <p style="color:var(--carbon-50);font-size:14px;margin-bottom:24px">Prueba con otro filtro o limpia la búsqueda.</p>
-      <button class="btn-sm ghost" (click)="limpiarFiltros()">Limpiar filtros</button>
-    } @else {
-      <p style="font-family:var(--display);font-size:22px;margin-bottom:8px">Sin productos aún.</p>
-      <p style="color:var(--carbon-50);font-size:14px;margin-bottom:24px">Crea el primer producto del catálogo.</p>
-      <button class="btn-sm solid" (click)="nuevo()">+ Nuevo producto</button>
-    }
-  </div>
+  <!-- Empty states -->
+  @if (!inv.cargando() && productosFiltrados().length === 0 && !inv.error()) {
+    <div class="panel" style="padding:64px 32px;text-align:center">
+      @if (hayFiltroActivo()) {
+        <p style="font-family:var(--display);font-size:22px;margin-bottom:8px">Ningún producto coincide.</p>
+        <p style="color:var(--carbon-50);font-size:14px;margin-bottom:24px">Prueba con otro filtro o limpia la búsqueda.</p>
+        <button class="btn-sm ghost" (click)="limpiarFiltros()">Limpiar filtros</button>
+      } @else {
+        <p style="font-family:var(--display);font-size:22px;margin-bottom:8px">Sin productos aún.</p>
+        <p style="color:var(--carbon-50);font-size:14px;margin-bottom:24px">Crea el primer producto del catálogo.</p>
+        <button class="btn-sm solid" (click)="nuevo()">+ Nuevo producto</button>
+      }
+    </div>
+  }
 }
 
 <!-- Detail Drawer backdrop -->
