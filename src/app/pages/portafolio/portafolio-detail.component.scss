@@ -36,7 +36,9 @@
   flex-direction: column;
   justify-content: flex-end;
   overflow: hidden;
-  padding: 0 0 var(--s-8);
+  // Arriba se reserva el alto de la navegación (absoluta): con títulos largos o
+  // pantallas bajas el texto crecía hacia arriba y se metía debajo de ella
+  padding: 112px 0 var(--s-8);
   // Fallback when no cover: carbon → theme-tinted gradient
   background:
     radial-gradient(120% 90% at 75% 15%, var(--theme-hero-glow, rgba(236, 56, 19, 0.22)) 0%, transparent 55%),
@@ -846,6 +848,9 @@
   .detail-sidebar > * { min-width: 0 !important; }
   .detail-hero-meta   { gap: var(--s-4) var(--s-6); }
   .footer-next        { max-width: 100%; }
+  // En celular el título del siguiente proyecto y el del anterior se leen completos
+  .fn-title, .footer-prev { white-space: normal; overflow: visible; text-overflow: clip; }
+  .detail-hero        { padding-top: 96px; }
   // Flechas abajo, a los lados del contador, para no tapar la imagen
   .lb-img             { max-width: 100%; max-height: 72vh; }
   .lb-arrow           { top: auto; bottom: 16px; transform: none; }
