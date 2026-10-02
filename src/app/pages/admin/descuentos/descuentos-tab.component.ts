@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -7,7 +7,7 @@ import {
   CodigoDescuentoInput,
   UsoDescuento,
 } from '../../../core/services/descuentos-admin.service';
-import { CATEGORIAS, InventarioService } from '../../../core/services/inventario.service';
+import { InventarioService, etiquetaCategoria } from '../../../core/services/inventario.service';
 
 @Component({
   selector: 'app-descuentos-tab',
@@ -20,9 +20,32 @@ export class DescuentosTabComponent implements OnInit {
   private svc = inject(DescuentosAdminService);
   private inv = inject(InventarioService);
 
-  readonly CATEGORIAS = CATEGORIAS;
   /** Catálogo completo (activos y borradores) para elegir con qué se regala un código. */
   readonly productos = this.inv.productos;
+
+  /**
+   * Las categorías salen del catálogo real, no de la lista fija del servicio:
+   * `categoria` es texto libre y el admin crea categorías nuevas sin migración.
+   * Deriva de la señal compartida del catálogo, así que cualquier alta, edición
+   * o borrado de productos la actualiza; además el drawer recarga al abrirse.
+   */
+  readonly categorias = computed(() => {
+    const conteo = new Map<string, number>();
+    for (const p of this.productos()) {
+      if (p.categoria) conteo.set(p.categoria, (conteo.get(p.categoria) ?? 0) + 1);
+    }
+    return [...conteo]
+      .map(([id, total]) => ({ id, label: etiquetaCategoria(id), total }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+  });
+
+  /** Categorías que el código ya tenía guardadas pero que hoy no tienen productos. */
+  get categoriasHuerfanas(): { id: string; label: string }[] {
+    const vivas = new Set(this.categorias().map(c => c.id));
+    return this.dcCategorias
+      .filter(id => !vivas.has(id))
+      .map(id => ({ id, label: etiquetaCategoria(id) }));
+  }
 
   codigos      = signal<CodigoDescuento[]>([]);
   loading      = signal(false);
@@ -93,6 +116,7 @@ export class DescuentosTabComponent implements OnInit {
     this.dcObsequioMsg = '';
     this.errorMsg.set(null);
     this.drawerOn.set(true);
+    void this.inv.cargarTodos();
   }
 
   abrirEditar(c: CodigoDescuento): void {
@@ -110,6 +134,7 @@ export class DescuentosTabComponent implements OnInit {
     this.dcObsequioMsg = c.obsequio_mensaje ?? '';
     this.errorMsg.set(null);
     this.drawerOn.set(true);
+    void this.inv.cargarTodos();
   }
 
   cerrarDrawer(): void {
@@ -118,14 +143,15 @@ export class DescuentosTabComponent implements OnInit {
   }
 
   get todasSeleccionadas(): boolean {
-    return this.dcCategorias.length === CATEGORIAS.length;
+    const ids = this.categorias().map(c => c.id);
+    return ids.length > 0 && ids.every(id => this.dcCategorias.includes(id));
   }
 
   toggleTodasCategorias(): void {
     if (this.todasSeleccionadas) {
       this.dcCategorias = [];
     } else {
-      this.dcCategorias = CATEGORIAS.map(c => c.id);
+      this.dcCategorias = this.categorias().map(c => c.id);
     }
   }
 

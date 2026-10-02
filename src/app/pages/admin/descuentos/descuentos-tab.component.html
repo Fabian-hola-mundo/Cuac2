@@ -205,11 +205,19 @@
             </button>
           </div>
           <div class="cat-chips">
-            @for (cat of CATEGORIAS; track cat.id) {
+            @for (cat of categorias(); track cat.id) {
               <button type="button" class="chip"
                       [class.is-on]="dcCategorias.includes(cat.id)"
                       (click)="toggleCategoria(cat.id)">
-                {{ cat.label }}
+                {{ cat.label }} <span class="opt">· {{ cat.total }}</span>
+              </button>
+            } @empty {
+              <div class="help">Todavía no hay productos con categoría.</div>
+            }
+            @for (cat of categoriasHuerfanas; track cat.id) {
+              <button type="button" class="chip is-on" title="Ya no hay productos en esta categoría. Toca para quitarla."
+                      (click)="toggleCategoria(cat.id)">
+                {{ cat.label }} <span class="opt">· sin productos ✕</span>
               </button>
             }
           </div>
