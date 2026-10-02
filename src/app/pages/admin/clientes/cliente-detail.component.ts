@@ -1,7 +1,7 @@
-import { Component, Input, Output, EventEmitter, OnChanges, signal, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MockAdminDataService, Customer, Order } from '../../../core/services/mock-admin-data.service';
+import { AdminDataService } from '../../../core/services/admin-data.service';
 
 @Component({
   selector: 'app-cliente-detail',
@@ -10,46 +10,28 @@ import { MockAdminDataService, Customer, Order } from '../../../core/services/mo
   templateUrl: './cliente-detail.component.html',
   styleUrl: './cliente-detail.component.scss',
 })
-export class ClienteDetailComponent implements OnChanges {
-  @Input() clienteId!: string;
+export class ClienteDetailComponent {
+  private readonly id = signal('');
+  @Input() set clienteId(v: string) { this.id.set(v); }
   @Output() close = new EventEmitter<void>();
 
-  private data = inject(MockAdminDataService);
+  private data = inject(AdminDataService);
 
-  customer  = signal<Customer | null>(null);
-  orders    = signal<Order[]>([]);
-
-  editEmail     = signal('');
-  editPhone     = signal('');
-  editCiudad    = signal('');
-  editDireccion = signal('');
-  saving        = signal(false);
-  saved         = signal(false);
-
-  ngOnChanges() {
-    const c = this.data.getCustomer(this.clienteId) ?? null;
-    this.customer.set(c);
-    this.orders.set(this.data.getOrdersByCustomer(this.clienteId));
-    if (c) {
-      this.editEmail.set(c.email);
-      this.editPhone.set(c.phone);
-      this.editCiudad.set(c.ciudad);
-      this.editDireccion.set(c.direccion);
-    }
-  }
-
-  async guardar() {
-    this.saving.set(true);
-    await new Promise(r => setTimeout(r, 800));
-    this.saving.set(false);
-    this.saved.set(true);
-    setTimeout(() => this.saved.set(false), 2000);
-  }
+  // Derivados de las señales del servicio: si entra otro pedido del cliente
+  // con el drawer abierto, el historial y los totales se actualizan solos.
+  readonly customer = computed(() => this.data.CUSTOMERS.find(c => c.id === this.id()) ?? null);
+  readonly orders   = computed(() => this.data.ORDERS.filter(o => o.customerId === this.id()));
 
   ticketPromedio(): number {
     const pagadas = this.orders().filter(o => o.status === 'paid');
     if (!pagadas.length) return 0;
     return Math.round(pagadas.reduce((s, o) => s + o.total, 0) / pagadas.length);
+  }
+
+  /** Celular en formato wa.me: sin espacios ni signos, con el 57 de Colombia si falta. */
+  whatsapp(phone: string): string {
+    const n = phone.replace(/\D/g, '');
+    return n.length === 10 ? `57${n}` : n;
   }
 
   initials(nombre: string): string {

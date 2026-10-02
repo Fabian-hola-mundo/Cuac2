@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AdminStateService, ViewId } from '../../core/services/admin-state.service';
-import { MockAdminDataService, Customer, Order, Payment, Product, Character, Category, ToneStyle } from '../../core/services/mock-admin-data.service';
+import { AdminDataService, Customer, Order, Payment, Product, Character, Category, ToneStyle } from '../../core/services/admin-data.service';
 import { GoogleAnalyticsService, GaPageView, GaPortfolioView } from '../../core/services/google-analytics.service';
 import { ClienteDetailComponent } from './clientes/cliente-detail.component';
 import { PagoDetailComponent }    from './pagos/pago-detail.component';
 import { PagosExportService }    from './pagos/pagos-export.service';
 import { DescuentosTabComponent } from './descuentos/descuentos-tab.component';
+import { InventarioService } from '../../core/services/inventario.service';
+import { calcularKpis } from './productos/productos-filtros';
 
 @Component({
   selector: 'app-admin-home',
@@ -20,10 +22,11 @@ import { DescuentosTabComponent } from './descuentos/descuentos-tab.component';
 export class AdminHomeComponent implements OnInit, OnDestroy {
 
   private adminState  = inject(AdminStateService);
-  private data        = inject(MockAdminDataService);
+  private data        = inject(AdminDataService);
   private ga          = inject(GoogleAnalyticsService);
   private exportSvc   = inject(PagosExportService);
   private router      = inject(Router);
+  private inv         = inject(InventarioService);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   view = this.adminState.view;
@@ -96,9 +99,10 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   readonly CHARACTERS  = this.data.CHARACTERS;
   readonly CATEGORIES  = this.data.CATEGORIES;
   readonly PRODUCTS    = this.data.PRODUCTS;
-  readonly ORDERS      = this.data.ORDERS;
-  readonly CUSTOMERS   = this.data.CUSTOMERS;
-  readonly PAYMENTS    = this.data.PAYMENTS;
+  // Getters sobre señales: la vista se repinta cuando entra o cambia un pedido.
+  get ORDERS():    Order[]    { return this.data.ORDERS; }
+  get CUSTOMERS(): Customer[] { return this.data.CUSTOMERS; }
+  get PAYMENTS():  Payment[]  { return this.data.PAYMENTS; }
   readonly SIZES       = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
   readonly gaLoading    = signal(true);
   readonly gaConfigured = signal(false);
@@ -117,6 +121,9 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    this.data.iniciar();
+    void this.inv.cargarTodos();
+    this.dejarDeEscucharCatalogo = this.inv.escucharStock();
     this.updateClock();
     this.clockTimer = setInterval(() => this.updateClock(), 60_000);
 
@@ -129,7 +136,8 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   }
 
   /** Pasarelas con el número de pagos reales que pasaron por cada una. */
-  readonly GATEWAYS: { name: string; state: string; tone: string; count: number; color: string }[] = [
+  get GATEWAYS(): { name: string; state: string; tone: string; count: number; color: string }[] {
+    return [
     { name: 'Bold',           state: 'Conectado', tone: 'ok',   color: 'rio'   },
     { name: 'PSE',            state: 'Vía Bold',  tone: 'ok',   color: 'selva' },
     { name: 'Nequi',          state: 'Vía Bold',  tone: 'ok',   color: 'rosa'  },
@@ -138,6 +146,7 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     ...g,
     count: this.data.PAYMENTS.filter(p => p.method.toLowerCase().startsWith(g.name.toLowerCase())).length,
   }));
+  }
 
   // ── Live clock & greeting ──────────────────────────────────────────────────
   nowTime     = signal('');
@@ -154,7 +163,13 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   }
 
   // ── Detalle del pedido seleccionado ────────────────────────────────────────
-  selectedOrder = signal<Order | null>(null);
+  // Se guarda el id y no la fila: si el pedido cambia mientras el drawer está abierto
+  // (p. ej. Bold lo aprueba), el detalle muestra el estado nuevo.
+  private selectedOrderId = signal<string | null>(null);
+  readonly selectedOrder  = computed(() => {
+    const id = this.selectedOrderId();
+    return id ? this.ORDERS.find(o => o.id === id) ?? null : null;
+  });
 
   readonly orderCustomer = computed(() => {
     const o = this.selectedOrder();
@@ -187,6 +202,9 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
         break;
       case 'failed':
         rows.push({ time: hora, title: 'Pago rechazado', desc: `${o.method} · ${monto}`, state: 'done' });
+        break;
+      case 'cancelled':
+        rows.push({ time: '—', title: 'Pedido cancelado', desc: 'El pago no se completó y se liberó la reserva', state: 'done' });
         break;
       case 'refunded':
         rows.push({ time: hora, title: 'Pago aprobado', desc: `${o.method} · ${monto}`, state: 'done' });
@@ -316,7 +334,7 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     paid:    this.ORDERS.filter(o => o.status === 'paid'),
     pending: this.ORDERS.filter(o => o.status === 'pending'),
     shipped: this.ORDERS.filter(o => o.shipping === 'shipped'),
-    issues:  this.ORDERS.filter(o => o.status === 'failed' || o.status === 'refunded'),
+    issues:  this.ORDERS.filter(o => o.status === 'failed' || o.status === 'refunded' || o.status === 'cancelled'),
   }));
 
   currentOrders = computed(() => {
@@ -326,28 +344,29 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   });
 
   // ── KPI de clientes y pagos, calculados desde los registros reales ─────────
-  readonly lowStockCount = this.PRODUCTS.filter(p => p.status === 'low' || (p.stock > 0 && p.stock < 10)).length;
-  readonly pendingShipCount = this.ORDERS.filter(o => o.status === 'paid' && o.shipping === 'pending').length;
+  // Mismo criterio que la lista de productos, para que los dos números coincidan.
+  readonly lowStockCount    = computed(() => calcularKpis(this.inv.productos()).bajos);
+  readonly pendingShipCount = computed(() => this.ORDERS.filter(o => o.status === 'paid' && o.shipping === 'pending').length);
 
-  readonly customersByTag = {
+  readonly customersByTag = computed(() => ({
     vip:     this.CUSTOMERS.filter(c => c.tag === 'VIP').length,
     activos: this.CUSTOMERS.filter(c => c.tag === 'Activo').length,
     issues:  this.CUSTOMERS.filter(c => c.tag === 'Devolución' || c.tag === 'Fallido').length,
-  };
-  readonly kpiVip = this.CUSTOMERS.filter(c => c.orders >= 3).length;
-  readonly kpiGastoPromedio = this.CUSTOMERS.length
+  }));
+  readonly kpiVip = computed(() => this.CUSTOMERS.filter(c => c.orders >= 3).length);
+  readonly kpiGastoPromedio = computed(() => this.CUSTOMERS.length
     ? Math.round(this.CUSTOMERS.reduce((s, c) => s + c.spent, 0) / this.CUSTOMERS.length)
-    : 0;
+    : 0);
 
-  private readonly paymentsMes = this.filterPayments('mes');
-  readonly kpiNetoMes     = this.paymentsMes.filter(p => p.status === 'paid').reduce((s, p) => s + p.net, 0);
-  readonly kpiComisiones  = this.paymentsMes.filter(p => p.status === 'paid').reduce((s, p) => s + p.fee, 0);
-  readonly kpiPendiente   = this.PAYMENTS.filter(p => p.status === 'pending');
-  readonly kpiReembolsos  = this.paymentsMes.filter(p => p.status === 'refunded');
+  private readonly paymentsMes = computed(() => this.filterPayments('mes'));
+  readonly kpiNetoMes     = computed(() => this.paymentsMes().filter(p => p.status === 'paid').reduce((s, p) => s + p.net, 0));
+  readonly kpiComisiones  = computed(() => this.paymentsMes().filter(p => p.status === 'paid').reduce((s, p) => s + p.fee, 0));
+  readonly kpiPendiente   = computed(() => this.PAYMENTS.filter(p => p.status === 'pending'));
+  readonly kpiReembolsos  = computed(() => this.paymentsMes().filter(p => p.status === 'refunded'));
   sumAmount(list: Payment[]): number { return list.reduce((s, p) => s + p.amount, 0); }
 
   // ── Dashboard chart: ingresos pagados de los últimos 14 días ───────────────
-  private readonly chartDays = (() => {
+  private readonly chartDays = computed(() => {
     const DOW = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
     const pad = (n: number) => String(n).padStart(2, '0');
     const hoy = new Date();
@@ -365,24 +384,24 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
       if (day) day.total += o.total;
     }
     return days;
-  })();
+  });
 
   /** Ingresos por día, en miles de COP. */
-  readonly BARS = this.chartDays.map(d => Math.round(d.total / 1000));
-  readonly DAYS = this.chartDays.map(d => d.label);
-  readonly MAX_BAR = Math.max(0, ...this.BARS);
-  readonly hasChartData = this.MAX_BAR > 0;
+  get BARS(): number[]   { return this.chartDays().map(d => Math.round(d.total / 1000)); }
+  get DAYS(): string[]   { return this.chartDays().map(d => d.label); }
+  get MAX_BAR(): number  { return Math.max(0, ...this.BARS); }
+  get hasChartData(): boolean { return this.MAX_BAR > 0; }
 
   /** Marcas del eje Y (de mayor a menor), en miles de COP. */
-  readonly Y_TICKS = [1, 0.75, 0.5, 0.25, 0].map(f => Math.round(this.MAX_BAR * f));
+  get Y_TICKS(): number[] { return [1, 0.75, 0.5, 0.25, 0].map(f => Math.round(this.MAX_BAR * f)); }
 
-  readonly bestDay = (() => {
+  get bestDay(): { label: string; value: number } | null {
     if (!this.hasChartData) return null;
     const i = this.BARS.indexOf(this.MAX_BAR);
     return { label: this.DAYS[i], value: this.MAX_BAR };
-  })();
+  }
 
-  readonly avgDaily = Math.round(this.BARS.reduce((s, b) => s + b, 0) / this.BARS.length);
+  get avgDaily(): number { return Math.round(this.BARS.reduce((s, b) => s + b, 0) / this.BARS.length); }
 
   barHeight(b: number): number { return this.MAX_BAR > 0 ? (b / this.MAX_BAR) * 100 : 0; }
 
@@ -424,8 +443,8 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.flash(this.editingProduct() ? '✓ Producto actualizado' : '✓ Producto creado');
   }
 
-  openOrder(o: Order) { this.selectedOrder.set(o); this.orderOn.set(true); }
-  closeOrder() { this.orderOn.set(false); this.selectedOrder.set(null); }
+  openOrder(o: Order) { this.selectedOrderId.set(o.id); this.orderOn.set(true); }
+  closeOrder() { this.orderOn.set(false); this.selectedOrderId.set(null); }
 
   openManualOrder() {
     this.moClienteNombre    = '';
@@ -519,6 +538,14 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   removeImage(idx: number) { this.editorImages.splice(idx, 1); }
   addImage()               { if (this.editorImages.length < 8) this.editorImages.push(this.editorImages.length); }
 
+  /** Celular en formato wa.me: sin espacios ni signos, con el 57 de Colombia si falta. */
+  whatsapp(phone: string): string {
+    const n = phone.replace(/\D/g, '');
+    return n.length === 10 ? `57${n}` : n;
+  }
+
+  readonly encodeURIComponent = encodeURIComponent;
+
   fmtViews(n: number): string { return n.toLocaleString('es-CO'); }
 
   fmtDelta(d: number): string { return (d > 0 ? '+' : '') + d.toFixed(1) + '%'; }
@@ -552,7 +579,10 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     return 'var(--carbon)';
   }
 
+  private dejarDeEscucharCatalogo?: () => void;
+
   ngOnDestroy() {
+    this.dejarDeEscucharCatalogo?.();
     if (this.toastTimer) clearTimeout(this.toastTimer);
     if (this.clockTimer) clearInterval(this.clockTimer);
   }

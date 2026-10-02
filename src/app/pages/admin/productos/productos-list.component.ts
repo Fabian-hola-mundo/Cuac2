@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effec
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
 import { Router }       from '@angular/router';
-import { InventarioService, ProductoEvento, ProductoVariante, MovimientoProducto, CATEGORIAS, CAT_TONES } from '../../../core/services/inventario.service';
+import { InventarioService, ProductoEvento, ProductoVariante, MovimientoProducto, CAT_TONES, etiquetaCategoria } from '../../../core/services/inventario.service';
 import { etiquetaVariante } from '../../../../../supabase/functions/_shared/variantes';
 import { EventosService, Evento } from '../../../core/services/eventos.service';
 import {
@@ -39,7 +39,6 @@ export class ProductosListComponent implements OnInit {
   readonly inv       = inject(InventarioService);
   private eventosSvc = inject(EventosService);
 
-  readonly categorias   = CATEGORIAS;
   readonly estados      = ESTADOS;
   readonly umbralBajo   = UMBRAL_STOCK_BAJO;
 
@@ -50,9 +49,13 @@ export class ProductosListComponent implements OnInit {
   readonly ordenCampo   = signal<OrdenCampo>('creado_en');
   readonly ordenDir     = signal<OrdenDir>('desc');
 
+  // Sale de los productos cargados, no de la lista fija: así aparecen también las
+  // categorías creadas desde el formulario (bandas, impresos…) y desaparecen las vacías.
   readonly categoriasConProductos = computed(() => {
-    const usadas = new Set(this.inv.productos().map(p => p.categoria));
-    return this.categorias.filter(c => usadas.has(c.id));
+    const usadas = new Set(this.inv.productos().map(p => p.categoria).filter(Boolean));
+    return [...usadas]
+      .map(id => ({ id, label: etiquetaCategoria(id) }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
   });
 
   readonly kpis      = computed(() => calcularKpis(this.inv.productos()));
@@ -403,7 +406,7 @@ export class ProductosListComponent implements OnInit {
   }
 
   labelCategoria(id: string) {
-    return this.categorias.find(c => c.id === id)?.label ?? id;
+    return etiquetaCategoria(id);
   }
 
   labelPersonaje(id: string | null) {

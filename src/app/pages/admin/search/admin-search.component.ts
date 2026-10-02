@@ -5,7 +5,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
 import { Router }       from '@angular/router';
-import { MockAdminDataService, Order, Customer } from '../../../core/services/mock-admin-data.service';
+import { AdminDataService, Order, Customer } from '../../../core/services/admin-data.service';
 import { InventarioService, ProductoEvento }     from '../../../core/services/inventario.service';
 import { AdminStateService }                     from '../../../core/services/admin-state.service';
 
@@ -28,7 +28,7 @@ interface SearchResult {
 export class AdminSearchComponent implements OnInit, OnDestroy {
   @Output() closed = new EventEmitter<void>();
 
-  private data   = inject(MockAdminDataService);
+  private data   = inject(AdminDataService);
   readonly inv   = inject(InventarioService);
   private state  = inject(AdminStateService);
   private router = inject(Router);
@@ -95,6 +95,7 @@ export class AdminSearchComponent implements OnInit, OnDestroy {
   ]);
 
   ngOnInit() {
+    this.data.iniciar();
     this.inv.cargarTodos();
     document.body.style.overflow = 'hidden';
   }

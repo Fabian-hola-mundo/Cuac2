@@ -5,8 +5,9 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { AdminHomeComponent } from './admin-home.component';
 import { AdminStateService } from '../../core/services/admin-state.service';
-import { MockAdminDataService, Order } from '../../core/services/mock-admin-data.service';
+import { AdminDataService, Order } from '../../core/services/admin-data.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
+import { InventarioService } from '../../core/services/inventario.service';
 
 class GoogleAnalyticsStub {
   async getReport() {
@@ -30,7 +31,13 @@ async function montarEnPedidos() {
     ],
   }).compileComponents();
 
-  TestBed.inject(MockAdminDataService).ORDERS.push(...PEDIDOS_DE_PRUEBA.map(o => ({ ...o })));
+  // Sin red en los tests: el servicio no carga de Supabase y recibe los pedidos de prueba.
+  const data = TestBed.inject(AdminDataService);
+  data.iniciar = () => {};
+  data.orders.set(PEDIDOS_DE_PRUEBA.map(o => ({ ...o })));
+  const inv = TestBed.inject(InventarioService);
+  inv.cargarTodos = async () => {};
+  inv.escucharStock = () => () => {};
   TestBed.inject(AdminStateService).view.set('pedidos');
 
   const fixture = TestBed.createComponent(AdminHomeComponent);
@@ -60,12 +67,12 @@ describe('Detalle de pedido en el admin', () => {
     await fixture.whenStable();
 
     expect(cmp.orderOn()).toBe(true);
-    expect(cmp.selectedOrder()?.id).toBe(TestBed.inject(MockAdminDataService).ORDERS[0].id);
+    expect(cmp.selectedOrder()?.id).toBe(TestBed.inject(AdminDataService).ORDERS[0].id);
   });
 
   it('el drawer muestra el pedido de la fila en la que se hizo click', async () => {
     const fixture = await montarEnPedidos();
-    const orders = TestBed.inject(MockAdminDataService).ORDERS;
+    const orders = TestBed.inject(AdminDataService).ORDERS;
 
     ojos(fixture)[2].click();
     await fixture.whenStable();
@@ -93,7 +100,7 @@ describe('Detalle de pedido en el admin', () => {
   it('la línea de tiempo refleja el estado real del pedido', async () => {
     const fixture = await montarEnPedidos();
     const cmp = fixture.componentInstance;
-    const data = TestBed.inject(MockAdminDataService);
+    const data = TestBed.inject(AdminDataService);
 
     const entregado = data.ORDERS.find(o => o.status === 'paid' && o.shipping === 'delivered')!;
     cmp.openOrder(entregado);

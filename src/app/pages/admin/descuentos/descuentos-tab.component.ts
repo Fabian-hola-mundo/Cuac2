@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -75,7 +75,11 @@ export class DescuentosTabComponent implements OnInit {
   dcObsequio: string[] = [];   // ids de productos cuya compra regala el código
   dcObsequioMsg = '';
 
+  private destroyRef = inject(DestroyRef);
+
   async ngOnInit(): Promise<void> {
+    // Las categorías y la lista de productos regalo siguen al catálogo mientras la pestaña está abierta.
+    this.destroyRef.onDestroy(this.inv.escucharStock());
     await Promise.all([this.cargar(), this.inv.cargarTodos()]);
   }
 

@@ -6,7 +6,7 @@ import { ResenasNuevasService } from '../resenas/resenas-nuevas.service';
 
 export interface AdminNotif {
   id: string;
-  type: 'mensaje' | 'cotizacion' | 'stock' | 'evento' | 'resena';
+  type: 'mensaje' | 'cotizacion' | 'stock' | 'evento' | 'resena' | 'pedido';
   title: string;
   sub: string;       // subtítulo breve
   time: string;      // ISO timestamp
@@ -182,6 +182,25 @@ export class NotificationsService {
             time: c.created_at,
             route: ['/admin/cotizaciones'],
             tone: 'lila',
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'pedidos' },
+        payload => {
+          const p = payload.new as any;
+          const antes = payload.old as any;
+          // Solo el paso a aprobado: un pedido recibe varios UPDATE (reserva, stock, correo).
+          if (p.estado !== 'aprobado' || antes?.estado === 'aprobado') return;
+          this.prepend({
+            id: `ped-${p.id}`,
+            type: 'pedido',
+            title: `Pedido pagado · ${p.referencia ?? ''}`.trim(),
+            sub: `${[p.nombre, p.apellido].filter(Boolean).join(' ')} · ${Number(p.total ?? 0).toLocaleString('es-CO')}`,
+            time: new Date().toISOString(),
+            route: ['/admin'],
+            tone: 'rosa',
           });
         }
       )

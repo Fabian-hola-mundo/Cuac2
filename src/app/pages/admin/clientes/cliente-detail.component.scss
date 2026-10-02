@@ -1,1 +1,10 @@
 :host { display: contents; }
+
+// Datos de contacto en solo lectura (vienen del último pedido).
+.ro {
+  font-size: 14px;
+  color: var(--carbon);
+  word-break: break-word;
+
+  a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+}

@@ -21,28 +21,23 @@
         <div class="panel">
           <div class="panel-h"><h3>Contacto</h3></div>
           <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            <!-- Son los datos del último pedido del cliente. Se consultan y se usan para
+                 contactarlo; editarlos aquí reescribiría la dirección de un envío pasado. -->
             <div class="field">
               <label>Email</label>
-              <input class="input" type="email" [value]="editEmail()" (input)="editEmail.set($any($event.target).value)" />
+              <div class="ro">@if (c.email) { <a [href]="'mailto:' + c.email">{{ c.email }}</a> } @else { — }</div>
             </div>
             <div class="field">
               <label>Teléfono</label>
-              <input class="input" [value]="editPhone()" (input)="editPhone.set($any($event.target).value)" />
+              <div class="ro">@if (c.phone) { <a [href]="'https://wa.me/' + whatsapp(c.phone)" target="_blank" rel="noopener">{{ c.phone }}</a> } @else { — }</div>
             </div>
             <div class="field">
               <label>Ciudad</label>
-              <input class="input" [value]="editCiudad()" (input)="editCiudad.set($any($event.target).value)" />
+              <div class="ro">{{ c.ciudad || '—' }}</div>
             </div>
             <div class="field">
               <label>Dirección</label>
-              <input class="input" [value]="editDireccion()" (input)="editDireccion.set($any($event.target).value)" />
-            </div>
-            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
-              <button class="btn-sm solid" [disabled]="saving()" (click)="guardar()">
-                @if (saving()) { Guardando… }
-                @else if (saved()) { <svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg> Guardado }
-                @else { Guardar cambios }
-              </button>
+              <div class="ro">{{ c.direccion || '—' }}</div>
             </div>
           </div>
         </div>

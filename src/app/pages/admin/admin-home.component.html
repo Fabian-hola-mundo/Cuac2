@@ -19,10 +19,10 @@
               <span class="ph-mi-dot live" aria-hidden="true"></span>
               <span>Sistema en línea</span>
             </div>
-            @if (lowStockCount > 0) {
+            @if (lowStockCount() > 0) {
             <div class="ph-meta-item">
               <span class="ph-mi-dot warn" aria-hidden="true"></span>
-              <span>{{ lowStockCount }} {{ lowStockCount === 1 ? 'producto' : 'productos' }} con bajo stock</span>
+              <span>{{ lowStockCount() }} {{ lowStockCount() === 1 ? 'producto' : 'productos' }} con bajo stock</span>
             </div>
             }
             <time class="ph-meta-item ph-meta-time" [attr.datetime]="nowDatetime()">{{ nowTime() }}</time>
@@ -223,9 +223,9 @@
             <p class="sub">Todo lo que ha pasado por la tienda. Click en cualquiera para ver detalle.</p>
           </div>
           <div class="ph-r">
-            <button class="btn-sm ghost" [disabled]="pendingShipCount === 0">Imprimir guías ({{ pendingShipCount }})</button>
-            <button class="btn-sm ghost">Exportar</button>
-            <button class="btn-sm solid" (click)="openManualOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Pedido manual</button>
+            <!-- «Imprimir guías», «Exportar» y «Pedido manual» eran de la maqueta: los dos
+                 primeros no hacían nada y el tercero avisaba «Pedido creado» sin guardar. -->
+            <span class="sub" style="align-self:center">{{ pendingShipCount() }} por despachar</span>
           </div>
         </div>
         <!-- Sub-navegación Pedidos / Descuentos -->
@@ -310,12 +310,12 @@
           </div>
           <div class="kpi-item" data-tone="terra">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.7 6.4.7-4.8 4.4 1.3 6.2L12 17l-5.5 3 1.3-6.2L3 9.4l6.4-.7L12 3Z"/></svg> VIP (3+ pedidos)</div>
-            <div class="kpi-n">{{ kpiVip }}</div>
+            <div class="kpi-n">{{ kpiVip() }}</div>
             <div class="kpi-delta"><span>Clientes recurrentes</span></div>
           </div>
           <div class="kpi-item" data-tone="sol">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Gasto promedio</div>
-            <div class="kpi-n">{{ fmtCOP(kpiGastoPromedio) }}</div>
+            <div class="kpi-n">{{ fmtCOP(kpiGastoPromedio()) }}</div>
             <div class="kpi-delta"><span>Por cliente</span></div>
           </div>
           <div class="kpi-item" data-tone="selva">
@@ -327,7 +327,7 @@
         <div class="tlb">
           <div class="search-min"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg><input placeholder="Buscar por nombre, email o ciudad…" /></div>
           <div class="spacer"></div>
-          <div class="chips"><button class="chip is-on">Todos <span class="ct">{{ CUSTOMERS.length }}</span></button><button class="chip">VIP <span class="ct">{{ customersByTag.vip }}</span></button><button class="chip">Activos <span class="ct">{{ customersByTag.activos }}</span></button><button class="chip">Con problemas <span class="ct">{{ customersByTag.issues }}</span></button></div>
+          <div class="chips"><button class="chip is-on">Todos <span class="ct">{{ CUSTOMERS.length }}</span></button><button class="chip">VIP <span class="ct">{{ customersByTag().vip }}</span></button><button class="chip">Activos <span class="ct">{{ customersByTag().activos }}</span></button><button class="chip">Con problemas <span class="ct">{{ customersByTag().issues }}</span></button></div>
         </div>
         <div class="panel tbl-page">
           <div class="panel-b flush">
@@ -396,23 +396,23 @@
         <div class="kpi-strip">
           <div class="kpi-item" data-tone="selva">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Neto del mes</div>
-            <div class="kpi-n">{{ fmtCOP(kpiNetoMes) }}</div>
+            <div class="kpi-n">{{ fmtCOP(kpiNetoMes()) }}</div>
             <div class="kpi-delta"><span>{{ periodoLabel('mes') }}</span></div>
           </div>
           <div class="kpi-item" data-tone="rio">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg> Comisiones</div>
-            <div class="kpi-n">{{ fmtCOP(kpiComisiones) }}</div>
+            <div class="kpi-n">{{ fmtCOP(kpiComisiones()) }}</div>
             <div class="kpi-delta"><span>{{ periodoLabel('mes') }}</span></div>
           </div>
           <div class="kpi-item" data-tone="sol">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg> Pendiente</div>
-            <div class="kpi-n">{{ fmtCOP(sumAmount(kpiPendiente)) }}</div>
-            <div class="kpi-delta"><span>{{ kpiPendiente.length }} {{ kpiPendiente.length === 1 ? 'pago' : 'pagos' }}</span></div>
+            <div class="kpi-n">{{ fmtCOP(sumAmount(kpiPendiente())) }}</div>
+            <div class="kpi-delta"><span>{{ kpiPendiente().length }} {{ kpiPendiente().length === 1 ? 'pago' : 'pagos' }}</span></div>
           </div>
           <div class="kpi-item" data-tone="terra">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg> Reembolsos</div>
-            <div class="kpi-n">{{ fmtCOP(sumAmount(kpiReembolsos)) }}</div>
-            <div class="kpi-delta"><span>{{ kpiReembolsos.length }} {{ kpiReembolsos.length === 1 ? 'caso' : 'casos' }} este mes</span></div>
+            <div class="kpi-n">{{ fmtCOP(sumAmount(kpiReembolsos())) }}</div>
+            <div class="kpi-delta"><span>{{ kpiReembolsos().length }} {{ kpiReembolsos().length === 1 ? 'caso' : 'casos' }} este mes</span></div>
           </div>
         </div>
         <div class="split-1-320" style="margin-top:var(--s-4);align-items:start">
@@ -734,10 +734,15 @@
         <div class="panel">
           <div class="panel-h"><h3>Acciones</h3></div>
           <div class="panel-b" style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn-sm solid" style="justify-content:center">Marcar despachado</button>
-            <button class="btn-sm ghost" style="justify-content:center">Generar factura</button>
-            <button class="btn-sm ghost" style="justify-content:center">Reenviar confirmación</button>
-            <button class="btn-sm danger" style="justify-content:center">Cancelar pedido</button>
+            <!-- Antes había cuatro botones de maqueta sin acción. Lo que sí se puede hacer
+                 desde aquí es escribirle al cliente; el cobro y la anulación viven en Bold. -->
+            @if (ord.email) {
+              <a class="btn-sm solid" style="justify-content:center" [href]="'mailto:' + ord.email + '?subject=' + encodeURIComponent('Tu pedido ' + ord.id + ' en Cuac')">Escribir al cliente</a>
+            }
+            @if (orderCustomer()?.phone; as tel) {
+              <a class="btn-sm ghost" style="justify-content:center" [href]="'https://wa.me/' + whatsapp(tel)" target="_blank" rel="noopener">WhatsApp</a>
+            }
+            <a class="btn-sm ghost" style="justify-content:center" href="https://panel.bold.co" target="_blank" rel="noopener">Ver cobro en Bold</a>
           </div>
         </div>
       </div>
