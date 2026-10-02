@@ -13,7 +13,7 @@
         }
       </div>
 
-      <div class="testi-track" #track>
+      <div class="testi-track" #track (scroll)="alDeslizar()">
         @for (t of testimonials(); track t.id) {
           <div class="testi" [class.con-link]="t.slug">
             <div class="q">
@@ -35,6 +35,14 @@
           </div>
         }
       </div>
+
+      @if (testimonials().length > 1) {
+        <div class="testi-dots" aria-hidden="true">
+          @for (t of testimonials(); track t.id; let i = $index) {
+            <button type="button" tabindex="-1" [class.on]="i === actual()" (click)="irA(i)"></button>
+          }
+        </div>
+      }
     }
 
     <div class="resena" [class.solo]="testimonials().length === 0">

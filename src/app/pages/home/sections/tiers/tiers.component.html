@@ -4,11 +4,12 @@
   <p class="lede">Ajustamos el equipo, el ritmo y los entregables al momento en que está tu marca. La forma Cuac de trabajar es la misma; lo que cambia es el alcance.</p>
 
   <div class="tiers">
-    <article class="tier">
+    <article class="tier" [class.open]="abierto('pequenas')">
       <div class="t-size">Pequeñas empresas</div>
       <h3>Arrancar con base sólida</h3>
       <p class="t-desc">Para fundadores y equipos chicos que necesitan una marca clara y consistente para crecer.</p>
-      <ul>
+      <button type="button" class="t-toggle" [attr.aria-expanded]="abierto('pequenas')" aria-controls="t-toggle-pequenas" (click)="toggle('pequenas')">Qué incluye</button>
+      <ul id="t-toggle-pequenas">
         <li>Identidad visual completa en 4&ndash;6 semanas</li>
         <li>Sitio web one-pager o landing de lanzamiento</li>
         <li>Plantillas de redes sociales</li>
@@ -20,12 +21,13 @@
       </div>
     </article>
 
-    <article class="tier featured">
+    <article class="tier featured" [class.open]="abierto('medianas')">
       <span class="t-badge">Más demandado</span>
       <div class="t-size">Medianas empresas</div>
       <h3>Renovar y escalar</h3>
       <p class="t-desc">Para marcas establecidas que necesitan modernizar su sistema visual y digital sin perder lo construido.</p>
-      <ul>
+      <button type="button" class="t-toggle" [attr.aria-expanded]="abierto('medianas')" aria-controls="t-toggle-medianas" (click)="toggle('medianas')">Qué incluye</button>
+      <ul id="t-toggle-medianas">
         <li>Auditoría y rebranding integral</li>
         <li>Sitio web completo + design system</li>
         <li>Sistema editorial y de publicaciones</li>
@@ -37,11 +39,12 @@
       </div>
     </article>
 
-    <article class="tier">
+    <article class="tier" [class.open]="abierto('equipo')">
       <div class="t-size">Marcas con equipo interno</div>
       <h3>Refuerzo creativo puntual o continuo</h3>
       <p class="t-desc">Para marcas con equipo de diseño o marketing que necesitan apoyo externo en proyectos específicos o producción sostenida.</p>
-      <ul>
+      <button type="button" class="t-toggle" [attr.aria-expanded]="abierto('equipo')" aria-controls="t-toggle-equipo" (click)="toggle('equipo')">Qué incluye</button>
+      <ul id="t-toggle-equipo">
         <li>Soporte creativo por proyecto o retainer</li>
         <li>Editorial y contenido para campañas</li>
         <li>Producción de materiales bajo tu guía de estilo</li>

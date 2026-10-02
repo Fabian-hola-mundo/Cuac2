@@ -91,6 +91,25 @@ export class TestimonialsComponent implements OnInit {
     }
   }
 
+  // Índice de la tarjeta visible, para los puntos de la fila en móvil.
+  readonly actual = signal(0);
+
+  alDeslizar() {
+    const el = this.track()?.nativeElement;
+    const card = el?.firstElementChild as HTMLElement | null;
+    if (!el || !card) return;
+    const paso = card.offsetWidth + parseFloat(getComputedStyle(el).columnGap || '0');
+    const fin = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+    this.actual.set(fin ? this.testimonials().length - 1 : Math.round(el.scrollLeft / paso));
+  }
+
+  irA(i: number) {
+    const el = this.track()?.nativeElement;
+    const card = el?.children[i] as HTMLElement | undefined;
+    if (!el || !card) return;
+    el.scrollTo({ left: card.offsetLeft - el.offsetLeft - parseFloat(getComputedStyle(el).paddingLeft), behavior: 'smooth' });
+  }
+
   scroll(dir: 1 | -1) {
     const el = this.track()?.nativeElement;
     if (!el) return;

@@ -140,3 +140,61 @@
 @media (max-width: 1024px) {
   .tiers { grid-template-columns: 1fr; }
 }
+
+// Botón «Qué incluye»: solo existe en móvil, donde las listas van plegadas.
+.t-toggle { display: none; }
+
+// En pantallas táctiles no hay hover: el enlace tiene que verse siempre.
+@media (hover: none) {
+  .tier .t-cta { opacity: 1; transform: none; pointer-events: auto; }
+}
+
+@media (max-width: 640px) {
+  .section { padding-inline: var(--s-5); padding-top: var(--s-8); padding-bottom: var(--s-8); }
+
+  .tiers { gap: var(--s-3); }
+
+  .tier {
+    padding: var(--s-5);
+    gap: var(--s-3);
+
+    h3 { font-size: 26px; }
+    .t-desc { font-size: 14px; }
+    ul { margin-top: 0; }
+    .t-foot { padding-top: var(--s-4); }
+    .t-cta { opacity: 1; transform: none; pointer-events: auto; color: var(--ember); }
+    &.featured .t-cta { color: var(--coral); }
+
+    // El badge deja de flotar sobre el texto y queda arriba, en su propia línea.
+    .t-badge { position: static; align-self: flex-start; }
+
+    &:not(.open) ul { display: none; }
+  }
+
+  .t-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    padding: 6px 0;
+    background: none;
+    border: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(21, 31, 40, 0.7);
+    cursor: pointer;
+
+    &::after {
+      content: '+';
+      font-size: 15px;
+      line-height: 1;
+      color: var(--ember);
+      transition: transform 0.2s;
+    }
+    &[aria-expanded='true']::after { transform: rotate(45deg); }
+  }
+
+  .tier.featured .t-toggle { color: rgba(240, 241, 246, 0.8); &::after { color: var(--coral); } }
+}
