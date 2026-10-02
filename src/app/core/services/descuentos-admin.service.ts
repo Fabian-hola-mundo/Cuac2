@@ -13,6 +13,10 @@ export interface CodigoDescuento {
   categorias_ids: string[] | null;
   activo:         boolean;
   expira_en:      string | null;
+  /** Productos cuya compra regala este código por correo. NULL = no se regala. */
+  obsequio_productos_ids: string[] | null;
+  /** Texto que acompaña el código en el correo del comprador. */
+  obsequio_mensaje:       string | null;
   creado_en:      string;
   actualizado_en: string;
 }

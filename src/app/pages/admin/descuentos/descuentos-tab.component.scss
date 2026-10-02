@@ -43,3 +43,13 @@
   from { opacity: 0; transform: translateX(-50%) translateY(8px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+
+.obs-tag {
+  margin-top: 3px; font-size: 11px; color: #1F6B47;
+  max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.obs-box {
+  padding: 12px 14px; border-radius: 10px;
+  background: rgba(31,138,91,.06);
+  gap: 6px;
+}

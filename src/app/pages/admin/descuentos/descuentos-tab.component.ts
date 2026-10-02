@@ -7,7 +7,7 @@ import {
   CodigoDescuentoInput,
   UsoDescuento,
 } from '../../../core/services/descuentos-admin.service';
-import { CATEGORIAS } from '../../../core/services/inventario.service';
+import { CATEGORIAS, InventarioService } from '../../../core/services/inventario.service';
 
 @Component({
   selector: 'app-descuentos-tab',
@@ -18,8 +18,11 @@ import { CATEGORIAS } from '../../../core/services/inventario.service';
 })
 export class DescuentosTabComponent implements OnInit {
   private svc = inject(DescuentosAdminService);
+  private inv = inject(InventarioService);
 
   readonly CATEGORIAS = CATEGORIAS;
+  /** Catálogo completo (activos y borradores) para elegir con qué se regala un código. */
+  readonly productos = this.inv.productos;
 
   codigos      = signal<CodigoDescuento[]>([]);
   loading      = signal(false);
@@ -46,9 +49,25 @@ export class DescuentosTabComponent implements OnInit {
   dcActivo    = signal(true);
   dcCategorias: string[] = [];
   dcProductos = '';   // comma-separated UUIDs
+  dcObsequio: string[] = [];   // ids de productos cuya compra regala el código
+  dcObsequioMsg = '';
 
   async ngOnInit(): Promise<void> {
-    await this.cargar();
+    await Promise.all([this.cargar(), this.inv.cargarTodos()]);
+  }
+
+  nombreProducto(id: string): string {
+    return this.productos().find(p => p.id === id)?.nombre ?? 'Producto eliminado';
+  }
+
+  agregarObsequio(sel: HTMLSelectElement): void {
+    const id = sel.value;
+    if (id && !this.dcObsequio.includes(id)) this.dcObsequio = [...this.dcObsequio, id];
+    sel.value = '';
+  }
+
+  quitarObsequio(id: string): void {
+    this.dcObsequio = this.dcObsequio.filter(x => x !== id);
   }
 
   async cargar(): Promise<void> {
@@ -70,6 +89,8 @@ export class DescuentosTabComponent implements OnInit {
     this.dcActivo.set(true);
     this.dcCategorias = [];
     this.dcProductos  = '';
+    this.dcObsequio   = [];
+    this.dcObsequioMsg = '';
     this.errorMsg.set(null);
     this.drawerOn.set(true);
   }
@@ -85,6 +106,8 @@ export class DescuentosTabComponent implements OnInit {
     this.dcActivo.set(c.activo);
     this.dcCategorias = c.categorias_ids ? [...c.categorias_ids] : [];
     this.dcProductos  = c.productos_ids ? c.productos_ids.join(', ') : '';
+    this.dcObsequio   = c.obsequio_productos_ids ? [...c.obsequio_productos_ids] : [];
+    this.dcObsequioMsg = c.obsequio_mensaje ?? '';
     this.errorMsg.set(null);
     this.drawerOn.set(true);
   }
@@ -139,6 +162,8 @@ export class DescuentosTabComponent implements OnInit {
       categorias_ids: this.dcCategorias.length > 0 ? [...this.dcCategorias] : null,
       activo:         this.dcActivo(),
       expira_en:      this.dcExpira ? new Date(this.dcExpira + 'T23:59:59').toISOString() : null,
+      obsequio_productos_ids: this.dcObsequio.length > 0 ? [...this.dcObsequio] : null,
+      obsequio_mensaje:       this.dcObsequioMsg.trim() || null,
     };
 
     this.saving.set(true);
