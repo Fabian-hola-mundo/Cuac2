@@ -14,40 +14,50 @@
     </button>
   </div>
   <div class="drawer-b">
-    <div class="grid-2" style="align-items:start">
+    <div style="display:flex;flex-direction:column;gap:var(--s-4)">
 
-      <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+      <!-- Una sola columna: a 720px dos columnas dejaban la tabla de pedidos
+           (min-width 560px) montada sobre el panel de estadísticas. -->
+      <div class="cli-stats">
+        <div class="cli-stat">
+          <div class="k">Total gastado</div>
+          <div class="v">{{ fmtCOP(c.spent) }}</div>
+        </div>
+        <div class="cli-stat">
+          <div class="k">Pedidos</div>
+          <div class="v">{{ c.orders }}</div>
+        </div>
+        <div class="cli-stat">
+          <div class="k">Ticket promedio</div>
+          <div class="v">{{ fmtCOP(ticketPromedio()) }}</div>
+        </div>
+        <div class="cli-stat">
+          <div class="k">Cliente desde</div>
+          <div class="v sm">{{ fmtSince(c.since) }}</div>
+        </div>
+      </div>
 
-        <div class="panel">
-          <div class="panel-h"><h3>Contacto</h3></div>
-          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
-            <!-- Son los datos del último pedido del cliente. Se consultan y se usan para
-                 contactarlo; editarlos aquí reescribiría la dirección de un envío pasado. -->
-            <div class="field">
-              <label>Email</label>
-              <div class="ro">@if (c.email) { <a [href]="'mailto:' + c.email">{{ c.email }}</a> } @else { — }</div>
-            </div>
-            <div class="field">
-              <label>Teléfono</label>
-              <div class="ro">@if (c.phone) { <a [href]="'https://wa.me/' + whatsapp(c.phone)" target="_blank" rel="noopener">{{ c.phone }}</a> } @else { — }</div>
-            </div>
-            <div class="field">
-              <label>Ciudad</label>
-              <div class="ro">{{ c.ciudad || '—' }}</div>
-            </div>
-            <div class="field">
-              <label>Dirección</label>
-              <div class="ro">{{ c.direccion || '—' }}</div>
-            </div>
+      <div class="panel">
+        <div class="panel-h"><h3>Contacto</h3><span class="sub">Del último pedido</span></div>
+        <div class="panel-b">
+          <!-- Son los datos del último pedido del cliente. Se consultan y se usan para
+               contactarlo; editarlos aquí reescribiría la dirección de un envío pasado. -->
+          <div class="kv-list">
+            <div class="kv"><span class="k">Email</span><span class="v ro">@if (c.email) { <a [href]="'mailto:' + c.email">{{ c.email }}</a> } @else { — }</span></div>
+            <div class="kv"><span class="k">Teléfono</span><span class="v ro">@if (c.phone) { <a [href]="'https://wa.me/' + whatsapp(c.phone)" target="_blank" rel="noopener">{{ c.phone }}</a> } @else { — }</span></div>
+            <div class="kv"><span class="k">Ciudad</span><span class="v ro">{{ c.ciudad || '—' }}</span></div>
+            <div class="kv"><span class="k">Dirección</span><span class="v ro">{{ c.direccion || '—' }}</span></div>
           </div>
         </div>
+      </div>
 
-        <div class="panel">
-          <div class="panel-h"><h3>Pedidos recientes</h3><span class="sub">{{ orders().length }} en este historial</span></div>
-          <div class="panel-b flush">
-            @if (orders().length === 0) {
-            <div style="padding:var(--s-5);text-align:center;color:var(--carbon-50);font-size:13px">Sin pedidos</div>
-            } @else {
+      <div class="panel">
+        <div class="panel-h"><h3>Pedidos recientes</h3><span class="sub">{{ orders().length }} en este historial</span></div>
+        <div class="panel-b flush">
+          @if (orders().length === 0) {
+          <div style="padding:var(--s-5);text-align:center;color:var(--carbon-50);font-size:13px">Sin pedidos</div>
+          } @else {
+          <div class="tbl-wrap">
             <table class="tbl">
               <thead><tr><th>Orden</th><th class="num">Total</th><th>Estado</th><th>Fecha</th></tr></thead>
               <tbody>
@@ -61,36 +71,14 @@
                 }
               </tbody>
             </table>
-            }
           </div>
+          }
         </div>
-
       </div>
 
-      <div class="panel" style="align-self:flex-start">
-        <div class="panel-h"><h3>Estadísticas</h3></div>
-        <div class="panel-b" style="display:flex;flex-direction:column;gap:14px">
-          <div>
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Total gastado (lifetime)</div>
-            <div style="font-family:var(--display);font-size:28px;margin-top:4px;line-height:1">{{ fmtCOP(c.spent) }}</div>
-          </div>
-          <div style="padding-top:12px;border-top:1px dashed var(--carbon-08)">
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Pedidos totales</div>
-            <div style="font-family:var(--display);font-size:28px;margin-top:4px;line-height:1">{{ c.orders }}</div>
-          </div>
-          <div style="padding-top:12px;border-top:1px dashed var(--carbon-08)">
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Ticket promedio (visibles)</div>
-            <div style="font-family:var(--display);font-size:28px;margin-top:4px;line-height:1">{{ fmtCOP(ticketPromedio()) }}</div>
-          </div>
-          <div style="padding-top:12px;border-top:1px dashed var(--carbon-08)">
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Cliente desde</div>
-            <div style="font-size:14px;font-weight:600;margin-top:4px">{{ fmtSince(c.since) }}</div>
-          </div>
-          <div style="padding-top:12px;border-top:1px dashed var(--carbon-08);display:flex;flex-direction:column;gap:6px">
-            <button class="btn-sm ghost" style="justify-content:center">Enviar carta</button>
-            <button class="btn-sm danger" style="justify-content:center">Suspender cuenta</button>
-          </div>
-        </div>
+      <div class="cli-actions">
+        <button class="btn-sm ghost">Enviar carta</button>
+        <button class="btn-sm danger">Suspender cuenta</button>
       </div>
 
     </div>

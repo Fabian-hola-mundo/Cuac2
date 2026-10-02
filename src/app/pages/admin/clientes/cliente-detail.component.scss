@@ -1,10 +1,42 @@
 :host { display: contents; }
 
+// Con un nombre largo en móvil el título baja a dos líneas y el botón de
+// cerrar se encogía hasta quedar ovalado.
+.drawer-close { flex-shrink: 0; }
+
+// Cifras del cliente: cuatro en fila; en el drawer de móvil, de a dos.
+.cli-stats {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--paper); border: 1px solid var(--carbon-08); border-radius: var(--r-lg);
+
+  @media (max-width: 720px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    .cli-stat:nth-child(2) { border-right: 0; }
+    .cli-stat:nth-child(-n+2) { border-bottom: 1px solid var(--carbon-08); }
+  }
+}
+.cli-stat {
+  padding: var(--s-4); min-width: 0;
+  border-right: 1px solid var(--carbon-08);
+  &:last-child { border-right: 0; }
+
+  .k {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--carbon-50);
+  }
+  .v {
+    font-family: var(--display); font-size: 24px; line-height: 1.1; margin-top: 6px;
+    overflow-wrap: anywhere;
+    &.sm { font-family: var(--sans); font-size: 14px; font-weight: 600; margin-top: 8px; }
+  }
+}
+
 // Datos de contacto en solo lectura (vienen del último pedido).
 .ro {
-  font-size: 14px;
   color: var(--carbon);
-  word-break: break-word;
+  text-align: right; min-width: 0; overflow-wrap: anywhere;
 
   a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 }
+
+.cli-actions { display: flex; justify-content: flex-end; gap: var(--s-2); flex-wrap: wrap; }
