@@ -288,11 +288,16 @@
         <h3 id="gt-fisico-titulo">Llévate el <em>tarot</em> a tu mesa</h3>
         <p>Las mismas 22 ilustraciones, impresas para barajarlas con tus manos y leerlas cuando quieras.</p>
       </div>
-      @if (tarotFisico) {
-        <a class="gt-btn gt-btn--solid gt-fisico-btn" [routerLink]="tarotFisico">Comprar el tarot</a>
-      } @else {
-        <button type="button" class="gt-btn gt-btn--solid gt-fisico-btn">Comprar el tarot</button>
-      }
+      <div class="gt-fisico-acciones">
+        @if (tarotFisico) {
+          <a class="gt-btn gt-btn--solid gt-fisico-btn" [routerLink]="tarotFisico">Comprar el tarot</a>
+        } @else {
+          <button type="button" class="gt-btn gt-btn--solid gt-fisico-btn">Comprar el tarot</button>
+        }
+        @if (tarotMini) {
+          <a class="gt-fisico-mini" [routerLink]="tarotMini">o el mini de bolsillo <span aria-hidden="true">→</span></a>
+        }
+      </div>
     </aside>
   </section>
 

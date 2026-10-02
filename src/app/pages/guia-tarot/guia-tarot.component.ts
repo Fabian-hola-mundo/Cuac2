@@ -57,6 +57,8 @@ export class GuiaTarotComponent implements OnInit, OnDestroy {
   ];
   /** Ficha del «Tarot Cuac» en la tienda. Si se deja en null, el botón no lleva a ningún lado. */
   readonly tarotFisico: string | null = '/cuaquiverso/tienda/a2de43cf-9593-4011-98d4-8f5d0de58fdc';
+  /** Ficha del «Mini tarot Cuac», enlace secundario bajo el botón de compra. */
+  readonly tarotMini: string | null = '/cuaquiverso/tienda/532c9209-820a-43be-9c77-c8b918f32c8d';
 
   /** Estrellas que titilan en la portada: posición (%), tamaño (px) y desfase (s). */
   readonly estrellas = [
