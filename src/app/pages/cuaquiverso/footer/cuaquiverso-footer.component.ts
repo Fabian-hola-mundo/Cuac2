@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { HelpModalComponent } from '../help-modal/help-modal.component';
 import { HelpModalService } from '../help-modal/help-modal.service';
 
 @Component({
   selector: 'app-cuaquiverso-footer',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, HelpModalComponent],
   templateUrl: './cuaquiverso-footer.component.html',
   styleUrl: './cuaquiverso-footer.component.scss',
 })
