@@ -76,7 +76,7 @@
           <span class="gt-hero-fisico-cta">Comprar <span aria-hidden="true">→</span></span>
         </ng-template>
         @if (tarotFisico) {
-          <a class="gt-hero-fisico" [href]="tarotFisico"><ng-container *ngTemplateOutlet="fisicoHero" /></a>
+          <a class="gt-hero-fisico" [routerLink]="tarotFisico"><ng-container *ngTemplateOutlet="fisicoHero" /></a>
         } @else {
           <button type="button" class="gt-hero-fisico"><ng-container *ngTemplateOutlet="fisicoHero" /></button>
         }
@@ -289,7 +289,7 @@
         <p>Las mismas 22 ilustraciones, impresas para barajarlas con tus manos y leerlas cuando quieras.</p>
       </div>
       @if (tarotFisico) {
-        <a class="gt-btn gt-btn--solid gt-fisico-btn" [href]="tarotFisico">Comprar el tarot</a>
+        <a class="gt-btn gt-btn--solid gt-fisico-btn" [routerLink]="tarotFisico">Comprar el tarot</a>
       } @else {
         <button type="button" class="gt-btn gt-btn--solid gt-fisico-btn">Comprar el tarot</button>
       }

@@ -55,8 +55,8 @@ export class GuiaTarotComponent implements OnInit, OnDestroy {
     { id: 'arcanos',   nombre: 'Los 22 arcanos' },
     { id: 'recuerda',  nombre: 'Recuerda' },
   ];
-  /** Enlace de compra del tarot físico. Mientras no exista, el botón no lleva a ningún lado. */
-  readonly tarotFisico: string | null = null;
+  /** Ficha del «Tarot Cuac» en la tienda. Si se deja en null, el botón no lleva a ningún lado. */
+  readonly tarotFisico: string | null = '/cuaquiverso/tienda/a2de43cf-9593-4011-98d4-8f5d0de58fdc';
 
   /** Estrellas que titilan en la portada: posición (%), tamaño (px) y desfase (s). */
   readonly estrellas = [
