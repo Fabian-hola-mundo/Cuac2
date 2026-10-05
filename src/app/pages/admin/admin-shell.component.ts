@@ -75,6 +75,11 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     }
   }
 
+  // El overlay de notificaciones solo cubre la topbar (su backdrop-filter atrapa
+  // el `fixed`); la campana y el panel detienen la propagación.
+  @HostListener('document:click')
+  onDocumentClick() { if (this.notifOpen()) this.notifOpen.set(false); }
+
   toggleNav() { this.navOpen.update(v => !v); }
   closeNav()  { this.navOpen.set(false); }
 

@@ -214,3 +214,28 @@
   max-width: 22ch;
   line-height: 1.5;
 }
+
+// ── Móvil ─────────────────────────────────────────────────────────────────────
+// Aquí y no en _admin.scss: la regla global pierde contra el estilo encapsulado.
+// `fixed` se resuelve contra la topbar (su backdrop-filter la vuelve el bloque
+// contenedor), que está pegada arriba y ocupa todo el ancho.
+@media (max-width: 480px) {
+  .nd {
+    position: fixed;
+    top: 64px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .nd-list { max-height: calc(100dvh - 180px); }
+
+  .nd-item { padding: 13px 14px; }
+
+  .nd-footer-link { padding: 8px 16px; }
+}
+
+// Sin hover no hay forma de descubrir la flecha.
+@media (hover: none) {
+  .nd-arrow { opacity: 1; }
+}
