@@ -9,6 +9,7 @@ export interface Resena {
   comentario:    string;
   correo:        string | null;
   visible:       boolean;
+  leida?:        boolean;  // solo llega al admin
   proyecto_id:   string | null;
   created_at:    string;
   proyecto?:     { slug: string; title: string } | null;

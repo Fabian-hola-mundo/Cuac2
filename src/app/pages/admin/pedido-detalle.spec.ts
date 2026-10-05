@@ -8,6 +8,13 @@ import { AdminStateService } from '../../core/services/admin-state.service';
 import { AdminDataService, Order } from '../../core/services/admin-data.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { InventarioService } from '../../core/services/inventario.service';
+import { NotificationsService } from './notifications/notifications.service';
+
+/** Abrir un pedido lo marca como visto en Supabase; aquí solo se registra. */
+class NotificacionesStub {
+  vistos: string[] = [];
+  async marcarPedidoVisto(ref: string) { this.vistos.push(ref); }
+}
 
 class GoogleAnalyticsStub {
   async getReport() {
@@ -28,6 +35,7 @@ async function montarEnPedidos() {
     providers: [
       provideRouter([]),
       { provide: GoogleAnalyticsService, useClass: GoogleAnalyticsStub },
+      { provide: NotificationsService, useClass: NotificacionesStub },
     ],
   }).compileComponents();
 
@@ -125,5 +133,26 @@ describe('Detalle de pedido en el admin', () => {
     const titulos = cmp.orderTimeline().map(t => t.title);
     expect(titulos).toContain('Pago rechazado');
     expect(titulos).not.toContain('Entregado');
+  });
+
+  it('abrir un pedido lo marca como visto para la campana', async () => {
+    const fixture = await montarEnPedidos();
+    ojos(fixture)[0].click();
+    await fixture.whenStable();
+
+    const notifs = TestBed.inject(NotificationsService) as unknown as NotificacionesStub;
+    expect(notifs.vistos).toEqual([TestBed.inject(AdminDataService).ORDERS[0].id]);
+  });
+
+  it('la campana abre el pedido que se tocó', async () => {
+    const fixture = await montarEnPedidos();
+    const cmp = fixture.componentInstance;
+
+    TestBed.inject(AdminStateService).abrirPedido.set('#T-2');
+    await fixture.whenStable();
+
+    expect(cmp.orderOn()).toBe(true);
+    expect(cmp.selectedOrder()?.id).toBe('#T-2');
+    expect(TestBed.inject(AdminStateService).abrirPedido()).toBeNull();
   });
 });

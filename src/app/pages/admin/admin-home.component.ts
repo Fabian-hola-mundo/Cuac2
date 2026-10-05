@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject, OnDestroy, OnInit, HostListener } from '@angular/core';
+import { Component, computed, signal, inject, effect, untracked, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { PagoDetailComponent }    from './pagos/pago-detail.component';
 import { PagosExportService }    from './pagos/pagos-export.service';
 import { InventarioService } from '../../core/services/inventario.service';
 import { calcularKpis } from './productos/productos-filtros';
+import { NotificationsService } from './notifications/notifications.service';
 
 @Component({
   selector: 'app-admin-home',
@@ -26,6 +27,7 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   private exportSvc   = inject(PagosExportService);
   private router      = inject(Router);
   private inv         = inject(InventarioService);
+  private notifs      = inject(NotificationsService);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   view = this.adminState.view;
@@ -441,7 +443,23 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.flash(this.editingProduct() ? '✓ Producto actualizado' : '✓ Producto creado');
   }
 
-  openOrder(o: Order) { this.selectedOrderId.set(o.id); this.orderOn.set(true); }
+  openOrder(o: Order) {
+    this.selectedOrderId.set(o.id);
+    this.orderOn.set(true);
+    void this.notifs.marcarPedidoVisto(o.id);
+  }
+
+  // Al tocar un pedido en la campana: se abre apenas la lista lo trae.
+  private readonly abrirDesdeNotif = effect(() => {
+    const ref = this.adminState.abrirPedido();
+    if (!ref) return;
+    const o = this.data.orders().find(x => x.id === ref);
+    if (!o) return;
+    untracked(() => {
+      this.adminState.abrirPedido.set(null);
+      this.openOrder(o);
+    });
+  });
   closeOrder() { this.orderOn.set(false); this.selectedOrderId.set(null); }
 
   openManualOrder() {

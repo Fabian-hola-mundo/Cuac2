@@ -9,12 +9,10 @@ export interface ResenaNueva {
   created_at: string;
 }
 
-const CLAVE_VISTO = 'cuac-admin-resenas-vistas-hasta';
-
 /**
- * Reseñas que llegaron desde la última vez que se abrió /admin/resenas.
- * "Nueva" = sin publicar y creada después de esa visita. La marca de visita
- * vive en el navegador: la tabla no tiene columna de leída.
+ * Reseñas que nadie ha revisado todavía: sin publicar y con `leida = false`.
+ * La marca vive en la base (032), así que es la misma en todos los dispositivos;
+ * abrir /admin/resenas las marca como leídas.
  */
 @Injectable({ providedIn: 'root' })
 export class ResenasNuevasService {
@@ -22,31 +20,24 @@ export class ResenasNuevasService {
 
   readonly count = signal(0);
 
-  vistoHasta(): string {
-    try { return localStorage.getItem(CLAVE_VISTO) ?? new Date(0).toISOString(); }
-    catch { return new Date(0).toISOString(); }
-  }
-
   /** Cuenta las nuevas y devuelve las más recientes para la campana. */
   async cargar(limite = 5): Promise<ResenaNueva[]> {
     if (!this.sb.session()) return [];
-    const desde = this.vistoHasta();
     const { data, count, error } = await this.sb.db
       .from('resenas')
       .select('id, nombre, comentario, created_at', { count: 'exact' })
       .eq('visible', false)
-      .gt('created_at', desde)
+      .eq('leida', false)
       .order('created_at', { ascending: false })
       .limit(limite);
     if (error) { console.error('[resenas] nuevas:', error.message); return []; }
-    // Si mientras tanto se abrió /admin/resenas, la respuesta ya está vieja.
-    if (this.vistoHasta() !== desde) return [];
     this.count.set(count ?? 0);
     return (data ?? []) as ResenaNueva[];
   }
 
-  marcarVistas(): void {
-    try { localStorage.setItem(CLAVE_VISTO, new Date().toISOString()); } catch { /* sin storage */ }
+  async marcarVistas(): Promise<void> {
     this.count.set(0);
+    const { error } = await this.sb.db.rpc('admin_marcar_resenas_leidas');
+    if (error) console.error('[resenas] marcar leídas:', error.message);
   }
 }

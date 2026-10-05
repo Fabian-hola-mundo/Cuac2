@@ -37,9 +37,9 @@ export class ResenasAdminComponent implements OnInit {
   orden        = signal<Orden>('recientes');
   limite       = signal(POR_PAGINA);
 
-  // Lo que había llegado desde la visita anterior; se fija al entrar para que
-  // la etiqueta «Nueva» siga visible mientras se revisa la página.
-  private vistoAntes = signal(new Date().toISOString());
+  // Las que estaban sin leer al entrar; se fijan para que la etiqueta «Nueva»
+  // siga visible mientras se revisa la página, aunque ya queden marcadas.
+  private idsNuevos = signal<ReadonlySet<string>>(new Set());
 
   pendientes = computed(() => this.items().filter(r => !r.visible).length);
   visibles   = computed(() => this.items().filter(r => r.visible).length);
@@ -83,10 +83,10 @@ export class ResenasAdminComponent implements OnInit {
     this.filtro() !== 'todas' || !!this.busqueda().trim() || !!this.proyectoSel());
 
   async ngOnInit() {
-    this.vistoAntes.set(this.nuevasSvc.vistoHasta());
-    this.nuevasSvc.marcarVistas();
-    this.notifs.quitarTipo('resena');
     await this.cargar();
+    this.idsNuevos.set(new Set(this.items().filter(r => r.leida === false).map(r => r.id)));
+    this.notifs.quitarTipo('resena');
+    void this.nuevasSvc.marcarVistas();
     if (this.nuevas() > 0) this.filtro.set('nuevas');
   }
 
@@ -115,7 +115,7 @@ export class ResenasAdminComponent implements OnInit {
   }
 
   esNueva(r: Resena): boolean {
-    return r.created_at > this.vistoAntes();
+    return this.idsNuevos().has(r.id);
   }
 
   nombreProyecto(id: string | null): string | null {
