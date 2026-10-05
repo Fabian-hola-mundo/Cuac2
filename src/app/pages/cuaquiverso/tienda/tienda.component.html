@@ -17,16 +17,63 @@
 </header>
 
 <!-- SHOP HERO -->
+<!-- El renglón de fondo es el "cuaderno" del título; la vitrina muestra
+     productos reales (destacados primero) para que el hero venda algo en vez
+     de sólo anunciar que hay tienda. -->
 <section class="shop-hero">
   <div class="shop-hero-inner">
-    <div>
+    <div class="sh-copy">
+      <div class="sh-eyebrow"><span class="dot"></span> La tienda <span class="num">/ Vol. 01</span></div>
       <h1>Toda la tienda, <em>en un solo cuaderno</em>.</h1>
       <p>Trabajamos en cantidades pensadas. Algunos productos vuelven, otros son únicos. La mejor forma de no perderte nada es actuar cuando algo te gusta.</p>
+
+      @if (CATEGORIES().length > 0) {
+        <div class="sh-cats" role="group" aria-label="Ir a una categoría">
+          <button type="button" class="sh-cat" [class.is-on]="selectedCats().size === 0"
+                  [attr.aria-pressed]="selectedCats().size === 0" (click)="irACategoria(null)">
+            Todo <span class="n">{{ activeProducts().length }}</span>
+          </button>
+          @for (cat of CATEGORIES(); track cat.id) {
+            <button type="button" class="sh-cat" [class.is-on]="soloCategoria(cat.id)"
+                    [attr.aria-pressed]="soloCategoria(cat.id)" (click)="irACategoria(cat.id)">
+              {{ cat.label }} <span class="n">{{ conteoCategoria(cat.id) }}</span>
+            </button>
+          }
+        </div>
+      }
+
+      <div class="stats">
+        <div><div class="k">Productos</div><div class="v">{{ activeProducts().length || '—' }}</div></div>
+        <div><div class="k">Personajes</div><div class="v">8</div></div>
+        <div><div class="k">Envío gratis</div><div class="v">desde {{ ENVIO_GRATIS_CORTO }}</div></div>
+      </div>
     </div>
-    <div class="stats">
-      <div><div class="k">Productos</div><div class="v">{{ activeProducts().length || '—' }}</div></div>
-      <div><div class="k">Personajes</div><div class="v">8</div></div>
-      <div><div class="k">Envío gratis</div><div class="v">desde {{ ENVIO_GRATIS_CORTO }}</div></div>
+
+    <div class="sh-vitrina">
+      @for (p of vitrina(); track p.id; let i = $index) {
+        <a class="sh-card" [attr.data-color]="p.color" [style.--i]="i"
+           [routerLink]="['/cuaquiverso/tienda', p.id]">
+          <span class="sh-card-img">
+            @if (p.cover_url) {
+              <img [src]="p.cover_url" [alt]="p.nombre" decoding="async" [attr.fetchpriority]="i === 0 ? 'high' : null" />
+            } @else {
+              <span class="label">{{ catCorta(p.categoria) }}</span>
+            }
+          </span>
+          <span class="sh-card-info">
+            <span class="nm">{{ p.nombre }}</span>
+            <span class="pr">
+              @if (p.tieneVariantes && p.precioMin !== p.precioMax) { Desde }
+              {{ fmtPrice(p.tieneVariantes ? (p.precioMin ?? p.precio) : p.precio) }}
+            </span>
+          </span>
+          @if (i === 0) { <span class="sh-tag">{{ p.destacado ? 'Destacado' : 'Recién llegado' }}</span> }
+        </a>
+      } @empty {
+        @for (n of [0, 1, 2]; track n) {
+          <span class="sh-card is-ghost" [style.--i]="n" aria-hidden="true"></span>
+        }
+      }
     </div>
   </div>
 </section>
@@ -76,7 +123,7 @@
 </div>
 
 <!-- LAYOUT: filters sidebar + grid -->
-<div class="shop-layout">
+<div class="shop-layout" id="productos">
 
   <!-- Cierra el panel en móvil: antes el propio panel tapaba el botón que lo
        abría y no había Escape, así que la única salida era recargar. -->

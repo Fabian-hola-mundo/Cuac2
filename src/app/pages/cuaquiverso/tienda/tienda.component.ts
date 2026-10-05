@@ -133,6 +133,33 @@ export class TiendaComponent implements OnInit {
     );
   });
 
+  /**
+   * Tres productos para la vitrina del hero: destacados primero, luego los más
+   * recientes. Nunca uno agotado: el hero no puede abrir con algo que no se
+   * puede comprar.
+   */
+  readonly vitrina = computed(() =>
+    this.activeProducts()
+      .filter(p => !this.agotado(p))
+      .sort((a, b) =>
+        (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0) ||
+        new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime())
+      .slice(0, 3)
+  );
+
+  private readonly conteoPorCategoria = computed(() => {
+    const m = new Map<string, number>();
+    for (const p of this.activeProducts()) m.set(p.categoria, (m.get(p.categoria) ?? 0) + 1);
+    return m;
+  });
+
+  conteoCategoria(id: string): number { return this.conteoPorCategoria().get(id) ?? 0; }
+
+  soloCategoria(id: string): boolean {
+    const s = this.selectedCats();
+    return s.size === 1 && s.has(id);
+  }
+
   activePipCount = computed(() =>
     this.selectedCats().size + this.selectedMats().size + this.selectedAvail().size +
     (this.priceMin() !== null ? 1 : 0) + (this.priceMax() !== null ? 1 : 0)
@@ -218,6 +245,12 @@ export class TiendaComponent implements OnInit {
   }
 
   clearSearch() { this.query.set(''); }
+
+  /** Atajo del hero: deja sólo esa categoría (o ninguna) y baja a la grilla. */
+  irACategoria(id: string | null) {
+    this.selectedCats.set(id ? new Set([id]) : new Set());
+    document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   onPriceMin(ev: Event) {
     const v = (ev.target as HTMLInputElement).value;
