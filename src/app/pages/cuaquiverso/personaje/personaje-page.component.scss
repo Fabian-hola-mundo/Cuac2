@@ -495,7 +495,7 @@ h1 {
 // ─── Responsive ───────────────────────────────────────────────────────────────
 @media (max-width: 1100px) {
   .topbar-inner { padding: 0 var(--s-5) 0 var(--s-5); }
-  nav.primary { display: none; }
+  nav.primary { gap: 0; a { padding: 8px 12px; } }
 }
 
 @media (max-width: 768px) {
@@ -510,4 +510,16 @@ h1 {
   .gallery-thumb { min-width: 70px; }
   .pj-nav { grid-template-columns: 1fr 1fr; }
   .pj-nav-all { display: none; }
+}
+
+// Logo de Cuac: lleva a la portada de Cuac Design.
+.brand { display: flex; align-items: center; color: var(--carbon, #151F28); text-decoration: none; }
+.brand svg { display: block; width: 84px; height: auto; transition: opacity .15s; }
+.brand:hover svg { opacity: .7; }
+
+// En pantallas angostas el logo y las pestañas se compactan para caber con el carrito.
+@media (max-width: 420px) {
+  .topbar-inner { gap: var(--s-3); }
+  .brand svg { width: 64px; }
+  nav.primary a { padding: 7px 9px; font-size: 13px; }
 }

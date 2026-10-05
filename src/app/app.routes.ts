@@ -13,9 +13,10 @@ export const routes: Routes = [
       import('./pages/cotizador/cotizador.component').then(m => m.CotizadorComponent),
   },
   {
+    // La portada del Cuaquiverso se retiró: la entrada es la tienda.
     path: 'cuaquiverso',
-    loadComponent: () =>
-      import('./pages/cuaquiverso/cuaquiverso.component').then(m => m.CuaquiversoComponent),
+    redirectTo: 'cuaquiverso/tienda',
+    pathMatch: 'full',
   },
   {
     path: 'identidadcorporativa',

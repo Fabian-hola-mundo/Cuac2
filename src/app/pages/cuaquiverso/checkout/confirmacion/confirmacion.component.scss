@@ -266,3 +266,8 @@
 }
 
 .reserva-cuenta { font-size: 14px; margin: 12px 0 0; b { font-variant-numeric: tabular-nums; } }
+
+// Logo de Cuac: lleva a la portada de Cuac Design.
+.brand { display: flex; align-items: center; color: var(--carbon, #151F28); text-decoration: none; }
+.brand svg { display: block; width: 84px; height: auto; transition: opacity .15s; }
+.brand:hover svg { opacity: .7; }

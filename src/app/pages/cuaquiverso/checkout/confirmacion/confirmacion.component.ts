@@ -78,7 +78,7 @@ export class ConfirmacionComponent implements OnInit, OnDestroy {
     const params = this.route.snapshot.queryParams;
     const token = params['ref'];
     if (!token) {
-      this.router.navigate(['/cuaquiverso']);
+      this.router.navigate(['/cuaquiverso/tienda']);
       return;
     }
     this.token = token;
