@@ -44,6 +44,8 @@ export interface ProductoEvento {
   color: string | null;
   flag: string | null;
   destacado: boolean;
+  /** Exclusivo de evento: fuera de la tienda web; en el POS sólo con evento activo. */
+  solo_evento: boolean;
   descripcion: string | null;
 }
 
@@ -220,6 +222,7 @@ export class InventarioService {
         .from('productos_evento')
         .select(`${COLUMNAS_PUBLICAS}, producto_variantes(precio, activo)`)
         .eq('activo', true)
+        .eq('solo_evento', false)
         .order('creado_en', { ascending: false }),
       this.sb.db.rpc('stock_disponible'),
     ]);
@@ -345,7 +348,8 @@ export class InventarioService {
     ]);
     const error = prodRes.error ?? opRes.error ?? varRes.error;
     if (error) return { ...vacio, error: error.message };
-    if (!prodRes.data) return { ...vacio, error: null };
+    // Un exclusivo de evento no existe para la tienda web.
+    if (!prodRes.data || prodRes.data.solo_evento) return { ...vacio, error: null };
 
     const disp = new Map<string | null, number>(
       ((dispRes.data ?? []) as { variante_id: string | null; disponible: number }[])

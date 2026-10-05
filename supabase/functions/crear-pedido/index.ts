@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     // ── Precios desde el catálogo (productos, variantes y orden de opciones) ──
     const ids = [...new Set(items.map((i: any) => i.id as string))]
     const [prodRes, varRes, opRes] = await Promise.all([
-      supabase.from('productos_evento').select('id, nombre, categoria, precio, activo').in('id', ids),
+      supabase.from('productos_evento').select('id, nombre, categoria, precio, activo, solo_evento').in('id', ids),
       supabase.from('producto_variantes').select('id, producto_id, opciones, precio, activo').in('producto_id', ids),
       supabase.from('producto_opciones').select('producto_id, nombre, posicion').in('producto_id', ids),
     ])
@@ -73,7 +73,9 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'No se pudo verificar el catálogo' }, 500)
     }
 
-    const resuelto = resolverLineas(items, prodRes.data ?? [], varRes.data ?? [], opRes.data ?? [])
+    // Un exclusivo de evento no se vende en la web: cuenta como no disponible.
+    const enWeb = (prodRes.data ?? []).filter(p => !p.solo_evento)
+    const resuelto = resolverLineas(items, enWeb, varRes.data ?? [], opRes.data ?? [])
     if (!resuelto.ok) return json({ ok: false, error: resuelto.error }, resuelto.status)
     const lineas = resuelto.lineas
 

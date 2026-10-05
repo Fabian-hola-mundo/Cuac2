@@ -937,9 +937,13 @@
         .order('categoria')
         .order('nombre');
 
-      // Si hay evento activo, filtrar por él (productos creados en /admin para este evento)
+      // Si hay evento activo, filtrar por él (productos creados en /admin para
+      // este evento) más los exclusivos de evento, sin importar dónde se crearon.
+      // Sin evento, los exclusivos no se venden.
       if (eventoActivo?.id) {
-        query = query.eq('evento_id', eventoActivo.id);
+        query = query.or(`evento_id.eq.${eventoActivo.id},solo_evento.eq.true`);
+      } else {
+        query = query.eq('solo_evento', false);
       }
 
       const { data, error } = await query;
@@ -995,7 +999,7 @@
       }, payload => {
         if (payload.eventType === 'UPDATE' && payload.new) {
           const updated = payload.new;
-          if (!updated.activo) {
+          if (!updated.activo || (updated.solo_evento && !eventoActivo?.id)) {
             products = products.filter(p => p.id !== updated.id);
           } else {
             const idx = products.findIndex(p => p.id === updated.id);
@@ -1003,7 +1007,8 @@
             else products.push(updated);
           }
           renderProducts();
-        } else if (payload.eventType === 'INSERT' && payload.new?.activo) {
+        } else if (payload.eventType === 'INSERT' && payload.new?.activo &&
+                   (!payload.new.solo_evento || eventoActivo?.id)) {
           products.push(payload.new);
           renderProducts();
         } else if (payload.eventType === 'DELETE' && payload.old) {

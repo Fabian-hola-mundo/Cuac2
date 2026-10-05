@@ -267,6 +267,7 @@
         <div class="kv"><span class="k">Valor en stock</span><span class="v">{{ fmtCOP(prod.precio * prod.stock_actual) }}</span></div>
         <div class="kv"><span class="k">Estado</span><span class="v">{{ prod.activo ? 'Activo' : 'Inactivo' }}</span></div>
         <div class="kv"><span class="k">En home</span><span class="v">{{ prod.destacado ? 'Destacado' : 'No' }}</span></div>
+        <div class="kv"><span class="k">Dónde se vende</span><span class="v">{{ prod.solo_evento ? 'Solo en eventos' : 'Tienda web y POS' }}</span></div>
         @if (prod.material.length) {
           <div class="kv"><span class="k">Material</span><span class="v">{{ prod.material.join(', ') }}</span></div>
         }

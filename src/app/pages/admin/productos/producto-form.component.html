@@ -166,6 +166,17 @@
           </div>
         </div>
 
+        <div class="field-toggle-row">
+          <div>
+            <span class="ftr-label">Solo en eventos</span>
+            <span class="help">No sale en la tienda web. En el POS aparece únicamente mientras haya un evento activo.</span>
+          </div>
+          <label class="inv-toggle">
+            <input type="checkbox" formControlName="solo_evento" />
+            <span class="inv-slider"></span>
+          </label>
+        </div>
+
         <app-variantes-editor [fotos]="fotosGuardadas()" [esEdicion]="isEdit()" [productoId]="editId()" />
 
         <!-- ── APARIENCIA ─────────────────────────────────────────── -->

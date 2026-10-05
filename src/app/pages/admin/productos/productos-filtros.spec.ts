@@ -29,6 +29,7 @@ function producto(over: Partial<ProductoEvento> = {}): ProductoEvento {
     color: null,
     flag: null,
     destacado: false,
+    solo_evento: false,
     descripcion: null,
     ...over,
   };

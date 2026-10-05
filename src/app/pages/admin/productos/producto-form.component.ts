@@ -164,6 +164,7 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     flag:          [null as string | null],
     descripcion:   [''],
     destacado:     [false],
+    solo_evento:   [false],
   });
 
   // ── Stock ─────────────────────────────────────────────────────────────────
@@ -217,6 +218,7 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
       color:         p.color,
       flag:          p.flag,
       destacado:     p.destacado ?? false,
+      solo_evento:   p.solo_evento ?? false,
       descripcion:   p.descripcion ?? '',
     });
     // Editar el número a mano se guarda como ajuste, así el historial cuadra.
@@ -301,6 +303,7 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
           ? this.etiquetaNueva.trim().slice(0, MAX_LARGO_ETIQUETA)
           : (v.flag ?? null),
         destacado:   v.destacado ?? false,
+        solo_evento: v.solo_evento ?? false,
         descripcion: v.descripcion || null,
       };
 
