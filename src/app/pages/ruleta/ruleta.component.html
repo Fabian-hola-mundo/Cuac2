@@ -45,7 +45,7 @@
                   {{ cfg.resultado_cta }}
                 </button>
               }
-              <a class="rp-btn rp-btn--ghost" href="/cuaquiverso/tienda">Ir a la tienda</a>
+              <a class="rp-btn rp-btn--ghost" href="/cuaquiverso/tienda" target="_blank" rel="noopener">Ir a la tienda</a>
             </div>
             @if (agotado()) {
               <p class="rp-premio-nota rp-nota-fuerte">{{ cfg.agotado_texto }}</p>
@@ -59,7 +59,7 @@
           <div class="rp-intro">
             <h2>Tu turno ya pasó</h2>
             <p>{{ cfg.agotado_texto }}</p>
-            <a class="rp-btn rp-btn--ghost" href="/cuaquiverso/tienda">Ir a la tienda</a>
+            <a class="rp-btn rp-btn--ghost" href="/cuaquiverso/tienda" target="_blank" rel="noopener">Ir a la tienda</a>
           </div>
         } @else {
           <div class="rp-intro">
@@ -164,7 +164,7 @@
               {{ cfg.resultado_cta }}
             </button>
           }
-          <a class="rp-btn rp-btn--ghost" href="/cuaquiverso/tienda">Ir a la tienda</a>
+          <a class="rp-btn rp-btn--ghost" href="/cuaquiverso/tienda" target="_blank" rel="noopener">Ir a la tienda</a>
           <button type="button" class="rp-modal-cerrar" (click)="cerrarModal()">Cerrar</button>
         </div>
       </div>

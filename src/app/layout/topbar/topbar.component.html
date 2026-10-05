@@ -14,7 +14,7 @@
     <nav class="primary" aria-label="Principal">
       <a href="#servicios">Servicios</a>
       <a routerLink="/portafolio">Portafolio</a>
-      <a routerLink="/cuaquiverso/tienda">Tienda</a>
+      <a routerLink="/cuaquiverso/tienda" target="_blank" rel="noopener">Tienda</a>
       <a href="#contacto">Contacto</a>
     </nav>
 
@@ -40,7 +40,7 @@
   <nav id="mobile-nav" class="mobile-nav" aria-label="Menú móvil" [class.is-open]="menuOpen()">
     <a href="#servicios" (click)="closeMenu()">Servicios</a>
     <a routerLink="/portafolio" (click)="closeMenu()">Portafolio</a>
-    <a routerLink="/cuaquiverso/tienda" (click)="closeMenu()">Tienda</a>
+    <a routerLink="/cuaquiverso/tienda" target="_blank" rel="noopener" (click)="closeMenu()">Tienda</a>
     <a href="#contacto" (click)="closeMenu()">Contacto</a>
     <div class="mobile-nav-foot">
       <a class="btn btn-primary" routerLink="/cotizar" (click)="closeMenu()">Cotizar tu proyecto</a>
