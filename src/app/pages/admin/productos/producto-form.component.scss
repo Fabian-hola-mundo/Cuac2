@@ -136,9 +136,11 @@ code {
 
   // Dos líneas cabrían mal en media columna: la etiqueta larga manda el alto.
   .ftr-label { line-height: 1.35; }
+
+  .ftr-off { opacity: .55; }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 860px) {
   .toggles-fila { grid-template-columns: 1fr; }
 }
 

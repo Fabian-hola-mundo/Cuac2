@@ -164,7 +164,8 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     flag:          [null as string | null],
     descripcion:   [''],
     destacado:     [false],
-    solo_evento:   [false],
+    /** Inverso de `solo_evento`: apagado, el producto se vende sólo en el POS. */
+    en_web:        [true],
   });
 
   // ── Stock ─────────────────────────────────────────────────────────────────
@@ -200,6 +201,14 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
     this.form.get('precio')!.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(v => this.precio.set(v ?? null));
+    // Fuera de la web no hay home donde destacarlo: el interruptor se apaga.
+    this.form.get('en_web')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(enWeb => {
+        const c = this.form.get('destacado')!;
+        if (enWeb) c.enable({ emitEvent: false });
+        else c.disable({ emitEvent: false });
+      });
     this.inv.getCategoriasUsadas().then(cats => this.categoriasUsadas.set(cats));
     this.inv.getEtiquetasUsadas().then(tags => this.etiquetasUsadas.set(tags));
 
@@ -218,7 +227,7 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
       color:         p.color,
       flag:          p.flag,
       destacado:     p.destacado ?? false,
-      solo_evento:   p.solo_evento ?? false,
+      en_web:        !p.solo_evento,
       descripcion:   p.descripcion ?? '',
     });
     // Editar el número a mano se guarda como ajuste, así el historial cuadra.
@@ -302,8 +311,9 @@ export class ProductoFormComponent implements OnInit, AfterViewInit, OnDestroy {
         flag:        this.creandoEtiqueta()
           ? this.etiquetaNueva.trim().slice(0, MAX_LARGO_ETIQUETA)
           : (v.flag ?? null),
-        destacado:   v.destacado ?? false,
-        solo_evento: v.solo_evento ?? false,
+        // Destacar es para la tienda web: un exclusivo de evento no lo queda.
+        destacado:   (v.en_web ?? true) && (v.destacado ?? false),
+        solo_evento: !(v.en_web ?? true),
         descripcion: v.descripcion || null,
       };
 

@@ -145,12 +145,15 @@
           </div>
         }
 
-        <!-- Los dos interruptores son la misma decisión ("dónde se ve esto"),
-             así que van en una sola fila y con la misma forma: etiqueta a la
-             izquierda, control a la derecha. -->
-        <div class="grid-2 toggles-fila">
+        <!-- "Dónde se vende": Activo es el interruptor general (POS y eventos);
+             Tienda web decide si además sale en la web o queda sólo en el POS.
+             Destacar sólo tiene sentido si está en la web. -->
+        <div class="grid-3 toggles-fila">
           <div class="field-toggle-row">
-            <div><span class="ftr-label">Activo en el POS</span></div>
+            <div>
+              <span class="ftr-label">Activo</span>
+              <span class="help">{{ form.getRawValue().activo ? 'Se vende en el POS y en eventos.' : 'Borrador: no se vende en ningún lado.' }}</span>
+            </div>
             <label class="inv-toggle">
               <input type="checkbox" formControlName="activo" />
               <span class="inv-slider"></span>
@@ -158,23 +161,26 @@
           </div>
 
           <div class="field-toggle-row">
-            <div><span class="ftr-label">Mostrar en home del Cuaquiverso</span></div>
+            <div>
+              <span class="ftr-label">Tienda web</span>
+              <span class="help">{{ form.getRawValue().en_web ? 'También sale en la tienda web.' : 'Solo POS: no sale en la web, pero se vende en el POS y en eventos.' }}</span>
+            </div>
+            <label class="inv-toggle">
+              <input type="checkbox" formControlName="en_web" />
+              <span class="inv-slider"></span>
+            </label>
+          </div>
+
+          <div class="field-toggle-row" [class.ftr-off]="!form.getRawValue().en_web">
+            <div>
+              <span class="ftr-label">Destacado en el Cuaquiverso</span>
+              <span class="help">{{ form.getRawValue().en_web ? 'Aparece en la home de la tienda.' : 'Sólo para productos de la tienda web.' }}</span>
+            </div>
             <label class="inv-toggle">
               <input type="checkbox" formControlName="destacado" />
               <span class="inv-slider"></span>
             </label>
           </div>
-        </div>
-
-        <div class="field-toggle-row">
-          <div>
-            <span class="ftr-label">Solo en eventos</span>
-            <span class="help">No sale en la tienda web. En el POS aparece únicamente mientras haya un evento activo.</span>
-          </div>
-          <label class="inv-toggle">
-            <input type="checkbox" formControlName="solo_evento" />
-            <span class="inv-slider"></span>
-          </label>
         </div>
 
         <app-variantes-editor [fotos]="fotosGuardadas()" [esEdicion]="isEdit()" [productoId]="editId()" />
