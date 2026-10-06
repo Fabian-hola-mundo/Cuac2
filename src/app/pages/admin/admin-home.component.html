@@ -732,10 +732,35 @@
             <div>{{ c.direccion }}</div>
             }
             <div>{{ ord.city }}</div>
-            <div style="margin-top:var(--s-3);padding-top:var(--s-3);border-top:1px dashed var(--carbon-08)">
-              <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Estado</div>
-              <div style="margin-top:4px"><span class="badge" [class]="sb(ord.shipping).tone"><span class="pdot"></span>{{ sb(ord.shipping).label }}</span></div>
-            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Envío</h3><span class="badge" [class]="sb(ord.shipping).tone"><span class="pdot"></span>{{ sb(ord.shipping).label }}</span></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            <!-- El pago lo decide Bold; aquí solo se mueve el despacho, y solo si ya se cobró. -->
+            @if (ord.status === 'paid' || ord.status === 'refunded') {
+              <div style="display:flex;flex-direction:column;gap:5px" role="radiogroup" aria-label="Estado de envío">
+                @for (opt of ENVIO_OPCIONES; track opt.id) {
+                <label
+                  style="display:flex;gap:8px;align-items:center;font-size:13px;padding:7px 10px;border-radius:8px;cursor:pointer"
+                  [style.background]="envioDraft() === opt.id ? 'var(--cream-2)' : 'transparent'"
+                  [style.outline]="envioDraft() === opt.id ? '1px solid var(--carbon-12)' : '1px solid transparent'">
+                  <input type="radio" name="envioEstado" [value]="opt.id" [checked]="envioDraft() === opt.id" (change)="envioDraft.set(opt.id)" />
+                  {{ opt.label }}
+                </label>
+                }
+              </div>
+              <div class="field">
+                <label for="envioGuia">Guía <span class="opt">(opcional)</span></label>
+                <input id="envioGuia" class="input" [value]="guiaDraft()" (input)="guiaDraft.set($any($event.target).value)" maxlength="120" placeholder="Ej: Servientrega 1234567890" />
+              </div>
+              <button class="btn-sm solid" style="justify-content:center" type="button"
+                [disabled]="!envioCambiado() || guardandoEnvio()" (click)="guardarEnvio()">
+                {{ guardandoEnvio() ? 'Guardando…' : 'Guardar envío' }}
+              </button>
+            } @else {
+              <div style="font-size:13px;color:var(--carbon-50)">Se puede despachar cuando el pago esté aprobado.</div>
+            }
           </div>
         </div>
         <div class="panel">

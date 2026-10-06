@@ -213,17 +213,20 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     }
 
     if (o.status === 'paid' || o.status === 'refunded') {
+      const enviado   = o.enviadoEn?.slice(11) ?? '—';
+      const entregado = o.entregadoEn?.slice(11) ?? '—';
+      const guia      = o.guia ? ` · Guía ${o.guia}` : '';
       switch (o.shipping) {
         case 'pending':
           rows.push({ time: '—', title: 'En preparación', desc: 'Pendiente de despacho', state: 'active' });
           break;
         case 'shipped':
-          rows.push({ time: '—', title: 'Despachado', desc: `En camino a ${o.city}`, state: 'done' });
+          rows.push({ time: enviado, title: 'Despachado', desc: `En camino a ${o.city}${guia}`, state: 'done' });
           rows.push({ time: '—', title: 'Entrega', desc: 'Pendiente de confirmación', state: 'wait' });
           break;
         case 'delivered':
-          rows.push({ time: '—', title: 'Despachado', desc: `Enviado a ${o.city}`, state: 'done' });
-          rows.push({ time: '—', title: 'Entregado', desc: `Recibido en ${o.city}`, state: 'done' });
+          rows.push({ time: enviado, title: 'Despachado', desc: `Enviado a ${o.city}${guia}`, state: 'done' });
+          rows.push({ time: entregado, title: 'Entregado', desc: `Recibido en ${o.city}`, state: 'done' });
           break;
         case 'returned':
           rows.push({ time: '—', title: 'Devuelto', desc: 'El pedido regresó a bodega', state: 'done' });
@@ -443,8 +446,39 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.flash(this.editingProduct() ? '✓ Producto actualizado' : '✓ Producto creado');
   }
 
+  // ── Estado de envío (el de pago lo decide Bold) ────────────────────────────
+  readonly ENVIO_OPCIONES: { id: string; label: string }[] = [
+    { id: 'pending',   label: 'En preparación' },
+    { id: 'shipped',   label: 'Enviado' },
+    { id: 'delivered', label: 'Entregado' },
+    { id: 'returned',  label: 'Devuelto' },
+  ];
+  envioDraft     = signal('pending');
+  guiaDraft      = signal('');
+  guardandoEnvio = signal(false);
+
+  readonly envioCambiado = computed(() => {
+    const o = this.selectedOrder();
+    return !!o && (this.envioDraft() !== o.shipping || this.guiaDraft().trim() !== (o.guia ?? ''));
+  });
+
+  async guardarEnvio() {
+    const o = this.selectedOrder();
+    if (!o || this.guardandoEnvio() || !this.envioCambiado()) return;
+    this.guardandoEnvio.set(true);
+    const error = await this.data.actualizarEnvio(o, this.envioDraft(), this.guiaDraft());
+    this.guardandoEnvio.set(false);
+    if (error) {
+      this.flash(`No se pudo guardar el envío: ${error}`);
+      return;
+    }
+    this.flash(`✓ Pedido ${o.id} · ${this.sb(this.envioDraft()).label}`);
+  }
+
   openOrder(o: Order) {
     this.selectedOrderId.set(o.id);
+    this.envioDraft.set(o.shipping);
+    this.guiaDraft.set(o.guia ?? '');
     this.orderOn.set(true);
     void this.notifs.marcarPedidoVisto(o.id);
   }

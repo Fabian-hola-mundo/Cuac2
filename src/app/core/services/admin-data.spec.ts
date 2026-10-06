@@ -34,6 +34,16 @@ describe('mapearPedidos', () => {
     expect(orders[0]).toMatchObject({ id: 'CUAC-1', customer: 'Ana Pérez', items: 3, total: 50000 });
   });
 
+  it('lee el estado de envío y la guía (sin columna, queda en preparación)', () => {
+    const { orders } = mapearPedidos([
+      fila({}),
+      fila({ id: 'b', referencia: 'CUAC-2', envio_estado: 'enviado', guia: 'SV-123', enviado_en: '2026-10-02T15:00:00Z' }),
+    ]);
+    expect(orders.map(o => o.shipping)).toEqual(['pending', 'shipped']);
+    expect(orders[1]).toMatchObject({ dbId: 'b', guia: 'SV-123', entregadoEn: null });
+    expect(orders[1].enviadoEn).toMatch(/^2026-10-02 /);
+  });
+
   it('trae los artículos del pedido con su variante y precio', () => {
     const { orders } = mapearPedidos([fila({}), fila({ id: 'b', referencia: 'CUAC-2', pedido_items: null })]);
     expect(orders[0].lines).toEqual([

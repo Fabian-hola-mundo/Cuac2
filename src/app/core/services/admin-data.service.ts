@@ -16,6 +16,12 @@ export interface Order {
   id: string; customerId: string; customer: string; email: string;
   items: number; total: number; status: string; shipping: string;
   date: string; city: string; method: string;
+  /** uuid de la fila en `pedidos`: `id` es la referencia que ve el cliente. */
+  dbId: string;
+  /** Número de guía de la transportadora, si ya se despachó. */
+  guia: string | null;
+  enviadoEn: string | null;
+  entregadoEn: string | null;
   /** Los artículos tal como se compraron: nombre y precio del momento de la compra. */
   lines: OrderLine[];
 }
@@ -58,6 +64,10 @@ interface PedidoFila {
   total: number;
   bold_payment_id: string | null;
   creado_en: string;
+  envio_estado?: EnvioEstado | null;
+  guia?: string | null;
+  enviado_en?: string | null;
+  entregado_en?: string | null;
   pedido_items: PedidoItemFila[] | null;
 }
 
@@ -68,6 +78,22 @@ interface PedidoItemFila {
   precio: number;
   cantidad: number;
 }
+
+export type EnvioEstado = 'preparando' | 'enviado' | 'entregado' | 'devuelto';
+
+const ENVIO_A_SHIPPING: Record<EnvioEstado, string> = {
+  preparando: 'pending',
+  enviado:    'shipped',
+  entregado:  'delivered',
+  devuelto:   'returned',
+};
+
+const SHIPPING_A_ENVIO: Record<string, EnvioEstado> = {
+  pending:   'preparando',
+  shipped:   'enviado',
+  delivered: 'entregado',
+  returned:  'devuelto',
+};
 
 const ESTADO_A_STATUS: Record<PedidoFila['estado'], string> = {
   aprobado:  'paid',
@@ -96,8 +122,11 @@ export function mapearPedidos(filas: PedidoFila[]): { orders: Order[]; customers
       items:      (p.pedido_items ?? []).reduce((s, i) => s + i.cantidad, 0),
       total:      p.total,
       status,
-      // La base todavía no guarda el despacho: un pedido pagado queda en preparación.
-      shipping:   'pending',
+      shipping:   ENVIO_A_SHIPPING[p.envio_estado ?? 'preparando'] ?? 'pending',
+      dbId:       p.id,
+      guia:       p.guia ?? null,
+      enviadoEn:  p.enviado_en ? fechaLocal(p.enviado_en) : null,
+      entregadoEn: p.entregado_en ? fechaLocal(p.entregado_en) : null,
       date:       fechaLocal(p.creado_en),
       city:       p.ciudad ?? '—',
       method:     'Bold',
@@ -211,7 +240,7 @@ export class AdminDataService {
     this.cargando.set(true);
     const { data, error } = await this.sb.db
       .from('pedidos')
-      .select('id, referencia, estado, nombre, apellido, email, celular, ciudad, direccion, total, bold_payment_id, creado_en, pedido_items(nombre, sub, variante_label, precio, cantidad)')
+      .select('id, referencia, estado, nombre, apellido, email, celular, ciudad, direccion, total, bold_payment_id, creado_en, envio_estado, guia, enviado_en, entregado_en, pedido_items(nombre, sub, variante_label, precio, cantidad)')
       .order('creado_en', { ascending: false });
     this.cargando.set(false);
     if (error) {
@@ -220,6 +249,27 @@ export class AdminDataService {
     }
     this.error.set(null);
     this.setPedidos((data ?? []) as PedidoFila[]);
+  }
+
+  /**
+   * Cambia el estado de envío de un pedido. Solo toca las columnas de despacho:
+   * el estado de pago sigue en manos de Bold. Devuelve el mensaje de error, o null.
+   */
+  async actualizarEnvio(o: Order, shipping: string, guia: string | null): Promise<string | null> {
+    const envio = SHIPPING_A_ENVIO[shipping];
+    if (!envio) return 'Estado de envío desconocido';
+    const ahora = new Date().toISOString();
+    const cambios: Record<string, string | null> = { envio_estado: envio, guia: guia?.trim() || null };
+    // Las fechas se fijan la primera vez que el pedido llega a cada paso y se
+    // borran si vuelve a uno anterior, para que la línea de tiempo no mienta.
+    if (envio === 'preparando') { cambios['enviado_en'] = null; cambios['entregado_en'] = null; }
+    if (envio === 'enviado')    { if (!o.enviadoEn) cambios['enviado_en'] = ahora; cambios['entregado_en'] = null; }
+    if (envio === 'entregado')  { if (!o.enviadoEn) cambios['enviado_en'] = ahora; if (!o.entregadoEn) cambios['entregado_en'] = ahora; }
+
+    const { error } = await this.sb.db.from('pedidos').update(cambios).eq('id', o.dbId);
+    if (error) return error.message;
+    await this.cargar();
+    return null;
   }
 
   private setPedidos(filas: PedidoFila[]): void {

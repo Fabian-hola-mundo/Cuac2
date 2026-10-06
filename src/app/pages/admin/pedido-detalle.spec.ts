@@ -24,9 +24,9 @@ class GoogleAnalyticsStub {
 
 /** Pedidos de prueba: el servicio arranca vacío, así que el spec trae los suyos. */
 const PEDIDOS_DE_PRUEBA: Order[] = [
-  { id: '#T-3', customerId: 'T-1', customer: 'Cliente Tres', email: 'tres@example.com', items: 1, total: 10000, status: 'paid',    shipping: 'delivered', date: '2026-01-03 10:00', city: 'Ciudad A', method: 'Bold', lines: [{ name: 'Camiseta Pato', detail: 'Camiseta', variant: 'L · Negro', price: 10000, qty: 1 }] },
-  { id: '#T-2', customerId: 'T-2', customer: 'Cliente Dos',  email: 'dos@example.com',  items: 2, total: 20000, status: 'failed',  shipping: 'pending',   date: '2026-01-02 10:00', city: 'Ciudad B', method: 'Bold', lines: [] },
-  { id: '#T-1', customerId: 'T-3', customer: 'Cliente Uno',  email: 'uno@example.com',  items: 3, total: 30000, status: 'pending', shipping: 'pending',   date: '2026-01-01 10:00', city: 'Ciudad C', method: 'Nequi', lines: [] },
+  { id: '#T-3', customerId: 'T-1', customer: 'Cliente Tres', email: 'tres@example.com', items: 1, total: 10000, status: 'paid',    shipping: 'delivered', date: '2026-01-03 10:00', city: 'Ciudad A', method: 'Bold', dbId: 'uuid-3', guia: 'GUIA-1', enviadoEn: '2026-01-04 09:00', entregadoEn: '2026-01-05 15:30', lines: [{ name: 'Camiseta Pato', detail: 'Camiseta', variant: 'L · Negro', price: 10000, qty: 1 }] },
+  { id: '#T-2', customerId: 'T-2', customer: 'Cliente Dos',  email: 'dos@example.com',  items: 2, total: 20000, status: 'failed',  shipping: 'pending',   date: '2026-01-02 10:00', city: 'Ciudad B', method: 'Bold', dbId: 'uuid-2', guia: null, enviadoEn: null, entregadoEn: null, lines: [] },
+  { id: '#T-1', customerId: 'T-3', customer: 'Cliente Uno',  email: 'uno@example.com',  items: 3, total: 30000, status: 'pending', shipping: 'pending',   date: '2026-01-01 10:00', city: 'Ciudad C', method: 'Nequi', dbId: 'uuid-1', guia: null, enviadoEn: null, entregadoEn: null, lines: [] },
 ];
 
 async function montarEnPedidos() {
@@ -154,5 +154,32 @@ describe('Detalle de pedido en el admin', () => {
     expect(cmp.orderOn()).toBe(true);
     expect(cmp.selectedOrder()?.id).toBe('#T-2');
     expect(TestBed.inject(AdminStateService).abrirPedido()).toBeNull();
+  });
+
+  it('el envío se cambia desde el detalle y solo en pedidos pagados', async () => {
+    const fixture = await montarEnPedidos();
+    const cmp = fixture.componentInstance;
+    const data = TestBed.inject(AdminDataService);
+    const llamadas: { id: string; shipping: string; guia: string | null }[] = [];
+    data.actualizarEnvio = async (o, shipping, guia) => {
+      llamadas.push({ id: o.id, shipping, guia });
+      data.orders.update(os => os.map(x => x.id === o.id ? { ...x, shipping, guia } : x));
+      return null;
+    };
+
+    cmp.openOrder(data.ORDERS.find(o => o.id === '#T-3')!);
+    await fixture.whenStable();
+    expect(cmp.envioDraft()).toBe('delivered');
+    expect(cmp.envioCambiado()).toBe(false);
+
+    cmp.envioDraft.set('returned');
+    await cmp.guardarEnvio();
+    expect(llamadas).toEqual([{ id: '#T-3', shipping: 'returned', guia: 'GUIA-1' }]);
+    expect(cmp.selectedOrder()?.shipping).toBe('returned');
+
+    cmp.openOrder(data.ORDERS.find(o => o.id === '#T-1')!);
+    await fixture.whenStable();
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('input[name="envioEstado"]')).toBeNull();
   });
 });
