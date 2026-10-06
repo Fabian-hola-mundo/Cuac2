@@ -497,6 +497,34 @@ nav.primary {
   z-index: 120; pointer-events: none;
 }
 
+// Botón flotante a la guía del tarot: solo el ícono; el texto se despliega al pasar
+// el cursor o al enfocarlo. Por debajo del panel de filtros (100) y del carrito (200).
+.fab-tarot {
+  position: fixed; right: 24px; bottom: 24px; z-index: 90;
+  display: inline-flex; align-items: center;
+  height: 44px; padding: 0 12px; border-radius: var(--r-pill);
+  background: var(--carbon); color: var(--cream);
+  font-size: 13.5px; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(21, 31, 40, 0.2);
+  opacity: .85;
+  transition: opacity .2s, background .2s;
+
+  svg { width: 20px; height: 20px; color: var(--cream); flex-shrink: 0; }
+
+  .fab-tarot-txt {
+    max-width: 0; overflow: hidden; opacity: 0;
+    transition: max-width .3s cubic-bezier(.2,.8,.2,1), opacity .2s, margin .3s;
+  }
+
+  &:hover, &:focus-visible {
+    opacity: 1;
+    background: var(--terra);
+    .fab-tarot-txt { max-width: 140px; opacity: 1; margin: 0 6px 0 10px; }
+  }
+
+  @media (max-width: 600px) { right: 16px; bottom: 16px; }
+}
+
 .aviso-pill {
   display: inline-block; padding: 11px 18px; border-radius: var(--r-pill);
   background: var(--carbon); color: var(--cream);

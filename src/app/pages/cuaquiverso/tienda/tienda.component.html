@@ -288,6 +288,15 @@
   @if (aviso()) { <span class="aviso-pill">{{ aviso() }}</span> }
 </div>
 
+<!-- Acceso flotante a la guía del tarot -->
+<a class="fab-tarot" routerLink="/GuíaTarot" aria-label="Ir a la guía del tarot">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="5" y="2.5" width="14" height="19" rx="2"/>
+    <path d="M12 7.5l1.2 2.6 2.8.3-2.1 1.9.6 2.8L12 13.7l-2.5 1.4.6-2.8L8 10.4l2.8-.3z"/>
+  </svg>
+  <span class="fab-tarot-txt">Guía del tarot</span>
+</a>
+
 <app-cuaquiverso-footer />
 
 <app-cart-modal></app-cart-modal>
