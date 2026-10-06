@@ -74,8 +74,18 @@
             <textarea formControlName="comentario" rows="3" maxlength="800" [class.err]="invalido('comentario')"
               placeholder="¿Cómo fue trabajar con Cuac?"></textarea>
           </label>
+          <label class="resena-check" [class.err]="invalido('aceptaDatos')">
+            <input type="checkbox" formControlName="aceptaDatos"
+                   [attr.aria-invalid]="invalido('aceptaDatos') ? 'true' : null" />
+            <span>
+              Autorizo a Cuac Design el tratamiento de mis datos personales para gestionar mi reseña, conforme a la
+              <a routerLink="/tratamiento-datos" target="_blank" rel="noopener">política de tratamiento de datos</a>
+              (Ley 1581 de 2012). *
+            </span>
+          </label>
           <input class="hp" formControlName="web" tabindex="-1" autocomplete="off" aria-hidden="true" />
           @if (invalido('comentario')) { <p class="resena-err">Escribe al menos 10 caracteres.</p> }
+          @if (invalido('aceptaDatos')) { <p class="resena-err">Necesitamos tu autorización para recibir la reseña.</p> }
           @if (errorEnvio()) { <p class="resena-err">{{ errorEnvio() }}</p> }
           <div class="resena-actions">
             <button type="button" class="resena-link" (click)="formAbierto.set(false)">Cancelar</button>

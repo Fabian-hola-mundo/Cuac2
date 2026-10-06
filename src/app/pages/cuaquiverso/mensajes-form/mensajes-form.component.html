@@ -30,6 +30,16 @@
           (input)="mensaje.set($any($event.target).value)"
         ></textarea>
 
+        <label class="mf-check">
+          <input type="checkbox" [checked]="aceptaDatos()"
+                 (change)="aceptaDatos.set($any($event.target).checked)" />
+          <span>
+            Autorizo a Cuac Design el tratamiento de mis datos personales para responder mi mensaje, conforme a la
+            <a routerLink="/tratamiento-datos" target="_blank" rel="noopener">política de tratamiento de datos</a>
+            (Ley 1581 de 2012).
+          </span>
+        </label>
+
         <div class="mf-row">
           <input
             type="email"
@@ -41,7 +51,7 @@
           <button
             type="submit"
             class="mf-btn"
-            [disabled]="!mensaje().trim() || sending()"
+            [disabled]="!mensaje().trim() || !aceptaDatos() || sending()"
           >
             {{ sending() ? 'Enviando…' : 'Enviar →' }}
           </button>

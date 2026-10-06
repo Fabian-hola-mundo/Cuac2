@@ -1,10 +1,11 @@
 import { Component, signal, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { MensajesService, TipoMensaje } from '../services/mensajes.service';
 
 @Component({
   selector: 'app-mensajes-form',
   standalone: true,
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './mensajes-form.component.html',
   styleUrl: './mensajes-form.component.scss',
 })
@@ -14,6 +15,8 @@ export class MensajesFormComponent {
   tipo    = signal<TipoMensaje>('comentario');
   mensaje = signal('');
   correo  = signal('');
+  // Ley 1581 de 2012: sin autorización expresa no se envía. No viaja con el mensaje.
+  aceptaDatos = signal(false);
   enviado = signal(false);
 
   readonly sending = this.svc.sending;
@@ -44,6 +47,7 @@ export class MensajesFormComponent {
 
   async onSubmit(e: Event): Promise<void> {
     e.preventDefault();
+    if (!this.aceptaDatos()) return;
     await this.svc.send(this.tipo(), this.mensaje(), this.correo() || undefined);
     if (!this.svc.error()) {
       this.enviado.set(true);

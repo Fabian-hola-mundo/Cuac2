@@ -69,6 +69,8 @@ export class TestimonialsComponent implements OnInit {
     cargo_empresa: ['', [Validators.maxLength(120)]],
     comentario:    ['', [Validators.required, Validators.minLength(10), Validators.maxLength(800)]],
     correo:        ['', [Validators.email, Validators.maxLength(160)]],
+    // Ley 1581 de 2012: sin autorización expresa no se envía. No viaja con la reseña.
+    aceptaDatos:   [false, [Validators.requiredTrue]],
     // Campo trampa: invisible para personas, los bots suelen llenarlo.
     web:           [''],
   });
@@ -135,7 +137,7 @@ export class TestimonialsComponent implements OnInit {
     this.form.reset();
   }
 
-  invalido(campo: 'nombre' | 'comentario' | 'correo'): boolean {
+  invalido(campo: 'nombre' | 'comentario' | 'correo' | 'aceptaDatos'): boolean {
     const c = this.form.controls[campo];
     return c.invalid && c.touched;
   }

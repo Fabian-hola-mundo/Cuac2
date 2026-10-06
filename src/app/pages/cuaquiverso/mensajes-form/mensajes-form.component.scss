@@ -115,6 +115,33 @@
   margin-bottom: var(--s-3);
 }
 
+.mf-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: var(--s-3);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(236, 239, 243, 0.6);
+  cursor: pointer;
+
+  input {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin: 1px 0 0;
+    accent-color: var(--terra);
+    cursor: pointer;
+  }
+
+  a {
+    color: rgba(236, 239, 243, 0.85);
+    font-weight: 600;
+    text-decoration: underline;
+    &:hover { color: var(--cream); }
+  }
+}
+
 .mf-row {
   display: flex;
   gap: var(--s-3);
