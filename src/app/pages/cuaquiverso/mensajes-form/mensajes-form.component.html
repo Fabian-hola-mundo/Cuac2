@@ -1,42 +1,43 @@
-@if (!enviado()) {
-  <section class="mf-section">
-    <div class="mf-inner">
-      <div class="mf-eyebrow"><span class="dot"></span> Escríbenos</div>
-      <h2 class="mf-heading">Lo que sea. <em>En serio.</em></h2>
-      <p class="mf-sub">Una duda, una idea de producto, un comentario — todo llega directo al equipo de Cuac.</p>
+<section class="mf" aria-labelledby="mf-title">
+  <div class="mf-intro">
+    <div class="mf-eyebrow"><span class="dot" aria-hidden="true"></span> Déjanos un comentario</div>
+    <h3 class="mf-heading" id="mf-title">Lo que sea. <em>En serio.</em></h3>
+    <p class="mf-sub">Una duda, una idea de producto, un personaje que falta — todo llega directo al equipo de Cuac.</p>
+  </div>
 
+  <div class="mf-body">
+    @if (!enviado()) {
       <form (submit)="onSubmit($event)">
-        <div class="mf-chips">
+        <div class="mf-chips" role="radiogroup" aria-label="Tipo de mensaje">
           @for (chip of CHIPS; track chip.id) {
             <button
               type="button"
               class="mf-chip"
+              role="radio"
+              [attr.aria-checked]="tipo() === chip.id"
               [class.active]="tipo() === chip.id"
               (click)="tipo.set(chip.id)"
             >
-              {{ chip.emoji }} {{ chip.label }}
+              {{ chip.label }}
             </button>
           }
         </div>
 
         <textarea
-          class="mf-textarea"
+          class="mf-field mf-textarea"
+          aria-label="Tu mensaje"
           [placeholder]="placeholder"
           (input)="mensaje.set($any($event.target).value)"
         ></textarea>
 
-        <input
-          type="email"
-          class="mf-email"
-          placeholder="tu&#64;correo.co — solo si quieres que te respondamos (opcional)"
-          (input)="correo.set($any($event.target).value)"
-        />
-
-        @if (error()) {
-          <p class="mf-error">{{ error() }}</p>
-        }
-
-        <div class="mf-actions">
+        <div class="mf-row">
+          <input
+            type="email"
+            class="mf-field mf-email"
+            aria-label="Correo (opcional)"
+            placeholder="tu&#64;correo.co — opcional, si quieres respuesta"
+            (input)="correo.set($any($event.target).value)"
+          />
           <button
             type="submit"
             class="mf-btn"
@@ -45,15 +46,16 @@
             {{ sending() ? 'Enviando…' : 'Enviar →' }}
           </button>
         </div>
+
+        @if (error()) {
+          <p class="mf-error">{{ error() }}</p>
+        }
       </form>
-    </div>
-  </section>
-} @else {
-  <section class="mf-section mf-section--success">
-    <div class="mf-inner mf-inner--center">
-      <div class="mf-success-icon">✉️</div>
-      <h3 class="mf-success-h">Mensaje recibido</h3>
-      <p class="mf-success-sub">El equipo de Cuac lo leerá pronto.<br>Si dejaste tu correo, te respondemos.</p>
-    </div>
-  </section>
-}
+    } @else {
+      <div class="mf-success" role="status">
+        <strong>Mensaje recibido ✉️</strong>
+        <p>El equipo de Cuac lo leerá pronto. Si dejaste tu correo, te respondemos.</p>
+      </div>
+    }
+  </div>
+</section>

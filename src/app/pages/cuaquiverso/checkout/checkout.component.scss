@@ -183,6 +183,37 @@
   .err-msg { font-size: 12px; color: var(--ember-btn); font-weight: 600; }
 }
 
+.consentimientos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 4px 0 14px;
+
+  .check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--on-dark-75);
+    cursor: pointer;
+
+    input {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      margin: 1px 0 0;
+      accent-color: var(--ember-btn);
+      cursor: pointer;
+    }
+
+    a { color: inherit; font-weight: 600; text-decoration: underline; }
+
+    &.has-error { color: var(--danger-dark); }
+    &.has-error input { outline: 2px solid var(--danger-dark); outline-offset: 1px; }
+  }
+}
+
 .shipping-estimator {
   margin-top: 18px;
   display: flex; flex-direction: column; gap: 8px;

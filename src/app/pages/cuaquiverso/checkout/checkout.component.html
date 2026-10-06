@@ -329,6 +329,27 @@
           </button>
         </div>
       } @else {
+        <div class="consentimientos" [formGroup]="form">
+          <label class="check" [class.has-error]="touched('aceptaDatos')">
+            <input id="aceptaDatos" type="checkbox" formControlName="aceptaDatos"
+                   [attr.aria-invalid]="touched('aceptaDatos') ? 'true' : null" />
+            <span>
+              Autorizo a Cuac Design el tratamiento de mis datos personales para gestionar
+              mi pedido, conforme a la
+              <a routerLink="/tratamiento-datos" target="_blank" rel="noopener">política de tratamiento de datos</a>
+              (Ley 1581 de 2012).
+            </span>
+          </label>
+          <label class="check" [class.has-error]="touched('aceptaPrivacidad')">
+            <input id="aceptaPrivacidad" type="checkbox" formControlName="aceptaPrivacidad"
+                   [attr.aria-invalid]="touched('aceptaPrivacidad') ? 'true' : null" />
+            <span>
+              He leído y acepto la
+              <a routerLink="/privacidad" target="_blank" rel="noopener">política de privacidad</a>.
+            </span>
+          </label>
+        </div>
+
         <button class="btn-bold" type="button" (click)="pagar()"
                 [disabled]="checkout.loading()">
           @if (checkout.loading()) {

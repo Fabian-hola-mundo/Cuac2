@@ -88,6 +88,8 @@ const NOMBRES_CAMPO: Record<string, string> = {
   nombre: 'Nombre', apellido: 'Apellido', email: 'Correo electrónico',
   celular: 'Celular', tipoDoc: 'Tipo de documento', numDoc: 'Número de documento',
   departamento: 'Departamento', ciudad: 'Ciudad', direccion: 'Dirección',
+  aceptaDatos: 'Autorización de tratamiento de datos',
+  aceptaPrivacidad: 'Política de privacidad',
 };
 
 @Component({
@@ -173,6 +175,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     barrio:       new FormControl('', { nonNullable: true }),
     codigoPostal: new FormControl('', { nonNullable: true }),
     nota:         new FormControl('', { nonNullable: true }),
+    // Ley 1581 de 2012: sin la autorización expresa no se crea el pedido.
+    aceptaDatos:      new FormControl(false, { nonNullable: true, validators: [Validators.requiredTrue] }),
+    aceptaPrivacidad: new FormControl(false, { nonNullable: true, validators: [Validators.requiredTrue] }),
   });
 
   /**
@@ -281,7 +286,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     const codigoDesc = this.descuento.codigoAplicado()
       ? { codigo: this.descuento.codigoAplicado()!, monto: this.descuento.montoDescuento() }
       : undefined;
-    const form = this.form.getRawValue() as CheckoutForm;
+    // Las autorizaciones sólo habilitan el pago; no viajan con el pedido.
+    const { aceptaDatos: _d, aceptaPrivacidad: _p, ...form } = this.form.getRawValue();
     const huella = JSON.stringify([form, this.cart.items(), this.cart.total(), codigoDesc ?? null]);
     return { form, codigoDesc, huella };
   }
@@ -556,9 +562,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   private guardarFormulario(): void {
     if (!this.esNavegador) return;
     try {
-      this.doc.defaultView?.sessionStorage.setItem(
-        CLAVE_FORM, JSON.stringify(this.form.getRawValue()),
-      );
+      // Las autorizaciones no se guardan: se dan cada vez, a conciencia.
+      const { aceptaDatos: _d, aceptaPrivacidad: _p, ...datos } = this.form.getRawValue();
+      this.doc.defaultView?.sessionStorage.setItem(CLAVE_FORM, JSON.stringify(datos));
     } catch {
       // Modo incógnito o almacenamiento bloqueado: se sigue sin persistencia.
     }

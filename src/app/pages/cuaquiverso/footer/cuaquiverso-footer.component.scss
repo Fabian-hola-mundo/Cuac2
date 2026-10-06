@@ -11,12 +11,12 @@
   padding: 0 var(--s-7);
 }
 
-// ─── Cap: claim + ayuda + acciones ───────────────────────────────────────────
+// ─── Cap: claim + ayuda | comentarios ────────────────────────────────────────
 .footer-cap {
   padding: var(--s-8) 0 var(--s-7);
   border-bottom: 1px solid rgba(236, 239, 243, 0.09);
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1.25fr;
   gap: var(--s-8);
   align-items: start;
 }
@@ -47,23 +47,24 @@
   color: rgba(236, 239, 243, 0.28);
 }
 
-// ─── Columna de ayuda ─────────────────────────────────────────────────────────
+// ─── Ayuda (debajo del claim) ─────────────────────────────────────────────────
 .footer-help-col {
+  margin-top: var(--s-4);
   h5 {
     font-family: var(--mono);
     font-size: 10.5px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: rgba(236, 239, 243, 0.35);
-    margin-bottom: var(--s-4);
+    margin-bottom: var(--s-3);
   }
   ul {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 10px var(--s-5);
   }
   a, .btn-link {
     font-size: 14px;
@@ -87,24 +88,6 @@
   align-items: center;
   gap: var(--s-4);
   flex-wrap: wrap;
-}
-
-.foot-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 22px;
-  background: var(--terra);
-  color: var(--cream);
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: var(--r-pill);
-  white-space: nowrap;
-  transition: filter .2s, transform .15s;
-  &:hover {
-    filter: brightness(1.12);
-    transform: translateY(-2px);
-  }
 }
 
 .footer-socials {
@@ -222,6 +205,10 @@
 }
 
 // ─── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .footer-cap { grid-template-columns: 1fr; gap: var(--s-7); }
+}
+
 @media (max-width: 600px) {
   .footer-inner { padding-left: var(--s-4); padding-right: var(--s-4); }
   .footer-cap { grid-template-columns: 1fr; }

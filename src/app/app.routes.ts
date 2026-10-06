@@ -114,6 +114,11 @@ export const routes: Routes = [
       import('./pages/legal/privacidad.component').then(m => m.PrivacidadComponent),
   },
   {
+    path: 'tratamiento-datos',
+    loadComponent: () =>
+      import('./pages/legal/tratamiento-datos.component').then(m => m.TratamientoDatosComponent),
+  },
+  {
     path: 'cookies',
     loadComponent: () =>
       import('./pages/legal/cookies.component').then(m => m.CookiesComponent),

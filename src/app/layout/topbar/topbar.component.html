@@ -14,13 +14,12 @@
     <nav class="primary" aria-label="Principal">
       <a href="#servicios">Servicios</a>
       <a routerLink="/portafolio">Portafolio</a>
-      <a routerLink="/cuaquiverso/tienda" target="_blank" rel="noopener">Tienda</a>
       <a href="#contacto">Contacto</a>
     </nav>
 
     <div class="topbar-end">
-      <a class="universe-link" routerLink="/cuaquiverso/tienda" aria-label="Visitar Cuaquiverso">
-        <em>Cuaquiverso</em><span aria-hidden="true">↗</span>
+      <a class="universe-link" routerLink="/cuaquiverso/tienda" aria-label="Visitar la tienda">
+        <em>Tienda</em><span aria-hidden="true">↗</span>
       </a>
       <a class="top-cta" routerLink="/cotizar">Cotizar tu proyecto</a>
       <button
@@ -40,12 +39,11 @@
   <nav id="mobile-nav" class="mobile-nav" aria-label="Menú móvil" [class.is-open]="menuOpen()">
     <a href="#servicios" (click)="closeMenu()">Servicios</a>
     <a routerLink="/portafolio" (click)="closeMenu()">Portafolio</a>
-    <a routerLink="/cuaquiverso/tienda" target="_blank" rel="noopener" (click)="closeMenu()">Tienda</a>
     <a href="#contacto" (click)="closeMenu()">Contacto</a>
     <div class="mobile-nav-foot">
       <a class="btn btn-primary" routerLink="/cotizar" (click)="closeMenu()">Cotizar tu proyecto</a>
       <a class="mobile-universe" routerLink="/cuaquiverso/tienda" (click)="closeMenu()">
-        <em>Cuaquiverso</em><span aria-hidden="true">↗</span>
+        <em>Tienda</em><span aria-hidden="true">↗</span>
       </a>
     </div>
   </nav>
