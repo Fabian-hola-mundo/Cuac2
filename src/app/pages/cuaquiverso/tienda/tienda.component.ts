@@ -14,6 +14,7 @@ import {
   etiquetaFlag,
   etiquetaMaterial,
 } from '../../../core/services/inventario.service';
+import { GiroDirective } from '../../../core/directives/giro.directive';
 import { ENVIO_GRATIS_CORTO, UMBRAL_POCAS_UNIDADES } from '../services/tienda.constants';
 
 /** Disponibilidad real, derivada del stock — no de la etiqueta manual `flag`. */
@@ -22,7 +23,7 @@ export type Disponibilidad = 'agotado' | 'last' | 'stock';
 @Component({
   selector: 'app-tienda',
   standalone: true,
-  imports: [FormsModule, CartModalComponent, RouterLink, CuaquiversoFooterComponent],
+  imports: [FormsModule, CartModalComponent, RouterLink, CuaquiversoFooterComponent, GiroDirective],
   templateUrl: './tienda.component.html',
   styleUrl: './tienda.component.scss',
 })

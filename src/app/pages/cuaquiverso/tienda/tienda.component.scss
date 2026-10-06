@@ -189,6 +189,11 @@ nav.primary {
 // ─── Vitrina: tres productos en abanico, como recortes pegados al cuaderno ───
 .sh-vitrina {
   position: relative; height: 520px;
+  /* Con el giroscopio (o el ratón) el abanico se inclina hacia donde mira la persona. */
+  transform:
+    perspective(1100px)
+    rotateY(calc(var(--gx, 0) * 10deg))
+    rotateX(calc(var(--gy, 0) * -8deg));
 }
 
 .sh-card {

@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <div class="sh-vitrina">
+    <div class="sh-vitrina" appGiro>
       @for (p of vitrina(); track p.id; let i = $index) {
         <a class="sh-card" [attr.data-color]="p.color" [style.--i]="i"
            [routerLink]="['/cuaquiverso/tienda', p.id]">
