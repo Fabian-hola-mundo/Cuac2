@@ -80,7 +80,12 @@
         @for (v of ventas(); track v.id) {
         <tr (click)="verDetalle(v)" style="cursor:pointer">
           <td class="id">{{ fmtFecha(v.vendido_en) }}</td>
-          <td><strong>{{ v.productos_evento?.nombre ?? '—' }}</strong>@if (v.producto_variantes) { · {{ etiquetaVenta(v) }} }</td>
+          <td>
+            <strong>{{ v.productos_evento?.nombre ?? '—' }}</strong>@if (v.producto_variantes) { · {{ etiquetaVenta(v) }} }
+            @if (v.comentario) {
+              <div class="venta-nota" [title]="v.comentario">{{ v.comentario }}</div>
+            }
+          </td>
           <td class="num">{{ v.cantidad }}</td>
           <td>
             @if (v.canal === 'web') {
@@ -182,6 +187,9 @@
               @else { <span class="badge warn"><span class="pdot"></span>Pendiente</span> }
             </span>
           </div>
+        }
+        @if (v.comentario) {
+          <div class="kv"><span class="k">Nota</span><span class="v" style="white-space:pre-wrap">{{ v.comentario }}</span></div>
         }
         @if (v.productos_evento?.precio) {
           <div class="kv"><span class="k">Precio unitario</span><span class="v">{{ fmtCOP(v.productos_evento!.precio!) }}</span></div>

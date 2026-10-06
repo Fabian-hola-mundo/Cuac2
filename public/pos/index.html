@@ -5,14 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>Cuaquiverso POS</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="/pos/manifest.json" />
+  <link rel="apple-touch-icon" href="/pos/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="POS Cuac" />
   <meta name="theme-color" content="#ECEFF3" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fauna+One&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.106.1/dist/umd/supabase.min.js"
-          integrity="sha384-9dsYHX1/12VQI+gHRtPXSM3YFsgJ+iIPjTy4WCtY7XbKG/q7MTdZxZhMd4cL9Gif"
-          crossorigin="anonymous"></script>
+  <!-- Servida desde el sitio (angular.json la copia de node_modules) para que
+       el service worker la guarde y el POS abra sin internet. -->
+  <script src="/pos/vendor/supabase.js"></script>
   <style>
     /* ===================================================================
        CUAQUIVERSO POS  ·  child brand of Cuac
@@ -457,6 +460,20 @@
     .sheet-total-label { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-mute); }
     .sheet-total-value { font-family: var(--display); font-size: 32px; line-height: 1; color: var(--carbon); font-variant-numeric: tabular-nums; }
     .sheet-actions { display: flex; flex-direction: column; gap: 10px; }
+    .sheet-note { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+    .note-toggle {
+      background: none; border: none; padding: 2px; cursor: pointer;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+      color: var(--ink-mute); -webkit-tap-highlight-color: transparent;
+    }
+    .note-toggle:hover { color: var(--carbon); }
+    .note-input {
+      width: 100%; height: 42px; padding: 0 12px;
+      border: 1px solid var(--line); border-radius: var(--r-md);
+      background: var(--paper-2); color: var(--carbon);
+      font: inherit; font-size: 16px; /* 16px: iOS no hace zoom al enfocar */
+    }
+    .note-input:focus { outline: none; border-color: var(--carbon); }
 
     /* ════════ TOAST ════════ */
     #toast-container {
@@ -640,6 +657,11 @@
         <button class="qty-btn" id="qty-plus" onclick="window.changeQty(1)" aria-label="Sumar">+</button>
       </div>
     </div>
+    <div class="sheet-note">
+      <button type="button" class="note-toggle" id="note-toggle" onclick="window.toggleNote()">+ Agregar nota</button>
+      <input type="text" class="note-input" id="modal-note" maxlength="280" hidden
+             placeholder="Ej: pagó con Nequi, regalo…" autocomplete="off" />
+    </div>
     <div class="sheet-total">
       <span class="sheet-total-label">Total</span>
       <span class="sheet-total-value" id="modal-total">$0</span>
@@ -659,6 +681,9 @@
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWN3cmp4bG5sc2pnbmp4aWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTE1MzMsImV4cCI6MjA5NDk4NzUzM30.hW01ztylAFWhy3bAjJXPl4Q8wh2YP_DbpR2oaXWHxVs';
   const OFFLINE_QUEUE_KEY = 'pos_offline_queue';
   const DEVICE_NAME_KEY = 'pos_device_name';
+  const DEVICE_ID_KEY = 'pos_device_id';
+  const CATALOG_KEY = 'pos_catalogo';
+  const AUTH_KEY = 'sb-ytqcwrjxlnlsjgnjxiiw-auth-token';
   const TALLY_KEY = 'pos_session_tally';
 
   const { createClient } = supabase;
@@ -694,6 +719,50 @@
 
   function getDeviceName() {
     return localStorage.getItem(DEVICE_NAME_KEY) || 'Dispositivo';
+  }
+
+  // Id estable por navegador: el nombre lo escribe la persona y puede repetirse.
+  function getDeviceId() {
+    let id = localStorage.getItem(DEVICE_ID_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+  }
+
+  function describirPlataforma() {
+    const ua = navigator.userAgent;
+    const so = /iPhone|iPad|iPod/.test(ua) ? 'iOS'
+      : /Android/.test(ua) ? 'Android'
+      : /Windows/.test(ua) ? 'Windows'
+      : /Mac OS X/.test(ua) ? 'macOS'
+      : /Linux/.test(ua) ? 'Linux' : 'Otro';
+    const nav = /Edg\//.test(ua) ? 'Edge'
+      : /SamsungBrowser/.test(ua) ? 'Samsung Internet'
+      : /CriOS|Chrome\//.test(ua) ? 'Chrome'
+      : /FxiOS|Firefox\//.test(ua) ? 'Firefox'
+      : /Safari\//.test(ua) ? 'Safari' : 'Navegador';
+    const app = matchMedia('(display-mode: standalone)').matches || navigator.standalone ? ' · app' : '';
+    return `${so} · ${nav}${app}`;
+  }
+
+  // Se reporta al entrar y al recuperar conexión; si falla no bloquea la venta.
+  async function registrarDispositivo() {
+    if (!isOnline) return;
+    try {
+      const { error } = await sb.rpc('registrar_dispositivo_pos', {
+        p_id: getDeviceId(),
+        p_nombre: getDeviceName(),
+        p_plataforma: describirPlataforma(),
+        p_user_agent: navigator.userAgent,
+        p_pantalla: `${screen.width}×${screen.height}`,
+        p_evento_id: eventoActivo?.id ?? null,
+      });
+      if (error) throw error;
+    } catch (e) {
+      console.warn('No se pudo registrar el dispositivo:', e);
+    }
   }
 
   function getOfflineQueue() {
@@ -786,6 +855,7 @@
     isOnline = true;
     updateConnectionUI();
     showToast('Conexión restaurada. Sincronizando…', 'warning');
+    await registrarDispositivo();
     await syncOfflineQueue();
   });
 
@@ -810,6 +880,8 @@
           variante_id: item.variante_id ?? null,
           cantidad: item.cantidad,
           dispositivo: item.dispositivo,
+          dispositivo_id: item.dispositivo_id ?? getDeviceId(),
+          comentario: item.comentario ?? null,
           vendido_en: item.vendido_en,
           sincronizado: true,
           evento_id: item.evento_id ?? 'Venta-regular'
@@ -930,23 +1002,15 @@
   // ── LOAD PRODUCTS ──
   async function loadProducts() {
     try {
-      let query = sb
+      // El POS vende todo el catálogo activo, también lo que no está en la web
+      // (solo_evento): el evento sólo etiqueta las ventas. Antes se filtraba
+      // por evento_id y un evento nuevo salía vacío.
+      const { data, error } = await sb
         .from('productos_evento')
         .select('*')
         .eq('activo', true)
         .order('categoria')
         .order('nombre');
-
-      // Si hay evento activo, filtrar por él (productos creados en /admin para
-      // este evento) más los exclusivos de evento, sin importar dónde se crearon.
-      // Sin evento, los exclusivos no se venden.
-      if (eventoActivo?.id) {
-        query = query.or(`evento_id.eq.${eventoActivo.id},solo_evento.eq.true`);
-      } else {
-        query = query.eq('solo_evento', false);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
       const nuevos = data || [];
 
@@ -979,11 +1043,41 @@
       variantsByProduct = nuevasVariantes;
       optionOrder = nuevoOrden;
       reservedByVariant = nuevasReservas;
+      guardarCatalogoLocal();
       renderProducts();
     } catch (e) {
       console.error('Load products error:', e);
-      showToast('Error cargando productos', 'error');
+      // Sin red se vende con el último catálogo que se vio en este dispositivo.
+      if (!products.length && cargarCatalogoLocal()) {
+        renderProducts();
+        showToast('Sin conexión: usando el último catálogo guardado', 'warning', 3500);
+      } else {
+        showToast('Error cargando productos', 'error');
+      }
     }
+  }
+
+  // ── CATÁLOGO GUARDADO (para abrir sin internet) ──
+  function guardarCatalogoLocal() {
+    try {
+      localStorage.setItem(CATALOG_KEY, JSON.stringify({
+        products, variantsByProduct, optionOrder, reservedByVariant, eventoActivo,
+      }));
+    } catch (e) {
+      console.warn('No se pudo guardar el catálogo:', e);
+    }
+  }
+
+  function cargarCatalogoLocal() {
+    try {
+      const c = JSON.parse(localStorage.getItem(CATALOG_KEY) || 'null');
+      if (!c?.products?.length) return false;
+      products = c.products;
+      variantsByProduct = c.variantsByProduct || {};
+      optionOrder = c.optionOrder || {};
+      reservedByVariant = c.reservedByVariant || {};
+      return true;
+    } catch { return false; }
   }
 
   // ── REALTIME ──
@@ -999,7 +1093,7 @@
       }, payload => {
         if (payload.eventType === 'UPDATE' && payload.new) {
           const updated = payload.new;
-          if (!updated.activo || (updated.solo_evento && !eventoActivo?.id)) {
+          if (!updated.activo) {
             products = products.filter(p => p.id !== updated.id);
           } else {
             const idx = products.findIndex(p => p.id === updated.id);
@@ -1007,8 +1101,7 @@
             else products.push(updated);
           }
           renderProducts();
-        } else if (payload.eventType === 'INSERT' && payload.new?.activo &&
-                   (!payload.new.solo_evento || eventoActivo?.id)) {
+        } else if (payload.eventType === 'INSERT' && payload.new?.activo) {
           products.push(payload.new);
           renderProducts();
         } else if (payload.eventType === 'DELETE' && payload.old) {
@@ -1023,13 +1116,16 @@
   // ── EVENTO ACTIVO (from DB) ──
   async function cargarEvento() {
     try {
-      const { data } = await sb.from('eventos').select('id, nombre').eq('estado', 'activo').maybeSingle();
+      const { data, error } = await sb.from('eventos').select('id, nombre').eq('estado', 'activo').maybeSingle();
+      if (error) throw error;
       eventoActivo = data;
-      document.getElementById('header-event-name').textContent =
-        data?.nombre ? data.nombre.toUpperCase() : 'SIN EVENTO';
     } catch {
-      document.getElementById('header-event-name').textContent = 'SIN EVENTO';
+      // Sin red, el último evento visto: si no, las ventas quedarían como regulares.
+      try { eventoActivo = JSON.parse(localStorage.getItem(CATALOG_KEY) || 'null')?.eventoActivo ?? null; }
+      catch { eventoActivo = null; }
     }
+    document.getElementById('header-event-name').textContent =
+      eventoActivo?.nombre ? eventoActivo.nombre.toUpperCase() : 'SIN EVENTO';
   }
 
   // ── SHOW CATALOG ──
@@ -1040,6 +1136,7 @@
     updateConnectionUI();
     renderTally();
     await cargarEvento();
+    void registrarDispositivo();
     renderSkeleton();
     await loadProducts();
 
@@ -1094,6 +1191,7 @@
     document.getElementById('modal-qty').value = 1;
     document.getElementById('modal-total').textContent = formatCOP(unitPrice());
     document.getElementById('confirm-sale-btn').textContent = 'Registrar venta';
+    resetNote();
     refreshQtyControls();
     document.getElementById('sale-modal').classList.add('open');
   };
@@ -1109,8 +1207,23 @@
     refreshQtyControls();
   };
 
+  function resetNote() {
+    const input = document.getElementById('modal-note');
+    input.value = '';
+    input.hidden = true;
+    document.getElementById('note-toggle').hidden = false;
+  }
+
+  window.toggleNote = function() {
+    const input = document.getElementById('modal-note');
+    input.hidden = false;
+    document.getElementById('note-toggle').hidden = true;
+    input.focus();
+  };
+
   window.closeModal = function() {
     document.getElementById('sale-modal').classList.remove('open');
+    resetNote();
     selectedProduct = null;
     selectedVariant = null;
     currentQty = 1;
@@ -1143,6 +1256,8 @@
       variante_id: soldVariant?.id ?? null,
       cantidad: soldQty,
       dispositivo: getDeviceName(),
+      dispositivo_id: getDeviceId(),
+      comentario: document.getElementById('modal-note').value.trim().slice(0, 280) || null,
       vendido_en: new Date().toISOString(),
       sincronizado: isOnline,
       evento_id: eventoActivo?.id ?? 'Venta-regular'
@@ -1271,6 +1386,14 @@
       return;
     }
 
+    // Sin red una sesión vencida no se puede renovar (y el intento tarda), pero
+    // ya se entró antes en este dispositivo: se deja vender y las ventas suben
+    // al volver la señal, cuando la sesión se renueva sola.
+    if (!navigator.onLine && localStorage.getItem(AUTH_KEY)) {
+      await showCatalog();
+      return;
+    }
+
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
       await showCatalog();
@@ -1281,6 +1404,12 @@
 
   document.body.classList.add('is-auth');
   checkSession();
+
+  // Guarda la app en el dispositivo para que abra aunque no haya internet.
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('/pos/sw.js', { scope: '/pos/', updateViaCache: 'none' })
+      .catch(e => console.warn('Service worker no registrado:', e));
+  }
 </script>
 </body>
 </html>

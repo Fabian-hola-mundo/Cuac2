@@ -44,7 +44,7 @@ export interface ProductoEvento {
   color: string | null;
   flag: string | null;
   destacado: boolean;
-  /** Exclusivo de evento: fuera de la tienda web; en el POS sólo con evento activo. */
+  /** Fuera de la tienda web: sólo se vende en el POS (con o sin evento activo). */
   solo_evento: boolean;
   descripcion: string | null;
 }
@@ -73,6 +73,7 @@ export interface VentaEvento {
   producto_id: string;
   cantidad: number;
   dispositivo: string | null;
+  comentario?: string | null;
   vendido_en: string;
   sincronizado: boolean;
   canal: 'evento' | 'web';
