@@ -82,6 +82,40 @@
   tr.is-off { opacity: .5; }
 }
 
+// En el celular cada combinación es una tarjeta: el nombre arriba y debajo
+// precio, stock y activa, sin scroll lateral.
+@media (max-width: 720px) {
+  .ve-tabla-wrap { overflow: visible; contain: none; }
+
+  .ve-tabla {
+    &, tbody { display: block; }
+    thead { display: none; }
+
+    tr {
+      display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px 10px;
+      padding: 10px 12px; margin-bottom: 8px;
+      border: 1px solid var(--carbon-08); border-radius: 10px;
+    }
+
+    td { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 0; min-width: 0; }
+    td[data-k]::before {
+      content: attr(data-k);
+      font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--carbon-50);
+    }
+    td.ve-combo { grid-column: 1 / -1; font-weight: 600; white-space: normal; }
+    td[data-k="Activa"] { align-items: center; input { width: 22px; height: 22px; margin: 8px 0 0; } }
+
+    // 16px: con menos, Safari en iPhone hace zoom al enfocar.
+    .input { width: 100%; min-width: 0; font-size: 16px; }
+  }
+
+  .ve-stock { flex-wrap: wrap; .input { min-width: 0; } }
+  .ve-btn { min-height: 36px; }
+  .ve-chip { padding: 2px 4px 2px 10px; button { padding: 7px 7px; font-size: 13px; } }
+  .ve-opcion-h .ve-nombre, .ve-valores .ve-nuevo { font-size: 16px; }
+}
+
 .ve-masivo { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .ve-aviso {

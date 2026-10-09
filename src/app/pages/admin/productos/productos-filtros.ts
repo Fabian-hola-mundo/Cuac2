@@ -126,3 +126,29 @@ export function contarPorEstado(productos: readonly ProductoEvento[]): Record<Es
     agotado: kpis.agotados,
   };
 }
+
+/**
+ * Filtros aplicados que no se ven a simple vista en el celular: allí estado y
+ * categoría viven en una hoja aparte y el botón que la abre muestra este número.
+ */
+export function contarFiltrosActivos(f: Pick<FiltrosProductos, 'categoria' | 'estado'>): number {
+  return (f.estado !== 'all' ? 1 : 0) + (f.categoria !== 'all' ? 1 : 0);
+}
+
+export interface OrdenMovil { campo: OrdenCampo; dir: OrdenDir; label: string; }
+
+/**
+ * En el celular no hay cabeceras de tabla para ordenar: se elige entre órdenes
+ * ya armados, con la dirección que tiene sentido para cada campo.
+ */
+export const ORDENES_MOVIL: readonly OrdenMovil[] = [
+  { campo: 'creado_en',    dir: 'desc', label: 'Recientes' },
+  { campo: 'nombre',       dir: 'asc',  label: 'Nombre' },
+  { campo: 'precio',       dir: 'desc', label: 'Mayor precio' },
+  { campo: 'stock_actual', dir: 'asc',  label: 'Menos stock' },
+];
+
+/** Opción del móvil que coincide con el orden actual (null si vino de la tabla). */
+export function ordenActual(campo: OrdenCampo, dir: OrdenDir): OrdenMovil | null {
+  return ORDENES_MOVIL.find(o => o.campo === campo && o.dir === dir) ?? null;
+}

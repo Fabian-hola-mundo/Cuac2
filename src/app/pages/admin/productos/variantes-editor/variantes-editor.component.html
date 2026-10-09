@@ -59,13 +59,13 @@
           <tbody>
             @for (f of filas(); track f.etiqueta; let j = $index) {
               <tr [class.is-off]="!f.activo">
-                <td>{{ f.etiqueta }}</td>
-                <td><input class="input" type="number" min="1" placeholder="Precio del producto"
+                <td class="ve-combo">{{ f.etiqueta }}</td>
+                <td data-k="Precio"><input class="input" type="number" inputmode="numeric" min="1" placeholder="Precio del producto"
                            [ngModel]="f.precio" [ngModelOptions]="{ standalone: true }"
                            (ngModelChange)="editarFila(j, { precio: $event })" /></td>
-                <td>
+                <td data-k="Stock">
                   <div class="ve-stock">
-                    <input class="input" type="number" min="0" [attr.aria-label]="'Stock: ' + f.etiqueta"
+                    <input class="input" type="number" inputmode="numeric" min="0" [attr.aria-label]="'Stock: ' + f.etiqueta"
                            [ngModel]="f.stock" [ngModelOptions]="{ standalone: true }"
                            (ngModelChange)="editarFila(j, { stock: $event ?? 0 })" />
                     @if (f.id && productoId() && restockFila() !== f.etiqueta) {
@@ -75,7 +75,7 @@
                   </div>
                   @if (restockFila() === f.etiqueta) {
                     <div class="ve-stock ve-restock">
-                      <input class="input" type="number" min="1" placeholder="Unidades" autofocus
+                      <input class="input" type="number" inputmode="numeric" min="1" placeholder="Unidades" autofocus
                              [attr.aria-label]="'Unidades a agregar a ' + f.etiqueta"
                              [(ngModel)]="restockCantidad" [ngModelOptions]="{ standalone: true }"
                              (keydown.enter)="$event.preventDefault(); registrarRestock(f)" />
@@ -87,7 +87,7 @@
                     @if (restockError()) { <small class="help ve-error" role="alert">{{ restockError() }}</small> }
                   }
                 </td>
-                <td><input type="checkbox" [attr.aria-label]="'Activa: ' + f.etiqueta" [checked]="f.activo"
+                <td data-k="Activa"><input type="checkbox" [attr.aria-label]="'Activa: ' + f.etiqueta" [checked]="f.activo"
                            (change)="editarFila(j, { activo: $any($event.target).checked })" /></td>
               </tr>
             }

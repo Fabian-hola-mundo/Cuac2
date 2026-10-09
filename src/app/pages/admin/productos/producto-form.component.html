@@ -55,7 +55,7 @@
           </div>
           <div class="field">
             <label>Precio COP <span class="opt">*</span></label>
-            <input class="input" type="number" formControlName="precio" placeholder="28000" min="1" />
+            <input class="input" type="number" inputmode="numeric" formControlName="precio" placeholder="28000" min="1" />
             @if (hasError('precio')) {
               <span class="help" style="color:var(--terra)">Debe ser mayor a 0</span>
             }
@@ -110,14 +110,14 @@
           <div class="field">
             <label for="in-stock">Stock <span class="opt">*</span></label>
             <div class="cat-nueva">
-              <input id="in-stock" class="input" type="number" formControlName="stock" placeholder="0" min="0" />
+              <input id="in-stock" class="input" type="number" inputmode="numeric" formControlName="stock" placeholder="0" min="0" />
               @if (isEdit() && !restockAbierto()) {
                 <button class="btn-mini ghost" type="button" (click)="abrirRestock()">+ Restock</button>
               }
             </div>
             @if (restockAbierto()) {
               <div class="cat-nueva restock-fila">
-                <input class="input" type="number" min="1" placeholder="Unidades a agregar"
+                <input class="input" type="number" inputmode="numeric" min="1" placeholder="Unidades a agregar"
                        aria-label="Unidades a agregar"
                        [(ngModel)]="restockCantidad" [ngModelOptions]="{ standalone: true }"
                        (keydown.enter)="$event.preventDefault(); registrarRestock()" autofocus />
@@ -273,7 +273,7 @@
   </div>
 
   <!-- Panel derecho: imágenes -->
-  <div class="panel" style="align-self:start">
+  <div class="panel panel-imagenes" style="align-self:start">
     <div class="panel-h"><h3>Imágenes</h3></div>
     <div class="panel-b">
 
@@ -302,6 +302,11 @@
             </svg>
             {{ coverPreview() ? 'Cambiar portada' : 'Subir portada' }}
           </label>
+          <!-- En el celular, abrir la cámara directo ahorra pasar por el selector. -->
+          <label class="upload-btn solo-tactil" for="prod-cover-cam">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            Tomar foto
+          </label>
           @if (galeriaPreviews().length > 0) {
             <button type="button" class="upload-btn" (click)="eligiendoDeGaleria.set(!eligiendoDeGaleria())"
                     [attr.aria-expanded]="eligiendoDeGaleria()">
@@ -321,6 +326,7 @@
           </div>
         }
         <input id="prod-cover-input" type="file" accept="image/jpeg,image/png,image/webp" (change)="onCoverChange($event)" style="display:none" />
+        <input id="prod-cover-cam" type="file" accept="image/*" capture="environment" (change)="onCoverChange($event)" style="display:none" />
         <span class="help">JPG, PNG o WebP · máx 5 MB · se guarda cuadrada (1:1) y tú eliges el encuadre</span>
       </div>
 
@@ -341,14 +347,24 @@
             }
           </div>
         }
-        <label class="upload-btn" for="prod-gallery-input" [class.is-disabled]="galeriaLlena()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          {{ galeriaLlena() ? 'Galería completa' : 'Agregar fotos' }}
-        </label>
+        <div class="cover-acciones">
+          <label class="upload-btn" for="prod-gallery-input" [class.is-disabled]="galeriaLlena()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            {{ galeriaLlena() ? 'Galería completa' : 'Agregar fotos' }}
+          </label>
+          @if (!galeriaLlena()) {
+            <label class="upload-btn solo-tactil" for="prod-gallery-cam">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+              Tomar foto
+            </label>
+            <input id="prod-gallery-cam" type="file" accept="image/*" capture="environment"
+                   (change)="onGalleryChange($event)" style="display:none" />
+          }
+        </div>
         <input id="prod-gallery-input" type="file" accept="image/jpeg,image/png,image/webp" multiple
                [disabled]="galeriaLlena()" (change)="onGalleryChange($event)" style="display:none" />
         <span class="help">JPG, PNG o WebP · mín 800 px de ancho · hasta {{ maxFotos }} fotos · máx 5 MB c/u</span>

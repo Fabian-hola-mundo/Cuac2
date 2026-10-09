@@ -116,9 +116,13 @@ code {
   }
 }
 
+// Las dos cifras siguen lado a lado en el celular (la etiqueta se parte en dos
+// líneas si no cabe); solo en pantallas muy angostas se apilan.
 @media (max-width: 620px) {
-  .bd-chips { flex-direction: column; }
   .bd-editor .bd-nota { margin-left: 0; }
+}
+@media (max-width: 340px) {
+  .bd-chips { flex-direction: column; }
 }
 
 // ── Interruptores de visibilidad ─────────────────────────────────────────────
@@ -269,6 +273,50 @@ label.upload-btn, button.upload-btn {
     height: auto; aspect-ratio: 1 / 1; border: 2px solid transparent;
     cursor: pointer; padding: 0;
     &:hover, &:focus-visible { border-color: var(--carbon); outline: none; }
+  }
+}
+
+// ── Celular ──────────────────────────────────────────────────────────────────
+// «Tomar foto» abre la cámara directo; en escritorio no hay cámara trasera
+// que abrir y el botón sobraría.
+.solo-tactil { display: none !important; }
+@media (hover: none) and (pointer: coarse) {
+  .solo-tactil { display: inline-flex !important; }
+}
+
+// Con una sola columna, las fotos van primero: es lo primero que se hace al
+// dar de alta un producto desde el celular, y antes quedaban al final.
+@media (max-width: 1100px) {
+  .panel-imagenes { order: -1; }
+}
+
+@media (max-width: 720px) {
+  // Espacio para la barra fija de guardar.
+  :host { padding-bottom: 76px; }
+
+  // Guardar siempre a la vista: antes había que bajar hasta el final del formulario.
+  .form-footer {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: var(--paper); border-top: 1px solid var(--carbon-12);
+    box-shadow: 0 -6px 18px rgba(21, 31, 40, .08);
+
+    .btn-sm { flex: 1; justify-content: center; min-height: 46px; }
+    .btn-sm.solid { flex: 2; }
+  }
+
+  // 16px: con menos, Safari en iPhone hace zoom al enfocar el campo.
+  .input { font-size: 16px; }
+
+  .img-preview { max-width: none; }
+  .upload-btn { min-height: 42px; }
+  .gallery-thumb { height: auto; aspect-ratio: 1 / 1; }
+  .gallery-item .gallery-remove { width: 28px; height: 28px; font-size: 14px; }
+  .img-editar.is-mini { width: 30px; height: 30px; }
+
+  .restock-fila {
+    flex-direction: column; align-items: stretch;
+    .btn-mini { min-height: 40px; }
   }
 }
 

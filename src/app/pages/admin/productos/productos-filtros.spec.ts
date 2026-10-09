@@ -4,7 +4,10 @@
 import {
   UMBRAL_STOCK_BAJO,
   chipStock,
+  ORDENES_MOVIL,
   calcularKpis,
+  contarFiltrosActivos,
+  ordenActual,
   contarPorEstado,
   filtrarProductos,
   ordenarProductos,
@@ -189,5 +192,29 @@ describe('chipStock', () => {
       { tono: 'ok',   texto: '5 ud.' },
       { tono: 'ok',   texto: '120 ud.' },
     ]);
+  });
+});
+
+describe('contarFiltrosActivos', () => {
+  it('cuenta estado y categoría por separado; la búsqueda no cuenta', () => {
+    expect(contarFiltrosActivos({ categoria: 'all', estado: 'all' })).toBe(0);
+    expect(contarFiltrosActivos({ categoria: 'tote', estado: 'all' })).toBe(1);
+    expect(contarFiltrosActivos({ categoria: 'tote', estado: 'agotado' })).toBe(2);
+  });
+});
+
+describe('ordenActual', () => {
+  it('reconoce el orden elegido entre las opciones del móvil', () => {
+    expect(ordenActual('creado_en', 'desc')?.label).toBe('Recientes');
+    expect(ordenActual('nombre', 'asc')?.label).toBe('Nombre');
+  });
+
+  it('un orden armado desde la tabla de escritorio que no está en la lista da null', () => {
+    expect(ordenActual('nombre', 'desc')).toBeNull();
+  });
+
+  it('las opciones del móvil no se repiten', () => {
+    const claves = ORDENES_MOVIL.map(o => `${o.campo}:${o.dir}`);
+    expect(new Set(claves).size).toBe(claves.length);
   });
 });

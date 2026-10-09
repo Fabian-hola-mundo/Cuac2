@@ -1,16 +1,25 @@
 <!-- Catálogo y códigos de descuento comparten página; la sección va en ?seccion= para poder enlazarla. -->
-<div class="section-switcher" role="tablist" aria-label="Sección de productos">
-  <button class="ssw-btn" role="tab" [class.on]="seccion() === 'catalogo'"
-          [attr.aria-selected]="seccion() === 'catalogo'" (click)="irASeccion('catalogo')">Catálogo</button>
-  <button class="ssw-btn" role="tab" [class.on]="seccion() === 'descuentos'"
-          [attr.aria-selected]="seccion() === 'descuentos'" (click)="irASeccion('descuentos')">Descuentos</button>
+<div class="top-row">
+  <div class="section-switcher" role="tablist" aria-label="Sección de productos">
+    <button class="ssw-btn" role="tab" [class.on]="seccion() === 'catalogo'"
+            [attr.aria-selected]="seccion() === 'catalogo'" (click)="irASeccion('catalogo')">Catálogo</button>
+    <button class="ssw-btn" role="tab" [class.on]="seccion() === 'descuentos'"
+            [attr.aria-selected]="seccion() === 'descuentos'" (click)="irASeccion('descuentos')">Descuentos</button>
+  </div>
+  @if (seccion() === 'catalogo') {
+    <!-- En el celular los botones de cabecera (ventas, POS, evento) van en este menú. -->
+    <button type="button" class="m-icono solo-movil" aria-label="Más acciones del catálogo"
+            [attr.aria-expanded]="menuCabeceraOpen()" (click)="menuCabeceraOpen.set(true)">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+    </button>
+  }
 </div>
 
 @if (seccion() === 'descuentos') {
   <app-descuentos-tab />
 } @else {
   <!-- Page Header -->
-  <div class="ph">
+  <div class="ph solo-escritorio">
     <div class="ph-l">
       <div class="eyebrow"><span class="dot"></span> Tienda · Productos</div>
       <h1>Catálogo de <em>productos</em>.</h1>
@@ -42,9 +51,67 @@
     </div>
   </div>
 
+  <!-- Celular: KPIs en una línea que además filtran, buscador + botón de filtros. -->
+  <div class="m-cabecera solo-movil">
+    @if (eventoActivo()) {
+      <span class="badge rio m-evento"><span class="pdot"></span>{{ eventoActivo()!.nombre }} · evento activo</span>
+    }
+    @if (!inv.cargando() && kpis().total > 0) {
+      <div class="m-kpis" role="group" aria-label="Resumen del catálogo">
+        <button type="button" class="m-kpi" data-tone="rio" [class.is-on]="estadoFiltro() === 'all'"
+                [attr.aria-pressed]="estadoFiltro() === 'all'" (click)="estadoFiltro.set('all')">
+          <b>{{ kpis().total }}</b><span>Total</span>
+        </button>
+        <div class="m-kpi" data-tone="selva" [attr.title]="fmtCOP(kpis().valorInventario) + ' en stock'">
+          <b>{{ fmtCOPCorto(kpis().valorInventario) }}</b><span>Invent.</span>
+        </div>
+        <button type="button" class="m-kpi" data-tone="sol" [class.is-on]="estadoFiltro() === 'bajo'"
+                [attr.aria-pressed]="estadoFiltro() === 'bajo'" (click)="alternarEstado('bajo')"
+                [attr.aria-label]="kpis().bajos + ' con stock bajo, filtrar'">
+          <b>{{ kpis().bajos }}</b><span>Bajo</span>
+        </button>
+        <button type="button" class="m-kpi" data-tone="terra" [class.is-on]="estadoFiltro() === 'agotado'"
+                [attr.aria-pressed]="estadoFiltro() === 'agotado'" (click)="alternarEstado('agotado')"
+                [attr.aria-label]="kpis().agotados + ' agotados, filtrar'">
+          <b>{{ kpis().agotados }}</b><span>Agot.</span>
+        </button>
+      </div>
+    }
+    <div class="m-buscar">
+      <div class="search-min">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <input type="search" placeholder="Buscar producto…" aria-label="Buscar producto"
+               [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
+      </div>
+      <button type="button" class="m-filtros-btn" (click)="filtrosOpen.set(true)"
+              [attr.aria-label]="'Filtros y orden' + (filtrosActivos() ? ', ' + filtrosActivos() + ' activos' : '')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        Filtros
+        @if (filtrosActivos() > 0) { <span class="m-cuenta">{{ filtrosActivos() }}</span> }
+      </button>
+    </div>
+    @if (filtrosActivos() > 0) {
+      <div class="m-activos">
+        @if (estadoFiltro() !== 'all') {
+          <button type="button" class="m-activo" (click)="estadoFiltro.set('all')"
+                  [attr.aria-label]="'Quitar filtro ' + labelEstado(estadoFiltro())">{{ labelEstado(estadoFiltro()) }} ✕</button>
+        }
+        @if (catFiltro() !== 'all') {
+          <button type="button" class="m-activo" (click)="catFiltro.set('all')"
+                  [attr.aria-label]="'Quitar filtro ' + labelCategoria(catFiltro())">{{ labelCategoria(catFiltro()) }} ✕</button>
+        }
+        <button type="button" class="link-inline" (click)="limpiarFiltros()">limpiar</button>
+      </div>
+    }
+    <div class="m-orden">
+      <span>{{ productosFiltrados().length }} {{ productosFiltrados().length === 1 ? 'producto' : 'productos' }}</span>
+      <button type="button" (click)="filtrosOpen.set(true)">{{ ordenMovil()?.label ?? 'Orden personalizado' }} ▾</button>
+    </div>
+  </div>
+
   <!-- KPIs -->
   @if (!inv.cargando() && kpis().total > 0) {
-    <div class="kpi-strip">
+    <div class="kpi-strip solo-escritorio">
       <div class="kpi-item" data-tone="rio">
         <div class="kpi-k">Productos</div>
         <div class="kpi-n">{{ kpis().total }}</div>
@@ -73,7 +140,7 @@
   }
 
   <!-- Filter Toolbar -->
-  <div class="tlb">
+  <div class="tlb solo-escritorio">
     <div class="chips" role="group" aria-label="Filtrar por estado">
       @for (e of estados; track e.id) {
         <button class="chip" [class.is-on]="estadoFiltro() === e.id"
@@ -92,7 +159,7 @@
   </div>
 
   @if (categoriasConProductos().length > 1) {
-    <div class="tlb">
+    <div class="tlb solo-escritorio">
       <div class="chips" role="group" aria-label="Filtrar por categoría">
         <button class="chip" [class.is-on]="catFiltro() === 'all'"
                 [attr.aria-pressed]="catFiltro() === 'all'" (click)="catFiltro.set('all')">Todas</button>
@@ -114,7 +181,41 @@
 
   <!-- Table -->
   @if (!inv.cargando() && productosFiltrados().length > 0) {
-  <div class="panel tbl-page">
+  <!-- Celular: tarjetas. Tocar abre el detalle (stock, historial); ⋯ abre las acciones. -->
+  <ul class="m-lista solo-movil">
+    @for (p of productosFiltrados(); track p.id) {
+      <li class="m-card">
+        <button type="button" class="m-card-main" (click)="verDetalle(p, $event)"
+                [attr.aria-label]="'Ver detalle de ' + p.nombre">
+          @if (p.cover_url) {
+            <img class="m-thumb" [src]="p.cover_url" alt="" loading="lazy" />
+          } @else {
+            <span class="m-thumb" [style.background]="toneForCat(p.categoria)" aria-hidden="true">{{ p.nombre[0] }}</span>
+          }
+          <span class="m-meta">
+            <strong>{{ p.nombre }}</strong>
+            <small>
+              {{ labelCategoria(p.categoria) }}
+              @if (activasDe(p.id).length > 0) { · {{ activasDe(p.id).length }} variantes }
+            </small>
+            <span class="m-precio">{{ fmtCOP(p.precio) }}</span>
+            <span class="m-badges">
+              @let chipM = chipStock(p.stock_actual);
+              <span class="badge" [class]="chipM.tono"><span class="pdot"></span>{{ chipM.texto }}</span>
+              @if (p.activo) { <span class="badge ok"><span class="pdot"></span>Activo</span> }
+              @else { <span class="badge"><span class="pdot"></span>Inactivo</span> }
+            </span>
+          </span>
+        </button>
+        <button type="button" class="m-icono m-mas" [attr.aria-label]="'Acciones de ' + p.nombre"
+                (click)="abrirAcciones(p, $event)">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+        </button>
+      </li>
+    }
+  </ul>
+
+  <div class="panel tbl-page solo-escritorio">
     <div class="tbl-wrap">
     <table class="tbl">
       <caption class="sr-only">
@@ -239,6 +340,122 @@
       }
     </div>
   }
+
+  <button type="button" class="m-fab solo-movil" (click)="nuevo()" aria-label="Nuevo producto">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+}
+
+<!-- Celular: acciones de un producto -->
+@if (accionesTarget(); as p) {
+  <div class="drawer-back on" (click)="accionesTarget.set(null)"></div>
+  <div class="m-sheet" role="dialog" aria-modal="true" aria-labelledby="m-acciones-t">
+    <div class="m-grab" aria-hidden="true"></div>
+    <div class="m-sheet-h">
+      @if (p.cover_url) {
+        <img class="m-thumb is-sm" [src]="p.cover_url" alt="" />
+      } @else {
+        <span class="m-thumb is-sm" [style.background]="toneForCat(p.categoria)" aria-hidden="true">{{ p.nombre[0] }}</span>
+      }
+      <div>
+        <strong id="m-acciones-t">{{ p.nombre }}</strong>
+        <small>{{ chipStock(p.stock_actual).texto }} · {{ p.activo ? 'Activo' : 'Inactivo' }}</small>
+      </div>
+    </div>
+    <div class="m-acciones">
+      @if (activasDe(p.id).length > 0) {
+        <button type="button" (click)="verDetalle(p, $event); accionesTarget.set(null)">
+          <span class="m-ic">＋</span>Stock por combinación
+        </button>
+      } @else {
+        <button type="button" (click)="abrirRestock(p, $event); accionesTarget.set(null)">
+          <span class="m-ic">＋</span>Reabastecer
+        </button>
+        <button type="button" (click)="abrirAjuste(p, $event); accionesTarget.set(null)">
+          <span class="m-ic">⇅</span>Ajustar stock al conteo
+        </button>
+      }
+      <button type="button" (click)="accionesTarget.set(null); editar(p)">
+        <span class="m-ic">✎</span>Editar
+      </button>
+      <button type="button" (click)="duplicar(p, $event); accionesTarget.set(null)">
+        <span class="m-ic">⧉</span>Duplicar
+      </button>
+      <button type="button" (click)="verDetalle(p, $event); accionesTarget.set(null)">
+        <span class="m-ic">≡</span>Ver detalle e historial
+      </button>
+      <button type="button" [class.is-danger]="p.activo" (click)="toggleActivo(p, $event); accionesTarget.set(null)">
+        <span class="m-ic">{{ p.activo ? '⏸' : '▶' }}</span>{{ p.activo ? 'Ocultar producto' : 'Activar producto' }}
+      </button>
+    </div>
+  </div>
+}
+
+<!-- Celular: filtros y orden -->
+@if (filtrosOpen()) {
+  <div class="drawer-back on" (click)="filtrosOpen.set(false)"></div>
+  <div class="m-sheet" role="dialog" aria-modal="true" aria-labelledby="m-filtros-t">
+    <div class="m-grab" aria-hidden="true"></div>
+    <h3 id="m-filtros-t" class="sr-only">Filtros y orden</h3>
+    <span class="m-sheet-k">Estado</span>
+    <div class="m-chips" role="group" aria-label="Filtrar por estado">
+      @for (e of estados; track e.id) {
+        <button type="button" class="chip" [class.is-on]="estadoFiltro() === e.id"
+                [attr.aria-pressed]="estadoFiltro() === e.id" (click)="estadoFiltro.set(e.id)">
+          {{ e.label }} <span class="ct">{{ conteos()[e.id] }}</span>
+        </button>
+      }
+    </div>
+    @if (categoriasConProductos().length > 1) {
+      <span class="m-sheet-k">Categoría</span>
+      <div class="m-chips" role="group" aria-label="Filtrar por categoría">
+        <button type="button" class="chip" [class.is-on]="catFiltro() === 'all'"
+                [attr.aria-pressed]="catFiltro() === 'all'" (click)="catFiltro.set('all')">Todas</button>
+        @for (c of categoriasConProductos(); track c.id) {
+          <button type="button" class="chip" [class.is-on]="catFiltro() === c.id"
+                  [attr.aria-pressed]="catFiltro() === c.id" (click)="catFiltro.set(c.id)">{{ c.label }}</button>
+        }
+      </div>
+    }
+    <span class="m-sheet-k">Ordenar por</span>
+    <div class="m-chips" role="group" aria-label="Ordenar por">
+      @for (o of ordenesMovil; track o.label) {
+        <button type="button" class="chip" [class.is-on]="ordenMovil() === o"
+                [attr.aria-pressed]="ordenMovil() === o" (click)="fijarOrden(o)">{{ o.label }}</button>
+      }
+    </div>
+    <div class="m-sheet-f">
+      <button type="button" class="btn-sm ghost" (click)="limpiarFiltros()">Limpiar</button>
+      <button type="button" class="btn-sm solid" (click)="filtrosOpen.set(false)">
+        Ver {{ productosFiltrados().length }} {{ productosFiltrados().length === 1 ? 'producto' : 'productos' }}
+      </button>
+    </div>
+  </div>
+}
+
+<!-- Celular: botones de la cabecera -->
+@if (menuCabeceraOpen()) {
+  <div class="drawer-back on" (click)="menuCabeceraOpen.set(false)"></div>
+  <div class="m-sheet" role="dialog" aria-modal="true" aria-label="Más acciones del catálogo">
+    <div class="m-grab" aria-hidden="true"></div>
+    <div class="m-acciones">
+      <button type="button" (click)="menuCabeceraOpen.set(false); verVentas()">
+        <span class="m-ic">↗</span>Registro de ventas
+      </button>
+      <a href="/pos/" target="_blank" rel="noopener" (click)="menuCabeceraOpen.set(false)">
+        <span class="m-ic">▯</span>Abrir POS
+      </a>
+      @if (eventoActivo()) {
+        <button type="button" class="is-danger" (click)="menuCabeceraOpen.set(false); abrirFinalizarEvento()">
+          <span class="m-ic">■</span>Finalizar «{{ eventoActivo()!.nombre }}»
+        </button>
+      } @else {
+        <button type="button" (click)="menuCabeceraOpen.set(false); abrirCrearEvento()">
+          <span class="m-ic">＋</span>Nuevo evento
+        </button>
+      }
+    </div>
+  </div>
 }
 
 <!-- Detail Drawer backdrop -->

@@ -9,12 +9,16 @@ import { etiquetaVariante } from '../../../../../supabase/functions/_shared/vari
 import { EventosService, Evento } from '../../../core/services/eventos.service';
 import {
   EstadoFiltro,
+  ORDENES_MOVIL,
   OrdenCampo,
   OrdenDir,
+  OrdenMovil,
   UMBRAL_STOCK_BAJO,
   calcularKpis,
   chipStock,
+  contarFiltrosActivos,
   contarPorEstado,
+  ordenActual,
   filtrarProductos,
   ordenarProductos,
 } from './productos-filtros';
@@ -91,6 +95,19 @@ export class ProductosListComponent implements OnInit {
     this.catFiltro() !== 'all' || this.estadoFiltro() !== 'all' || this.busqueda().trim() !== '',
   );
 
+  // ── Celular ───────────────────────────────────────────────────────────────
+  // En pantallas angostas la tabla se cambia por tarjetas, y las acciones de fila,
+  // los filtros y los botones de cabecera pasan a hojas que suben desde abajo.
+  readonly ordenesMovil = ORDENES_MOVIL;
+  readonly filtrosActivos = computed(() =>
+    contarFiltrosActivos({ categoria: this.catFiltro(), estado: this.estadoFiltro() }),
+  );
+  readonly ordenMovil = computed(() => ordenActual(this.ordenCampo(), this.ordenDir()));
+  readonly filtrosOpen      = signal(false);
+  readonly menuCabeceraOpen = signal(false);
+  /** Producto cuya hoja de acciones está abierta. */
+  readonly accionesTarget   = signal<ProductoEvento | null>(null);
+
   readonly toast = signal<string | null>(null);
   private toastTimer?: ReturnType<typeof setTimeout>;
 
@@ -143,7 +160,8 @@ export class ProductosListComponent implements OnInit {
   /** Cualquier capa por encima de la página: bloquea el scroll de fondo. */
   readonly hayOverlay = computed(() =>
     this.drawerOpen() || this.crearEventoOpen() || this.finalizarOpen() ||
-    this.restockOpen() || this.ajusteOpen(),
+    this.restockOpen() || this.ajusteOpen() ||
+    this.filtrosOpen() || this.menuCabeceraOpen() || !!this.accionesTarget(),
   );
 
   constructor() {
@@ -208,6 +226,9 @@ export class ProductosListComponent implements OnInit {
 
   /** Escape cierra la capa más superficial primero. */
   onEscape() {
+    if (this.accionesTarget())   { this.accionesTarget.set(null); return; }
+    if (this.filtrosOpen())      { this.filtrosOpen.set(false); return; }
+    if (this.menuCabeceraOpen()) { this.menuCabeceraOpen.set(false); return; }
     if (this.restockOpen())      { this.cerrarRestock(); return; }
     if (this.ajusteOpen())       { this.cerrarAjuste(); return; }
     if (this.crearEventoOpen())  { this.cerrarCrearEvento(); return; }
@@ -240,6 +261,25 @@ export class ProductosListComponent implements OnInit {
   ariaSort(campo: OrdenCampo): 'ascending' | 'descending' | 'none' {
     if (this.ordenCampo() !== campo) return 'none';
     return this.ordenDir() === 'asc' ? 'ascending' : 'descending';
+  }
+
+  fijarOrden(o: OrdenMovil) {
+    this.ordenCampo.set(o.campo);
+    this.ordenDir.set(o.dir);
+  }
+
+  /** Los KPIs de stock bajo y agotados filtran la lista; tocarlos otra vez lo quita. */
+  alternarEstado(e: EstadoFiltro) {
+    this.estadoFiltro.update(actual => (actual === e ? 'all' : e));
+  }
+
+  labelEstado(e: EstadoFiltro): string {
+    return ESTADOS.find(x => x.id === e)?.label ?? e;
+  }
+
+  abrirAcciones(p: ProductoEvento, event: Event) {
+    event.stopPropagation();
+    this.accionesTarget.set(p);
   }
 
   limpiarFiltros() {
