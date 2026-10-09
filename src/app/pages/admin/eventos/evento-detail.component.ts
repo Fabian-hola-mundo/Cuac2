@@ -1,8 +1,11 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { Component, computed, signal, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule }     from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EventosService, Evento } from '../../../core/services/eventos.service';
 import { VentaEvento }      from '../../../core/services/inventario.service';
+import {
+  MetodoCuadre, agruparTransacciones, filtrar, cuadre, cajas, dias, montoLinea,
+} from './cuadre';
 
 @Component({
   selector: 'app-evento-detail',
@@ -11,7 +14,7 @@ import { VentaEvento }      from '../../../core/services/inventario.service';
   templateUrl: './evento-detail.component.html',
   styleUrl: './evento-detail.component.scss',
 })
-export class EventoDetailComponent implements OnInit {
+export class EventoDetailComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route  = inject(ActivatedRoute);
   private svc    = inject(EventosService);
@@ -32,10 +35,7 @@ export class EventoDetailComponent implements OnInit {
   );
 
   totalCOP = computed(() =>
-    this.ventas().reduce((acc, v) => {
-      const p = v.productos_evento?.precio;
-      return p ? acc + v.cantidad * p : acc;
-    }, 0)
+    this.ventas().reduce((acc, v) => acc + montoLinea(v), 0)
   );
 
   hasPrecio = computed(() =>
@@ -76,10 +76,73 @@ export class EventoDetailComponent implements OnInit {
       .sort((a, b) => a.dia.localeCompare(b.dia));
   });
 
+  // Cuadre de caja y ventas por transacción
+  readonly filtroCaja = signal<string | null>(null);
+  readonly filtroDia  = signal<string | null>(null);
+  readonly visibles   = signal(50);
+
+  readonly metodos: { clave: MetodoCuadre; etiqueta: string; tono: string; nota?: string }[] = [
+    { clave: 'efectivo',      etiqueta: 'Efectivo',      tono: 'selva' },
+    { clave: 'qr',            etiqueta: 'QR',            tono: 'rio' },
+    { clave: 'datafono',      etiqueta: 'Datáfono',      tono: 'sol' },
+    { clave: 'sin_registrar', etiqueta: 'Sin registrar', tono: 'neutro', nota: 'versión anterior del POS' },
+  ];
+
+  readonly transacciones = computed(() => agruparTransacciones(this.ventas()));
+  readonly filtradas = computed(() =>
+    filtrar(this.transacciones(), { caja: this.filtroCaja(), dia: this.filtroDia() }));
+  readonly cuadreActual = computed(() => cuadre(this.filtradas()));
+  readonly listaCajas = computed(() => {
+    const l = cajas(this.transacciones());
+    const repetidos = new Set(l.map(c => c.nombre).filter((n, i, a) => a.indexOf(n) !== i));
+    return l.map(c => ({
+      clave: c.clave,
+      etiqueta: repetidos.has(c.nombre) && c.clave.startsWith('nombre:') ? c.nombre + ' (sin id)' : c.nombre,
+    }));
+  });
+  readonly listaDias = computed(() => dias(this.transacciones()));
+
+  private quitarCanal?: () => void;
+  private recarga?: ReturnType<typeof setTimeout>;
+
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.router.navigate(['/admin/eventos']); return; }
     await this.cargar(id);
+    // Ventas nuevas: se vuelve a leer, agrupando ráfagas en una sola lectura.
+    this.quitarCanal = this.svc.escucharVentas(() => {
+      clearTimeout(this.recarga);
+      this.recarga = setTimeout(() => void this.refrescarVentas(), 2000);
+    });
+  }
+
+  ngOnDestroy() {
+    clearTimeout(this.recarga);
+    this.quitarCanal?.();
+  }
+
+  private async refrescarVentas() {
+    const e = this.evento();
+    if (!e) return;
+    try { this.ventas.set(await this.svc.getVentasEvento(e)); } catch { /* se reintenta con la próxima venta */ }
+  }
+
+  cambiarCaja(v: string) { this.filtroCaja.set(v || null); this.visibles.set(50); }
+  cambiarDia(v: string)  { this.filtroDia.set(v || null);  this.visibles.set(50); }
+
+  etiquetaMetodo(m: MetodoCuadre) { return this.metodos.find(x => x.clave === m)!.etiqueta; }
+
+  fmtHora(iso: string) {
+    return new Date(iso).toLocaleString('es-CO', {
+      timeZone: 'America/Bogota', weekday: 'short', day: 'numeric', month: 'short',
+      hour: 'numeric', minute: '2-digit',
+    });
+  }
+
+  fmtDia(d: string) {
+    return new Date(d + 'T12:00:00').toLocaleDateString('es-CO', {
+      weekday: 'short', day: 'numeric', month: 'short',
+    });
   }
 
   private async cargar(id: string) {

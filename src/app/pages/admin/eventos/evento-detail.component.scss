@@ -1,1 +1,15 @@
 :host { display: block; }
+
+.filtros { display: flex; gap: 8px; flex-wrap: wrap; }
+.filtros .select { width: auto; padding: 6px 30px 6px 10px; font-size: 12px; }
+.cuadre { flex-wrap: wrap; }
+.cuadre .kpi-item { min-width: 160px; }
+.cuadre-c { font-size: 11px; color: var(--carbon-50); margin-top: 2px; }
+.obs { font-style: italic; opacity: .7; }
+.pago {
+  display: inline-block; border-radius: 10px; padding: 1px 8px; font-size: 11px; font-weight: 700;
+  background: var(--carbon-08); color: var(--carbon-50);
+  &[data-m="efectivo"] { background: var(--selva-soft); color: var(--selva); }
+  &[data-m="qr"]       { background: var(--rio-soft);   color: var(--rio); }
+  &[data-m="datafono"] { background: var(--sol-soft);   color: #8a6a00; }
+}

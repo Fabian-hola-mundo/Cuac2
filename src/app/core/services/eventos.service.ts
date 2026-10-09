@@ -84,12 +84,21 @@ export class EventosService {
     const fin = evento.fecha_fin ?? new Date().toISOString();
     const { data, error } = await this.sb.db
       .from('ventas_evento')
-      .select('*, productos_evento(nombre, categoria, precio)')
+      .select('*, productos_evento(nombre, categoria, precio), producto_variantes(opciones)')
       .gte('vendido_en', evento.fecha_inicio)
       .lte('vendido_en', fin)
       .order('vendido_en', { ascending: false });
     if (error) throw error;
     return data ?? [];
+  }
+
+  /** Avisa cuando entra una venta nueva (POS u otra). Devuelve la función para dejar de escuchar. */
+  escucharVentas(onInsert: () => void): () => void {
+    const canal = this.sb.db
+      .channel(`evento-ventas-${crypto.randomUUID()}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ventas_evento' }, () => onInsert())
+      .subscribe();
+    return () => { this.sb.db.removeChannel(canal); };
   }
 
   async getDispositivosPos(): Promise<DispositivoPos[]> {
