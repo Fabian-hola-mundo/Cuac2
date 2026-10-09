@@ -40,6 +40,8 @@ Registrar una venta del evento activo (hoy **SOFA 2026**) hablándole al celular
 
 ## 2. Hoja de voz
 
+**Carga diferida.** Toda la hoja de voz (DOM, estilos, grabación y llamada a la función) vive en `public/pos/voz.js`, que importa `voz-logic.js`. `index.html` la carga con `import('./voz.js')` solo al tocar 🎙 o al abrir con `?voz=1`. Así el POS sin internet nunca depende de esos archivos: no van en el `SHELL` de `sw.js` y la caché sigue en `pos-v4`. `index.html` le pasa un puente: `abrirVoz(puente, { grabar })` con `puente = { sb, supabaseUrl, supabaseKey, eventoId, productos, variantesPorProducto, agregar(lineas, { metodoPago, observacion }), toast(msg, tipo) }`.
+
 Estados: `grabando` → `procesando` → `propuesta` (o `error`).
 
 - **Grabar:** `MediaRecorder` (`audio/webm;codecs=opus`, o el que soporte el navegador). Un toque para empezar, otro para terminar; tope de 60 s con corte automático. Indicador de tiempo y nivel.
@@ -135,6 +137,6 @@ Sin cambios: las líneas llegan al carrito y la hoja de cobro llama a `registrar
   - «una totebag orquídeas en efectivo» → 1 línea, `metodo_pago` efectivo.
   - «dos totes por 70 mil» → `total_dictado` 70000.
   - Producto inexistente → sin líneas inventadas.
-  - La regla de evidencia, aislada en `supabase/functions/pos-voz/evidencia.ts` con pruebas de Deno (`deno test`): «dos tote bags» → duda; «una orquídea» → línea; producto único en su categoría sin nombre exacto → línea; combinación sin valor dicho → duda.
+  - La regla de evidencia, aislada en `supabase/functions/pos-voz/evidencia.js` (+ `.d.ts`, mismo patrón que `pos-logic.js`) con pruebas de Vitest en `src/app/pos/evidencia.spec.ts`: «dos tote bags» → duda; «una orquídea» → línea; producto único en su categoría sin nombre exacto → línea; combinación sin valor dicho → duda.
   - Sin sesión → 401.
 - **Manual en el S25 Ultra:** instalar el PWA, arrastrar el atajo «Venta por voz» a inicio, abrirlo, conceder micrófono, dictar la frase del ejemplo, resolver la duda, registrar en QR y ver la venta en otro POS y en el cuadre de SOFA 2026. Después, anular esa venta de prueba desde el admin.
