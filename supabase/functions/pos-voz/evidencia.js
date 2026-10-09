@@ -8,7 +8,7 @@ const VACIAS = new Set(['para', 'por', 'con', 'los', 'las', 'del', 'que', 'unida
 export function normalizar(s) {
   return String(s ?? '')
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/\p{M}/gu, '')
     .toLowerCase()
     .replace(/(\d)([a-z])/g, '$1 $2')
     .replace(/([a-z])(\d)/g, '$1 $2')
