@@ -34,15 +34,23 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Fotos de Supabase Storage (object o render): cache primero, sin internet siguen ahí.
-  if (url.hostname.endsWith('.supabase.co') && url.pathname.startsWith('/storage/v1/')) {
+  // Fotos de Supabase Storage (públicas, object o render): se sirven del caché y se
+  // refrescan por detrás; sin internet siguen ahí. Solo se guardan respuestas ok.
+  if (url.hostname.endsWith('.supabase.co')
+      && (url.pathname.startsWith('/storage/v1/object/public/') || url.pathname.startsWith('/storage/v1/render/image/public/'))) {
     event.respondWith(
-      caches.open(CACHE_FOTOS).then(c =>
-        c.match(req).then(cacheada => cacheada || fetch(req).then(res => {
-          if (res.ok || res.type === 'opaque') c.put(req, res.clone()); // <img> sin CORS responde opaca
+      caches.open(CACHE_FOTOS).then(async c => {
+        const cacheada = await c.match(req);
+        const red = fetch(req).then(res => {
+          if (res.ok) c.put(req, res.clone()).catch(() => {});
           return res;
-        })),
-      ),
+        });
+        if (cacheada) {
+          event.waitUntil(red.catch(() => {}));
+          return cacheada;
+        }
+        return red;
+      }),
     );
     return;
   }

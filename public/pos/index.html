@@ -1095,7 +1095,8 @@
   // Recalcula el orden 🔥 solo con el carrito vacío: así las tarjetas no se
   // mueven mientras se arma una venta. Se llama al cargar y tras cada venta.
   function aplicarOrdenSiCarritoVacio() {
-    if (carrito.length !== 0) return;
+    // Con carrito el orden se congela, salvo la primera vez (carrito restaurado al abrir).
+    if (carrito.length !== 0 && ordenAplicado.length !== 0) return;
     ordenAplicado = ordenarCatalogo(productosActivos(), masVendidos);
   }
 
@@ -1166,7 +1167,8 @@
       const soldOut = p.stock_actual <= 0;
       const lowStock = p.stock_actual > 0 && p.stock_actual < 3;
       const c = colorFor(p.categoria);
-      const foto = Array.isArray(p.fotos) && p.fotos[0] ? urlFoto(p.fotos[0]) : null;
+      const fotoUrl = p.cover_url || (Array.isArray(p.fotos) && p.fotos[0]) || null;
+      const foto = fotoUrl ? urlFoto(fotoUrl) : null;
 
       const card = document.createElement('button');
       card.type = 'button';
@@ -1184,7 +1186,7 @@
 
       card.innerHTML = `
         <div class="card-art${foto ? ' con-foto' : ''}">
-          ${foto ? `<img src="${escapeHtml(foto)}" alt="" loading="lazy" decoding="async">` : ''}
+          ${foto ? `<img src="${escapeHtml(foto)}" alt="" loading="lazy" decoding="async" crossorigin="anonymous" onerror="this.parentNode.classList.remove('con-foto');this.remove()">` : ''}
           ${rango != null ? `<span class="card-fire">🔥${rango}</span>` : ''}
           <span class="card-qty"${n ? '' : ' hidden'}>×${n}</span>
           <div class="art-name">${escapeHtml(p.nombre)}</div>
