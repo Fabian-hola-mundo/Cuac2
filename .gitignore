@@ -63,3 +63,6 @@ firebase-adminsdk*.json
 # Logs de build
 *.log
 ng-build-out*
+
+# Mockups del brainstorming (superpowers)
+.superpowers/
