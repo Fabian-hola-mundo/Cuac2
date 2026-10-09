@@ -5,7 +5,8 @@ export interface Opcion { producto_id: string; variante_id: string | null; }
 export interface LineaVoz extends Opcion { cantidad: number; }
 export interface DudaVoz { texto: string; cantidad: number; opciones: Opcion[]; }
 export interface LineaModelo extends LineaVoz { fragmento: string; }
-export interface PropuestaModelo { lineas: LineaModelo[]; dudas: DudaVoz[]; }
+export interface DudaModelo extends DudaVoz { fragmento?: string; }
+export interface PropuestaModelo { lineas: LineaModelo[]; dudas: DudaModelo[]; }
 
 export function normalizar(s: string): string;
 export function fichas(s: string): string[];

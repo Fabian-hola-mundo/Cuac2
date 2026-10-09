@@ -180,6 +180,15 @@ describe('validarPropuesta', () => {
     expect(r.dudas).toEqual([{ texto: '¿Cuál tote?', cantidad: 1, opciones: [{ producto_id: 'sol', variante_id: null }] }]);
   });
 
+  it('duda del modelo incompleta se completa con lo que empata con su fragmento', () => {
+    const t = 'dos tote bags por 80 mil';
+    const r = validarPropuesta(
+      { lineas: [], dudas: [{ texto: '¿Cuáles?', cantidad: 2, fragmento: 'dos tote bags', opciones: [{ producto_id: 'est', variante_id: null }] }] },
+      catalogo, t,
+    );
+    expect(r.dudas[0].opciones.map(o => o.producto_id).sort()).toEqual(['est', 'orq', 'sol']);
+  });
+
   it('sin nada → vacío', () => {
     expect(validarPropuesta(vacio, catalogo, 'hola')).toEqual(vacio);
   });

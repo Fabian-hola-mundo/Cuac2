@@ -101,7 +101,13 @@ export function validarPropuesta(modelo, catalogo, transcripcion) {
     if (!esCantidad(d.cantidad)) continue;
     const vistas = new Set();
     const opciones = [];
-    for (const o of d.opciones ?? []) {
+    // El modelo puede olvidar opciones: se completan con todo lo que empata
+    // con lo dicho («dos tote bags» → las 3 totes).
+    const fragD = normalizar(d.fragmento);
+    const empatados = fragD && texto.includes(fragD)
+      ? mejores(catalogo.productos, fichasProducto, fichasDichas(fragD)).map(p => ({ producto_id: p.id, variante_id: null }))
+      : [];
+    for (const o of [...(d.opciones ?? []), ...empatados]) {
       const p = porId.get(o.producto_id);
       if (!p) continue;
       const vs = variantesDe(p.id);
@@ -115,7 +121,7 @@ export function validarPropuesta(modelo, catalogo, transcripcion) {
         if (!vistas.has(k)) { vistas.add(k); opciones.push(e); }
       }
     }
-    if (opciones.length) dudas.push({ texto: String(d.texto ?? '¿Cuál?').slice(0, 120), cantidad: d.cantidad, opciones });
+    if (opciones.length) dudas.push({ texto: (d.texto ? String(d.texto) : d.fragmento ? `¿Cuál? «${d.fragmento}»` : '¿Cuál?').slice(0, 120), cantidad: d.cantidad, opciones });
   }
 
   return { lineas, dudas };
