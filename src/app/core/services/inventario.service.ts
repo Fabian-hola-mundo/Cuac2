@@ -76,8 +76,13 @@ export interface VentaEvento {
   comentario?: string | null;
   vendido_en: string;
   sincronizado: boolean;
-  canal: 'evento' | 'web';
+  /** null en las filas del POS; 'web' en las de la tienda. */
+  canal: 'evento' | 'web' | null;
   evento_id: string;
+  transaccion_id?: string | null;
+  metodo_pago?: 'qr' | 'datafono' | 'efectivo' | null;
+  precio_unitario?: number | null;
+  dispositivo_id?: string | null;
   productos_evento?: { nombre: string; categoria: string; precio?: number };
   variante_id?: string | null;
   producto_variantes?: { opciones: Combinacion } | null;
