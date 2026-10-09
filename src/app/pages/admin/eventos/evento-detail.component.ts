@@ -102,6 +102,7 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
   });
   readonly listaDias = computed(() => dias(this.transacciones()));
 
+  private destruido = false;
   private quitarCanal?: () => void;
   private recarga?: ReturnType<typeof setTimeout>;
 
@@ -109,21 +110,24 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.router.navigate(['/admin/eventos']); return; }
     await this.cargar(id);
+    if (this.destruido || !this.evento()) return;
     // Ventas nuevas: se vuelve a leer, agrupando ráfagas en una sola lectura.
     this.quitarCanal = this.svc.escucharVentas(() => {
+      if (this.destruido) return;
       clearTimeout(this.recarga);
       this.recarga = setTimeout(() => void this.refrescarVentas(), 2000);
     });
   }
 
   ngOnDestroy() {
+    this.destruido = true;
     clearTimeout(this.recarga);
     this.quitarCanal?.();
   }
 
   private async refrescarVentas() {
     const e = this.evento();
-    if (!e) return;
+    if (!e || this.destruido) return;
     try { this.ventas.set(await this.svc.getVentasEvento(e)); } catch { /* se reintenta con la próxima venta */ }
   }
 
