@@ -270,6 +270,7 @@
       background: var(--line-soft); color: var(--carbon); font-size: 14px; cursor: pointer;
     }
     #search-clear[hidden] { display: none; }
+    #voz-btn { width: 34px; height: 34px; flex: none; border: none; border-radius: 50%; background: var(--carbon); color: var(--paper); font-size: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .cat-chips { display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
     .cat-chips::-webkit-scrollbar { display: none; }
     .cat-chips[hidden] { display: none; }
@@ -673,6 +674,7 @@
         <input type="search" id="search-input" placeholder="Buscar producto…" enterkeyhint="search"
                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Buscar producto" />
         <button type="button" id="search-clear" hidden aria-label="Limpiar búsqueda">✕</button>
+        <button type="button" id="voz-btn" aria-label="Venta por voz">🎙</button>
       </div>
       <div class="cat-chips" id="cat-chips"></div>
     </header>
@@ -1513,6 +1515,12 @@
     subscribeRealtime();
     iniciarReintentoCola();
 
+    // Atajo «Venta por voz» de la pantalla de inicio (manifest shortcuts).
+    if (new URLSearchParams(location.search).get('voz') === '1') {
+      history.replaceState(null, '', location.pathname);
+      void abrirVozDiferido(true);
+    }
+
     if (getOfflineQueue().length > 0 && isOnline) {
       await syncOfflineQueue();
     }
@@ -1709,6 +1717,44 @@
     if (registrando) return; // no se cierra mientras se registra
     document.getElementById('cobro-modal').classList.remove('open');
   };
+
+  // ── VENTA POR VOZ ──
+  // voz.js y voz-logic.js se cargan solo al usarla: no van en el SHELL de sw.js,
+  // así el POS sin internet nunca depende de ellos (la voz necesita red).
+  const puenteVoz = {
+    sb,
+    supabaseUrl: SUPABASE_URL,
+    supabaseKey: SUPABASE_KEY,
+    catalogo: () => ({ productos: products, variantesPorProducto: variantsByProduct }),
+    toast: showToast,
+    async agregar(lineas, { metodoPago: metodo, observacion }) {
+      if (registrando) { showToast('Espera a que termine el registro en curso', 'warning'); return false; }
+      const { fusionarCarrito } = await import('./voz-logic.js');
+      carrito = fusionarCarrito(carrito, lineas);
+      cambioCarrito();
+      window.abrirCobro();
+      if (metodo) { metodoPago = metodo; renderCobro(); }
+      if (observacion) {
+        const note = document.getElementById('cobro-note');
+        note.value = [note.value.trim(), observacion].filter(Boolean).join(' · ').slice(0, 280);
+        note.hidden = false;
+        document.getElementById('cobro-note-toggle').hidden = true;
+      }
+      return true;
+    },
+  };
+
+  async function abrirVozDiferido(grabar) {
+    if (!navigator.onLine) { showToast('Sin conexión: agrega desde el catálogo', 'warning'); return; }
+    try {
+      const { abrirVoz } = await import('./voz.js');
+      abrirVoz(puenteVoz, { grabar });
+    } catch (e) {
+      console.error('voz', e);
+      showToast('No se pudo abrir la venta por voz', 'error');
+    }
+  }
+  document.getElementById('voz-btn').addEventListener('click', () => abrirVozDiferido(false));
 
   window.toggleNotaCobro = function() {
     const input = document.getElementById('cobro-note');
