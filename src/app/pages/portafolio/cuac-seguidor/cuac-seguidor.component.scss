@@ -1,0 +1,45 @@
+:host {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pato {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64px;
+  opacity: 0; // la entrada (escala + opacidad) la anima el resorte del .ts
+  will-change: transform, width, opacity;
+}
+
+.pato-cuerpo {
+  // pivota en la punta del pico (PICO_X / PICO_Y en el .ts) para voltear sin saltos
+  transform-origin: 26% 32%;
+  will-change: transform;
+}
+
+img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 8px 12px rgba(21, 31, 40, 0.16));
+}
+
+// Aplastón al crecer: se encoge, se estira y se asienta
+img.pop {
+  transform-origin: 50% 85%;
+  animation: pato-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes pato-pop {
+  0%   { transform: scale(1, 1)       rotate(0); }
+  18%  { transform: scale(1.22, 0.8)  rotate(-4deg); }
+  40%  { transform: scale(0.9, 1.14)  rotate(3deg); }
+  62%  { transform: scale(1.05, 0.96) rotate(-1deg); }
+  100% { transform: scale(1, 1)       rotate(0); }
+}

@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, computed, signal, inject, effect, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { Router, RouterOutlet, RouterLink, NavigationEnd } from '@angular/router';
@@ -7,6 +7,7 @@ import { filter, map, startWith } from 'rxjs';
 import { SupabaseService }        from '../../core/services/supabase.service';
 import { AdminStateService, ViewId } from '../../core/services/admin-state.service';
 import { MensajesUnreadService } from './mensajes/mensajes-unread.service';
+import { ResenasNuevasService }  from './resenas/resenas-nuevas.service';
 import { AdminSearchComponent }  from './search/admin-search.component';
 import { NotificationsService }            from './notifications/notifications.service';
 import { NotificationsDropdownComponent }  from './notifications/notifications-dropdown.component';
@@ -28,6 +29,29 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   loginError    = signal<string | null>(null);
   loginLoading  = signal(false);
   showPass      = signal(false);
+
+  // ── Verificación en dos pasos (MFA) ────────────────────────────────────────
+  // 'checking' mientras se evalúa; 'enroll' si aún no hay factor; 'verify' si
+  // hay factor y falta el código; 'ok' cuando la sesión ya está a aal2.
+  mfaMode      = signal<'checking' | 'enroll' | 'verify' | 'ok'>('checking');
+  mfaLoading   = signal(false);
+  mfaError     = signal<string | null>(null);
+  mfaCode      = '';
+  qrSrc        = signal<string | null>(null);
+  mfaSecret    = signal<string | null>(null);
+  private enrollFactorId = signal<string | null>(null);
+  private verifyFactorId = signal<string | null>(null);
+  private enrolando = false;
+
+  constructor() {
+    // Cada vez que cambia la sesión (login, refresh de token al subir a aal2,
+    // logout) reevaluamos el estado del segundo factor.
+    effect(() => {
+      const s = this.sb.session();
+      if (!s) { this.mfaMode.set('checking'); this.resetMfa(); return; }
+      void this.evaluateMfa();
+    });
+  }
 
   searchOpen    = signal(false);
   navOpen       = signal(false);
@@ -51,6 +75,11 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     }
   }
 
+  // El overlay de notificaciones solo cubre la topbar (su backdrop-filter atrapa
+  // el `fixed`); la campana y el panel detienen la propagación.
+  @HostListener('document:click')
+  onDocumentClick() { if (this.notifOpen()) this.notifOpen.set(false); }
+
   toggleNav() { this.navOpen.update(v => !v); }
   closeNav()  { this.navOpen.set(false); }
 
@@ -69,14 +98,19 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   isEventosRoute       = computed(() => this.routerUrl().includes('/admin/eventos'));
   isAjustesRoute       = computed(() => this.routerUrl().includes('/admin/ajustes'));
   isPersonajesRoute    = computed(() => this.routerUrl().includes('/admin/personajes'));
+  isRuletaRoute        = computed(() => this.routerUrl().includes('/admin/ruleta'));
   isMensajesRoute      = computed(() => this.routerUrl().includes('/admin/mensajes'));
+  isResenasRoute       = computed(() => this.routerUrl().includes('/admin/resenas'));
   readonly unreadSvc   = inject(MensajesUnreadService);
+  readonly resenasNuevas = inject(ResenasNuevasService);
 
   // Single source of truth for the highlighted sidebar item — avoids the
   // previous per-link chains of "!isXRoute()" exclusions getting out of
   // sync whenever a new admin route was added.
   activeNavId = computed<string>(() => {
     if (this.isMensajesRoute())   return 'mensajes';
+    if (this.isResenasRoute())    return 'resenas';
+    if (this.isRuletaRoute())     return 'ruleta';
     if (this.isPersonajesRoute()) return 'contenido';
     if (this.isAjustesRoute())    return 'ajustes';
     if (this.isProductosRoute())  return 'productos';
@@ -93,6 +127,8 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     if (url.match(/\/personajes\/[^/]+$/))        return ['Universo', 'Personajes', 'Detalle'];
     if (url.includes('/personajes'))              return ['Universo', 'Personajes'];
     if (url.includes('/mensajes')) return ['Tienda', 'Mensajes'];
+    if (url.includes('/resenas'))  return ['Estudio', 'Reseñas'];
+    if (url.includes('/ruleta'))   return ['Universo', 'Ruleta'];
     if (url.includes('/ajustes/negocio'))       return ['Sistema', 'Ajustes', 'Negocio'];
     if (url.includes('/ajustes/impuestos'))     return ['Sistema', 'Ajustes', 'Impuestos'];
     if (url.includes('/ajustes/envios'))        return ['Sistema', 'Ajustes', 'Envíos y tarifas'];
@@ -181,7 +217,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
       return;
     }
     this.state.view.set(id);
-    if (this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute() || this.isAjustesRoute() || this.isPersonajesRoute()) {
+    if (this.isPortafolioRoute() || this.isCotizacionesRoute() || this.isProductosRoute() || this.isEventosRoute() || this.isAjustesRoute() || this.isPersonajesRoute() || this.isRuletaRoute() || this.isResenasRoute()) {
       this.router.navigate(['/admin']);
     }
   }
@@ -191,7 +227,9 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   goProductos() { this.closeNav(); this.router.navigate(['/admin/productos']); }
   goEventos()   { this.closeNav(); this.router.navigate(['/admin/eventos']); }
   goPersonajes() { this.closeNav(); this.router.navigate(['/admin/personajes']); }
+  goRuleta()     { this.closeNav(); this.router.navigate(['/admin/ruleta']); }
   goMensajes()   { this.closeNav(); this.router.navigate(['/admin/mensajes']); }
+  goResenas()    { this.closeNav(); this.router.navigate(['/admin/resenas']); }
 
   async loginGoogle() {
     this.loginLoading.set(true);
@@ -215,7 +253,89 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     this.showPass.set(v);
   }
 
-  async logout() { await this.sb.signOut(); }
+  async logout() { this.resetMfa(); await this.sb.signOut(); }
+
+  // ── MFA ─────────────────────────────────────────────────────────────────────
+  private resetMfa() {
+    this.qrSrc.set(null);
+    this.mfaSecret.set(null);
+    this.enrollFactorId.set(null);
+    this.verifyFactorId.set(null);
+    this.mfaCode = '';
+    this.mfaError.set(null);
+    this.enrolando = false;
+  }
+
+  /** Decide qué pantalla de 2FA mostrar (o dejar pasar al shell). */
+  private async evaluateMfa() {
+    try {
+      const { data: aal } = await this.sb.mfaAAL();
+      if (aal?.currentLevel === 'aal2') { this.mfaMode.set('ok'); return; }
+
+      const { data: factors } = await this.sb.mfaListFactors();
+      const verificado = (factors?.totp ?? []).find(f => f.status === 'verified');
+
+      if (verificado) {
+        this.verifyFactorId.set(verificado.id);
+        this.mfaMode.set('verify');
+      } else {
+        this.mfaMode.set('enroll');
+        if (!this.qrSrc() && !this.enrolando) await this.startEnroll();
+      }
+    } catch {
+      // El enforcement real vive en is_admin() (RLS); si la evaluación del
+      // cliente falla, no bloqueamos el shell, pero sin aal2 la base no
+      // devolverá datos igualmente.
+      this.mfaMode.set('ok');
+    }
+  }
+
+  /** Genera un factor TOTP nuevo y su QR. */
+  private async startEnroll() {
+    this.enrolando = true;
+    this.mfaLoading.set(true);
+    this.mfaError.set(null);
+    const { data, error } = await this.sb.mfaEnrollTotp();
+    this.mfaLoading.set(false);
+    if (error || !data) {
+      this.enrolando = false;
+      this.mfaError.set('No se pudo iniciar la configuración. Recarga e intenta de nuevo.');
+      return;
+    }
+    this.enrollFactorId.set(data.id);
+    this.mfaSecret.set(data.totp.secret);
+    const qr = data.totp.qr_code;
+    this.qrSrc.set(
+      qr.trim().startsWith('<svg')
+        ? 'data:image/svg+xml;utf8,' + encodeURIComponent(qr)
+        : qr,
+    );
+    this.enrolando = false;
+  }
+
+  /** Verifica el código, tanto al enrolar como al iniciar sesión. */
+  async confirmMfa() {
+    const factorId = this.mfaMode() === 'enroll' ? this.enrollFactorId() : this.verifyFactorId();
+    if (!factorId) return;
+    const code = this.mfaCode.replace(/\s/g, '');
+    if (!/^\d{6}$/.test(code)) { this.mfaError.set('Ingresa el código de 6 dígitos.'); return; }
+
+    this.mfaLoading.set(true);
+    this.mfaError.set(null);
+    const { error } = await this.sb.mfaVerify(factorId, code);
+    this.mfaLoading.set(false);
+
+    if (error) {
+      this.mfaError.set('Código incorrecto o vencido. Prueba con el siguiente que genere tu app.');
+      this.mfaCode = '';
+      return;
+    }
+    this.mfaCode = '';
+    this.qrSrc.set(null);
+    this.mfaSecret.set(null);
+    await this.evaluateMfa();
+    if (this.mfaMode() === 'ok') this.flash('Verificación en dos pasos activada.');
+  }
 
   flash(msg: string) {
     this.toast.set(msg);
@@ -224,5 +344,4 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   }
 
   get userEmail(): string  { return this.sb.session()?.user?.email ?? ''; }
-  get userInitial(): string { return (this.sb.session()?.user?.email?.[0] ?? 'C').toUpperCase(); }
 }

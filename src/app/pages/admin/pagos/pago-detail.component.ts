@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter, OnChanges, signal, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MockAdminDataService, Payment, Order, Customer } from '../../../core/services/mock-admin-data.service';
+import { AdminDataService } from '../../../core/services/admin-data.service';
 
 @Component({
   selector: 'app-pago-detail',
@@ -9,44 +9,23 @@ import { MockAdminDataService, Payment, Order, Customer } from '../../../core/se
   templateUrl: './pago-detail.component.html',
   styleUrl: './pago-detail.component.scss',
 })
-export class PagoDetailComponent implements OnChanges {
-  @Input() pagoId!: string;
+export class PagoDetailComponent {
+  private readonly id = signal('');
+  @Input() set pagoId(v: string) { this.id.set(v); }
   @Output() close = new EventEmitter<void>();
 
-  private data = inject(MockAdminDataService);
+  private data = inject(AdminDataService);
 
-  payment  = signal<Payment | null>(null);
-  order    = signal<Order | null>(null);
-  customer = signal<Customer | null>(null);
-
-  actionDone = signal<string | null>(null);
-
-  ngOnChanges() {
-    const p = this.data.getPaymentById(this.pagoId) ?? null;
-    this.payment.set(p);
-    if (p) {
-      const o = this.data.getOrderById(p.orderId) ?? null;
-      this.order.set(o);
-      if (o) {
-        this.customer.set(this.data.getCustomer(o.customerId) ?? null);
-      }
-    }
-  }
-
-  async marcarPagado() {
-    this.actionDone.set('Pago marcado como pagado');
-    setTimeout(() => this.actionDone.set(null), 2500);
-  }
-
-  async emitirReembolso() {
-    this.actionDone.set('Reembolso iniciado');
-    setTimeout(() => this.actionDone.set(null), 2500);
-  }
-
-  async cancelar() {
-    this.actionDone.set('Pago cancelado');
-    setTimeout(() => this.actionDone.set(null), 2500);
-  }
+  // Derivados: cuando Bold aprueba o rechaza el pago, el drawer abierto cambia de estado solo.
+  readonly payment  = computed(() => this.data.PAYMENTS.find(p => p.id === this.id()) ?? null);
+  readonly order    = computed(() => {
+    const p = this.payment();
+    return p ? this.data.getOrderById(p.orderId) ?? null : null;
+  });
+  readonly customer = computed(() => {
+    const o = this.order();
+    return o ? this.data.getCustomer(o.customerId) ?? null : null;
+  });
 
   fmtCOP(n: number): string {
     return (n < 0 ? '-' : '') + '$' + Math.abs(n).toLocaleString('es-CO');

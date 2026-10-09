@@ -32,57 +32,158 @@
         <div class="grid-2">
           <div class="field">
             <label>Categoría <span class="opt">*</span></label>
-            <select class="input select" formControlName="categoria">
-              @for (c of categorias; track c.id) {
-                <option [value]="c.id">{{ c.label }}</option>
+            @if (creandoCategoria()) {
+              <div class="cat-nueva">
+                <input class="input" [(ngModel)]="categoriaNueva" [ngModelOptions]="{ standalone: true }"
+                       placeholder="Ej: Termos" autofocus />
+                <button class="btn-mini ghost" type="button" (click)="cancelarCategoriaNueva()">Cancelar</button>
+              </div>
+              @if (slugNuevaCategoria) {
+                <span class="help">Se guardará como <code>{{ slugNuevaCategoria }}</code></span>
+              } @else {
+                <span class="help" style="color:var(--terra)">Escribe el nombre de la categoría</span>
               }
-            </select>
+            } @else {
+              <select class="input select" formControlName="categoria"
+                      (change)="onCategoriaChange($any($event.target).value)">
+                @for (c of categorias(); track c.id) {
+                  <option [value]="c.id">{{ c.label }}</option>
+                }
+                <option [value]="VALOR_NUEVA">+ Nueva categoría…</option>
+              </select>
+            }
           </div>
           <div class="field">
             <label>Precio COP <span class="opt">*</span></label>
-            <input class="input" type="number" formControlName="precio" placeholder="28000" min="1" />
+            <input class="input" type="number" inputmode="numeric" formControlName="precio" placeholder="28000" min="1" />
             @if (hasError('precio')) {
               <span class="help" style="color:var(--terra)">Debe ser mayor a 0</span>
             }
           </div>
         </div>
 
-        <div class="field">
-          <label>Stock inicial <span class="opt">{{ isEdit() ? '' : '*' }}</span></label>
-          <input class="input" type="number" formControlName="stock_inicial" placeholder="0" min="0" />
-          @if (isEdit()) {
-            <span class="help">El POS gestiona el stock actual</span>
-          } @else {
-            <span class="help">El stock actual se igualará a este valor al crear el producto</span>
-          }
-          @if (hasError('stock_inicial')) {
-            <span class="help" style="color:var(--terra)">El stock no puede ser negativo</span>
+        <!-- Lo que se queda la pasarela sale del precio, así que sin esto la
+             ganancia real sólo se descubría al conciliar. Va a ancho completo y
+             no dentro de la columna del precio: ahí desbalanceaba la fila y
+             dejaba un hueco muerto al lado de Categoría. -->
+        <div class="bd-panel">
+          <div class="bd-chips">
+            <div class="bd-chip">
+              <span class="bd-k">
+                Bold se queda
+                <button class="bd-edit" type="button"
+                        (click)="editandoComision.set(!editandoComision())"
+                        [attr.aria-expanded]="editandoComision()"
+                        [attr.aria-label]="'Editar la comisión, ahora ' + comisionPct() + ' por ciento'">
+                  {{ comisionPct() }}%{{ comisionIva() ? ' + IVA' : '' }}
+                  <span aria-hidden="true">{{ editandoComision() ? '▾' : '▸' }}</span>
+                </button>
+              </span>
+              <span class="bd-v is-neg">−{{ fmt(desglose().comision) }}</span>
+            </div>
+            <div class="bd-chip is-ganancia">
+              <span class="bd-k">Ganancia real</span>
+              <span class="bd-v">{{ fmt(desglose().ganancia) }}</span>
+            </div>
+          </div>
+
+          @if (editandoComision()) {
+            <div class="bd-editor">
+              <label class="bd-campo">
+                Comisión
+                <input class="bd-pct" type="number" step="0.01" min="0" max="100"
+                       [value]="comisionPct()" (input)="onComisionPct($any($event.target).value)" />
+                <span aria-hidden="true">%</span>
+              </label>
+              <label class="bd-campo">
+                <input type="checkbox" [checked]="comisionIva()"
+                       (change)="onComisionIva($any($event.target).checked)" />
+                + IVA ({{ IVA_PCT }}% sobre la comisión)
+              </label>
+              <span class="bd-nota">Se recuerda en este navegador.</span>
+            </div>
           }
         </div>
 
-        <div class="grid-2">
+        <!-- Con variantes el stock va por combinación, en la tabla del editor. -->
+        @if (!editor()?.activo()) {
           <div class="field">
-            <label>Personaje</label>
-            <select class="input select" formControlName="personaje">
-              <option [value]="null">Sin personaje</option>
-              @for (c of characters; track c.id) {
-                <option [value]="c.id">{{ c.label }}</option>
+            <label for="in-stock">Stock <span class="opt">*</span></label>
+            <div class="cat-nueva">
+              <input id="in-stock" class="input" type="number" inputmode="numeric" formControlName="stock" placeholder="0" min="0" />
+              @if (isEdit() && !restockAbierto()) {
+                <button class="btn-mini ghost" type="button" (click)="abrirRestock()">+ Restock</button>
               }
-            </select>
+            </div>
+            @if (restockAbierto()) {
+              <div class="cat-nueva restock-fila">
+                <input class="input" type="number" inputmode="numeric" min="1" placeholder="Unidades a agregar"
+                       aria-label="Unidades a agregar"
+                       [(ngModel)]="restockCantidad" [ngModelOptions]="{ standalone: true }"
+                       (keydown.enter)="$event.preventDefault(); registrarRestock()" autofocus />
+                <input class="input" type="text" placeholder="Nota (opcional)" aria-label="Nota del restock"
+                       [(ngModel)]="restockNota" [ngModelOptions]="{ standalone: true }"
+                       (keydown.enter)="$event.preventDefault(); registrarRestock()" />
+                <button class="btn-mini" type="button" [disabled]="restockGuardando()" (click)="registrarRestock()">
+                  {{ restockGuardando() ? 'Guardando…' : 'Registrar' }}
+                </button>
+                <button class="btn-mini ghost" type="button" (click)="restockAbierto.set(false)">Cancelar</button>
+              </div>
+              @if (restockError()) {
+                <span class="help" style="color:var(--terra)" role="alert">{{ restockError() }}</span>
+              }
+            }
+            @if (restockOk()) {
+              <span class="help" role="status">{{ restockOk() }}</span>
+            }
+            @if (isEdit()) {
+              <span class="help">Cambiar el número a mano queda como ajuste en el historial al guardar</span>
+            }
+            @if (hasError('stock')) {
+              <span class="help" style="color:var(--terra)">El stock no puede ser negativo</span>
+            }
           </div>
+        }
+
+        <!-- "Dónde se vende": Activo es el interruptor general (POS y eventos);
+             Tienda web decide si además sale en la web o queda sólo en el POS.
+             Destacar sólo tiene sentido si está en la web. -->
+        <div class="grid-3 toggles-fila">
           <div class="field-toggle-row">
-            <div><span class="ftr-label">Activo en el POS</span></div>
+            <div>
+              <span class="ftr-label">Activo</span>
+              <span class="help">{{ form.getRawValue().activo ? 'Se vende en el POS y en eventos.' : 'Borrador: no se vende en ningún lado.' }}</span>
+            </div>
             <label class="inv-toggle">
               <input type="checkbox" formControlName="activo" />
               <span class="inv-slider"></span>
             </label>
           </div>
+
+          <div class="field-toggle-row">
+            <div>
+              <span class="ftr-label">Tienda web</span>
+              <span class="help">{{ form.getRawValue().en_web ? 'También sale en la tienda web.' : 'Solo POS: no sale en la web, pero se vende en el POS y en eventos.' }}</span>
+            </div>
+            <label class="inv-toggle">
+              <input type="checkbox" formControlName="en_web" />
+              <span class="inv-slider"></span>
+            </label>
+          </div>
+
+          <div class="field-toggle-row" [class.ftr-off]="!form.getRawValue().en_web">
+            <div>
+              <span class="ftr-label">Destacado en el Cuaquiverso</span>
+              <span class="help">{{ form.getRawValue().en_web ? 'Aparece en la home de la tienda.' : 'Sólo para productos de la tienda web.' }}</span>
+            </div>
+            <label class="inv-toggle">
+              <input type="checkbox" formControlName="destacado" />
+              <span class="inv-slider"></span>
+            </label>
+          </div>
         </div>
 
-        <label class="field-toggle">
-          <span class="inv-toggle"><input type="checkbox" formControlName="destacado" /><span class="inv-slider"></span></span>
-          Mostrar en home del Cuaquiverso
-        </label>
+        <app-variantes-editor [fotos]="fotosGuardadas()" [esEdicion]="isEdit()" [productoId]="editId()" />
 
         <!-- ── APARIENCIA ─────────────────────────────────────────── -->
         <div class="section-sep"></div>
@@ -100,11 +201,25 @@
           </div>
           <div class="field">
             <label>Etiqueta especial</label>
-            <select class="input select" formControlName="flag">
-              <option [value]="null">Ninguna</option>
-              <option value="new">Nuevo</option>
-              <option value="last">Últimas unidades</option>
-            </select>
+            @if (creandoEtiqueta()) {
+              <div class="cat-nueva">
+                <input class="input" [(ngModel)]="etiquetaNueva" [ngModelOptions]="{ standalone: true }"
+                       [maxlength]="MAX_LARGO_ETIQUETA" placeholder="Ej: Edición limitada" />
+                <button class="btn-mini ghost" type="button" (click)="cancelarEtiquetaNueva()">Cancelar</button>
+              </div>
+              <span class="help">
+                Se pinta tal cual en la tarjeta · {{ etiquetaNueva.length }}/{{ MAX_LARGO_ETIQUETA }}
+              </span>
+            } @else {
+              <select class="input select" formControlName="flag"
+                      (change)="onEtiquetaChange($any($event.target).value)">
+                <option [value]="null">Ninguna</option>
+                @for (e of etiquetas(); track e.id) {
+                  <option [value]="e.id">{{ e.label }}</option>
+                }
+                <option [value]="VALOR_NUEVA">+ Nueva etiqueta…</option>
+              </select>
+            }
           </div>
         </div>
 
@@ -119,27 +234,37 @@
         </div>
 
         <div class="field">
-          <label>Material</label>
-          <div class="check-list">
-            @for (m of MATERIALES; track m.id) {
-              <label class="check-opt">
-                <input type="checkbox"
-                  [checked]="material().includes(m.id)"
-                  (change)="toggleMaterial(m.id, $any($event.target).checked)" />
-                {{ m.label }}
-              </label>
-            }
-          </div>
+          <label>Material <span class="opt">opcional</span></label>
+          <input class="input" [value]="materialTexto"
+                 (input)="onMaterialInput($any($event.target).value)"
+                 placeholder="Algodón orgánico, lona reciclada" />
+          <span class="help">Separa varios con comas.</span>
+          @if (material().length > 0) {
+            <div class="mat-chips">
+              @for (m of material(); track m) {
+                <span class="mat-chip">{{ m }}</span>
+              }
+            </div>
+          }
         </div>
 
         @if (errorMsg()) {
           <p class="form-error">{{ errorMsg() }}</p>
         }
 
+        @let pideConfirmar = !!confirmarDesactivar() && confirmarDesactivar() === editor()?.desactivadas();
+        @if (pideConfirmar) {
+          <p class="form-error" role="alert">
+            Vas a desactivar {{ confirmarDesactivar() }} combinación(es). Pulsa «Guardar y desactivar» para confirmar.
+          </p>
+        }
+
         <div class="form-footer">
           <button class="btn-sm ghost" type="button" (click)="cancelar()">Cancelar</button>
           <button class="btn-sm solid" type="submit" [disabled]="guardando()">
-            {{ guardando() ? 'Guardando…' : (isEdit() ? 'Actualizar' : 'Crear producto') }}
+            {{ guardando() ? 'Guardando…'
+              : pideConfirmar ? 'Guardar y desactivar'
+              : (isEdit() ? 'Actualizar' : 'Crear producto') }}
           </button>
         </div>
 
@@ -148,56 +273,113 @@
   </div>
 
   <!-- Panel derecho: imágenes -->
-  <div class="panel" style="align-self:start">
+  <div class="panel panel-imagenes" style="align-self:start">
     <div class="panel-h"><h3>Imágenes</h3></div>
     <div class="panel-b">
 
       <div class="field">
         <label>Foto de portada</label>
         @if (coverPreview()) {
+          <!-- Cuadrada y sin recortar: lo mismo que muestra la tarjeta de la tienda. -->
           <div class="img-preview">
             <img [src]="coverPreview()!" alt="Portada" />
+            <button type="button" class="img-editar" (click)="editarPortada()"
+                    aria-label="Editar portada: encuadre, zoom y giro" title="Editar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
+            </button>
           </div>
         } @else {
           <div class="img-placeholder">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:28px;height:28px;opacity:.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           </div>
         }
-        <label class="upload-btn" for="prod-cover-input">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          {{ coverPreview() ? 'Cambiar portada' : 'Subir portada' }}
-        </label>
-        <input id="prod-cover-input" type="file" accept="image/*" (change)="onCoverChange($event)" style="display:none" />
-        <span class="help">JPG, PNG o WebP · 4:3 recomendado · mín 800 × 600 px</span>
+        <div class="cover-acciones">
+          <label class="upload-btn" for="prod-cover-input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            {{ coverPreview() ? 'Cambiar portada' : 'Subir portada' }}
+          </label>
+          <!-- En el celular, abrir la cámara directo ahorra pasar por el selector. -->
+          <label class="upload-btn solo-tactil" for="prod-cover-cam">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            Tomar foto
+          </label>
+          @if (galeriaPreviews().length > 0) {
+            <button type="button" class="upload-btn" (click)="eligiendoDeGaleria.set(!eligiendoDeGaleria())"
+                    [attr.aria-expanded]="eligiendoDeGaleria()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              Usar una foto de la galería
+            </button>
+          }
+        </div>
+        @if (eligiendoDeGaleria() && galeriaPreviews().length > 0) {
+          <div class="cover-desde-galeria" role="group" aria-label="Elegir la portada entre las fotos de la galería">
+            @for (url of galeriaPreviews(); track $index; let i = $index) {
+              <button type="button" class="gallery-thumb" [style.backgroundImage]="'url(' + url + ')'"
+                      (click)="usarFotoDeGaleria(i)" [attr.aria-label]="'Usar la foto ' + (i + 1) + ' como portada'"></button>
+            }
+          </div>
+        }
+        <input id="prod-cover-input" type="file" accept="image/jpeg,image/png,image/webp" (change)="onCoverChange($event)" style="display:none" />
+        <input id="prod-cover-cam" type="file" accept="image/*" capture="environment" (change)="onCoverChange($event)" style="display:none" />
+        <span class="help">JPG, PNG o WebP · máx 5 MB · se guarda cuadrada (1:1) y tú eliges el encuadre</span>
       </div>
 
       <div class="field">
-        <label>Galería <span class="opt">({{ galleryPreviews().length }}/8)</span></label>
-        @if (galleryPreviews().length > 0) {
+        <label>Galería <span class="opt">({{ galeriaPreviews().length }}/{{ maxFotos }})</span></label>
+        @if (galeriaPreviews().length > 0) {
           <div class="gallery-grid">
-            @for (url of galleryPreviews(); track url; let i = $index) {
-              <div style="position:relative">
+            @for (url of galeriaPreviews(); track $index; let i = $index) {
+              <div class="gallery-item">
                 <div class="gallery-thumb" [style.backgroundImage]="'url(' + url + ')'"></div>
-                <button type="button" class="gallery-remove" (click)="removeGalleryItem(i)">×</button>
+                <button type="button" class="gallery-remove" [attr.aria-label]="'Quitar foto ' + (i + 1)"
+                        (click)="removeGalleryItem(i)">×</button>
+                <button type="button" class="img-editar is-mini" (click)="editarFoto(i)"
+                        [attr.aria-label]="'Editar foto ' + (i + 1) + ': encuadre, zoom y giro'" title="Editar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
+                </button>
               </div>
             }
           </div>
         }
-        <label class="upload-btn" for="prod-gallery-input">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          Agregar fotos
-        </label>
-        <input id="prod-gallery-input" type="file" accept="image/*" multiple (change)="onGalleryChange($event)" style="display:none" />
-        <span class="help">JPG, PNG o WebP · mín 800 px de ancho · hasta 8 fotos</span>
+        <div class="cover-acciones">
+          <label class="upload-btn" for="prod-gallery-input" [class.is-disabled]="galeriaLlena()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            {{ galeriaLlena() ? 'Galería completa' : 'Agregar fotos' }}
+          </label>
+          @if (!galeriaLlena()) {
+            <label class="upload-btn solo-tactil" for="prod-gallery-cam">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+              Tomar foto
+            </label>
+            <input id="prod-gallery-cam" type="file" accept="image/*" capture="environment"
+                   (change)="onGalleryChange($event)" style="display:none" />
+          }
+        </div>
+        <input id="prod-gallery-input" type="file" accept="image/jpeg,image/png,image/webp" multiple
+               [disabled]="galeriaLlena()" (change)="onGalleryChange($event)" style="display:none" />
+        <span class="help">JPG, PNG o WebP · mín 800 px de ancho · hasta {{ maxFotos }} fotos · máx 5 MB c/u</span>
       </div>
+
+      @if (edicion(); as e) {
+        <app-encuadre-imagen [src]="e.origen.src" [titulo]="e.titulo"
+                             (listo)="onEdicionLista($event)" (cancelar)="cancelarEdicion()" />
+      }
+
+      @if (avisos().length > 0) {
+        <ul class="upload-avisos" role="alert">
+          @for (a of avisos(); track a) { <li>{{ a }}</li> }
+        </ul>
+      }
 
     </div>
   </div>

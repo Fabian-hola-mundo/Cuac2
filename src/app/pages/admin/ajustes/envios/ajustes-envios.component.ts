@@ -13,20 +13,17 @@ interface Transportadora { id: string; nombre: string; desc: string; activa: boo
   styleUrl: './ajustes-envios.component.scss',
 })
 export class AjustesEnviosComponent {
-  envioGratis      = signal(true);
-  montoMinimo      = signal(150000);
-  contraEntrega    = signal(true);
-  recargoContra    = signal(5000);
-  nextZonaId       = 4;
+  // Sin configurar: montos, zonas y claves se llenan con los datos reales.
+  envioGratis      = signal(false);
+  montoMinimo      = signal<number | null>(null);
+  contraEntrega    = signal(false);
+  recargoContra    = signal<number | null>(null);
+  nextZonaId       = 1;
 
-  zonas = signal<Zona[]>([
-    { id: 1, nombre: 'Bogotá',       municipios: 'Bogotá D.C.',                     tarifa: 9000,  plazo: '1-2 días',   activa: true  },
-    { id: 2, nombre: 'Eje cafetero', municipios: 'Manizales, Pereira, Armenia',      tarifa: 11000, plazo: '2-3 días',   activa: true  },
-    { id: 3, nombre: 'Costa Caribe', municipios: 'Barranquilla, Cartagena, Santa Marta', tarifa: 14000, plazo: '3-4 días', activa: true },
-  ]);
+  zonas = signal<Zona[]>([]);
 
   transportadoras = signal<Transportadora[]>([
-    { id: 'servientrega', nombre: 'Servientrega', desc: 'Cobertura nacional · entrega en 2-4 días',   activa: true,  apiKey: 'SVT-xxxx-yyyy', keyVisible: false },
+    { id: 'servientrega', nombre: 'Servientrega', desc: 'Cobertura nacional · entrega en 2-4 días',   activa: false, apiKey: '',              keyVisible: false },
     { id: 'coordinadora', nombre: 'Coordinadora', desc: 'Cobertura nacional · entrega en 2-3 días',   activa: false, apiKey: '',              keyVisible: false },
     { id: 'envia',        nombre: 'Enviá',         desc: 'Especialista en e-commerce colombiano',      activa: false, apiKey: '',              keyVisible: false },
     { id: 'tcc',          nombre: 'TCC',           desc: 'Transporte de carga y paquetería',           activa: false, apiKey: '',              keyVisible: false },

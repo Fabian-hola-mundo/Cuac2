@@ -1,6 +1,7 @@
 // src/app/core/services/portfolio.service.ts
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { Foco } from '../utils/encuadre-foco';
 
 export interface ProjectLink {
   label: string;
@@ -49,12 +50,13 @@ export interface PortfolioProject {
   headline:       string | null;
   client_name:    string | null;
   description:    string | null;
-  client_comment:   string | null;
-  client_person:    string | null;
-  client_role:      string | null;
-  show_testimonial: boolean;
-  cover_url:        string | null;
+  cover_url:      string | null;
+  /** Encuadre de la portada en la tarjeta del grid y en el hero (ver encuadre-foco.ts). */
+  cover_focus_card: Foco | null;
+  cover_focus_hero: Foco | null;
   images:         string[];
+  /** Encuadre de cada foto de la galería, en el mismo orden que `images`. */
+  images_focus:   (Foco | null)[] | null;
   tags:           string[];
   links:          ProjectLink[];
   featured:       boolean;
@@ -235,29 +237,5 @@ export class PortfolioService {
       .from('portfolio_profiles')
       .upsert({ owner, ...patch, updated_at: new Date().toISOString() }, { onConflict: 'owner' });
     return { error: error?.message ?? null };
-  }
-
-  async getTestimonials(): Promise<PortfolioProject[]> {
-    const { data, error } = await this.sb.db
-      .from('portfolio_projects')
-      .select('*')
-      .eq('published', true)
-      .eq('show_testimonial', true)
-      .not('client_comment', 'is', null)
-      .order('featured', { ascending: false })
-      .order('created_at', { ascending: false });
-    if (error) console.error('[portfolio] getTestimonials:', error.message);
-    return (data ?? []) as PortfolioProject[];
-  }
-
-  async countActiveTestimonials(excludeId?: string): Promise<number> {
-    let q = this.sb.db
-      .from('portfolio_projects')
-      .select('id', { count: 'exact', head: true })
-      .eq('show_testimonial', true);
-    if (excludeId) q = (q as any).neq('id', excludeId);
-    const { count, error } = await q;
-    if (error) console.error('[portfolio] countActiveTestimonials:', error.message);
-    return count ?? 0;
   }
 }

@@ -1,9 +1,22 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { Router }         from '@angular/router';
 import { InventarioService, VentaEvento } from '../../../core/services/inventario.service';
 import { EventosService, Evento } from '../../../core/services/eventos.service';
+import { Combinacion, etiquetaVariante } from '../../../../../supabase/functions/_shared/variantes';
+
+/**
+ * Etiqueta de una combinación en el orden de las opciones del producto. jsonb
+ * no conserva el orden de las claves (las ordena por largo), así que
+ * `Object.values` sólo sirve de respaldo: sin opciones conocidas, o para los
+ * valores de opciones que ya no existen, que van al final.
+ */
+export function etiquetaEnOrden(c: Combinacion, orden: string[] | undefined): string {
+  const conocidas = (orden ?? []).filter(n => n in c);
+  const resto = Object.keys(c).filter(k => !conocidas.includes(k));
+  return etiquetaVariante(c, [...conocidas, ...resto]);
+}
 
 @Component({
   selector: 'app-ventas-general',
@@ -11,6 +24,7 @@ import { EventosService, Evento } from '../../../core/services/eventos.service';
   imports: [CommonModule, FormsModule],
   templateUrl: './ventas-general.component.html',
   styleUrl: './ventas-general.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VentasGeneralComponent implements OnInit {
   private router     = inject(Router);
@@ -21,6 +35,8 @@ export class VentasGeneralComponent implements OnInit {
   readonly cargando     = signal(false);
   readonly errorMsg     = signal<string | null>(null);
   readonly eventos      = signal<Evento[]>([]);
+  /** producto_id → nombres de sus opciones en orden, para las etiquetas de variante. */
+  readonly ordenOpciones = signal<Map<string, string[]>>(new Map());
 
   readonly eventoActivo = computed(() =>
     this.eventos().find(e => e.estado === 'activo') ?? null
@@ -69,6 +85,15 @@ export class VentasGeneralComponent implements OnInit {
   ngOnInit() {
     this.cargar();
     this.cargarEventos();
+    this.cargarOrdenOpciones();
+  }
+
+  /** Si falla, las etiquetas caen al orden de las claves: no bloquea el reporte. */
+  private async cargarOrdenOpciones() {
+    try {
+      const todas = await this.inv.getVariantesTodas();
+      this.ordenOpciones.set(new Map([...todas].map(([id, { orden }]) => [id, orden])));
+    } catch { /* no-op */ }
   }
 
   private async cargarEventos() {
@@ -94,8 +119,8 @@ export class VentasGeneralComponent implements OnInit {
         canal as 'evento' | 'web' | undefined,
       );
       this.ventas.set(data);
-    } catch (e: any) {
-      this.errorMsg.set(e.message);
+    } catch (e: unknown) {
+      this.errorMsg.set(e instanceof Error ? e.message : 'No se pudieron cargar las ventas.');
     }
     this.cargando.set(false);
   }
@@ -107,6 +132,11 @@ export class VentasGeneralComponent implements OnInit {
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit',
     });
+  }
+
+  etiquetaVenta(v: VentaEvento): string {
+    if (!v.producto_variantes) return '';
+    return etiquetaEnOrden(v.producto_variantes.opciones, this.ordenOpciones().get(v.producto_id));
   }
 
   fmtCOP(n: number) { return '$' + n.toLocaleString('es-CO'); }

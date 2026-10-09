@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener, signal, computed, inject } 
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { PersonajesService, Personaje } from '../../../core/services/personajes.service';
-import { InventarioService, ProductoEvento } from '../../../core/services/inventario.service';
+import { InventarioService, ProductoPublico } from '../../../core/services/inventario.service';
 import { CartService } from '../services/cart.service';
 import { CartModalComponent } from '../cart-modal/cart-modal.component';
 import { CuaquiversoFooterComponent } from '../footer/cuaquiverso-footer.component';
@@ -25,7 +25,7 @@ export class PersonajePageComponent implements OnInit, OnDestroy {
   readonly String            = String;
 
   personaje    = signal<Personaje | null>(null);
-  productos    = signal<ProductoEvento[]>([]);
+  productos    = signal<ProductoPublico[]>([]);
   selectedIdx  = signal(0);
   lightboxOpen = signal(false);
   lightboxIdx  = signal(0);
@@ -60,9 +60,9 @@ export class PersonajePageComponent implements OnInit, OnDestroy {
       canonical:   `https://cuacdesign.com/cuaquiverso/personaje/${p.key}`,
     });
 
-    await this.svcI.cargarTodos();
+    await this.svcI.cargarCatalogo();
     this.productos.set(
-      this.svcI.productos().filter(pr => pr.personaje === slug && pr.activo)
+      this.svcI.catalogo().filter(pr => pr.personaje === slug)
     );
   }
 
@@ -118,9 +118,14 @@ export class PersonajePageComponent implements OnInit, OnDestroy {
     if (e.key === 'ArrowRight') { e.preventDefault(); this.lightboxNext(); }
   }
 
-  addToCart(event: Event, p: ProductoEvento) {
+  addToCart(event: Event, p: ProductoPublico) {
     event.preventDefault();
     event.stopPropagation();
+    // Con variantes hay que elegir talla/color: el botón lleva a la ficha.
+    if (p.tieneVariantes) {
+      this.router.navigate(['/cuaquiverso/tienda', p.id]);
+      return;
+    }
     this.cart.add({
       id:        p.id,
       name:      p.nombre,
@@ -128,6 +133,7 @@ export class PersonajePageComponent implements OnInit, OnDestroy {
       price:     p.precio,
       color:     p.color ?? '#ccc',
       categoria: p.categoria,
+      stock:     p.stock_actual,
     });
   }
 

@@ -36,6 +36,9 @@
     <table class="tbl">
       <thead><tr><th>Nombre</th><th>Porcentaje</th><th>Aplica a</th><th>Activa</th><th></th></tr></thead>
       <tbody>
+        @if (tasas().length === 0) {
+        <tr><td colspan="5" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Sin configurar · agrega una tasa para empezar</td></tr>
+        }
         @for (t of tasas(); track t.id) {
         <tr>
           <td><input class="input" style="padding:5px 9px;font-size:13px" [value]="t.nombre" (input)="updateTasa(t.id, 'nombre', $any($event.target).value)" placeholder="Ej: IVA" /></td>
@@ -75,8 +78,8 @@
   <div class="panel-b">
     <div class="grid-2">
       <div class="field"><label>Prefijo de factura</label><input class="input" [value]="prefijoFactura()" (input)="prefijoFactura.set($any($event.target).value)" placeholder="FE-" /></div>
-      <div class="field"><label>Numeración inicial</label><input class="input" type="number" [value]="numeracionInicial()" (input)="numeracionInicial.set(+$any($event.target).value)" /></div>
-      <div class="field"><label>Número de resolución DIAN</label><input class="input" [value]="resolucionDIAN()" (input)="resolucionDIAN.set($any($event.target).value)" /></div>
+      <div class="field"><label>Numeración inicial</label><input class="input" type="number" placeholder="Sin configurar" [value]="numeracionInicial()" (input)="numeracionInicial.set(+$any($event.target).value)" /></div>
+      <div class="field"><label>Número de resolución DIAN</label><input class="input" placeholder="Sin configurar" [value]="resolucionDIAN()" (input)="resolucionDIAN.set($any($event.target).value)" /></div>
       <div class="field"><label>Fecha de vencimiento resolución</label><input class="input" type="date" [value]="fechaResolucion()" (input)="fechaResolucion.set($any($event.target).value)" /></div>
     </div>
   </div>

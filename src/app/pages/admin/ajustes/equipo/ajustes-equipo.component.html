@@ -7,11 +7,14 @@
 </div>
 
 <div class="panel">
-  <div class="panel-h"><h3>Miembros activos</h3><span class="sub">{{ miembros().length }} personas</span></div>
+  <div class="panel-h"><h3>Miembros activos</h3><span class="sub">{{ miembros().length }} {{ miembros().length === 1 ? 'persona' : 'personas' }}</span></div>
   <div class="panel-b flush">
     <table class="tbl">
       <thead><tr><th>Persona</th><th>Rol</th><th>Email</th><th>Último acceso</th><th></th></tr></thead>
       <tbody>
+        @if (miembros().length === 0) {
+        <tr><td colspan="5" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Sin configurar · aún no hay miembros registrados</td></tr>
+        }
         @for (m of miembros(); track m.id) {
         <tr>
           <td><div class="pname"><div class="thumb" style="background:var(--cream-2);color:var(--carbon)">{{ initials(m.nombre) }}</div><div class="meta"><strong>{{ m.nombre }}</strong><span>{{ m.activo ? 'Activo' : 'Inactivo' }}</span></div></div></td>
@@ -88,6 +91,9 @@
     <table class="tbl">
       <thead><tr><th>Persona</th><th>Acción</th><th>Fecha</th></tr></thead>
       <tbody>
+        @if (LOG.length === 0) {
+        <tr><td colspan="3" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Aún no hay accesos registrados</td></tr>
+        }
         @for (l of LOG; track $index) {
         <tr>
           <td><strong style="font-weight:600">{{ l.persona }}</strong></td>

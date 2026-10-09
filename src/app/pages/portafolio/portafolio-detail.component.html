@@ -16,7 +16,7 @@
   <!-- ── Hero: cover image + double overlay ───────────────────────────────── -->
   <header class="detail-hero" [class.has-cover]="!!p.cover_url">
     @if (p.cover_url) {
-      <div class="detail-hero-img" [style.backgroundImage]="safeBg(p.cover_url)" role="img" [attr.aria-label]="'Portada — ' + p.title"></div>
+      <div class="detail-hero-img" [style]="varsFoco(p.cover_focus_hero)" [style.backgroundImage]="safeBg(p.cover_url)" role="img" [attr.aria-label]="'Portada — ' + p.title"></div>
     }
     <div class="detail-hero-overlay" aria-hidden="true"></div>
 
@@ -71,9 +71,9 @@
               <button
                 class="gallery-item"
                 [class.span-full]="i === 0 || (i === p.images.length - 1 && p.images.length % 2 === 0)"
-                [style.backgroundImage]="'url(' + img + ')'"
                 (click)="openLightbox(i, $event)"
                 [attr.aria-label]="'Ver imagen ' + (i + 1) + ' en pantalla completa'">
+                <span class="gallery-img" [style]="varsFoco(p.images_focus?.[i])" [style.backgroundImage]="safeBg(img)" aria-hidden="true"></span>
                 <span class="gallery-zoom" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/></svg>
                 </span>
@@ -157,13 +157,13 @@
         </dl>
       </div>
 
-      @if (p.client_comment) {
+      @if (resena(); as r) {
         <figure class="sidebar-quote">
           <span class="sq-mark" aria-hidden="true">“</span>
-          <blockquote>{{ p.client_comment }}</blockquote>
-          @if (p.client_name) {
-            <figcaption>{{ p.client_name }}</figcaption>
-          }
+          <blockquote>
+            <app-resena-texto [texto]="r.comentario" [nombre]="r.nombre" [detalle]="r.cargo_empresa" [max]="220" />
+          </blockquote>
+          <figcaption>{{ r.nombre }}{{ r.cargo_empresa ? ' · ' + r.cargo_empresa : '' }}</figcaption>
         </figure>
       }
 
@@ -196,7 +196,7 @@
       @if (nextProject(); as next) {
         <a class="footer-next" [routerLink]="['/portafolio', next.slug]">
           @if (next.cover_url) {
-            <span class="fn-thumb" [style.backgroundImage]="safeBg(next.cover_url)" aria-hidden="true"></span>
+            <span class="fn-thumb" aria-hidden="true"><span class="foco-img" [style]="varsFoco(next.cover_focus_card)" [style.backgroundImage]="safeBg(next.cover_url)"></span></span>
           }
           <span class="fn-text">
             <span class="fn-kicker">Siguiente proyecto</span>
@@ -210,7 +210,8 @@
 
   <!-- ── Lightbox ──────────────────────────────────────────────────────────── -->
   @if (lightboxIdx() !== null) {
-    <div class="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
+    <div class="lightbox" (click)="onLbBackdrop()"
+         (touchstart)="onLbTouchStart($event)" (touchend)="onLbTouchEnd($event)" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
       <button class="lb-close" (click)="closeLightbox()" aria-label="Cerrar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>

@@ -6,11 +6,12 @@
 
     <div class="services-grid">
       <!-- 01 Branding — flagship, dark -->
-      <article class="svc lead">
+      <article class="svc lead" [class.open]="abierto('branding')">
         <div class="svc-tag">01 &mdash; Servicio insignia</div>
         <h3>Branding &amp; Sistemas Visuales</h3>
         <p>Identidades que duran, crecen y se sienten tuyas. Del nombre y el logotipo al manual completo, con aplicaciones listas para usar desde el primer día.</p>
-        <ul>
+        <button type="button" class="svc-toggle" [attr.aria-expanded]="abierto('branding')" aria-controls="svc-toggle-branding" (click)="toggle('branding')">Qué incluye</button>
+        <ul id="svc-toggle-branding">
           <li>Estrategia de marca y posicionamiento</li>
           <li>Logotipo, paleta y tipografía</li>
           <li>Manuales y guías de estilo</li>
@@ -19,11 +20,12 @@
       </article>
 
       <!-- 02 Diseño Web — sky tinted -->
-      <article class="svc web">
+      <article class="svc web" [class.open]="abierto('web')">
         <div class="svc-tag">02 &mdash; Web</div>
         <h3>Diseño Web</h3>
         <p>Sitios que comunican bien, se ven mejor y convierten. Jerarquía clara, velocidad real y experiencia que no se olvida.</p>
-        <ul>
+        <button type="button" class="svc-toggle" [attr.aria-expanded]="abierto('web')" aria-controls="svc-toggle-web" (click)="toggle('web')">Qué incluye</button>
+        <ul id="svc-toggle-web">
           <li>Sitios web de marca</li>
           <li>Landings de campaña</li>
           <li>UI para producto</li>
@@ -33,36 +35,39 @@
 
       <!-- 03–05 Secondary services — borderless row -->
       <div class="svc-row">
-        <article class="svc-minor">
+        <article class="svc-minor" [class.open]="abierto('editorial')">
           <div class="svc-minor-num">03</div>
           <div class="svc-minor-body">
             <h3>Editorial</h3>
             <p>Publicaciones con dirección tipográfica y rejilla cuidada. Diseño que respeta la lectura y construye autoridad.</p>
-            <ul>
+            <button type="button" class="svc-toggle" [attr.aria-expanded]="abierto('editorial')" aria-controls="svc-toggle-editorial" (click)="toggle('editorial')">Qué incluye</button>
+            <ul id="svc-toggle-editorial">
               <li>Libros, memorias y reportes anuales</li>
               <li>Revistas y catálogos</li>
               <li>Maquetación para impresión y digital</li>
             </ul>
           </div>
         </article>
-        <article class="svc-minor">
+        <article class="svc-minor" [class.open]="abierto('ilustracion')">
           <div class="svc-minor-num">04</div>
           <div class="svc-minor-body">
             <h3>Ilustración</h3>
             <p>Sistemas ilustrados con carácter propio para marcas que quieren ser recordadas, no solo vistas.</p>
-            <ul>
+            <button type="button" class="svc-toggle" [attr.aria-expanded]="abierto('ilustracion')" aria-controls="svc-toggle-ilustracion" (click)="toggle('ilustracion')">Qué incluye</button>
+            <ul id="svc-toggle-ilustracion">
               <li>Sets para producto y marketing</li>
               <li>Personajes y mascotas de marca</li>
               <li>Ilustración editorial</li>
             </ul>
           </div>
         </article>
-        <article class="svc-minor">
+        <article class="svc-minor" [class.open]="abierto('video')">
           <div class="svc-minor-num">05</div>
           <div class="svc-minor-body">
             <h3>Video &amp; Movimiento</h3>
             <p>Del guion al export final. Spots, reels y motion graphics en todos los formatos que necesitas.</p>
-            <ul>
+            <button type="button" class="svc-toggle" [attr.aria-expanded]="abierto('video')" aria-controls="svc-toggle-video" (click)="toggle('video')">Qué incluye</button>
+            <ul id="svc-toggle-video">
               <li>Animación de logos e identidad</li>
               <li>Explainers de producto</li>
               <li>Lottie y micro-animaciones web</li>

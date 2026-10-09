@@ -12,6 +12,153 @@
   margin-top: 4px;
 }
 
+// ── Categoría nueva ──────────────────────────────────────────────────────────
+.cat-nueva {
+  display: flex; gap: 8px; align-items: center;
+
+  .input { flex: 1; }
+}
+
+.restock-fila { margin-top: 8px; flex-wrap: wrap; }
+
+.btn-mini {
+  flex-shrink: 0; padding: 7px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--carbon-12); background: transparent; color: var(--carbon-70);
+
+  &:hover { background: var(--cream); color: var(--carbon); }
+}
+
+code {
+  font-family: var(--mono); font-size: 11.5px;
+  background: var(--cream); padding: 1px 5px; border-radius: 4px;
+}
+
+// ── Desglose de la comisión de Bold ──────────────────────────────────────────
+// Todas las clases van con prefijo `bd-`: la hoja global del admin define
+// nombres genéricos como `.main { height: 100vh }`, y un `.bd-row.main` heredaba
+// esa altura y estiraba la fila entera.
+.bd-panel {
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.bd-chips {
+  display: flex; gap: 10px; align-items: stretch;
+
+  // Las dos cifras se leen juntas o no se leen: van en la misma línea y con el
+  // mismo ancho, para poder compararlas de un vistazo.
+  > * { flex: 1 1 0; min-width: 0; }
+}
+
+.bd-chip {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 9px 13px; border-radius: 10px;
+  border: 1px solid var(--carbon-08); background: var(--cream);
+
+  &.is-ganancia {
+    border-color: var(--carbon-12); background: var(--paper);
+  }
+
+  .bd-k {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--carbon-50);
+  }
+
+  .bd-v {
+    // Las dos cifras se comparan de un vistazo, así que se anclan abajo: la
+    // etiqueta de la izquierda es más alta (lleva el botón de editar) y sin
+    // esto los dos números quedaban a distinta altura.
+    margin-top: auto;
+    font-size: 17px; font-weight: 700; line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+
+    &.is-neg { color: var(--terra); }
+  }
+
+  &.is-ganancia .bd-v { color: var(--selva); }
+}
+
+.bd-edit {
+  border: 1px solid var(--carbon-12); background: transparent;
+  padding: 1px 7px; border-radius: var(--r-pill, 999px); cursor: pointer;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: none; color: var(--carbon-70); white-space: nowrap;
+
+  &:hover { background: var(--paper); color: var(--carbon); }
+  &:focus-visible { outline: 2px solid var(--carbon); outline-offset: 1px; }
+}
+
+.bd-editor {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px;
+  padding: 9px 13px; border-radius: 10px;
+  border: 1px dashed var(--carbon-12); background: var(--paper);
+
+  .bd-campo {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12.5px; color: var(--carbon-70); white-space: nowrap;
+  }
+
+  // Clase propia y no `.input`: la global fija width:100% y el campo se comía
+  // la fila entera.
+  .bd-pct {
+    width: 74px; padding: 5px 8px; font-size: 13px;
+    background: var(--cream); border: 1px solid var(--carbon-12);
+    border-radius: 7px; color: var(--carbon); outline: none;
+    font-variant-numeric: tabular-nums;
+
+    &:focus { border-color: var(--carbon); background: #fff; }
+  }
+
+  .bd-nota {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+    color: var(--carbon-30); margin-left: auto;
+  }
+}
+
+// Las dos cifras siguen lado a lado en el celular (la etiqueta se parte en dos
+// líneas si no cabe); solo en pantallas muy angostas se apilan.
+@media (max-width: 620px) {
+  .bd-editor .bd-nota { margin-left: 0; }
+}
+@media (max-width: 340px) {
+  .bd-chips { flex-direction: column; }
+}
+
+// ── Interruptores de visibilidad ─────────────────────────────────────────────
+// Van en la misma línea, pero cada uno con su caja para que se vea a cuál
+// pertenece cada control: sin ella, con el `justify-content: space-between` de
+// .field-toggle-row, el interruptor de la izquierda queda flotando a media fila
+// y parece estar más cerca de la etiqueta de la derecha que de la suya.
+.toggles-fila {
+  align-items: stretch;
+
+  .field-toggle-row {
+    padding: 10px 13px; border-radius: 10px;
+    border: 1px solid var(--carbon-08); background: var(--cream);
+  }
+
+  // Dos líneas cabrían mal en media columna: la etiqueta larga manda el alto.
+  .ftr-label { line-height: 1.35; }
+
+  .ftr-off { opacity: .55; }
+}
+
+@media (max-width: 860px) {
+  .toggles-fila { grid-template-columns: 1fr; }
+}
+
+// ── Materiales escritos a mano ───────────────────────────────────────────────
+.mat-chips {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px;
+}
+
+.mat-chip {
+  padding: 4px 10px; border-radius: var(--r-pill, 999px);
+  background: var(--cream); border: 1px solid var(--carbon-08);
+  font-size: 12px; line-height: 1.45; color: var(--carbon-70); white-space: nowrap;
+}
+
 .check-opt {
   display: flex;
   align-items: center;
@@ -20,12 +167,19 @@
   cursor: pointer;
 }
 
+// Cuadrada y con la foto entera, como la tarjeta de la tienda: antes recortaba
+// a 200px de alto y no mostraba cómo iba a quedar de verdad.
 .img-preview {
+  position: relative;
   border-radius: 8px;
   overflow: hidden;
-  max-height: 200px;
-  img { width: 100%; height: 200px; object-fit: cover; display: block; }
+  aspect-ratio: 1 / 1;
+  max-width: 260px;
+  background: var(--cream);
+  img { width: 100%; height: 100%; object-fit: contain; display: block; }
 }
+
+.cover-acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
 .img-placeholder {
   display: flex; align-items: center; justify-content: center;
@@ -33,7 +187,23 @@
   border-radius: 8px; height: 160px;
 }
 
-label.upload-btn {
+.upload-avisos {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--terra) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--terra) 24%, transparent);
+  color: var(--terra);
+  font-size: 12.5px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+label.upload-btn, button.upload-btn {
+  background: transparent;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -49,6 +219,12 @@ label.upload-btn {
   cursor: pointer;
   transition: background 0.15s;
   &:hover { background: var(--cream-2); }
+
+  &.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 }
 
 .gallery-grid {
@@ -62,6 +238,86 @@ label.upload-btn {
   border-radius: 6px;
   background-size: cover;
   background-position: center;
+}
+
+.gallery-item { position: relative; }
+
+// Ícono de edición sobre la imagen: abre el editor (encuadre, zoom, giro).
+// Siempre visible: en táctil no hay hover que lo descubra.
+.img-editar {
+  position: absolute; right: 8px; bottom: 8px;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center; padding: 0;
+  background: rgba(21, 31, 40, .78); color: #fff;
+  border: none; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(21, 31, 40, .25);
+  transition: background .12s, transform .12s;
+  svg { width: 15px; height: 15px; }
+  &:hover { background: var(--carbon); transform: scale(1.06); }
+  &:focus-visible { outline: 2px solid var(--rio); outline-offset: 2px; }
+
+  &.is-mini {
+    right: auto; left: 4px; bottom: 4px;
+    width: 24px; height: 24px;
+    svg { width: 12px; height: 12px; }
+  }
+}
+
+// Elegir la portada entre las fotos de la galería.
+.cover-desde-galeria {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  margin-top: 10px; padding: 8px;
+  border: 1px dashed var(--carbon-12); border-radius: 8px;
+
+  .gallery-thumb {
+    height: auto; aspect-ratio: 1 / 1; border: 2px solid transparent;
+    cursor: pointer; padding: 0;
+    &:hover, &:focus-visible { border-color: var(--carbon); outline: none; }
+  }
+}
+
+// ── Celular ──────────────────────────────────────────────────────────────────
+// «Tomar foto» abre la cámara directo; en escritorio no hay cámara trasera
+// que abrir y el botón sobraría.
+.solo-tactil { display: none !important; }
+@media (hover: none) and (pointer: coarse) {
+  .solo-tactil { display: inline-flex !important; }
+}
+
+// Con una sola columna, las fotos van primero: es lo primero que se hace al
+// dar de alta un producto desde el celular, y antes quedaban al final.
+@media (max-width: 1100px) {
+  .panel-imagenes { order: -1; }
+}
+
+@media (max-width: 720px) {
+  // Espacio para la barra fija de guardar.
+  :host { padding-bottom: 76px; }
+
+  // Guardar siempre a la vista: antes había que bajar hasta el final del formulario.
+  .form-footer {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: var(--paper); border-top: 1px solid var(--carbon-12);
+    box-shadow: 0 -6px 18px rgba(21, 31, 40, .08);
+
+    .btn-sm { flex: 1; justify-content: center; min-height: 46px; }
+    .btn-sm.solid { flex: 2; }
+  }
+
+  // 16px: con menos, Safari en iPhone hace zoom al enfocar el campo.
+  .input { font-size: 16px; }
+
+  .img-preview { max-width: none; }
+  .upload-btn { min-height: 42px; }
+  .gallery-thumb { height: auto; aspect-ratio: 1 / 1; }
+  .gallery-item .gallery-remove { width: 28px; height: 28px; font-size: 14px; }
+  .img-editar.is-mini { width: 30px; height: 30px; }
+
+  .restock-fila {
+    flex-direction: column; align-items: stretch;
+    .btn-mini { min-height: 40px; }
+  }
 }
 
 .gallery-remove {

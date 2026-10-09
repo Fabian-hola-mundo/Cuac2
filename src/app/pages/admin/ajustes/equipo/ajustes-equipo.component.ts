@@ -29,11 +29,7 @@ export class AjustesEquipoComponent {
   readonly ROL_META = ROL_META;
   readonly ROLES: Rol[] = ['owner', 'operaciones', 'contenido', 'lectura'];
 
-  miembros = signal<Miembro[]>([
-    { id: 'm1', nombre: 'Capitán Cuac',  email: 'admin@cuaquiverso.co',  rol: 'owner',       ultimoAcceso: 'Ahora',    activo: true },
-    { id: 'm2', nombre: 'María José',    email: 'mj@cuaquiverso.co',     rol: 'operaciones', ultimoAcceso: 'Ayer 18:22', activo: true },
-    { id: 'm3', nombre: 'Felipe Andrade',email: 'fa@cuaquiverso.co',     rol: 'contenido',   ultimoAcceso: 'Hace 3d',  activo: true },
-  ]);
+  miembros = signal<Miembro[]>([]);
 
   editingMember = signal<string | null>(null);
   editingRol    = signal<Rol>('lectura');
@@ -42,13 +38,7 @@ export class AjustesEquipoComponent {
   inviteRol   = signal<Rol>('operaciones');
   inviteSent  = signal(false);
 
-  readonly LOG: AccesoLog[] = [
-    { persona: 'Capitán Cuac',   accion: 'Inicio de sesión',    fecha: 'Hoy 09:14'    },
-    { persona: 'María José',     accion: 'Editó pedido #CQ-2814', fecha: 'Ayer 18:22' },
-    { persona: 'Felipe Andrade', accion: 'Publicó proyecto',    fecha: 'Hace 3 días'  },
-    { persona: 'María José',     accion: 'Inicio de sesión',    fecha: 'Hace 4 días'  },
-    { persona: 'Capitán Cuac',   accion: 'Cambió ajuste de IVA', fecha: 'Hace 5 días' },
-  ];
+  readonly LOG: AccesoLog[] = [];
 
   startEdit(m: Miembro) {
     this.editingMember.set(m.id);

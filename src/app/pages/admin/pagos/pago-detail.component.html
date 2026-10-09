@@ -62,26 +62,36 @@
     <div class="panel">
       <div class="panel-h"><h3>Acciones</h3></div>
       <div class="panel-b" style="display:flex;flex-direction:column;gap:8px">
-        @if (actionDone()) {
-        <div style="padding:10px 14px;background:var(--cream-2);border-radius:8px;font-size:13px;color:var(--selva);font-weight:500">
-          <svg style="width:14px;height:14px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
-          {{ actionDone() }}
-        </div>
-        }
-        @if (p.status === 'pending') {
-        <button class="btn-sm solid" style="justify-content:center" (click)="marcarPagado()">Marcar como pagado</button>
-        <button class="btn-sm danger" style="justify-content:center" (click)="cancelar()">Cancelar pago</button>
-        }
-        @if (p.status === 'paid') {
-        <button class="btn-sm ghost" style="justify-content:center" (click)="emitirReembolso()">Emitir reembolso</button>
-        }
-        <button class="btn-sm ghost" style="justify-content:center">Descargar comprobante</button>
+        <!-- Los botones de antes (marcar pagado, cancelar, reembolsar) solo mostraban un
+             aviso de éxito sin tocar nada. Esas operaciones viven en Bold. -->
+        <p style="margin:0;font-size:13px;line-height:1.5;color:var(--carbon-60)">
+          Los cobros, reembolsos y anulaciones se hacen en el panel de Bold. El estado de este
+          pago se actualiza aquí solo cuando Bold lo confirma.
+        </p>
+        <a class="btn-sm ghost" style="justify-content:center" href="https://panel.bold.co" target="_blank" rel="noopener">Abrir panel de Bold</a>
       </div>
     </div>
 
   </div>
   <div class="drawer-f">
     <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">{{ p.date }}</span>
+    <button class="btn-sm ghost" (click)="close.emit()">Cerrar</button>
+  </div>
+  } @else {
+  <div class="drawer-h">
+    <div>
+      <div class="crumbs-admin"><span>Pagos</span><span class="sep">/</span><strong>{{ pagoId }}</strong></div>
+      <h2>Pago no encontrado</h2>
+    </div>
+    <button class="drawer-close" (click)="close.emit()" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-b">
+    <div style="padding:var(--s-5);text-align:center;color:var(--carbon-50);font-size:13px">No hay ningún pago con este ID. Puede que se haya eliminado o que aún no exista.</div>
+  </div>
+  <div class="drawer-f">
+    <span></span>
     <button class="btn-sm ghost" (click)="close.emit()">Cerrar</button>
   </div>
   }

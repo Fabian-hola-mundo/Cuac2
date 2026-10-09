@@ -14,7 +14,7 @@ import { SeoService } from '../../core/services/seo.service';
       <div class="legal-hero">
         <span class="eyebrow">Legal</span>
         <h1>Política de cookies</h1>
-        <p class="updated">Última actualización: junio de 2026</p>
+        <p class="updated">Última actualización: 5 de octubre de 2026</p>
       </div>
       <div class="legal-body">
 
@@ -49,9 +49,10 @@ import { SeoService } from '../../core/services/seo.service';
         <p><strong>Analíticas</strong></p>
         <ul>
           <li>
-            Si usamos herramientas de análisis de tráfico web (como Google Analytics), estas pueden
-            establecer cookies para medir el comportamiento de navegación de forma anónima y
-            agregada. Nunca se recolectan datos que permitan identificarte directamente.
+            <strong>Google Analytics</strong> (cookies <code>_ga</code> y <code>_ga_*</code>): mide
+            de forma agregada qué páginas se visitan, cuánto dura la visita y desde qué tipo de
+            dispositivo. Solo se carga si aceptas las cookies en el aviso; si las rechazas, no se
+            instala. No lo usamos para identificarte ni para mostrarte publicidad.
           </li>
         </ul>
 

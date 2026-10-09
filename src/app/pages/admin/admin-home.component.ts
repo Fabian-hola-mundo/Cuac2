@@ -1,29 +1,33 @@
-import { Component, computed, signal, inject, OnDestroy, OnInit, HostListener } from '@angular/core';
+import { Component, computed, signal, inject, effect, untracked, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AdminStateService, ViewId } from '../../core/services/admin-state.service';
-import { MockAdminDataService, Customer, Order, Payment, Product, Character, Category, ToneStyle } from '../../core/services/mock-admin-data.service';
+import { AdminDataService, Customer, Order, Payment, Product, Character, Category, ToneStyle } from '../../core/services/admin-data.service';
 import { GoogleAnalyticsService, GaPageView, GaPortfolioView } from '../../core/services/google-analytics.service';
 import { ClienteDetailComponent } from './clientes/cliente-detail.component';
 import { PagoDetailComponent }    from './pagos/pago-detail.component';
 import { PagosExportService }    from './pagos/pagos-export.service';
-import { DescuentosTabComponent } from './descuentos/descuentos-tab.component';
+import { InventarioService } from '../../core/services/inventario.service';
+import { calcularKpis } from './productos/productos-filtros';
+import { NotificationsService } from './notifications/notifications.service';
 
 @Component({
   selector: 'app-admin-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ClienteDetailComponent, PagoDetailComponent, DescuentosTabComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ClienteDetailComponent, PagoDetailComponent],
   templateUrl: './admin-home.component.html',
   styleUrl: './admin-home.component.scss',
 })
 export class AdminHomeComponent implements OnInit, OnDestroy {
 
   private adminState  = inject(AdminStateService);
-  private data        = inject(MockAdminDataService);
+  private data        = inject(AdminDataService);
   private ga          = inject(GoogleAnalyticsService);
   private exportSvc   = inject(PagosExportService);
   private router      = inject(Router);
+  private inv         = inject(InventarioService);
+  private notifs      = inject(NotificationsService);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   view = this.adminState.view;
@@ -75,7 +79,6 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   productCat      = signal('all');
   productQuery    = signal('');
   orderTab        = signal('all');
-  pedidosSubTab   = signal<'pedidos' | 'descuentos'>('pedidos');
 
   // ── Product editor form ────────────────────────────────────────────────────
   editorName      = '';
@@ -85,7 +88,7 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   editorPrice     = '';
   editorStock     = '';
   editorStatus    = 'draft';
-  editorDesc      = 'Tirada corta. Hecho en Bogotá con algodón colombiano y tintas a base de agua. Cada pieza viene firmada por el ilustrador.';
+  editorDesc      = '';
   editorSizes: string[]  = ['S', 'M', 'L'];
   editorColors: string[] = ['#ECEFF3', '#151F28'];
   editorImages: number[] = [0, 1, 2];
@@ -96,9 +99,10 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   readonly CHARACTERS  = this.data.CHARACTERS;
   readonly CATEGORIES  = this.data.CATEGORIES;
   readonly PRODUCTS    = this.data.PRODUCTS;
-  readonly ORDERS      = this.data.ORDERS;
-  readonly CUSTOMERS   = this.data.CUSTOMERS;
-  readonly PAYMENTS    = this.data.PAYMENTS;
+  // Getters sobre señales: la vista se repinta cuando entra o cambia un pedido.
+  get ORDERS():    Order[]    { return this.data.ORDERS; }
+  get CUSTOMERS(): Customer[] { return this.data.CUSTOMERS; }
+  get PAYMENTS():  Payment[]  { return this.data.PAYMENTS; }
   readonly SIZES       = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
   readonly gaLoading    = signal(true);
   readonly gaConfigured = signal(false);
@@ -117,6 +121,9 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    this.data.iniciar();
+    void this.inv.cargarTodos();
+    this.dejarDeEscucharCatalogo = this.inv.escucharStock();
     this.updateClock();
     this.clockTimer = setInterval(() => this.updateClock(), 60_000);
 
@@ -128,31 +135,18 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.gaLoading.set(false);
   }
 
-  readonly GATEWAYS: { name: string; state: string; tone: string; fee: string; count: number; color: string }[] = [
-    { name: 'Bold',           state: 'Conectado', tone: 'ok',   fee: '3.0% + $300', count: 64, color: 'rio'   },
-    { name: 'PSE',            state: 'Conectado', tone: 'ok',   fee: '1.99%',       count: 22, color: 'selva' },
-    { name: 'Nequi',          state: 'Conectado', tone: 'ok',   fee: '1.0%',        count: 12, color: 'rosa'  },
-    { name: 'Contra-entrega', state: 'Manual',    tone: 'warn', fee: '—',           count: 4,  color: 'sol'   },
-  ];
-
-  readonly ORDER_DETAIL = {
-    id: '#CQ-2814', date: '2026-05-15 14:22',
-    customer: { name: 'Mariana Restrepo', email: 'mariana.r@gmail.com', phone: '+57 311 444 2891', since: 'Marzo 2026', orders: 4 },
-    shipping:  { address: 'Cra 43A # 14-50, Apto 802', city: 'Medellín, Antioquia', zip: '050021', carrier: 'Servientrega', tracking: 'SVT-887412339' },
-    items: [
-      { sku: 'TEE-CUAC-EXP', name: 'El explorador soñador', variant: 'Talla M · Cream', qty: 1, price: 89000,  color: 'rio',   label: 'Cuac' },
-      { sku: 'PIN-KIKI-001', name: 'Kiki la delfín',         variant: 'Único',           qty: 2, price: 22000,  color: 'rosa',  label: 'Kiki' },
-      { sku: 'STK-ABE-PK',  name: 'Pack stickers Abejandro', variant: '5 stickers',     qty: 1, price: 18000,  color: 'terra', label: 'Abe'  },
-    ],
-    totals: { subtotal: 151000, shipping: 12000, discount: 4000, total: 159000 },
-    timeline: [
-      { time: '14:22', title: 'Orden creada',    desc: 'Cliente completó el checkout',              state: 'done'   },
-      { time: '14:22', title: 'Pago aprobado',   desc: 'Bold · Visa terminada en 4421 · $159.000', state: 'done'   },
-      { time: '15:01', title: 'En preparación',  desc: 'Asignado al lote del lunes',               state: 'active' },
-      { time: '—',     title: 'Despacho',         desc: 'Pendiente · Servientrega',                 state: 'wait'   },
-      { time: '—',     title: 'Entrega',           desc: 'Estimado 18 mayo',                         state: 'wait'   },
-    ],
-  };
+  /** Pasarelas con el número de pagos reales que pasaron por cada una. */
+  get GATEWAYS(): { name: string; state: string; tone: string; count: number; color: string }[] {
+    return [
+    { name: 'Bold',           state: 'Conectado', tone: 'ok',   color: 'rio'   },
+    { name: 'PSE',            state: 'Vía Bold',  tone: 'ok',   color: 'selva' },
+    { name: 'Nequi',          state: 'Vía Bold',  tone: 'ok',   color: 'rosa'  },
+    { name: 'Contra-entrega', state: 'Manual',    tone: 'warn', color: 'sol'   },
+  ].map(g => ({
+    ...g,
+    count: this.data.PAYMENTS.filter(p => p.method.toLowerCase().startsWith(g.name.toLowerCase())).length,
+  }));
+  }
 
   // ── Live clock & greeting ──────────────────────────────────────────────────
   nowTime     = signal('');
@@ -167,6 +161,83 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.nowTime.set(now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false }));
     this.nowDatetime.set(now.toISOString());
   }
+
+  // ── Detalle del pedido seleccionado ────────────────────────────────────────
+  // Se guarda el id y no la fila: si el pedido cambia mientras el drawer está abierto
+  // (p. ej. Bold lo aprueba), el detalle muestra el estado nuevo.
+  private selectedOrderId = signal<string | null>(null);
+  readonly selectedOrder  = computed(() => {
+    const id = this.selectedOrderId();
+    return id ? this.ORDERS.find(o => o.id === id) ?? null : null;
+  });
+
+  readonly orderCustomer = computed(() => {
+    const o = this.selectedOrder();
+    return o ? this.data.getCustomer(o.customerId) ?? null : null;
+  });
+
+  readonly orderPayment = computed(() => {
+    const o = this.selectedOrder();
+    return o ? this.data.getPaymentByOrder(o.id) ?? null : null;
+  });
+
+  /** Línea de tiempo derivada del estado real de pago y envío del pedido. */
+  readonly orderTimeline = computed<{ time: string; title: string; desc: string; state: string }[]>(() => {
+    const o = this.selectedOrder();
+    if (!o) return [];
+
+    const hora = o.date.slice(11) || '—';
+    const rows = [
+      { time: hora, title: 'Orden creada', desc: 'Cliente completó el checkout', state: 'done' },
+    ];
+
+    const pay = this.orderPayment();
+    const monto = this.fmtCOP(o.total);
+    switch (o.status) {
+      case 'paid':
+        rows.push({ time: hora, title: 'Pago aprobado', desc: `${o.method} · ${monto}`, state: 'done' });
+        break;
+      case 'pending':
+        rows.push({ time: '—', title: 'Pago pendiente', desc: `${o.method} · ${monto}`, state: 'active' });
+        break;
+      case 'failed':
+        rows.push({ time: hora, title: 'Pago rechazado', desc: `${o.method} · ${monto}`, state: 'done' });
+        break;
+      case 'cancelled':
+        rows.push({ time: '—', title: 'Pedido cancelado', desc: 'El pago no se completó y se liberó la reserva', state: 'done' });
+        break;
+      case 'refunded':
+        rows.push({ time: hora, title: 'Pago aprobado', desc: `${o.method} · ${monto}`, state: 'done' });
+        rows.push({ time: pay?.date.slice(11) ?? '—', title: 'Reembolso emitido', desc: `Devolución de ${monto}`, state: 'done' });
+        break;
+    }
+
+    if (o.status === 'paid' || o.status === 'refunded') {
+      const enviado   = o.enviadoEn?.slice(11) ?? '—';
+      const entregado = o.entregadoEn?.slice(11) ?? '—';
+      const guia      = o.guia ? ` · Guía ${o.guia}` : '';
+      switch (o.shipping) {
+        case 'pending':
+          rows.push({ time: '—', title: 'En preparación', desc: 'Pendiente de despacho', state: 'active' });
+          break;
+        case 'shipped':
+          rows.push({ time: enviado, title: 'Despachado', desc: `En camino a ${o.city}${guia}`, state: 'done' });
+          rows.push({ time: '—', title: 'Entrega', desc: 'Pendiente de confirmación', state: 'wait' });
+          break;
+        case 'delivered':
+          rows.push({ time: enviado, title: 'Despachado', desc: `Enviado a ${o.city}${guia}`, state: 'done' });
+          rows.push({ time: entregado, title: 'Entregado', desc: `Recibido en ${o.city}`, state: 'done' });
+          break;
+        case 'returned':
+          rows.push({ time: '—', title: 'Devuelto', desc: 'El pedido regresó a bodega', state: 'done' });
+          break;
+      }
+    }
+
+    return rows;
+  });
+
+  fmtSince(iso: string): string { return this.data.fmtSince(iso); }
 
   // ── Drawer signals para Cliente y Pago ─────────────────────────────────────
   clienteId = signal<string | null>(null);
@@ -266,7 +337,7 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     paid:    this.ORDERS.filter(o => o.status === 'paid'),
     pending: this.ORDERS.filter(o => o.status === 'pending'),
     shipped: this.ORDERS.filter(o => o.shipping === 'shipped'),
-    issues:  this.ORDERS.filter(o => o.status === 'failed' || o.status === 'refunded'),
+    issues:  this.ORDERS.filter(o => o.status === 'failed' || o.status === 'refunded' || o.status === 'cancelled'),
   }));
 
   currentOrders = computed(() => {
@@ -275,12 +346,67 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     return buckets[tab] ?? this.ORDERS;
   });
 
-  // ── Dashboard chart ────────────────────────────────────────────────────────
-  readonly BARS = [42, 58, 36, 71, 95, 64, 88, 102, 76, 124, 158, 142, 187, 220];
-  readonly DAYS = ['L 02','M 03','M 04','J 05','V 06','S 07','D 08','L 09','M 10','M 11','J 12','V 13','S 14','D 15'];
-  readonly MAX_BAR = Math.max(...[42, 58, 36, 71, 95, 64, 88, 102, 76, 124, 158, 142, 187, 220]);
+  // ── KPI de clientes y pagos, calculados desde los registros reales ─────────
+  // Mismo criterio que la lista de productos, para que los dos números coincidan.
+  readonly lowStockCount    = computed(() => calcularKpis(this.inv.productos()).bajos);
+  readonly pendingShipCount = computed(() => this.ORDERS.filter(o => o.status === 'paid' && o.shipping === 'pending').length);
 
-  barHeight(b: number): number { return (b / this.MAX_BAR) * 100; }
+  readonly customersByTag = computed(() => ({
+    vip:     this.CUSTOMERS.filter(c => c.tag === 'VIP').length,
+    activos: this.CUSTOMERS.filter(c => c.tag === 'Activo').length,
+    issues:  this.CUSTOMERS.filter(c => c.tag === 'Devolución' || c.tag === 'Fallido').length,
+  }));
+  readonly kpiVip = computed(() => this.CUSTOMERS.filter(c => c.orders >= 3).length);
+  readonly kpiGastoPromedio = computed(() => this.CUSTOMERS.length
+    ? Math.round(this.CUSTOMERS.reduce((s, c) => s + c.spent, 0) / this.CUSTOMERS.length)
+    : 0);
+
+  private readonly paymentsMes = computed(() => this.filterPayments('mes'));
+  readonly kpiNetoMes     = computed(() => this.paymentsMes().filter(p => p.status === 'paid').reduce((s, p) => s + p.net, 0));
+  readonly kpiComisiones  = computed(() => this.paymentsMes().filter(p => p.status === 'paid').reduce((s, p) => s + p.fee, 0));
+  readonly kpiPendiente   = computed(() => this.PAYMENTS.filter(p => p.status === 'pending'));
+  readonly kpiReembolsos  = computed(() => this.paymentsMes().filter(p => p.status === 'refunded'));
+  sumAmount(list: Payment[]): number { return list.reduce((s, p) => s + p.amount, 0); }
+
+  // ── Dashboard chart: ingresos pagados de los últimos 14 días ───────────────
+  private readonly chartDays = computed(() => {
+    const DOW = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const days: { key: string; label: string; total: number }[] = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(hoy);
+      d.setDate(hoy.getDate() - i);
+      const key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      days.push({ key, label: `${DOW[d.getDay()]} ${pad(d.getDate())}`, total: 0 });
+    }
+    for (const o of this.ORDERS) {
+      if (o.status !== 'paid') continue;
+      const day = days.find(x => x.key === o.date.slice(0, 10));
+      if (day) day.total += o.total;
+    }
+    return days;
+  });
+
+  /** Ingresos por día, en miles de COP. */
+  get BARS(): number[]   { return this.chartDays().map(d => Math.round(d.total / 1000)); }
+  get DAYS(): string[]   { return this.chartDays().map(d => d.label); }
+  get MAX_BAR(): number  { return Math.max(0, ...this.BARS); }
+  get hasChartData(): boolean { return this.MAX_BAR > 0; }
+
+  /** Marcas del eje Y (de mayor a menor), en miles de COP. */
+  get Y_TICKS(): number[] { return [1, 0.75, 0.5, 0.25, 0].map(f => Math.round(this.MAX_BAR * f)); }
+
+  get bestDay(): { label: string; value: number } | null {
+    if (!this.hasChartData) return null;
+    const i = this.BARS.indexOf(this.MAX_BAR);
+    return { label: this.DAYS[i], value: this.MAX_BAR };
+  }
+
+  get avgDaily(): number { return Math.round(this.BARS.reduce((s, b) => s + b, 0) / this.BARS.length); }
+
+  barHeight(b: number): number { return this.MAX_BAR > 0 ? (b / this.MAX_BAR) * 100 : 0; }
 
   trendPoints(): string {
     const n = this.BARS.length;
@@ -302,10 +428,9 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   }
 
   // ── Methods ────────────────────────────────────────────────────────────────
-  go(v: ViewId, opts: { newProduct?: boolean; detail?: boolean } = {}) {
+  go(v: ViewId, opts: { newProduct?: boolean } = {}) {
     this.view.set(v);
     if (opts.newProduct) { this.initEditorForm(null); this.editorOn.set(true); }
-    if (opts.detail)     { this.orderOn.set(true); }
   }
 
   openEditor(p: Product | null) {
@@ -321,8 +446,55 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.flash(this.editingProduct() ? '✓ Producto actualizado' : '✓ Producto creado');
   }
 
-  openOrder() { this.orderOn.set(true); }
-  closeOrder() { this.orderOn.set(false); }
+  // ── Estado de envío (el de pago lo decide Bold) ────────────────────────────
+  readonly ENVIO_OPCIONES: { id: string; label: string }[] = [
+    { id: 'pending',   label: 'En preparación' },
+    { id: 'shipped',   label: 'Enviado' },
+    { id: 'delivered', label: 'Entregado' },
+    { id: 'returned',  label: 'Devuelto' },
+  ];
+  envioDraft     = signal('pending');
+  guiaDraft      = signal('');
+  guardandoEnvio = signal(false);
+
+  readonly envioCambiado = computed(() => {
+    const o = this.selectedOrder();
+    return !!o && (this.envioDraft() !== o.shipping || this.guiaDraft().trim() !== (o.guia ?? ''));
+  });
+
+  async guardarEnvio() {
+    const o = this.selectedOrder();
+    if (!o || this.guardandoEnvio() || !this.envioCambiado()) return;
+    this.guardandoEnvio.set(true);
+    const error = await this.data.actualizarEnvio(o, this.envioDraft(), this.guiaDraft());
+    this.guardandoEnvio.set(false);
+    if (error) {
+      this.flash(`No se pudo guardar el envío: ${error}`);
+      return;
+    }
+    this.flash(`✓ Pedido ${o.id} · ${this.sb(this.envioDraft()).label}`);
+  }
+
+  openOrder(o: Order) {
+    this.selectedOrderId.set(o.id);
+    this.envioDraft.set(o.shipping);
+    this.guiaDraft.set(o.guia ?? '');
+    this.orderOn.set(true);
+    void this.notifs.marcarPedidoVisto(o.id);
+  }
+
+  // Al tocar un pedido en la campana: se abre apenas la lista lo trae.
+  private readonly abrirDesdeNotif = effect(() => {
+    const ref = this.adminState.abrirPedido();
+    if (!ref) return;
+    const o = this.data.orders().find(x => x.id === ref);
+    if (!o) return;
+    untracked(() => {
+      this.adminState.abrirPedido.set(null);
+      this.openOrder(o);
+    });
+  });
+  closeOrder() { this.orderOn.set(false); this.selectedOrderId.set(null); }
 
   openManualOrder() {
     this.moClienteNombre    = '';
@@ -400,7 +572,7 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     this.editorPrice     = p?.price    != null ? String(p.price)  : '';
     this.editorStock     = p?.stock    != null ? String(p.stock)  : '';
     this.editorStatus    = p?.status   ?? 'draft';
-    this.editorDesc      = 'Tirada corta. Hecho en Bogotá con algodón colombiano y tintas a base de agua. Cada pieza viene firmada por el ilustrador.';
+    this.editorDesc      = '';
     this.editorSizes     = ['S', 'M', 'L'];
     this.editorColors    = ['#ECEFF3', '#151F28'];
     this.editorImages    = [0, 1, 2];
@@ -416,9 +588,20 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   removeImage(idx: number) { this.editorImages.splice(idx, 1); }
   addImage()               { if (this.editorImages.length < 8) this.editorImages.push(this.editorImages.length); }
 
+  /** Celular en formato wa.me: sin espacios ni signos, con el 57 de Colombia si falta. */
+  whatsapp(phone: string): string {
+    const n = phone.replace(/\D/g, '');
+    return n.length === 10 ? `57${n}` : n;
+  }
+
+  readonly encodeURIComponent = encodeURIComponent;
+
   fmtViews(n: number): string { return n.toLocaleString('es-CO'); }
 
   fmtDelta(d: number): string { return (d > 0 ? '+' : '') + d.toFixed(1) + '%'; }
+
+  /** Valor ya expresado en miles → "$220k". */
+  fmtK(n: number): string { return '$' + n.toLocaleString('es-CO') + 'k'; }
 
   fmtCOP(n: number): string {
     return (n < 0 ? '-' : '') + '$' + Math.abs(n).toLocaleString('es-CO');
@@ -427,8 +610,8 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
   tone(key: string): ToneStyle  { return this.data.TONE[key] ?? this.data.TONE['cream']; }
   sb(s: string): { tone: string; label: string } { return this.data.STATUS_BADGE[s] ?? { tone: '', label: s }; }
 
-  char(id: string): Character { return this.data.CHARACTERS.find(c => c.id === id) ?? this.data.CHARACTERS[0]; }
-  cat(id: string):  Category  { return this.data.CATEGORIES.find(c => c.id === id) ?? this.data.CATEGORIES[0]; }
+  char(id: string): Character { return this.data.getCharacter(id); }
+  cat(id: string):  Category  { return this.data.getCategory(id); }
 
   prodCountForCat(catId: string) { return this.PRODUCTS.filter(p => p.category === catId).length; }
   prodCountForChar(charId: string) { return this.PRODUCTS.filter(p => p.character === charId).length; }
@@ -446,7 +629,10 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     return 'var(--carbon)';
   }
 
+  private dejarDeEscucharCatalogo?: () => void;
+
   ngOnDestroy() {
+    this.dejarDeEscucharCatalogo?.();
     if (this.toastTimer) clearTimeout(this.toastTimer);
     if (this.clockTimer) clearInterval(this.clockTimer);
   }

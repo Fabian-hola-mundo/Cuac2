@@ -41,7 +41,14 @@
         <tbody>
           @for (c of codigos(); track c.id) {
           <tr (click)="toggleExpand(c)" style="cursor:pointer">
-            <td><strong style="font-family:var(--mono);letter-spacing:.08em">{{ c.codigo }}</strong></td>
+            <td>
+              <strong style="font-family:var(--mono);letter-spacing:.08em">{{ c.codigo }}</strong>
+              @if (c.obsequio_productos_ids?.length) {
+                <div class="obs-tag" [title]="'Se envía al comprar: ' + (c.obsequio_productos_ids ?? []).map(nombreProducto.bind(this)).join(', ')">
+                  🎁 Se regala con {{ nombreProducto(c.obsequio_productos_ids![0]) }}@if (c.obsequio_productos_ids!.length > 1) { y {{ c.obsequio_productos_ids!.length - 1 }} más }
+                </div>
+              }
+            </td>
             <td><span style="font-size:11.5px;color:var(--carbon-70)">{{ c.tipo === 'porcentaje' ? 'Porcentaje' : 'Monto fijo' }}</span></td>
             <td>
               @if (c.tipo === 'porcentaje') { {{ c.valor }}% }
@@ -198,11 +205,19 @@
             </button>
           </div>
           <div class="cat-chips">
-            @for (cat of CATEGORIAS; track cat.id) {
+            @for (cat of categorias(); track cat.id) {
               <button type="button" class="chip"
                       [class.is-on]="dcCategorias.includes(cat.id)"
                       (click)="toggleCategoria(cat.id)">
-                {{ cat.label }}
+                {{ cat.label }} <span class="opt">· {{ cat.total }}</span>
+              </button>
+            } @empty {
+              <div class="help">Todavía no hay productos con categoría.</div>
+            }
+            @for (cat of categoriasHuerfanas; track cat.id) {
+              <button type="button" class="chip is-on" title="Ya no hay productos en esta categoría. Toca para quitarla."
+                      (click)="toggleCategoria(cat.id)">
+                {{ cat.label }} <span class="opt">· sin productos ✕</span>
               </button>
             }
           </div>
@@ -213,6 +228,39 @@
           <textarea class="textarea" [(ngModel)]="dcProductos" name="dcProductos" rows="2"
                     placeholder="UUID1, UUID2, ..."></textarea>
           <div class="help">UUIDs de productos separados por coma. Vacío = todos los productos.</div>
+        </div>
+
+        <div class="field obs-box">
+          <label>🎁 Regalar con la compra de <span class="opt">(opcional)</span></label>
+          @if (dcObsequio.length > 0) {
+            <div class="cat-chips">
+              @for (id of dcObsequio; track id) {
+                <button type="button" class="chip is-on" (click)="quitarObsequio(id)" title="Quitar">
+                  {{ nombreProducto(id) }} ✕
+                </button>
+              }
+            </div>
+          }
+          <select class="select" #selObs (change)="agregarObsequio(selObs)" name="dcObsequioSel">
+            <option value="">Agregar producto…</option>
+            @for (p of productos(); track p.id) {
+              @if (!dcObsequio.includes(p.id)) {
+                <option [value]="p.id">{{ p.nombre }}{{ p.activo ? '' : ' (borrador)' }}</option>
+              }
+            }
+          </select>
+          <div class="help">
+            Cuando se apruebe el pago de un pedido con alguno de estos productos, el comprador recibe
+            este código por correo. El envío no depende de «Activo»: puedes regalarlo inactivo y
+            activarlo cuando quieras que se pueda usar.
+          </div>
+
+          @if (dcObsequio.length > 0) {
+            <label style="margin-top:var(--s-3)">Mensaje del correo</label>
+            <textarea class="textarea" [(ngModel)]="dcObsequioMsg" name="dcObsequioMsg" rows="4"
+                      placeholder="Ej: Gracias por tu compra. Usa este código en…"></textarea>
+            <div class="help">Aparece debajo del código. Cuenta dónde y cuándo se puede usar.</div>
+          }
         </div>
 
         <div class="field" style="flex-direction:row;align-items:center;gap:10px">

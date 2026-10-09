@@ -145,7 +145,8 @@
 .hero-portrait {
   position: absolute;
   bottom: 0;
-  right: var(--s-8);
+  // Clears the scroll-hint column (right: --s-7) with ~--s-7 of breathing room
+  right: calc(var(--s-7) * 2 + 16px);
   width: clamp(200px, 22vw, 320px);
   aspect-ratio: 3 / 4;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
@@ -297,15 +298,18 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+// Encuadre elegido en el admin: punto (--fx, --fy) y zoom (--fz) desde ese punto.
 .card-bg {
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center;
+  background-position: var(--fx, 50%) var(--fy, 50%);
+  transform-origin: var(--fx, 50%) var(--fy, 50%);
+  transform: scale(var(--fz, 1));
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 
   .port-card:hover &,
-  .port-card:focus-within & { transform: scale(1.05); }
+  .port-card:focus-within & { transform: scale(calc(var(--fz, 1) * 1.05)); }
 }
 
 // Persistent legibility scrim — anchors text on any image
@@ -758,7 +762,7 @@
 // ── Touch: affordance + caption always visible ─────────────────────────────────
 @media (hover: none) {
   .card-go      { opacity: 1; transform: none; }
-  .card-bg      { transform: none !important; }
+  .card-bg      { transform: scale(var(--fz, 1)) !important; }
   .card-caption { transform: none; }
 }
 
@@ -775,11 +779,27 @@
 // Allowed span values from assignSpans(): 4, 5, 7, 8, 12 only.
 @media (max-width: 1024px) {
   .port-grid { grid-template-columns: repeat(6, 1fr); }
+  // Cada fila debe sumar 6: 8+4 → 4+2, 4+4+4 → 2+2+2, 5+7 → 2+4
   .port-card[style*="span 8"]  { grid-column: span 4 !important; }
   .port-card[style*="span 7"]  { grid-column: span 4 !important; }
   .port-card[style*="span 5"]  { grid-column: span 2 !important; }
-  .port-card[style*="span 4"]  { grid-column: span 3 !important; }
+  .port-card[style*="span 4"]  { grid-column: span 2 !important; }
+  // La vertical que acompaña a la grande toma la altura de la fila (sin hueco abajo)
+  .port-card[style*="3 / 4"]   { aspect-ratio: auto !important; }
   .port-card[style*="span 12"] { grid-column: span 6 !important; }
+}
+
+// Tablet vertical: en tercios (~170–220 px) los títulos largos llenaban la
+// tarjeta y tapaban la portada; a dos columnas el texto respira
+@media (min-width: 641px) and (max-width: 900px) {
+  .port-grid { grid-template-columns: repeat(2, 1fr); }
+  .port-card[style] { grid-column: span 1 !important; aspect-ratio: 1 / 1 !important; }
+  .port-card[style]:last-child:nth-child(odd) { grid-column: 1 / -1 !important; aspect-ratio: 2 / 1 !important; }
+}
+
+// Tablet vertical: con 88vh quedaba media pantalla vacía sobre el título
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait) {
+  .port-hero { min-height: 56vh !important; }
 }
 
 @media (max-width: 640px) {
@@ -812,9 +832,18 @@
   }
   .about-row     { flex-direction: column; gap: var(--s-5); }
   .about-col-bio { flex: 1 1 auto; }
-  .filter-bar   { margin: 0 calc(-1 * var(--s-5)) var(--s-6); padding: 0 var(--s-5); }
+  .filter-bar   { margin: 0 calc(-1 * var(--s-5)) var(--s-6); padding: 0; }
+  // Las pestañas se desplazan: el padding va dentro del scroll y el borde derecho
+  // se desvanece para que se note que hay más categorías
+  .filter-bar-inner {
+    padding: 0 var(--s-5);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+            mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  }
+  .filter-item  { padding: 0 var(--s-4); }
   .port-grid    { grid-template-columns: 1fr; gap: var(--s-4); }
-  .port-card    { grid-column: span 1 !important; aspect-ratio: 4/3 !important; }
+  // [style] iguala la especificidad de los overrides de 1024px para ganarles
+  .port-card[style] { grid-column: 1 / -1 !important; aspect-ratio: 4/3 !important; }
   .pf-link {
     grid-template-columns: 8px 1fr 24px;
     grid-template-areas: "dot main go" "dot tag go";

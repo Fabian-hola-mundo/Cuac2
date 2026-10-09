@@ -1,0 +1,43 @@
+<div class="drawer-back on" (click)="cancelar.emit()"></div>
+<div class="modal-card enc-card" role="dialog" aria-modal="true" aria-labelledby="enc-titulo">
+  <h3 id="enc-titulo">{{ titulo() }}</h3>
+  <p class="modal-sub">Arrastra para encuadrar, ajusta el zoom o gira la foto. El cuadro es lo que se ve en la tienda.</p>
+
+  <div #cuadro class="enc-cuadro" tabindex="0"
+       aria-label="Encuadre de la imagen. Flechas para mover, más y menos para el zoom."
+       (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
+       (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)"
+       (wheel)="onWheel($event)" (keydown)="onKey($event)">
+    @if (urlVista(); as url) {
+      <img class="enc-foto" [src]="url" alt="" draggable="false" [style]="estiloFoto()" />
+      <div class="enc-guias" aria-hidden="true"></div>
+    } @else if (!error()) {
+      <span class="enc-cargando">Cargando…</span>
+    }
+  </div>
+
+  <div class="enc-zoom">
+    <button type="button" class="btn-sm ghost" (click)="setZoom(encuadre().zoom / 1.15)" aria-label="Alejar">−</button>
+    <input type="range" [min]="zoomMin()" [max]="ZOOM_MAX" step="0.01" aria-label="Zoom"
+           [value]="encuadre().zoom" (input)="setZoom(+$any($event.target).value)" [disabled]="!urlVista()" />
+    <button type="button" class="btn-sm ghost" (click)="setZoom(encuadre().zoom * 1.15)" aria-label="Acercar">+</button>
+  </div>
+  <div class="enc-atajos">
+    <button type="button" class="btn-sm ghost" (click)="girar(-90)" [disabled]="!urlVista()" aria-label="Girar a la izquierda" title="Girar a la izquierda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+    </button>
+    <button type="button" class="btn-sm ghost" (click)="girar(90)" [disabled]="!urlVista()" aria-label="Girar a la derecha" title="Girar a la derecha">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+    </button>
+    <button type="button" class="btn-sm ghost" (click)="llenar()" [disabled]="!urlVista()">Llenar el cuadro</button>
+    <button type="button" class="btn-sm ghost" (click)="entera()" [disabled]="!urlVista()">Foto entera</button>
+  </div>
+
+  @if (error()) { <p class="modal-err" role="alert">{{ error() }}</p> }
+  <div class="modal-f">
+    <button type="button" class="btn-sm ghost" (click)="cancelar.emit()">Cancelar</button>
+    <button type="button" class="btn-sm solid" [disabled]="!urlVista() || guardando()" (click)="confirmar()">
+      {{ guardando() ? 'Aplicando…' : 'Aplicar' }}
+    </button>
+  </div>
+</div>

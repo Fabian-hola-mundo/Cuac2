@@ -57,8 +57,67 @@
 </div>
 }
 
+<!-- VERIFICACIÓN EN DOS PASOS -->
+@if (sb.session() && mfaMode() !== 'ok') {
+<div id="login-screen">
+  <div class="login-grid">
+    <div class="login-side">
+      <div class="login-dots" aria-hidden="true"></div>
+      <span class="login-deco" aria-hidden="true">2FA</span>
+      <div>
+        <div class="brand-l">Cuaqui<em>verso</em></div>
+        <div class="tag-l">Seguridad</div>
+      </div>
+      <h2>Un paso más para <em>entrar</em>.</h2>
+      <p class="b">Verificación en dos pasos con tu app de autenticación — Google Authenticator, Authy, 1Password o la que uses.</p>
+    </div>
+    <div class="login-form">
+      @if (mfaMode() === 'checking') {
+        <h3>Un momento…</h3>
+        <p class="pp">Comprobando tu segundo factor.</p>
+      }
+      @if (mfaMode() === 'enroll') {
+        <h3>Activa la <em>verificación en dos pasos</em>.</h3>
+        <p class="pp">Escanea este código con tu app de autenticación y escribe el código de 6 dígitos que genera.</p>
+        @if (qrSrc()) {
+          <div class="mfa-qr"><img [src]="qrSrc()" alt="Código QR de configuración 2FA" width="180" height="180" /></div>
+          @if (mfaSecret()) {
+            <p class="mfa-secret">¿No puedes escanear? Escribe esta clave en tu app:<br><code>{{ mfaSecret() }}</code></p>
+          }
+        } @else {
+          <p class="pp">Generando tu código…</p>
+        }
+      }
+      @if (mfaMode() === 'verify') {
+        <h3>Verificación en <em>dos pasos</em>.</h3>
+        <p class="pp">Escribe el código de 6 dígitos de tu app de autenticación.</p>
+      }
+      @if (mfaMode() === 'enroll' || mfaMode() === 'verify') {
+        <div class="field">
+          <label>Código de 6 dígitos</label>
+          <div class="input-wrap">
+            <svg class="input-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <input class="input" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                   [(ngModel)]="mfaCode" name="mfacode" placeholder="000000"
+                   (keyup.enter)="confirmMfa()" />
+          </div>
+        </div>
+        @if (mfaError()) {
+          <p style="color:var(--terra);font-size:13px;margin-bottom:8px">{{ mfaError() }}</p>
+        }
+        <button class="submit" type="button" [disabled]="mfaLoading()" (click)="confirmMfa()">
+          {{ mfaLoading() ? 'Verificando…' : (mfaMode() === 'enroll' ? 'Activar 2FA' : 'Verificar') }}
+        </button>
+      }
+      <button class="submit ghost" type="button" (click)="logout()">Cancelar y salir</button>
+      <div class="legal">El acceso al panel queda protegido con tu segundo factor.</div>
+    </div>
+  </div>
+</div>
+}
+
 <!-- ADMIN SHELL -->
-@if (sb.session()) {
+@if (sb.session() && mfaMode() === 'ok') {
 <div class="admin-shell">
   @if (navOpen()) {
     <div class="sidebar-backdrop" (click)="closeNav()"></div>
@@ -104,12 +163,21 @@
         <span>{{ NAV_META[id].label }}</span>
       </a>
       }
+      <a [class.is-active]="activeNavId() === 'ruleta'" (click)="goRuleta()">
+        <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3v6.6M21 12h-6.6M12 21v-6.6M3 12h6.6"/></svg>
+        <span>Ruleta</span>
+      </a>
     </div>
     <div class="sb-section">Estudio</div>
     <div class="sb-nav">
       <a [class.is-active]="activeNavId() === 'portafolio'" (click)="goPortafolio()">
         <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         <span>Portafolio</span>
+      </a>
+      <a [class.is-active]="activeNavId() === 'resenas'" (click)="goResenas()">
+        <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="m12 7 1.1 2.2 2.4.3-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.3L12 7Z"/></svg>
+        <span>Reseñas</span>
+        @if (resenasNuevas.count() > 0) { <span class="count">{{ resenasNuevas.count() }}</span> }
       </a>
     </div>
     <div class="sb-section">Evento</div>
@@ -126,7 +194,7 @@
     </div>
     </div>
     <div class="sb-foot">
-      <div class="avatar">{{ userInitial }}</div>
+      <img class="avatar" src="/assets/cuac-pato.png" alt="" width="32" height="32">
       <div class="who"><strong>Design Cuac</strong><span>{{ userEmail }}</span></div>
       <button class="logout" title="Cerrar sesión" (click)="logout()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="m10 16-4-4 4-4"/><path d="M6 12h11"/></svg>

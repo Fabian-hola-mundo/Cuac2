@@ -11,11 +11,8 @@
   <div class="panel-b" style="display:flex;align-items:center;gap:16px">
     <svg style="width:32px;height:32px;color:var(--selva)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
     <div style="flex:1">
-      <div style="font-family:var(--display);font-size:22px;line-height:1">cuaquiverso.co</div>
-      <div style="font-size:12px;color:var(--carbon-50);margin-top:3px">Vence 2027-11-30 · Registrador: GoDaddy</div>
+      <div style="font-family:var(--display);font-size:22px;line-height:1">{{ DOMINIO_PRINCIPAL }}</div>
     </div>
-    <span class="badge ok"><span class="pdot"></span>DNS verificado</span>
-    <span class="badge ok"><span class="pdot"></span>SSL activo</span>
   </div>
 </div>
 
@@ -31,6 +28,9 @@
     <table class="tbl">
       <thead><tr><th>Dominio</th><th>Tipo</th><th>SSL</th><th>Estado</th><th></th></tr></thead>
       <tbody>
+        @if (dominios().length === 0) {
+        <tr><td colspan="5" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Sin dominios adicionales</td></tr>
+        }
         @for (d of dominios(); track d.id) {
         <tr>
           <td><span style="font-family:var(--mono);font-size:13px">{{ d.dominio }}</span></td>
@@ -76,6 +76,9 @@
     @if (verifState() === 'records') {
     <div style="background:var(--cream-2);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:var(--s-3)">
       <div style="font-weight:600;font-size:13px">Configura estos registros DNS en tu registrador:</div>
+      @if (DNS_RECORDS.length === 0) {
+      <div style="font-size:13px;color:var(--carbon-50)">Sin configurar · consulta los registros DNS en la consola del hosting.</div>
+      } @else {
       <div class="tbl-wrap">
       <table class="tbl">
         <thead><tr><th>Tipo</th><th>Host</th><th>Valor</th></tr></thead>
@@ -90,6 +93,7 @@
         </tbody>
       </table>
       </div>
+      }
       <button class="btn-sm ghost" style="align-self:flex-start" (click)="reVerificar()">Verificar de nuevo</button>
     </div>
     }
@@ -109,6 +113,9 @@
     <table class="tbl">
       <thead><tr><th>Origen</th><th>Destino</th><th>Tipo</th><th>Activo</th><th></th></tr></thead>
       <tbody>
+        @if (redirects().length === 0 && !addingRedirect()) {
+        <tr><td colspan="5" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Sin redirects configurados</td></tr>
+        }
         @for (r of redirects(); track r.id) {
         <tr>
           <td><span class="id">{{ r.origen }}</span></td>

@@ -1,0 +1,18 @@
+{{ corto() }}
+@if (recortado()) {
+  <button type="button" class="ver-mas" (click)="abrir($event)">Ver más</button>
+
+  <dialog #dialogo class="resena-dialogo" aria-label="Reseña completa" (click)="clicFondo($event)">
+    <div class="rd-card">
+      <button type="button" class="rd-cerrar" aria-label="Cerrar" (click)="cerrar()">&times;</button>
+      <span class="rd-mark" aria-hidden="true">“</span>
+      <p class="rd-texto">{{ texto() }}</p>
+      @if (nombre()) {
+        <p class="rd-autor">
+          <strong>{{ nombre() }}</strong>
+          @if (detalle()) { <span>{{ detalle() }}</span> }
+        </p>
+      }
+    </div>
+  </dialog>
+}

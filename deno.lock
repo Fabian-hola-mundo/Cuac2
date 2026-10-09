@@ -1,0 +1,38 @@
+{
+  "version": "5",
+  "remote": {
+    "https://esm.sh/@supabase/supabase-js@2.106.1": "1b378cc89620ed0bf3e646b946b593e75d8e8ac0e43a4e07db6b71516ca757ec"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@angular/build@^21.2.9",
+        "npm:@angular/cdk@^21.2.14",
+        "npm:@angular/cli@^21.2.11",
+        "npm:@angular/common@^21.2.0",
+        "npm:@angular/compiler-cli@^21.2.0",
+        "npm:@angular/compiler@^21.2.0",
+        "npm:@angular/core@^21.2.0",
+        "npm:@angular/forms@^21.2.0",
+        "npm:@angular/platform-browser@^21.2.0",
+        "npm:@angular/platform-server@^21.2.0",
+        "npm:@angular/router@^21.2.0",
+        "npm:@angular/ssr@^21.2.11",
+        "npm:@supabase/supabase-js@^2.106.1",
+        "npm:@types/express@^5.0.1",
+        "npm:@types/node@^20.17.19",
+        "npm:esbuild@0.28",
+        "npm:express@^5.1.0",
+        "npm:gsap@^3.15.0",
+        "npm:jsdom@28",
+        "npm:prettier@^3.8.1",
+        "npm:rxjs@7.8",
+        "npm:three@0.184",
+        "npm:tslib@^2.3.0",
+        "npm:typescript@~5.9.2",
+        "npm:vitest@^4.0.8",
+        "npm:xlsx@~0.18.5"
+      ]
+    }
+  }
+}

@@ -30,25 +30,6 @@
   padding-top: 68px; // account for fixed topbar
 }
 
-// ─── Shared: Cuac badge ────────────────────────────────────────────────────────
-.cuac-badge {
-  position: fixed; top: 16px; left: 16px; z-index: 90;
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 8px 14px 8px 10px;
-  background: var(--carbon); color: var(--cream);
-  border-radius: var(--r-pill);
-  font-family: var(--mono); font-size: 10.5px;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  box-shadow: 0 6px 20px rgba(21, 31, 40, 0.18);
-  transition: transform .2s, background .2s;
-
-  &:hover { transform: translateY(-1px); background: #20313e; }
-
-  svg  { width: 26px; color: var(--cream); }
-  .arr { opacity: 0.6; font-size: 12px; }
-  .lbl { opacity: 0.85; }
-}
-
 // ─── Shared: Topbar ────────────────────────────────────────────────────────────
 .topbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 70;
@@ -59,7 +40,7 @@
 
 .topbar-inner {
   max-width: 1320px; margin: 0 auto; height: 68px;
-  padding: 0 var(--s-7) 0 220px;
+  padding: 0 var(--s-7);
   display: flex; align-items: center; justify-content: space-between; gap: var(--s-6);
 }
 
@@ -119,39 +100,175 @@ nav.primary {
 }
 
 // ─── Shop hero ─────────────────────────────────────────────────────────────────
+// Hoja de cuaderno: renglones finos y el margen rojo, porque el título promete
+// "toda la tienda en un solo cuaderno". Los renglones se desvanecen hacia abajo
+// para que la toolbar no quede sobre una textura.
 .shop-hero {
-  padding: var(--s-8) var(--s-7) var(--s-7);
-  background: linear-gradient(180deg, var(--paper), var(--cream));
+  position: relative; overflow: hidden;
+  padding: var(--s-8) var(--s-7) var(--s-8);
+  background: var(--paper);
   border-bottom: 1px solid var(--carbon-08);
+
+  &::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 50% 60% at 88% 40%, oklch(0.85 0.09 30 / 0.30), transparent 70%),
+      radial-gradient(ellipse 45% 55% at 70% 100%, oklch(0.82 0.08 260 / 0.22), transparent 70%),
+      repeating-linear-gradient(180deg, transparent 0 35px, rgba(42, 111, 219, 0.09) 35px 36px);
+    mask-image: linear-gradient(180deg, #000 55%, transparent);
+  }
+
+  &::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: max(28px, calc((100% - 1320px) / 2 - 20px));
+    width: 1px; background: rgba(232, 98, 61, 0.28); pointer-events: none;
+  }
 }
 
 .shop-hero-inner {
+  position: relative; z-index: 1;
   max-width: 1320px; margin: 0 auto;
-  display: grid; grid-template-columns: 1.2fr 1fr; gap: var(--s-7); align-items: end;
+  display: grid; grid-template-columns: 1.15fr 1fr; gap: var(--s-7); align-items: center;
 
-  .cuac-breadcrumb { margin-bottom: var(--s-5); }
+  // Sin esto la fila deslizable de chips (móvil) ensancha la columna del grid.
+  > * { min-width: 0; }
 }
 
+.sh-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px; margin-bottom: var(--s-4);
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--carbon-70);
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--terra); }
+  .num { color: var(--carbon-30); }
+}
 
 .shop-hero h1 {
   font-family: var(--display);
-  font-size: clamp(56px, 7vw, 116px);
+  font-size: clamp(52px, 6.4vw, 108px);
   line-height: 0.94; letter-spacing: -0.025em; text-wrap: balance;
 
   em { font-style: italic; color: var(--terra); }
 }
 
 .shop-hero p {
-  font-size: 17px; color: var(--carbon-70); line-height: 1.6; max-width: 56ch; margin-top: var(--s-5);
+  font-size: 17px; color: var(--carbon-70); line-height: 1.6; max-width: 54ch; margin-top: var(--s-5);
+}
+
+// Atajos de categoría: mismo estado que el filtro lateral, a un clic.
+.sh-cats {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--s-6);
+}
+
+.sh-cat {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: var(--r-pill);
+  background: var(--paper); border: 1px solid var(--carbon-12);
+  font: inherit; font-size: 13.5px; color: var(--carbon); cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s, transform .15s;
+
+  .n { font-family: var(--mono); font-size: 10.5px; color: var(--carbon-50); }
+
+  &:hover { border-color: var(--carbon); transform: translateY(-1px); }
+  &:focus-visible { outline: 2px solid var(--rio); outline-offset: 2px; }
+  &.is-on {
+    background: var(--carbon); border-color: var(--carbon); color: var(--cream);
+    .n { color: rgba(236, 239, 243, 0.6); }
+  }
 }
 
 .stats {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-5);
-  padding: var(--s-5);
-  background: var(--paper); border: 1px solid var(--carbon-08); border-radius: var(--r-lg);
+  margin-top: var(--s-6); padding-top: var(--s-5);
+  border-top: 1px dashed var(--carbon-12);
+  max-width: 560px;
 
   .k { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--carbon-50); margin-bottom: 6px; }
   .v { font-family: var(--display); font-size: 26px; line-height: 1; color: var(--carbon); }
+}
+
+// ─── Vitrina: tres productos en abanico, como recortes pegados al cuaderno ───
+.sh-vitrina {
+  position: relative; height: 520px;
+  /* Con el giroscopio (o el ratón) el abanico se inclina hacia donde mira la persona. */
+  transform:
+    perspective(1100px)
+    rotateY(calc(var(--gx, 0) * 10deg))
+    rotateX(calc(var(--gy, 0) * -8deg));
+}
+
+.sh-card {
+  --rot: 0deg; --x: 0%; --y: 0%;
+  position: absolute; left: 50%; top: 50%;
+  width: min(300px, 46%);
+  display: flex; flex-direction: column;
+  background: #fff; border-radius: 18px; padding: 10px;
+  box-shadow: 0 1px 0 rgba(21, 31, 40, 0.04), 0 18px 40px rgba(21, 31, 40, 0.14);
+  transform: translate(-50%, -50%) translate(var(--x), var(--y)) rotate(var(--rot));
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s;
+  text-decoration: none; color: var(--carbon);
+
+  &:nth-child(1) { --rot: -2deg; --x: -4%;  --y: -2%;  z-index: 3; width: min(330px, 52%); }
+  &:nth-child(2) { --rot: -11deg; --x: -72%; --y: 8%;  z-index: 2; }
+  &:nth-child(3) { --rot: 9deg;  --x: 66%;  --y: 12%; z-index: 1; }
+
+  &:hover, &:focus-visible {
+    z-index: 4;
+    transform: translate(-50%, -50%) translate(var(--x), calc(var(--y) - 4%)) rotate(calc(var(--rot) * 0.4)) scale(1.03);
+    box-shadow: 0 30px 60px rgba(21, 31, 40, 0.22);
+  }
+  &:focus-visible { outline: 2px solid var(--rio); outline-offset: 4px; }
+
+  &.is-ghost {
+    aspect-ratio: 4 / 5; background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 18px 40px rgba(21, 31, 40, 0.06);
+  }
+}
+
+.sh-card-img {
+  aspect-ratio: 1 / 1; border-radius: 12px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  padding: 14px; background: var(--cream);
+
+  img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .label { font-family: var(--display); font-size: 34px; opacity: .7; }
+}
+
+.sh-card[data-color="rio"]   .sh-card-img { background: var(--rio-soft); }
+.sh-card[data-color="rosa"]  .sh-card-img { background: var(--rosa-soft); }
+.sh-card[data-color="sol"]   .sh-card-img { background: var(--sol-soft); }
+.sh-card[data-color="selva"] .sh-card-img { background: var(--selva-soft); }
+.sh-card[data-color="terra"] .sh-card-img { background: var(--terra-soft); }
+.sh-card[data-color="lila"]  .sh-card-img { background: var(--lila-soft); }
+.sh-card[data-color="bone"]  .sh-card-img { background: var(--bone); }
+.sh-card[data-color="tibu"]  .sh-card-img { background: #DCEEF7; }
+
+.sh-card-info {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 12px 6px 4px;
+
+  .nm {
+    font-family: var(--display); font-size: 17px; line-height: 1.15; letter-spacing: -0.01em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+  }
+  .pr { font-family: var(--mono); font-size: 11.5px; color: var(--carbon-70); white-space: nowrap; }
+}
+
+// Etiqueta colgante de la tarjeta principal.
+.sh-tag {
+  position: absolute; top: -12px; right: 18px;
+  padding: 6px 12px; border-radius: var(--r-pill);
+  background: var(--sol); color: var(--carbon);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  transform: rotate(4deg);
+  box-shadow: 0 6px 16px rgba(21, 31, 40, 0.14);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sh-card { animation: sh-in .7s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--i) * 90ms); }
+}
+
+@keyframes sh-in {
+  from { opacity: 0; transform: translate(-50%, -40%) rotate(0deg); }
 }
 
 // ─── Toolbar ───────────────────────────────────────────────────────────────────
@@ -248,6 +365,7 @@ nav.primary {
 
 // ─── Layout ────────────────────────────────────────────────────────────────────
 .shop-layout {
+  scroll-margin-top: 150px; // topbar + toolbar sticky
   max-width: 1320px; margin: 0 auto;
   padding: var(--s-7) var(--s-7) var(--s-9);
   display: grid; grid-template-columns: 240px 1fr;
@@ -263,10 +381,33 @@ nav.primary {
 
   h4 {
     font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em;
-    text-transform: uppercase; color: var(--carbon-50);
+    text-transform: uppercase; color: var(--carbon-70);
     margin-bottom: var(--s-3); padding-bottom: var(--s-3);
     border-bottom: 1px solid var(--carbon-08);
   }
+
+  .filters-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3);
+
+    h4 { flex: 1; }
+  }
+
+  // Sólo existe en el drawer móvil; en escritorio el panel está siempre visible.
+  .filters-close {
+    display: none; flex-shrink: 0;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid var(--carbon-12); background: var(--paper); color: var(--carbon);
+    align-items: center; justify-content: center; cursor: pointer;
+
+    svg { width: 15px; height: 15px; }
+    &:focus-visible { outline: 2px solid var(--carbon); outline-offset: 2px; }
+  }
+}
+
+.filters-overlay {
+  position: fixed; inset: 0; z-index: 99;
+  background: rgba(21, 31, 40, 0.35);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
 }
 
 .filter-group {
@@ -342,6 +483,68 @@ nav.primary {
 
   h3 { font-family: var(--display); font-size: 32px; margin-bottom: 10px; }
   p  { color: var(--carbon-70); margin-bottom: var(--s-5); }
+
+  &.is-error {
+    grid-column: auto; margin-bottom: var(--s-5);
+    border-style: solid; border-color: var(--terra);
+    background: rgba(232, 98, 61, 0.06);
+  }
+}
+
+// Sólo para lectores de pantalla: nombra el enlace que cubre la tarjeta.
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.aviso-live {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  z-index: 120; pointer-events: none;
+}
+
+// Botón flotante a la guía del tarot: solo el ícono; el texto se despliega al pasar
+// el cursor o al enfocarlo. Por debajo del panel de filtros (100) y del carrito (200).
+.fab-tarot {
+  position: fixed; right: 24px; bottom: 24px; z-index: 90;
+  display: inline-flex; align-items: center;
+  height: 44px; padding: 0 12px; border-radius: var(--r-pill);
+  background: var(--carbon); color: var(--cream);
+  font-size: 13.5px; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(21, 31, 40, 0.2);
+  opacity: .85;
+  transition: opacity .2s, background .2s;
+
+  svg { width: 20px; height: 20px; color: var(--cream); flex-shrink: 0; }
+
+  .fab-tarot-txt {
+    max-width: 0; overflow: hidden; opacity: 0;
+    transition: max-width .3s cubic-bezier(.2,.8,.2,1), opacity .2s, margin .3s;
+  }
+
+  &:hover, &:focus-visible {
+    opacity: 1;
+    background: var(--terra);
+    .fab-tarot-txt { max-width: 140px; opacity: 1; margin: 0 6px 0 10px; }
+  }
+
+  @media (max-width: 600px) { right: 16px; bottom: 16px; }
+}
+
+.aviso-pill {
+  display: inline-block; padding: 11px 18px; border-radius: var(--r-pill);
+  background: var(--carbon); color: var(--cream);
+  font-size: 13.5px; font-weight: 600; letter-spacing: 0.01em;
+  box-shadow: 0 12px 28px rgba(21, 31, 40, 0.22);
+  animation: aviso-in .2s ease-out;
+}
+
+@keyframes aviso-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso-pill { animation: none; }
 }
 
 .pcard {
@@ -351,13 +554,29 @@ nav.primary {
   transition: transform .22s, box-shadow .22s, border-color .22s;
   cursor: pointer;
 
-  &:hover {
+  // El enlace cubre la tarjeta entera; el botón "+" queda por encima. Así la
+  // tarjeta es un solo tab stop y el botón otro, sin anidar controles.
+  .pcard-link {
+    position: absolute; inset: 0; z-index: 1;
+    border-radius: inherit;
+
+    &:focus-visible { outline: 2px solid var(--carbon); outline-offset: 2px; }
+  }
+
+  &:hover,
+  &:focus-within {
     transform: translateY(-3px);
     box-shadow: 0 18px 36px rgba(21, 31, 40, 0.10);
     border-color: var(--carbon-12);
 
-    .add  { background: var(--carbon); color: var(--cream); }
+    .add:not(:disabled) { background: var(--carbon); color: var(--cream); }
     .quick { opacity: 1; transform: translateY(0); }
+  }
+
+  // Agotado: se puede seguir viendo la ficha, pero la tarjeta no invita.
+  &.is-agotado {
+    .pcard-img img, .pcard-img .label { opacity: .45; filter: saturate(.4); }
+    .price { color: var(--carbon-70); }
   }
 
   .pcard-img {
@@ -385,6 +604,14 @@ nav.primary {
 
     &.new  { background: var(--terra); }
     &.last { background: var(--carbon); }
+    &.out  { background: var(--paper); color: var(--carbon); border: 1px solid var(--carbon-30); }
+
+    // Etiqueta escrita por el admin: texto libre, así que se acota el ancho
+    // para que "Edición limitada" no se coma la esquina de la tarjeta.
+    &.propia {
+      background: var(--rio); max-width: calc(100% - 24px);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
   }
 
   .pcard-info {
@@ -393,8 +620,10 @@ nav.primary {
   }
 
   .meta {
+    // carbon-50 sobre --paper da ~3.2:1 en mono de 10px: por debajo del 4.5:1
+    // de AA, y es justo el texto que se escanea (categoría y personaje).
     font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
-    color: var(--carbon-50); text-transform: uppercase; margin-bottom: 4px;
+    color: var(--carbon-70); text-transform: uppercase; margin-bottom: 4px;
     display: flex; justify-content: space-between; gap: 8px;
   }
 
@@ -413,11 +642,19 @@ nav.primary {
   .price { font-family: var(--display); font-size: 18px; }
 
   .add {
+    position: relative; z-index: 2;
     width: 30px; height: 30px; border-radius: 50%; background: var(--cream-2);
+    border: none; padding: 0; font: inherit; font-size: 16px; line-height: 1;
     display: inline-flex; align-items: center; justify-content: center;
     transition: background .15s, color .15s, transform .15s; color: var(--carbon); cursor: pointer;
 
-    &:hover { transform: scale(1.1); }
+    &:hover:not(:disabled) { transform: scale(1.1); }
+    &:focus-visible { outline: 2px solid var(--carbon); outline-offset: 2px; }
+
+    &:disabled {
+      cursor: not-allowed; opacity: .4;
+      background: transparent; border: 1px dashed var(--carbon-30);
+    }
   }
 
   .quick {
@@ -453,16 +690,23 @@ nav.primary {
 // ─── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 1100px) {
   .topbar-inner { padding: 0 var(--s-5) 0 var(--s-5); }
-  nav.primary { display: none; }
+  nav.primary { gap: 0; a { padding: 8px 12px; } }
   .shop-hero-inner { grid-template-columns: 1fr; }
+  .sh-vitrina { height: 400px; width: 100%; max-width: 640px; margin: 0 auto; }
   .shop-layout { grid-template-columns: 1fr; }
   .filters {
     position: fixed; top: 0; right: 0; bottom: 0; left: auto;
     max-height: 100vh; width: min(360px, 100vw); border-radius: 0;
-    transform: translateX(100%); transition: transform .3s cubic-bezier(.2,.8,.2,1);
+    transform: translateX(100%); transition: transform .3s cubic-bezier(.2,.8,.2,1), visibility .3s;
     z-index: 100; overflow-y: auto;
 
-    &.is-open { transform: translateX(0); }
+    // translateX(100%) esconde el panel pero lo deja en el orden de tabulación:
+    // un usuario de teclado tabulaba hacia un panel invisible.
+    visibility: hidden;
+
+    &.is-open { transform: translateX(0); visibility: visible; }
+
+    .filters-close { display: inline-flex; }
   }
   .filters-toggle { display: inline-flex; }
   .grid { grid-template-columns: repeat(2, 1fr); }
@@ -476,11 +720,29 @@ nav.primary {
 
   // 56px desktop floor reads oversized once the column drops to full-width mobile.
   .shop-hero h1 { font-size: clamp(34px, 11vw, 56px); }
+  .shop-hero { padding-top: var(--s-6); padding-bottom: var(--s-6); }
+  .shop-hero::after { display: none; }
+
+  // Con todas las categorías los chips ocupaban media pantalla: en móvil van
+  // en una fila que se desliza.
+  .sh-cats {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    margin-left: calc(-1 * var(--s-4)); margin-right: calc(-1 * var(--s-4));
+    padding: 2px var(--s-4);
+    &::-webkit-scrollbar { display: none; }
+  }
+  .sh-cat { flex-shrink: 0; }
+
+  .sh-vitrina { height: 290px; }
+  .sh-card { width: min(190px, 48%); padding: 7px; border-radius: 14px; }
+  .sh-card:nth-child(1) { width: min(210px, 56%); }
+  .sh-card-info { padding: 8px 4px 2px; .nm { font-size: 14px; } .pr { font-size: 10.5px; } }
+  .sh-tag { font-size: 9px; padding: 5px 10px; }
 
   // 3 equal columns leave "Envío gratis / desde $150k" too narrow to fit on
   // one line like the other two stats — stack into rows instead of wrapping.
   .stats {
-    grid-template-columns: 1fr; gap: 10px; padding: var(--s-4) var(--s-5);
+    grid-template-columns: 1fr; gap: 10px; padding-top: var(--s-4);
 
     > div {
       display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-4);
@@ -491,4 +753,16 @@ nav.primary {
     .k { margin-bottom: 0; }
     .v { font-size: 20px; }
   }
+}
+
+// Logo de Cuac: lleva a la portada de Cuac Design.
+.brand { display: flex; align-items: center; color: var(--carbon, #151F28); text-decoration: none; }
+.brand svg { display: block; width: 84px; height: auto; transition: opacity .15s; }
+.brand:hover svg { opacity: .7; }
+
+// En pantallas angostas el logo y las pestañas se compactan para caber con el carrito.
+@media (max-width: 420px) {
+  .topbar-inner { gap: var(--s-3); }
+  .brand svg { width: 64px; }
+  nav.primary a { padding: 7px 9px; font-size: 13px; }
 }

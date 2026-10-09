@@ -14,17 +14,14 @@ interface Tasa { id: number; nombre: string; porcentaje: number; aplicaA: string
 export class AjustesImpuestosComponent {
   cobrarIva    = signal(true);
   ivaIncluido  = signal(true);
-  tasas        = signal<Tasa[]>([
-    { id: 1, nombre: 'IVA',          porcentaje: 19, aplicaA: 'todos',     activa: true  },
-    { id: 2, nombre: 'IVA reducido', porcentaje: 5,  aplicaA: 'libros',    activa: false },
-    { id: 3, nombre: 'Exento',       porcentaje: 0,  aplicaA: 'alimentos', activa: false },
-  ]);
-  nextId = 4;
+  tasas        = signal<Tasa[]>([]);
+  nextId = 1;
 
-  prefijoFactura     = signal('FE-');
-  numeracionInicial  = signal(1001);
-  resolucionDIAN     = signal('18764021912345');
-  fechaResolucion    = signal('2027-12-31');
+  // Sin configurar: se llenan con la resolución DIAN real.
+  prefijoFactura     = signal('');
+  numeracionInicial  = signal<number | null>(null);
+  resolucionDIAN     = signal('');
+  fechaResolucion    = signal('');
 
   saving = signal(false);
   saved  = signal(false);

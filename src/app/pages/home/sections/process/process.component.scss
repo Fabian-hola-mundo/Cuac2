@@ -66,3 +66,58 @@
     &:last-child { border-bottom: 0; }
   }
 }
+
+// En móvil las fases se leen como línea de tiempo: número grande y tenue,
+// fase y duración en una sola fila, y una línea que une un paso con el siguiente.
+@media (max-width: 640px) {
+  .section { padding-inline: var(--s-5); padding-top: var(--s-8); padding-bottom: var(--s-8); }
+
+  .process-grid { padding: var(--s-3) var(--s-5); }
+
+  .step {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    column-gap: var(--s-4);
+    row-gap: 6px;
+    align-items: center;
+    padding: var(--s-4) 0;
+    border-bottom: 0;
+
+    &:hover { background: none; }
+
+    // Línea hasta el número del paso siguiente.
+    &:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 17.5px;
+      top: calc(var(--s-4) + 32px + 4px);
+      bottom: calc(-1 * var(--s-4) + 4px);
+      width: 1px;
+      background: rgba(236, 56, 19, 0.25);
+    }
+
+    .step-n {
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: center;
+      height: 32px;
+      margin: 0;
+      font-size: 32px;
+      color: rgba(21, 31, 40, 0.14);
+    }
+
+    .step-num { grid-column: 2; grid-row: 1; }
+
+    .step-meta {
+      grid-column: 3;
+      grid-row: 1;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      white-space: nowrap;
+    }
+
+    h4 { grid-column: 2 / 4; font-size: 21px; }
+    p { grid-column: 2 / 4; }
+  }
+}

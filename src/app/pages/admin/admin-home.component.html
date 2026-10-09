@@ -9,7 +9,7 @@
           <div class="ph-l">
             <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Dashboard <span class="num" aria-hidden="true">/ 00</span></div>
             <h1>{{ nowGreeting() }}, <em>Capitán</em>. Esto pasó en el cuaquiverso.</h1>
-            <p class="sub">Resumen de la semana. Pedidos en aumento, dos productos requieren reposición.</p>
+            <p class="sub">Resumen de los últimos 7 días.</p>
           </div>
           <div class="ph-r">
             <button class="btn-sm solid" (click)="nuevoEvento()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Nuevo evento</button>
@@ -19,10 +19,12 @@
               <span class="ph-mi-dot live" aria-hidden="true"></span>
               <span>Sistema en línea</span>
             </div>
+            @if (lowStockCount() > 0) {
             <div class="ph-meta-item">
               <span class="ph-mi-dot warn" aria-hidden="true"></span>
-              <span>2 productos con bajo stock</span>
+              <span>{{ lowStockCount() }} {{ lowStockCount() === 1 ? 'producto' : 'productos' }} con bajo stock</span>
             </div>
+            }
             <time class="ph-meta-item ph-meta-time" [attr.datetime]="nowDatetime()">{{ nowTime() }}</time>
           </div>
         </div>
@@ -31,36 +33,35 @@
           <div class="kpi-item" data-tone="rio">
             <div class="kpi-k"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Ingresos (7d)</div>
             <div class="kpi-n">{{ fmtCOP(kpiIngresos7d()) }}</div>
-            <div class="kpi-delta"><svg aria-hidden="true" focusable="false" class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+18.4%</span><span>vs semana pasada</span></div>
+            <div class="kpi-delta"><span>Pedidos pagados</span></div>
           </div>
           <div class="kpi-item" data-tone="terra">
             <div class="kpi-k"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V5a3 3 0 0 1 6 0v3"/></svg> Pedidos (7d)</div>
             <div class="kpi-n">{{ kpiPedidos7d() }}</div>
-            <div class="kpi-delta"><svg aria-hidden="true" focusable="false" class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+12</span><span>vs 112</span></div>
+            <div class="kpi-delta"><span>Últimos 7 días</span></div>
           </div>
           <div class="kpi-item" data-tone="sol">
             <div class="kpi-k"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M21 20c0-2.5-1.9-4.6-4.4-4.95"/></svg> Nuevos clientes</div>
             <div class="kpi-n">{{ kpiClientes7d() }}</div>
-            <div class="kpi-delta"><svg aria-hidden="true" focusable="false" class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+5</span><span>vs 33</span></div>
+            <div class="kpi-delta"><span>Últimos 7 días</span></div>
           </div>
           <div class="kpi-item" data-tone="selva">
             <div class="kpi-k"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.7 6.4.7-4.8 4.4 1.3 6.2L12 17l-5.5 3 1.3-6.2L3 9.4l6.4-.7L12 3Z"/></svg> Ticket promedio</div>
             <div class="kpi-n">{{ fmtCOP(kpiTicket7d()) }}</div>
-            <div class="kpi-delta"><svg aria-hidden="true" focusable="false" class="kpi-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="m5 12 7 7 7-7"/></svg><span class="kpi-down">-3.1%</span><span>$28.980 → $28.080</span></div>
+            <div class="kpi-delta"><span>Por pedido pagado</span></div>
           </div>
         </div>
 
         <div class="split-wide">
           <div class="panel">
-            <div class="panel-h"><div><h3>Ingresos diarios</h3><div class="sub">Últimos 14 días · COP</div></div><div style="display:flex;gap:6px"><button class="chip is-on">7d</button><button class="chip">14d</button><button class="chip">30d</button></div></div>
+            <div class="panel-h"><div><h3>Ingresos diarios</h3><div class="sub">Últimos 14 días · COP</div></div></div>
             <div class="panel-b">
+              @if (!hasChartData) {
+              <div style="padding:var(--s-5) 0;text-align:center;color:var(--carbon-50);font-size:13px">Aún no hay ingresos en los últimos 14 días.</div>
+              } @else {
               <div class="chart-outer">
                 <div class="chart-y" aria-hidden="true">
-                  <span>$220k</span>
-                  <span>$165k</span>
-                  <span>$110k</span>
-                  <span>$55k</span>
-                  <span>$0</span>
+                  @for (t of Y_TICKS; track $index) { <span>{{ fmtK(t) }}</span> }
                 </div>
                 <div class="chart-inner">
                   <div class="chart-wrap">
@@ -68,7 +69,7 @@
                     <div class="chart-bar"
                          [class.hi]="i >= BARS.length - 3"
                          [style.height.%]="barHeight(b)"
-                         [attr.data-val]="'$' + b + 'k'">
+                         [attr.data-val]="fmtK(b)">
                       @if (i % 2 === 1) { <div class="lbl">{{ DAYS[i] }}</div> }
                     </div>
                     }
@@ -86,10 +87,10 @@
                 </div>
               </div>
               <div class="chart-stats">
-                <div class="chart-stat"><span class="cs-k">Mejor día</span><span class="cs-v">Dom · $220k</span></div>
-                <div class="chart-stat"><span class="cs-k">Promedio diario</span><span class="cs-v">$104k</span></div>
-                <div class="chart-stat"><span class="cs-k">Conversión</span><span class="cs-v">3.4%</span></div>
+                <div class="chart-stat"><span class="cs-k">Mejor día</span><span class="cs-v">{{ bestDay ? bestDay.label + ' · ' + fmtK(bestDay.value) : '—' }}</span></div>
+                <div class="chart-stat"><span class="cs-k">Promedio diario</span><span class="cs-v">{{ fmtK(avgDaily) }}</span></div>
               </div>
+              }
             </div>
           </div>
           <div class="panel">
@@ -131,13 +132,16 @@
         </div>
 
         <div class="panel" style="margin-top:var(--s-4)">
-          <div class="panel-h"><div><h3>Pedidos recientes</h3><div class="sub">Últimas 24 horas</div></div><button class="btn-sm ghost" (click)="go('pedidos')">Ver todos →</button></div>
+          <div class="panel-h"><div><h3>Pedidos recientes</h3><div class="sub">Los 5 más recientes</div></div><button class="btn-sm ghost" (click)="go('pedidos')">Ver todos →</button></div>
           <div class="panel-b flush">
             <table class="tbl">
               <thead><tr><th>Orden</th><th>Cliente</th><th>Items</th><th>Pago</th><th>Envío</th><th class="num">Total</th><th>Fecha</th></tr></thead>
               <tbody>
+                @if (ORDERS.length === 0) {
+                <tr><td colspan="7" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Aún no hay pedidos</td></tr>
+                }
                 @for (o of ORDERS.slice(0,5); track o.id) {
-                <tr (click)="openOrder()">
+                <tr (click)="openOrder(o)" style="cursor:pointer">
                   <td><span class="id">{{ o.id }}</span></td>
                   <td><strong style="font-weight:600">{{ o.customer }}</strong><div style="font-size:11.5px;color:var(--carbon-50);font-family:var(--mono)">{{ o.city }}</div></td>
                   <td>{{ o.items }}</td>
@@ -159,7 +163,7 @@
           <div class="ph-l">
             <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Catálogo <span class="num" aria-hidden="true">/ 01</span></div>
             <h1>Productos del <em>cuaquiverso</em></h1>
-            <p class="sub">42 productos · 8 categorías · 8 personajes.</p>
+            <p class="sub">{{ PRODUCTS.length }} {{ PRODUCTS.length === 1 ? 'producto' : 'productos' }} · {{ CATEGORIES.length }} categorías · {{ CHARACTERS.length }} personajes.</p>
           </div>
           <div class="ph-r">
             <button class="btn-sm ghost">Importar CSV</button>
@@ -180,6 +184,9 @@
             <table class="tbl">
               <thead><tr><th style="width:36px"><input type="checkbox" /></th><th>Producto</th><th>SKU</th><th>Personaje</th><th>Categoría</th><th>Estado</th><th class="num">Precio</th><th class="num">Stock</th><th>Actualizado</th><th></th></tr></thead>
               <tbody>
+                @if (filteredProducts().length === 0) {
+                <tr><td colspan="10" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">{{ PRODUCTS.length === 0 ? 'Aún no hay productos' : 'Ningún producto coincide con el filtro' }}</td></tr>
+                }
                 @for (p of filteredProducts(); track p.id) {
                 <tr (click)="openEditor(p)">
                   <td (click)="$event.stopPropagation()"><input type="checkbox" /></td>
@@ -204,7 +211,6 @@
         </div>
         <div style="margin-top:var(--s-4);display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--carbon-50)">
           <span>Mostrando {{ filteredProducts().length }} de {{ PRODUCTS.length }} productos</span>
-          <div style="display:flex;gap:6px"><button class="chip">← Anterior</button><button class="chip is-on">1</button><button class="chip">2</button><button class="chip">Siguiente →</button></div>
         </div>
         }
 
@@ -217,24 +223,12 @@
             <p class="sub">Todo lo que ha pasado por la tienda. Click en cualquiera para ver detalle.</p>
           </div>
           <div class="ph-r">
-            <button class="btn-sm ghost">Imprimir guías (3)</button>
-            <button class="btn-sm ghost">Exportar</button>
-            <button class="btn-sm solid" (click)="openManualOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg> Pedido manual</button>
+            <!-- «Imprimir guías», «Exportar» y «Pedido manual» eran de la maqueta: los dos
+                 primeros no hacían nada y el tercero avisaba «Pedido creado» sin guardar. -->
+            <span class="sub" style="align-self:center">{{ pendingShipCount() }} por despachar</span>
           </div>
         </div>
-        <!-- Sub-navegación Pedidos / Descuentos -->
-        <div class="section-switcher">
-          <button class="ssw-btn" [class.on]="pedidosSubTab()==='pedidos'"
-                  (click)="pedidosSubTab.set('pedidos')">
-            Pedidos
-          </button>
-          <button class="ssw-btn" [class.on]="pedidosSubTab()==='descuentos'"
-                  (click)="pedidosSubTab.set('descuentos')">
-            Descuentos
-          </button>
-        </div>
-
-        @if (pedidosSubTab() === 'pedidos') {
+        <!-- Los códigos de descuento viven en Productos (/admin/productos?seccion=descuentos). -->
           <div class="tabs">
             <button class="tab" [class.on]="orderTab()==='all'"     (click)="orderTab.set('all')">Todos     <span class="ct">{{ ordersByTab().all.length }}</span></button>
             <button class="tab" [class.on]="orderTab()==='paid'"    (click)="orderTab.set('paid')">Pagados   <span class="ct">{{ ordersByTab().paid.length }}</span></button>
@@ -253,8 +247,11 @@
               <table class="tbl">
                 <thead><tr><th style="width:36px"><input type="checkbox" /></th><th>Orden</th><th>Cliente</th><th>Ciudad</th><th>Items</th><th>Pago</th><th>Envío</th><th>Método</th><th class="num">Total</th><th>Fecha</th><th></th></tr></thead>
                 <tbody>
+                  @if (currentOrders().length === 0) {
+                  <tr><td colspan="11" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">{{ ORDERS.length === 0 ? 'Aún no hay pedidos' : 'No hay pedidos en esta pestaña' }}</td></tr>
+                  }
                   @for (o of currentOrders(); track o.id) {
-                  <tr (click)="openOrder()">
+                  <tr (click)="openOrder(o)" style="cursor:pointer">
                     <td (click)="$event.stopPropagation()"><input type="checkbox" /></td>
                     <td><span class="id" style="color:var(--carbon);font-weight:600">{{ o.id }}</span></td>
                     <td><strong style="font-weight:600">{{ o.customer }}</strong><div style="font-size:11px;color:var(--carbon-50);font-family:var(--mono)">{{ o.email }}</div></td>
@@ -266,7 +263,7 @@
                     <td class="num">{{ fmtCOP(o.total) }}</td>
                     <td><span class="id">{{ o.date }}</span></td>
                     <td class="actions" (click)="$event.stopPropagation()">
-                      <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                      <button class="icon-act" type="button" title="Ver detalle" [attr.aria-label]="'Ver detalle del pedido ' + o.id" (click)="openOrder(o)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                     </td>
                   </tr>
                   }
@@ -274,9 +271,6 @@
               </table>
             </div>
           </div>
-        } @else {
-          <app-descuentos-tab />
-        }
         }
 
         <!-- ══ CUSTOMERS ══════════════════════════════════════════════════ -->
@@ -296,35 +290,38 @@
         <div class="kpi-strip">
           <div class="kpi-item" data-tone="rio">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M21 20c0-2.5-1.9-4.6-4.4-4.95"/></svg> Clientes totales</div>
-            <div class="kpi-n">1.487</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+38</span><span>esta semana</span></div>
+            <div class="kpi-n">{{ CUSTOMERS.length }}</div>
+            <div class="kpi-delta"><span>{{ kpiClientes7d() }} nuevos en 7 días</span></div>
           </div>
           <div class="kpi-item" data-tone="terra">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.7 6.4.7-4.8 4.4 1.3 6.2L12 17l-5.5 3 1.3-6.2L3 9.4l6.4-.7L12 3Z"/></svg> VIP (3+ pedidos)</div>
-            <div class="kpi-n">142</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+6</span><span>vs 136</span></div>
+            <div class="kpi-n">{{ kpiVip() }}</div>
+            <div class="kpi-delta"><span>Clientes recurrentes</span></div>
           </div>
           <div class="kpi-item" data-tone="sol">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Gasto promedio</div>
-            <div class="kpi-n">$184k</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+4.2%</span><span>LTV creciendo</span></div>
+            <div class="kpi-n">{{ fmtCOP(kpiGastoPromedio()) }}</div>
+            <div class="kpi-delta"><span>Por cliente</span></div>
           </div>
           <div class="kpi-item" data-tone="selva">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg> Suscritos a carta</div>
-            <div class="kpi-n">1.087</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+22</span><span>73% del total</span></div>
+            <div class="kpi-n">—</div>
+            <div class="kpi-delta"><span>Sin configurar</span></div>
           </div>
         </div>
         <div class="tlb">
           <div class="search-min"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg><input placeholder="Buscar por nombre, email o ciudad…" /></div>
           <div class="spacer"></div>
-          <div class="chips"><button class="chip is-on">Todos <span class="ct">{{ CUSTOMERS.length }}</span></button><button class="chip">VIP <span class="ct">2</span></button><button class="chip">Activos <span class="ct">4</span></button><button class="chip">Con problemas <span class="ct">2</span></button></div>
+          <div class="chips"><button class="chip is-on">Todos <span class="ct">{{ CUSTOMERS.length }}</span></button><button class="chip">VIP <span class="ct">{{ customersByTag().vip }}</span></button><button class="chip">Activos <span class="ct">{{ customersByTag().activos }}</span></button><button class="chip">Con problemas <span class="ct">{{ customersByTag().issues }}</span></button></div>
         </div>
         <div class="panel tbl-page">
           <div class="panel-b flush">
             <table class="tbl">
               <thead><tr><th style="width:36px"><input type="checkbox" /></th><th>Cliente</th><th>Email</th><th>Ciudad</th><th>Tipo</th><th class="num">Pedidos</th><th class="num">Gastado</th><th>Última actividad</th><th></th></tr></thead>
               <tbody>
+                @if (CUSTOMERS.length === 0) {
+                <tr><td colspan="9" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Aún no hay clientes</td></tr>
+                }
                 @for (c of CUSTOMERS; track c.id) {
                 <tr (click)="openCliente(c.id)" style="cursor:pointer">
                   <td (click)="$event.stopPropagation()"><input type="checkbox" /></td>
@@ -384,32 +381,35 @@
         <div class="kpi-strip">
           <div class="kpi-item" data-tone="selva">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 14c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-1.5-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><path d="M12 6v2M12 16v2"/></svg> Neto del mes</div>
-            <div class="kpi-n">$8.214k</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+24%</span><span>vs mes pasado</span></div>
+            <div class="kpi-n">{{ fmtCOP(kpiNetoMes()) }}</div>
+            <div class="kpi-delta"><span>{{ periodoLabel('mes') }}</span></div>
           </div>
           <div class="kpi-item" data-tone="rio">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg> Comisiones</div>
-            <div class="kpi-n">$246k</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+$38k</span><span>3.0% promedio</span></div>
+            <div class="kpi-n">{{ fmtCOP(kpiComisiones()) }}</div>
+            <div class="kpi-delta"><span>{{ periodoLabel('mes') }}</span></div>
           </div>
           <div class="kpi-item" data-tone="sol">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg> Pendiente</div>
-            <div class="kpi-n">$110k</div>
-            <div class="kpi-delta"><svg class="kpi-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="m5 12 7 7 7-7"/></svg><span class="kpi-down">-$48k</span><span>1 pedido</span></div>
+            <div class="kpi-n">{{ fmtCOP(sumAmount(kpiPendiente())) }}</div>
+            <div class="kpi-delta"><span>{{ kpiPendiente().length }} {{ kpiPendiente().length === 1 ? 'pago' : 'pagos' }}</span></div>
           </div>
           <div class="kpi-item" data-tone="terra">
             <div class="kpi-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg> Reembolsos</div>
-            <div class="kpi-n">$234k</div>
-            <div class="kpi-delta"><svg class="kpi-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg><span class="kpi-up">+1</span><span>1 caso</span></div>
+            <div class="kpi-n">{{ fmtCOP(sumAmount(kpiReembolsos())) }}</div>
+            <div class="kpi-delta"><span>{{ kpiReembolsos().length }} {{ kpiReembolsos().length === 1 ? 'caso' : 'casos' }} este mes</span></div>
           </div>
         </div>
         <div class="split-1-320" style="margin-top:var(--s-4);align-items:start">
           <div class="panel tbl-page">
-            <div class="panel-h"><div><h3>Movimientos</h3><div class="sub">Últimos 30 días</div></div></div>
+            <div class="panel-h"><div><h3>Movimientos</h3><div class="sub">Historial de pagos</div></div></div>
             <div class="panel-b flush">
               <table class="tbl">
                 <thead><tr><th>Pago</th><th>Orden</th><th>Método</th><th>Fecha</th><th>Estado</th><th class="num">Monto</th><th class="num">Comisión</th><th class="num">Neto</th></tr></thead>
                 <tbody>
+                  @if (PAYMENTS.length === 0) {
+                  <tr><td colspan="8" style="text-align:center;padding:var(--s-5);color:var(--carbon-40);font-size:13px">Aún no hay pagos</td></tr>
+                  }
                   @for (p of PAYMENTS; track p.id) {
                   <tr (click)="openPago(p.id)" style="cursor:pointer">
                     <td><span class="id" style="color:var(--carbon);font-weight:600">{{ p.id }}</span></td>
@@ -433,7 +433,7 @@
                 @for (g of GATEWAYS; track g.name) {
                 <div style="display:flex;align-items:center;gap:12px">
                   <div style="width:36px;height:36px;border-radius:8px;display:grid;place-items:center;font-family:var(--display);font-size:16px" [style.background]="tone(g.color).bg" [style.color]="tone(g.color).fg">{{ g.name.charAt(0) }}</div>
-                  <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">{{ g.name }}</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--carbon-50);letter-spacing:.06em">{{ g.fee }} · {{ g.count }} pagos</div></div>
+                  <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">{{ g.name }}</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--carbon-50);letter-spacing:.06em">{{ g.count }} {{ g.count === 1 ? 'pago' : 'pagos' }}</div></div>
                   <span class="badge" [class]="g.tone"><span class="pdot"></span>{{ g.state }}</span>
                 </div>
                 }
@@ -443,10 +443,7 @@
             <div class="panel">
               <div class="panel-h"><h3>Próximo depósito</h3></div>
               <div class="panel-b">
-                <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Bancolombia · ahorros •2104</div>
-                <div style="font-family:var(--display);font-size:38px;line-height:1;margin:8px 0 4px;letter-spacing:-.015em">$1.247.500</div>
-                <div style="font-family:var(--mono);font-size:11px;color:var(--carbon-70)">Programado para <strong style="color:var(--carbon)">17 mayo · 09:00</strong></div>
-                <div style="margin-top:var(--s-3);padding:10px;background:var(--cream-2);border-radius:8px;font-size:12px;color:var(--carbon-70)">22 pagos consolidados. Comisión total: <strong style="color:var(--carbon)">$37.420</strong></div>
+                <div style="font-size:13px;color:var(--carbon-50)">Sin depósitos programados.</div>
               </div>
             </div>
           </div>
@@ -474,11 +471,11 @@
                 @for (c of CHARACTERS; track c.id) {
                 <tr>
                   <td><div class="pname"><div class="thumb" [style.background]="tone(c.color).bg" [style.color]="tone(c.color).fg">{{ c.name.charAt(0) }}</div><div class="meta"><strong>{{ c.name }}</strong><span>{{ c.id }}</span></div></div></td>
-                  <td>{{ c.region }}</td>
+                  <td>{{ c.region || '—' }}</td>
                   <td><span style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px"><span style="width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--carbon-12)" [style.background]="c.accent"></span>{{ c.accent }}</span></td>
                   <td class="num">{{ prodCountForChar(c.id) }}</td>
                   <td><span class="badge ok"><span class="pdot"></span>Publicada</span></td>
-                  <td><span class="id">Hace 2 semanas</span></td>
+                  <td><span class="id">—</span></td>
                   <td class="actions">
                     <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                     <button class="icon-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4 4 14v6h6L20 10"/><path d="M14 4l3-3 4 4-3 3"/></svg></button>
@@ -494,10 +491,10 @@
             <div class="panel-h"><h3>Newsletter · Carta del Cuaquiverso</h3><span class="sub">Quincenal</span></div>
             <div class="panel-b">
               <div class="kv-list">
-                <div class="kv"><span class="k">Suscritos</span><span class="v">1.087</span></div>
-                <div class="kv"><span class="k">Última carta</span><span class="v">02 mayo 2026</span></div>
-                <div class="kv"><span class="k">Apertura promedio</span><span class="v">42%</span></div>
-                <div class="kv"><span class="k">Próxima carta</span><span class="v" style="color:var(--terra)">18 mayo · programada</span></div>
+                <div class="kv"><span class="k">Suscritos</span><span class="v">—</span></div>
+                <div class="kv"><span class="k">Última carta</span><span class="v">—</span></div>
+                <div class="kv"><span class="k">Apertura promedio</span><span class="v">—</span></div>
+                <div class="kv"><span class="k">Próxima carta</span><span class="v">Sin programar</span></div>
               </div>
               <div style="margin-top:var(--s-4);display:flex;gap:10px">
                 <button class="btn-sm ghost">Editar borrador</button>
@@ -578,7 +575,7 @@
         <div class="panel">
           <div class="panel-h"><h3>SEO y enlaces</h3><span class="sub">Opcional</span></div>
           <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-4)">
-            <div class="field"><label>Slug de URL</label><input class="input" [value]="editorSlug" placeholder="el-explorador-sonador" /><div class="help">cuaquiverso.co/producto/<strong style="color:var(--carbon)">{{ editorSlug || 'slug' }}</strong></div></div>
+            <div class="field"><label>Slug de URL</label><input class="input" [value]="editorSlug" placeholder="el-explorador-sonador" /><div class="help">cuacdesign.com/producto/<strong style="color:var(--carbon)">{{ editorSlug || 'slug' }}</strong></div></div>
             <div class="grid-2"><div class="field"><label>Meta título</label><input class="input" placeholder="Ej: Camiseta Cuac — Cuaquiverso" /></div><div class="field"><label>Etiquetas</label><input class="input" placeholder="cuac, camiseta, verano" /></div></div>
           </div>
         </div>
@@ -611,7 +608,6 @@
               <input type="radio" name="editorCharacter" [value]="c.id" [(ngModel)]="editorCharacter" />
               <span style="width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-family:var(--display);font-size:13px" [style.background]="tone(c.color).bg" [style.color]="tone(c.color).fg">{{ c.name.charAt(0) }}</span>
               <span style="font-size:13.5px;font-weight:500">{{ c.name }}</span>
-              <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--carbon-50);text-transform:uppercase">{{ c.region.split('·')[0] }}</span>
             </label>
             }
           </div>
@@ -638,42 +634,65 @@
 }
 
 <!-- ══ ORDER DETAIL DRAWER ════════════════════════════════════════════════ -->
-@if (orderOn()) {
+@if (orderOn() && selectedOrder(); as ord) {
 <div class="drawer-back on" (click)="closeOrder()"></div>
 <div class="drawer on">
   <div class="drawer-h">
     <div>
-      <div class="crumbs-admin"><span>Pedidos</span><span class="sep">/</span><strong>{{ ORDER_DETAIL.id }}</strong></div>
-      <h2>Pedido {{ ORDER_DETAIL.id }} <span style="margin-left:10px;vertical-align:middle"><span class="badge ok"><span class="pdot"></span>Pagado</span></span></h2>
+      <div class="crumbs-admin"><span>Pedidos</span><span class="sep">/</span><strong>{{ ord.id }}</strong></div>
+      <h2>Pedido {{ ord.id }} <span style="margin-left:10px;vertical-align:middle"><span class="badge" [class]="sb(ord.status).tone"><span class="pdot"></span>{{ sb(ord.status).label }}</span></span></h2>
     </div>
     <button class="drawer-close" (click)="closeOrder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>
   <div class="drawer-b">
     <div class="split-1-280">
       <div style="display:flex;flex-direction:column;gap:var(--s-4)">
+        <div class="panel order-lines">
+          <div class="panel-h"><h3>Artículos</h3><span class="sub">{{ ord.items }} {{ ord.items === 1 ? 'unidad' : 'unidades' }}</span></div>
+          @if (ord.lines.length === 0) {
+            <div class="panel-b" style="font-size:13px;color:var(--carbon-50)">Este pedido no tiene artículos registrados.</div>
+          } @else {
+            <ul class="ol-list">
+              @for (l of ord.lines; track $index) {
+              <li class="ol-row">
+                <span class="ol-qty">{{ l.qty }}×</span>
+                <div class="ol-info">
+                  <div class="ol-name">{{ l.name }}</div>
+                  <div class="ol-meta">{{ l.detail }}@if (l.detail && l.variant) { · }@if (l.variant) {<strong>{{ l.variant }}</strong>}</div>
+                </div>
+                <div class="ol-price">
+                  <div>{{ fmtCOP(l.price * l.qty) }}</div>
+                  @if (l.qty > 1) { <div class="ol-unit">{{ fmtCOP(l.price) }} c/u</div> }
+                </div>
+              </li>
+              }
+            </ul>
+          }
+        </div>
         <div class="panel">
-          <div class="panel-h"><h3>Productos</h3><span class="sub">{{ ORDER_DETAIL.items.length }} items</span></div>
-          <div class="panel-b flush">
-            <table class="tbl">
-              <thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead>
-              <tbody>
-                @for (it of ORDER_DETAIL.items; track it.sku) {
-                <tr>
-                  <td><div class="pname"><div class="thumb" [style.background]="tone(it.color).bg" [style.color]="tone(it.color).fg">{{ it.label.charAt(0) }}</div><div class="meta"><strong>{{ it.name }}</strong><span>{{ it.sku }} · {{ it.variant }}</span></div></div></td>
-                  <td class="num">{{ it.qty }}</td>
-                  <td class="num">{{ fmtCOP(it.price) }}</td>
-                  <td class="num">{{ fmtCOP(it.price * it.qty) }}</td>
-                </tr>
-                }
-              </tbody>
-            </table>
+          <div class="panel-h"><h3>Resumen</h3><span class="sub">{{ ord.items }} {{ ord.items === 1 ? 'item' : 'items' }}</span></div>
+          <div class="panel-b">
+            <div class="kv-list">
+              <div class="kv"><span class="k">Orden</span><span class="v" style="font-family:var(--mono);font-weight:600">{{ ord.id }}</span></div>
+              <div class="kv"><span class="k">Items</span><span class="v">{{ ord.items }} producto(s)</span></div>
+              <div class="kv"><span class="k">Método</span><span class="v">{{ ord.method }}</span></div>
+              <div class="kv"><span class="k">Ciudad</span><span class="v">{{ ord.city }}</span></div>
+              <div class="kv"><span class="k">Fecha</span><span class="v">{{ ord.date }}</span></div>
+              <div class="kv"><span class="k">Estado pago</span>
+                <span class="v"><span class="badge" [class]="sb(ord.status).tone"><span class="pdot"></span>{{ sb(ord.status).label }}</span></span>
+              </div>
+              <div class="kv"><span class="k">Estado envío</span>
+                <span class="v"><span class="badge" [class]="sb(ord.shipping).tone"><span class="pdot"></span>{{ sb(ord.shipping).label }}</span></span>
+              </div>
+            </div>
           </div>
           <div style="padding:var(--s-4) var(--s-5);border-top:1px solid var(--carbon-08);background:var(--cream)">
             <div class="kv-list" style="max-width:320px;margin-left:auto">
-              <div class="kv"><span class="k">Subtotal</span><span class="v">{{ fmtCOP(ORDER_DETAIL.totals.subtotal) }}</span></div>
-              <div class="kv"><span class="k">Envío</span><span class="v">{{ fmtCOP(ORDER_DETAIL.totals.shipping) }}</span></div>
-              <div class="kv"><span class="k">Descuento</span><span class="v" style="color:var(--selva)">-{{ fmtCOP(ORDER_DETAIL.totals.discount) }}</span></div>
-              <div class="kv total"><span class="k">Total</span><span class="v">{{ fmtCOP(ORDER_DETAIL.totals.total) }}</span></div>
+              @if (orderPayment(); as pay) {
+              <div class="kv"><span class="k">Comisión</span><span class="v" style="color:var(--carbon-50)">-{{ fmtCOP(pay.fee) }}</span></div>
+              <div class="kv"><span class="k">Neto</span><span class="v">{{ fmtCOP(pay.net) }}</span></div>
+              }
+              <div class="kv total"><span class="k">Total</span><span class="v">{{ fmtCOP(ord.total) }}</span></div>
             </div>
           </div>
         </div>
@@ -681,7 +700,7 @@
           <div class="panel-h"><h3>Línea de tiempo</h3><span class="sub">Eventos del pedido</span></div>
           <div class="panel-b">
             <div class="timeline">
-              @for (t of ORDER_DETAIL.timeline; track $index) {
+              @for (t of orderTimeline(); track $index) {
               <div class="tl-row" [class]="t.state"><div class="tm">{{ t.time }}</div><div class="pt"><span class="dot" aria-hidden="true"></span></div><div class="ct"><div class="tt">{{ t.title }}</div><div class="desc">{{ t.desc }}</div></div></div>
               }
             </div>
@@ -692,42 +711,77 @@
         <div class="panel">
           <div class="panel-h"><h3>Cliente</h3></div>
           <div class="panel-b">
-            <div style="font-family:var(--display);font-size:20px;line-height:1.1;margin-bottom:4px">{{ ORDER_DETAIL.customer.name }}</div>
-            <div style="font-size:13px;color:var(--carbon-70)">{{ ORDER_DETAIL.customer.email }}</div>
-            <div style="font-family:var(--mono);font-size:11.5px;color:var(--carbon-50);margin-top:4px">{{ ORDER_DETAIL.customer.phone }}</div>
+            @if (orderCustomer(); as c) {
+            <div style="font-family:var(--display);font-size:20px;line-height:1.1;margin-bottom:4px">{{ c.nombre }}</div>
+            <div style="font-size:13px;color:var(--carbon-70)">{{ c.email }}</div>
+            <div style="font-family:var(--mono);font-size:11.5px;color:var(--carbon-50);margin-top:4px">{{ c.phone }}</div>
             <div style="margin-top:var(--s-3);padding-top:var(--s-3);border-top:1px dashed var(--carbon-08);display:flex;justify-content:space-between;font-size:12px">
-              <span style="color:var(--carbon-50)">Cliente desde {{ ORDER_DETAIL.customer.since }}</span>
-              <span><strong>{{ ORDER_DETAIL.customer.orders }}</strong> pedidos</span>
+              <span style="color:var(--carbon-50)">Cliente desde {{ fmtSince(c.since) }}</span>
+              <span><strong>{{ c.orders }}</strong> pedidos</span>
             </div>
+            } @else {
+            <div style="font-family:var(--display);font-size:20px;line-height:1.1;margin-bottom:4px">{{ ord.customer }}</div>
+            <div style="font-size:13px;color:var(--carbon-70)">{{ ord.email }}</div>
+            }
           </div>
         </div>
         <div class="panel">
           <div class="panel-h"><h3>Dirección de envío</h3></div>
           <div class="panel-b" style="font-size:13.5px;line-height:1.6">
-            <div>{{ ORDER_DETAIL.shipping.address }}</div>
-            <div>{{ ORDER_DETAIL.shipping.city }}</div>
-            <div style="font-family:var(--mono);font-size:11.5px;color:var(--carbon-50)">{{ ORDER_DETAIL.shipping.zip }}</div>
-            <div style="margin-top:var(--s-3);padding-top:var(--s-3);border-top:1px dashed var(--carbon-08)">
-              <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon-50)">Transportadora</div>
-              <div style="margin-top:4px;font-weight:600">{{ ORDER_DETAIL.shipping.carrier }}</div>
-              <div style="font-family:var(--mono);font-size:11.5px;color:var(--terra)">{{ ORDER_DETAIL.shipping.tracking }}</div>
-            </div>
+            @if (orderCustomer(); as c) {
+            <div>{{ c.direccion }}</div>
+            }
+            <div>{{ ord.city }}</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Envío</h3><span class="badge" [class]="sb(ord.shipping).tone"><span class="pdot"></span>{{ sb(ord.shipping).label }}</span></div>
+          <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
+            <!-- El pago lo decide Bold; aquí solo se mueve el despacho, y solo si ya se cobró. -->
+            @if (ord.status === 'paid' || ord.status === 'refunded') {
+              <div style="display:flex;flex-direction:column;gap:5px" role="radiogroup" aria-label="Estado de envío">
+                @for (opt of ENVIO_OPCIONES; track opt.id) {
+                <label
+                  style="display:flex;gap:8px;align-items:center;font-size:13px;padding:7px 10px;border-radius:8px;cursor:pointer"
+                  [style.background]="envioDraft() === opt.id ? 'var(--cream-2)' : 'transparent'"
+                  [style.outline]="envioDraft() === opt.id ? '1px solid var(--carbon-12)' : '1px solid transparent'">
+                  <input type="radio" name="envioEstado" [value]="opt.id" [checked]="envioDraft() === opt.id" (change)="envioDraft.set(opt.id)" />
+                  {{ opt.label }}
+                </label>
+                }
+              </div>
+              <div class="field">
+                <label for="envioGuia">Guía <span class="opt">(opcional)</span></label>
+                <input id="envioGuia" class="input" [value]="guiaDraft()" (input)="guiaDraft.set($any($event.target).value)" maxlength="120" placeholder="Ej: Servientrega 1234567890" />
+              </div>
+              <button class="btn-sm solid" style="justify-content:center" type="button"
+                [disabled]="!envioCambiado() || guardandoEnvio()" (click)="guardarEnvio()">
+                {{ guardandoEnvio() ? 'Guardando…' : 'Guardar envío' }}
+              </button>
+            } @else {
+              <div style="font-size:13px;color:var(--carbon-50)">Se puede despachar cuando el pago esté aprobado.</div>
+            }
           </div>
         </div>
         <div class="panel">
           <div class="panel-h"><h3>Acciones</h3></div>
           <div class="panel-b" style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn-sm solid" style="justify-content:center">Marcar despachado</button>
-            <button class="btn-sm ghost" style="justify-content:center">Generar factura</button>
-            <button class="btn-sm ghost" style="justify-content:center">Reenviar confirmación</button>
-            <button class="btn-sm danger" style="justify-content:center">Cancelar pedido</button>
+            <!-- Antes había cuatro botones de maqueta sin acción. Lo que sí se puede hacer
+                 desde aquí es escribirle al cliente; el cobro y la anulación viven en Bold. -->
+            @if (ord.email) {
+              <a class="btn-sm solid" style="justify-content:center" [href]="'mailto:' + ord.email + '?subject=' + encodeURIComponent('Tu pedido ' + ord.id + ' en Cuac')">Escribir al cliente</a>
+            }
+            @if (orderCustomer()?.phone; as tel) {
+              <a class="btn-sm ghost" style="justify-content:center" [href]="'https://wa.me/' + whatsapp(tel)" target="_blank" rel="noopener">WhatsApp</a>
+            }
+            <a class="btn-sm ghost" style="justify-content:center" href="https://panel.bold.co" target="_blank" rel="noopener">Ver cobro en Bold</a>
           </div>
         </div>
       </div>
     </div>
   </div>
   <div class="drawer-f">
-    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">Creado {{ ORDER_DETAIL.date }}</span>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--carbon-50);text-transform:uppercase;align-self:center">Creado {{ ord.date }}</span>
     <button class="btn-sm ghost" (click)="closeOrder()">Cerrar</button>
   </div>
 </div>
@@ -894,7 +948,7 @@
           <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
             <div class="field">
               <label>Nombre <span style="color:var(--terra)">*</span></label>
-              <input class="input" [(ngModel)]="moClienteNombre" name="moNombre" placeholder="Ej: Mariana Restrepo" />
+              <input class="input" [(ngModel)]="moClienteNombre" name="moNombre" placeholder="Nombre y apellido" />
             </div>
             <div class="field">
               <label>Email</label>
@@ -912,11 +966,11 @@
           <div class="panel-b" style="display:flex;flex-direction:column;gap:var(--s-3)">
             <div class="field">
               <label>Ciudad</label>
-              <input class="input" [(ngModel)]="moClienteCiudad" name="moCiudad" placeholder="Medellín" />
+              <input class="input" [(ngModel)]="moClienteCiudad" name="moCiudad" placeholder="Ciudad" />
             </div>
             <div class="field">
               <label>Dirección</label>
-              <input class="input" [(ngModel)]="moClienteDireccion" name="moDireccion" placeholder="Cra 43A # 14-50" />
+              <input class="input" [(ngModel)]="moClienteDireccion" name="moDireccion" placeholder="Calle, número, apto" />
             </div>
           </div>
         </div>

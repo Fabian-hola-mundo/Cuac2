@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -12,9 +13,10 @@ export const routes: Routes = [
       import('./pages/cotizador/cotizador.component').then(m => m.CotizadorComponent),
   },
   {
+    // La portada del Cuaquiverso se retiró: la entrada es la tienda.
     path: 'cuaquiverso',
-    loadComponent: () =>
-      import('./pages/cuaquiverso/cuaquiverso.component').then(m => m.CuaquiversoComponent),
+    redirectTo: 'cuaquiverso/tienda',
+    pathMatch: 'full',
   },
   {
     path: 'identidadcorporativa',
@@ -87,6 +89,21 @@ export const routes: Routes = [
       import('./pages/portafolio/portafolio-detail.component').then(m => m.PortafolioDetailComponent),
   },
   {
+    path: 'ruleta',
+    loadComponent: () =>
+      import('./pages/ruleta/ruleta.component').then(m => m.RuletaComponent),
+  },
+  {
+    path: 'GuíaTarot',
+    loadComponent: () =>
+      import('./pages/guia-tarot/guia-tarot.component').then(m => m.GuiaTarotComponent),
+  },
+  // Variantes sin tilde o en minúsculas: el router distingue mayúsculas y
+  // mucha gente escribe la URL a mano.
+  { path: 'GuiaTarot', redirectTo: 'GuíaTarot' },
+  { path: 'guiatarot', redirectTo: 'GuíaTarot' },
+  { path: 'guíatarot', redirectTo: 'GuíaTarot' },
+  {
     path: 'terminos',
     loadComponent: () =>
       import('./pages/legal/terminos.component').then(m => m.TerminosComponent),
@@ -97,6 +114,11 @@ export const routes: Routes = [
       import('./pages/legal/privacidad.component').then(m => m.PrivacidadComponent),
   },
   {
+    path: 'tratamiento-datos',
+    loadComponent: () =>
+      import('./pages/legal/tratamiento-datos.component').then(m => m.TratamientoDatosComponent),
+  },
+  {
     path: 'cookies',
     loadComponent: () =>
       import('./pages/legal/cookies.component').then(m => m.CookiesComponent),
@@ -105,6 +127,7 @@ export const routes: Routes = [
     path: 'admin',
     loadComponent: () =>
       import('./pages/admin/admin-shell.component').then(m => m.AdminShellComponent),
+    canActivateChild: [adminGuard],
     children: [
       {
         path: '',
@@ -205,6 +228,13 @@ export const routes: Routes = [
             m => m.MensajesAdminComponent,
           ),
       },
+      {
+        path: 'resenas',
+        loadComponent: () =>
+          import('./pages/admin/resenas/resenas-admin.component').then(
+            m => m.ResenasAdminComponent,
+          ),
+      },
       // Personajes
       {
         path: 'personajes',
@@ -232,6 +262,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/admin/personajes/personaje-form.component').then(
             m => m.PersonajeFormComponent,
+          ),
+      },
+      // Ruleta
+      {
+        path: 'ruleta',
+        loadComponent: () =>
+          import('./pages/admin/ruleta/admin-ruleta.component').then(
+            m => m.AdminRuletaComponent,
           ),
       },
       // Ajustes

@@ -10,6 +10,22 @@ export interface Evento {
   estado: 'activo' | 'finalizado';
 }
 
+/** Navegador que ha abierto el POS, con lo que lleva vendido. */
+export interface DispositivoPos {
+  id: string;
+  nombre: string;
+  email: string | null;
+  plataforma: string | null;
+  user_agent: string | null;
+  pantalla: string | null;
+  primer_uso: string;
+  ultimo_uso: string;
+  ultimo_evento_id: string | null;
+  ventas: number;
+  unidades: number;
+  ultima_venta: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class EventosService {
   constructor(private sb: SupabaseService) {}
@@ -72,6 +88,15 @@ export class EventosService {
       .gte('vendido_en', evento.fecha_inicio)
       .lte('vendido_en', fin)
       .order('vendido_en', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async getDispositivosPos(): Promise<DispositivoPos[]> {
+    const { data, error } = await this.sb.db
+      .from('pos_dispositivos_resumen')
+      .select('*')
+      .order('ultimo_uso', { ascending: false });
     if (error) throw error;
     return data ?? [];
   }

@@ -38,6 +38,7 @@ app-ajustes-correos,
 app-ajustes-equipo,
 app-ajustes-integraciones,
 app-ajustes-dominios,
+app-admin-ruleta,
 app-admin-search {
   // ── Cuaquiverso tokens ─────────────────────────────────────────────────────
   --panel-bg:   oklch(99.5% 0.005 215);
@@ -207,10 +208,7 @@ app-admin-search {
     padding: var(--s-4) 10px;
 
     .avatar {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: var(--terra); color: var(--cream);
-      display: grid; place-items: center;
-      font-family: var(--display); font-size: 14px; flex-shrink: 0;
+      width: 32px; height: 32px; object-fit: contain; flex-shrink: 0;
     }
     .who {
       font-size: 12.5px; line-height: 1.2;
@@ -704,6 +702,7 @@ app-admin-search {
     &.solid  { background: var(--carbon); color: var(--cream); &:hover { background: var(--terra); } }
     &.ghost  { background: transparent; border: 1px solid var(--carbon-12); color: var(--carbon); &:hover { border-color: var(--carbon); } }
     &.danger { background: transparent; border: 1px solid rgba(232,98,61,0.3); color: var(--terra); &:hover { background: var(--terra); color: var(--cream); border-color: var(--terra); } }
+    &:disabled { opacity: .4; cursor: not-allowed; &.solid { background: var(--carbon); } }
   }
 
   .icon-act {
@@ -919,6 +918,58 @@ app-admin-search {
     padding: var(--s-4) var(--s-6); border-top: 1px solid var(--carbon-08);
     display: flex; justify-content: space-between; gap: var(--s-3);
     background: var(--paper); flex-shrink: 0;
+  }
+
+  // ── Modal ──────────────────────────────────────────────────────────────────
+  // Diálogo centrado. Vivía como estilos inline repetidos en cada plantilla que
+  // necesitaba confirmar algo; reutiliza .drawer-back como telón.
+  .modal-card {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 202; width: 440px; max-width: calc(100vw - var(--s-5) * 2);
+    max-height: calc(100vh - var(--s-5) * 2); overflow-y: auto;
+    background: var(--paper); border: 1px solid var(--carbon-08);
+    border-radius: var(--r-lg); padding: var(--s-6);
+    box-shadow: 0 20px 60px rgba(21,31,40,0.25);
+
+    &.is-wide { width: 480px; }
+
+    h3 {
+      font-family: var(--display); font-size: 22px;
+      letter-spacing: -0.01em; margin-bottom: var(--s-2);
+    }
+    .modal-sub {
+      color: var(--carbon-70); font-size: 13.5px;
+      line-height: 1.55; margin-bottom: var(--s-4);
+    }
+    .modal-err { color: var(--terra); font-size: 13px; margin-bottom: var(--s-3); }
+    .modal-f {
+      display: flex; gap: 10px; justify-content: flex-end; margin-top: var(--s-5);
+    }
+    .field + .field { margin-top: var(--s-3); }
+  }
+
+  // ── Sortable table headers ─────────────────────────────────────────────────
+  .tbl thead th.sortable {
+    padding: 0;
+    button {
+      width: 100%; display: inline-flex; align-items: center; gap: 5px;
+      padding: 10px var(--s-5); font: inherit; color: inherit;
+      letter-spacing: inherit; text-transform: inherit; background: none;
+      cursor: pointer; transition: color .12s;
+      &:hover { color: var(--carbon); }
+      svg { width: 10px; height: 10px; opacity: 0; flex-shrink: 0; transition: opacity .12s; }
+    }
+    &.num button { justify-content: flex-end; }
+    &[aria-sort="ascending"]  button svg,
+    &[aria-sort="descending"] button svg { opacity: 1; }
+    &[aria-sort="ascending"]  button,
+    &[aria-sort="descending"] button { color: var(--carbon); }
+    &[aria-sort="descending"] button svg { transform: rotate(180deg); }
+  }
+
+  // Foco visible para las filas navegables con teclado.
+  .tbl tbody tr:focus-visible {
+    outline: 2px solid var(--rio); outline-offset: -2px; background: var(--cream-2);
   }
 
   // ── Image upload grid ──────────────────────────────────────────────────────
@@ -1453,6 +1504,5 @@ app-admin-search {
     .img-grid { grid-template-columns: repeat(2, 1fr); }
     .var-grid { grid-template-columns: repeat(2, 1fr); }
     .tabs .tab { padding: 10px 12px; font-size: 12.5px; }
-    .nd { position: fixed; top: 64px; left: 12px; right: 12px; width: auto; }
   }
 }

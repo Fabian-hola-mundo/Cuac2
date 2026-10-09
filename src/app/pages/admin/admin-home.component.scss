@@ -60,19 +60,58 @@
   }
 }
 
-/* ── Section switcher (Pedidos / Descuentos) ─────────────────────────────── */
-.section-switcher {
-  display: flex; gap: 2px; margin-bottom: 18px;
-  background: var(--carbon-06); border-radius: 10px; padding: 3px;
-  width: fit-content;
+// ── Artículos del pedido (drawer) ────────────────────────────────────────────
+.ol-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
-.ssw-btn {
-  padding: 6px 16px; border: none; border-radius: 8px; cursor: pointer;
-  font-size: 13px; font-weight: 500; font-family: var(--sans);
-  color: var(--carbon-50); background: transparent; transition: all .15s;
-  &.on {
-    background: #fff; color: var(--carbon); font-weight: 600;
-    box-shadow: 0 1px 4px rgba(21,31,40,.1);
-  }
-  &:not(.on):hover { color: var(--carbon); }
+
+.ol-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px var(--s-5);
+  border-bottom: 1px solid var(--carbon-06);
+
+  &:last-child { border-bottom: 0; }
+}
+
+.ol-qty {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--carbon-70);
+  font-variant-numeric: tabular-nums;
+}
+
+.ol-info { min-width: 0; }
+
+.ol-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ol-meta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--carbon-50);
+
+  strong { color: var(--carbon-70); font-weight: 600; }
+}
+
+.ol-price {
+  text-align: right;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ol-unit {
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--carbon-50);
 }

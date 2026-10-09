@@ -45,3 +45,24 @@ Thumbs.db
 
 # Worktrees
 /.worktrees
+
+# Firebase
+/.firebase
+/.firebaserc
+
+# Supabase
+/supabase/.temp
+
+# Secretos y credenciales — nunca commitear
+.env
+.env.*
+*.pem
+service-account*.json
+firebase-adminsdk*.json
+
+# Logs de build
+*.log
+ng-build-out*
+
+# Mockups del brainstorming (superpowers)
+.superpowers/

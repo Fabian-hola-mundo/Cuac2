@@ -121,39 +121,54 @@
   background: rgba(240, 241, 246, 0.08);
   height: 440px;
 
+  // Cada celda recorta su foto: el zoom del encuadre no invade a las vecinas.
+  .case-cell {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  // Encuadre elegido en el admin: punto (--fx, --fy) y zoom (--fz) desde ese punto.
   img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: var(--fx, 50%) var(--fy, 50%);
+    transform-origin: var(--fx, 50%) var(--fy, 50%);
+    transform: scale(var(--fz, 1));
     display: block;
   }
 
+  // Cada variante es un mosaico cerrado: todas las celdas quedan ocupadas,
+  // sin filas implícitas ni huecos. Las piezas del portafolio son horizontales
+  // (≈16:10), así que la principal va arriba y a lo ancho para recortarla poco.
+
   // 1 imagen: ocupa todo el panel
-  &.n1 { grid-template-columns: 1fr; }
+  &.n1 { grid-template: 1fr / 1fr; }
 
-  // 2 imágenes: dos columnas iguales
-  &.n2 { grid-template-columns: 1fr 1fr; }
+  // 2 imágenes: una sobre otra
+  &.n2 { grid-template: 1fr 1fr / 1fr; }
 
-  // 3 imágenes: primera ocupa columna izquierda entera, 2 y 3 apiladas a la derecha
+  // 3 imágenes: principal arriba, dos abajo
   &.n3 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    img:first-child { grid-row: 1 / 3; }
+    grid-template: 3fr 2fr / 1fr 1fr;
+    .case-cell:first-child { grid-column: 1 / -1; }
   }
 
-  // 4 imágenes: primera ocupa 2 filas izquierda (columna más ancha)
+  // 4 imágenes: principal arriba, tres abajo
   &.n4 {
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    img:first-child { grid-row: 1 / 3; }
+    grid-template: 3fr 2fr / repeat(3, 1fr);
+    .case-cell:first-child { grid-column: 1 / -1; }
   }
 
-  // 5 imágenes: primera ocupa 2 filas izquierda, última fila entera abajo
+  // 5 imágenes: principal + una arriba, tres abajo
   &.n5 {
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-    img:first-child { grid-row: 1 / 3; }
-    img:last-child  { grid-column: 1 / 3; }
+    grid-template: 3fr 2fr / repeat(6, 1fr);
+    .case-cell { grid-column: span 2; }
+    .case-cell:first-child { grid-column: span 4; }
   }
 }
 

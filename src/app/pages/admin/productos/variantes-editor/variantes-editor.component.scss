@@ -1,0 +1,127 @@
+// Prefijo `ve-`: la hoja global del admin define nombres genéricos que se
+// cuelan en clases sueltas.
+:host { display: block; min-width: 0; }
+
+.ve { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+.ve-btn {
+  align-self: flex-start; padding: 7px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--carbon-12); background: transparent; color: var(--carbon-70);
+
+  &:hover { background: var(--cream); color: var(--carbon); }
+}
+
+.ve-opcion {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px; border: 1px solid var(--carbon-08); border-radius: 10px;
+}
+
+.ve-opcion-h {
+  display: flex; gap: 8px; align-items: center;
+  .ve-nombre { flex: 1; min-width: 0; }
+  .ve-btn { flex-shrink: 0; align-self: center; }
+}
+
+.ve-valores {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  .ve-nuevo { flex: 1 1 180px; min-width: 0; width: auto; padding: 7px 12px; font-size: 13px; }
+}
+
+.ve-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 6px 3px 10px; border-radius: var(--r-pill, 999px);
+  background: var(--cream); border: 1px solid var(--carbon-12);
+  font-size: 12.5px; color: var(--carbon);
+
+  img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+
+  button {
+    border: 0; background: transparent; cursor: pointer; padding: 2px 4px;
+    font-size: 12px; line-height: 1; color: var(--carbon-50); border-radius: 4px;
+    &:hover { background: var(--carbon-08); color: var(--carbon); }
+  }
+}
+
+.ve-fotos {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+
+  > button:not(.ve-btn) {
+    padding: 0; border: 1px solid var(--carbon-12); border-radius: 6px;
+    background: transparent; cursor: pointer; overflow: hidden; line-height: 0;
+    &:hover { border-color: var(--carbon); }
+  }
+  img { width: 48px; height: 48px; object-fit: cover; }
+}
+
+// La tabla puede ser más ancha que el panel en móvil: el scroll se queda aquí
+// dentro y no empuja la página. `contain: inline-size` evita que su ancho de
+// contenido ensanche la columna de la grilla del formulario (min-width: auto).
+.ve-stock {
+  display: flex; gap: 6px; align-items: center;
+
+  .input { min-width: 70px; }
+  .ve-btn { flex-shrink: 0; align-self: center; }
+}
+.ve-restock { margin-top: 6px; }
+
+.ve-tabla-wrap { overflow-x: auto; width: 100%; contain: inline-size; }
+
+.ve-tabla {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+
+  th {
+    text-align: left; font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--carbon-50);
+    padding: 6px 8px; border-bottom: 1px solid var(--carbon-08); white-space: nowrap;
+  }
+  td { padding: 6px 8px; border-bottom: 1px solid var(--carbon-08); vertical-align: middle; }
+  td:first-child { white-space: nowrap; }
+  .input { width: 100px; padding: 7px 10px; font-size: 13px; }
+  .help { display: block; }
+  tr.is-off { opacity: .5; }
+}
+
+// En el celular cada combinación es una tarjeta: el nombre arriba y debajo
+// precio, stock y activa, sin scroll lateral.
+@media (max-width: 720px) {
+  .ve-tabla-wrap { overflow: visible; contain: none; }
+
+  .ve-tabla {
+    &, tbody { display: block; }
+    thead { display: none; }
+
+    tr {
+      display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px 10px;
+      padding: 10px 12px; margin-bottom: 8px;
+      border: 1px solid var(--carbon-08); border-radius: 10px;
+    }
+
+    td { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 0; min-width: 0; }
+    td[data-k]::before {
+      content: attr(data-k);
+      font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--carbon-50);
+    }
+    td.ve-combo { grid-column: 1 / -1; font-weight: 600; white-space: normal; }
+    td[data-k="Activa"] { align-items: center; input { width: 22px; height: 22px; margin: 8px 0 0; } }
+
+    // 16px: con menos, Safari en iPhone hace zoom al enfocar.
+    .input { width: 100%; min-width: 0; font-size: 16px; }
+  }
+
+  .ve-stock { flex-wrap: wrap; .input { min-width: 0; } }
+  .ve-btn { min-height: 36px; }
+  .ve-chip { padding: 2px 4px 2px 10px; button { padding: 7px 7px; font-size: 13px; } }
+  .ve-opcion-h .ve-nombre, .ve-valores .ve-nuevo { font-size: 16px; }
+}
+
+.ve-masivo { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.ve-aviso {
+  margin: 0; padding: 10px 12px; border-radius: 6px; font-size: 13px; color: var(--carbon);
+  background: color-mix(in srgb, var(--terra) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--terra) 24%, transparent);
+}
+
+.ve-error { margin: 0; font-size: 13px; color: var(--terra); }

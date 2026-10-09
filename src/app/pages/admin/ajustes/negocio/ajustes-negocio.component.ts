@@ -10,16 +10,17 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './ajustes-negocio.component.scss',
 })
 export class AjustesNegocioComponent {
-  razonSocial   = signal('Cuaquiverso S.A.S.');
-  nit           = signal('901.234.567-8');
-  email         = signal('hola@cuaquiverso.co');
-  telefono      = signal('+57 311 444 0001');
-  direccion     = signal('Cra 11 # 71-30, Bogotá, Colombia');
+  // Sin configurar: se llenan con los datos reales del negocio.
+  razonSocial   = signal('');
+  nit           = signal('');
+  email         = signal('');
+  telefono      = signal('');
+  direccion     = signal('');
   regimen       = signal('simple');
   moneda        = signal('COP');
   zona          = signal('America/Bogota');
   idioma        = signal('es');
-  nombreTienda  = signal('Cuaquiverso');
+  nombreTienda  = signal('');
   colorPrimario = signal('#2A6FDB');
 
   saving = signal(false);

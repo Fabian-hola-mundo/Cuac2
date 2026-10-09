@@ -183,8 +183,67 @@
   .svc-minor { border-right: 0; border-bottom: 1px solid rgba(21, 31, 40, 0.08); &:last-child { border-bottom: 0; } }
 }
 
+// Botón «Qué incluye»: solo existe en móvil, donde las listas van plegadas.
+.svc-toggle { display: none; }
+
 @media (max-width: 640px) {
-  .services-grid { grid-template-columns: 1fr; }
+  .section { padding-inline: var(--s-5); padding-top: var(--s-8); padding-bottom: var(--s-8); }
+
+  .services-grid { grid-template-columns: 1fr; gap: var(--s-3); }
   .svc.lead, .svc.web { grid-column: span 1; }
   .svc-row { grid-column: span 1; }
+
+  .svc {
+    padding: var(--s-5);
+    gap: var(--s-3);
+
+    &:hover { transform: none; box-shadow: none; }
+    h3 { font-size: 28px; }
+    p { font-size: 14px; }
+    ul { margin-top: 0; }
+    &.lead h3 { font-size: 32px; }
+    &.lead p { font-size: 14.5px; }
+    &.web h3 { font-size: 28px; }
+  }
+
+  .svc-minor {
+    gap: var(--s-3);
+    padding: var(--s-5);
+
+    .svc-minor-num { font-size: 22px; width: auto; padding-top: 1px; }
+    .svc-minor-body { gap: var(--s-2); }
+    h3 { font-size: 20px; }
+    ul { padding-top: var(--s-3); }
+  }
+
+  .svc-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    margin-top: var(--s-1);
+    padding: 6px 0;
+    background: none;
+    border: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ember);
+    cursor: pointer;
+
+    &::after {
+      content: '+';
+      font-size: 15px;
+      line-height: 1;
+      transition: transform 0.2s;
+    }
+    &[aria-expanded='true']::after { transform: rotate(45deg); }
+  }
+
+  .svc.lead .svc-toggle { color: var(--coral); }
+  .svc.web .svc-toggle { color: var(--deep); }
+
+  .svc:not(.open) ul,
+  .svc-minor:not(.open) ul { display: none; }
 }

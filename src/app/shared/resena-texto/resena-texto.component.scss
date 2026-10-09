@@ -1,0 +1,95 @@
+:host { display: inline; }
+
+.ver-mas {
+  position: relative;
+  z-index: 2;
+  display: inline;
+  margin-left: 6px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--theme-accent, var(--ember));
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; text-underline-offset: 3px; }
+}
+
+.resena-dialogo {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  margin: auto; // el reset global lo quita y el diálogo deja de centrarse
+  padding: 0;
+  border: none;
+  border-radius: var(--r-lg);
+  // Vidrio esmerilado: deja ver un poco la página sin perder legibilidad.
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: var(--carbon);
+  box-shadow: 0 24px 64px rgba(21, 31, 40, 0.24);
+  cursor: auto;
+
+  &::backdrop {
+    background: rgba(21, 31, 40, 0.35);
+  }
+}
+
+.rd-card {
+  position: relative;
+  padding: var(--s-6) var(--s-6) var(--s-5);
+}
+
+.rd-cerrar {
+  position: absolute;
+  top: var(--s-3);
+  right: var(--s-3);
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(21, 31, 40, 0.6);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover { background: rgba(21, 31, 40, 0.06); color: var(--carbon); }
+}
+
+.rd-mark {
+  display: block;
+  font-family: var(--display);
+  font-size: 48px;
+  line-height: 0.6;
+  color: var(--theme-accent, var(--ember));
+  opacity: 0.4;
+}
+
+.rd-texto {
+  margin: var(--s-3) 0 0;
+  font-family: var(--display);
+  font-style: normal;
+  font-size: 17px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.rd-autor {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: var(--s-5) 0 0;
+  padding-top: var(--s-4);
+  border-top: 1px solid rgba(21, 31, 40, 0.08);
+  font-family: var(--sans);
+  font-style: normal;
+
+  strong { font-size: 14px; font-weight: 600; }
+  span   { font-family: var(--mono); font-size: 11px; color: rgba(21, 31, 40, 0.55); }
+}

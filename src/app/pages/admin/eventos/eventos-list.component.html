@@ -5,6 +5,13 @@
     <p class="sub">{{ eventos().length }} eventos registrados.</p>
   </div>
   <div class="ph-r">
+    <button class="btn-sm ghost" (click)="copiarLinkPos()">
+      {{ linkCopiado() ? '¡Link copiado!' : 'Copiar link del POS' }}
+    </button>
+    <a class="btn-sm ghost" [href]="posUrl" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M11 18h2"/></svg>
+      Abrir POS
+    </a>
     <button class="btn-sm solid" (click)="abrirDrawer()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 5v14M5 12h14"/></svg>
       Nuevo evento
@@ -20,7 +27,7 @@
 }
 
 @if (!cargando() && eventos().length > 0) {
-<div class="panel tbl-page">
+<div class="panel">
   <div class="tbl-wrap">
   <table class="tbl">
     <thead>
@@ -62,6 +69,58 @@
     <p style="color:var(--carbon-50);font-size:14px;margin-bottom:24px">Crea el primer evento para empezar a registrar ventas.</p>
     <button class="btn-sm solid" (click)="abrirDrawer()">+ Nuevo evento</button>
   </div>
+}
+
+<!-- Dispositivos del POS -->
+@if (!cargando()) {
+<div class="ph" style="margin-top:var(--s-6)">
+  <div class="ph-l">
+    <div class="eyebrow"><span class="dot"></span> POS</div>
+    <h2>Dispositivos</h2>
+    <p class="sub">Cada celular o computador que ha abierto el POS. Se actualiza al entrar y al recuperar conexión.</p>
+  </div>
+</div>
+
+@if (dispositivosError()) {
+  <p style="color:var(--terra);font-size:14px;padding:12px 0">{{ dispositivosError() }}</p>
+} @else if (dispositivos().length === 0) {
+  <div class="panel" style="padding:32px;text-align:center">
+    <p style="color:var(--carbon-50);font-size:14px">Ningún dispositivo ha abierto el POS todavía.</p>
+  </div>
+} @else {
+<div class="panel">
+  <div class="tbl-wrap">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Dispositivo</th>
+        <th>Equipo</th>
+        <th>Cuenta</th>
+        <th>Último evento</th>
+        <th>Último uso</th>
+        <th>Primer uso</th>
+        <th class="num">Ventas</th>
+        <th class="num">Unidades</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (d of dispositivos(); track d.id) {
+      <tr>
+        <td><strong>{{ d.nombre }}</strong></td>
+        <td [title]="d.user_agent ?? ''">{{ d.plataforma ?? '—' }}@if (d.pantalla) { <span class="id"> · {{ d.pantalla }}</span> }</td>
+        <td class="id">{{ d.email ?? '—' }}</td>
+        <td>{{ nombreEvento(d.ultimo_evento_id) }}</td>
+        <td class="id">{{ fmtHace(d.ultimo_uso) }}</td>
+        <td class="id">{{ fmtFecha(d.primer_uso) }}</td>
+        <td class="num">{{ d.ventas }}</td>
+        <td class="num">{{ d.unidades }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+  </div>
+</div>
+}
 }
 
 <!-- Drawer backdrop -->

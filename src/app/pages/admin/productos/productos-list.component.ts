@@ -1,99 +1,312 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
-import { Router }       from '@angular/router';
-import { InventarioService, ProductoEvento, MovimientoProducto, CATEGORIAS, CAT_TONES } from '../../../core/services/inventario.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DescuentosTabComponent } from '../descuentos/descuentos-tab.component';
+import { InventarioService, ProductoEvento, ProductoVariante, MovimientoProducto, CAT_TONES, etiquetaCategoria } from '../../../core/services/inventario.service';
+import { etiquetaVariante } from '../../../../../supabase/functions/_shared/variantes';
 import { EventosService, Evento } from '../../../core/services/eventos.service';
+import {
+  EstadoFiltro,
+  ORDENES_MOVIL,
+  OrdenCampo,
+  OrdenDir,
+  OrdenMovil,
+  UMBRAL_STOCK_BAJO,
+  calcularKpis,
+  chipStock,
+  contarFiltrosActivos,
+  contarPorEstado,
+  ordenActual,
+  filtrarProductos,
+  ordenarProductos,
+} from './productos-filtros';
+
+const ESTADOS: { id: EstadoFiltro; label: string }[] = [
+  { id: 'all',      label: 'Todos'     },
+  { id: 'activo',   label: 'Activos'   },
+  { id: 'inactivo', label: 'Ocultos'   },
+  { id: 'bajo',     label: 'Stock bajo'},
+  { id: 'agotado',  label: 'Agotados'  },
+];
 
 @Component({
   selector: 'app-productos-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DescuentosTabComponent],
   templateUrl: './productos-list.component.html',
   styleUrl: './productos-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '(document:keydown.escape)': 'onEscape()' },
 })
 export class ProductosListComponent implements OnInit {
-  private router = inject(Router);
-  readonly inv   = inject(InventarioService);
+  private router     = inject(Router);
+  private route      = inject(ActivatedRoute);
+
+  // ── Sección: catálogo o códigos de descuento ─────────────────────────────
+  readonly seccion = signal<'catalogo' | 'descuentos'>('catalogo');
+
+  irASeccion(s: 'catalogo' | 'descuentos'): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { seccion: s === 'descuentos' ? 'descuentos' : null },
+      replaceUrl: true,
+    });
+  }
+  readonly inv       = inject(InventarioService);
   private eventosSvc = inject(EventosService);
-  readonly categorias = CATEGORIAS;
 
-  catFiltro  = signal<string>('all');
+  readonly estados      = ESTADOS;
+  readonly umbralBajo   = UMBRAL_STOCK_BAJO;
 
-  categoriasConProductos = computed(() => {
-    const usadas = new Set(this.inv.productos().map(p => p.categoria));
-    return this.categorias.filter(c => usadas.has(c.id));
+  // ── Filtros y orden ───────────────────────────────────────────────────────
+  readonly catFiltro    = signal<string>('all');
+  readonly estadoFiltro = signal<EstadoFiltro>('all');
+  readonly busqueda     = signal('');
+  readonly ordenCampo   = signal<OrdenCampo>('creado_en');
+  readonly ordenDir     = signal<OrdenDir>('desc');
+
+  // Sale de los productos cargados, no de la lista fija: así aparecen también las
+  // categorías creadas desde el formulario (bandas, impresos…) y desaparecen las vacías.
+  readonly categoriasConProductos = computed(() => {
+    const usadas = new Set(this.inv.productos().map(p => p.categoria).filter(Boolean));
+    return [...usadas]
+      .map(id => ({ id, label: etiquetaCategoria(id) }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
   });
-  busqueda   = signal('');
-  toast      = signal<string | null>(null);
+
+  readonly kpis      = computed(() => calcularKpis(this.inv.productos()));
+  readonly conteos   = computed(() => contarPorEstado(this.inv.productos()));
+
+  readonly productosFiltrados = computed(() =>
+    ordenarProductos(
+      filtrarProductos(
+        this.inv.productos(),
+        { categoria: this.catFiltro(), estado: this.estadoFiltro(), busqueda: this.busqueda() },
+        id => this.labelCategoria(id),
+      ),
+      this.ordenCampo(),
+      this.ordenDir(),
+    ),
+  );
+
+  readonly hayFiltroActivo = computed(() =>
+    this.catFiltro() !== 'all' || this.estadoFiltro() !== 'all' || this.busqueda().trim() !== '',
+  );
+
+  // ── Celular ───────────────────────────────────────────────────────────────
+  // En pantallas angostas la tabla se cambia por tarjetas, y las acciones de fila,
+  // los filtros y los botones de cabecera pasan a hojas que suben desde abajo.
+  readonly ordenesMovil = ORDENES_MOVIL;
+  readonly filtrosActivos = computed(() =>
+    contarFiltrosActivos({ categoria: this.catFiltro(), estado: this.estadoFiltro() }),
+  );
+  readonly ordenMovil = computed(() => ordenActual(this.ordenCampo(), this.ordenDir()));
+  readonly filtrosOpen      = signal(false);
+  readonly menuCabeceraOpen = signal(false);
+  /** Producto cuya hoja de acciones está abierta. */
+  readonly accionesTarget   = signal<ProductoEvento | null>(null);
+
+  readonly toast = signal<string | null>(null);
   private toastTimer?: ReturnType<typeof setTimeout>;
 
-  // Evento activo
-  eventoActivo      = signal<Evento | null>(null);
-
-  // Crear evento
-  crearEventoOpen   = signal(false);
+  // ── Evento ────────────────────────────────────────────────────────────────
+  readonly eventoActivo   = signal<Evento | null>(null);
+  readonly crearEventoOpen = signal(false);
   nuevoEventoNombre = '';
-  creando           = signal(false);
-  crearError        = signal<string | null>(null);
+  readonly creando    = signal(false);
+  readonly crearError = signal<string | null>(null);
+  readonly finalizarOpen  = signal(false);
+  readonly finalizando    = signal(false);
+  readonly finalizarError = signal<string | null>(null);
 
-  // Finalizar evento
-  finalizarOpen     = signal(false);
-  finalizando       = signal(false);
-  finalizarError    = signal<string | null>(null);
+  // ── Drawer ────────────────────────────────────────────────────────────────
+  readonly drawerOpen    = signal(false);
+  readonly drawerProduct = signal<ProductoEvento | null>(null);
+  readonly historial         = signal<MovimientoProducto[]>([]);
+  readonly historialCargando = signal(false);
+  /** Combinación cuyo historial se muestra en el drawer (null = todo el producto). */
+  readonly historialVariante = signal<ProductoVariante | null>(null);
 
-  // Drawer state
-  drawerOpen    = signal(false);
-  drawerProduct = signal<ProductoEvento | null>(null);
+  /** Variantes por producto (todas), para el badge y las acciones por combinación. */
+  readonly variantesPorProducto = signal<Map<string, { orden: string[]; variantes: ProductoVariante[] }>>(new Map());
 
-  // Restock
-  restockOpen     = signal(false);
-  restockTarget   = signal<ProductoEvento | null>(null);
+  // ── Restock / ajuste ──────────────────────────────────────────────────────
+  /** Combinación sobre la que actúa el modal abierto (null = producto sin variantes). */
+  readonly varianteTarget = signal<ProductoVariante | null>(null);
+  readonly restockOpen    = signal(false);
+  readonly restockTarget  = signal<ProductoEvento | null>(null);
   restockCantidad: number | null = null;
-  restockNota     = '';
-  restockLoading  = signal(false);
-  restockError    = signal<string | null>(null);
+  restockNota = '';
+  readonly restockLoading = signal(false);
+  readonly restockError   = signal<string | null>(null);
 
-  // Historial (drawer)
-  historial          = signal<MovimientoProducto[]>([]);
-  historialCargando  = signal(false);
+  readonly ajusteOpen    = signal(false);
+  readonly ajusteTarget  = signal<ProductoEvento | null>(null);
+  /** Señal, no propiedad: ajusteDelta se recalcula mientras se teclea. */
+  readonly ajusteStock   = signal<number | null>(null);
+  ajusteNota = '';
+  readonly ajusteLoading = signal(false);
+  readonly ajusteError   = signal<string | null>(null);
 
-  productosFiltrados = computed(() => {
-    const cat  = this.catFiltro();
-    const q    = this.busqueda().toLowerCase().trim();
-    let list   = this.inv.productos();
-    if (cat !== 'all') list = list.filter(p => p.categoria === cat);
-    if (q) list = list.filter(p => p.nombre.toLowerCase().includes(q));
-    return list;
+  readonly ajusteDelta = computed(() => {
+    const p = this.ajusteTarget();
+    const nuevo = this.ajusteStock();
+    if (!p || nuevo === null) return 0;
+    return nuevo - (this.varianteTarget()?.stock_actual ?? p.stock_actual);
   });
+
+  /** Cualquier capa por encima de la página: bloquea el scroll de fondo. */
+  readonly hayOverlay = computed(() =>
+    this.drawerOpen() || this.crearEventoOpen() || this.finalizarOpen() ||
+    this.restockOpen() || this.ajusteOpen() ||
+    this.filtrosOpen() || this.menuCabeceraOpen() || !!this.accionesTarget(),
+  );
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(q =>
+      this.seccion.set(q.get('seccion') === 'descuentos' ? 'descuentos' : 'catalogo'),
+    );
+
+    effect(() => {
+      document.body.style.overflow = this.hayOverlay() ? 'hidden' : '';
+    });
+    destroyRef.onDestroy(() => { document.body.style.overflow = ''; });
+
+    // Ventas del POS o de la web mueven el stock mientras la lista está abierta.
+    const dejarDeEscuchar = this.inv.escucharStock(v => this.parchearVariante(v));
+    destroyRef.onDestroy(dejarDeEscuchar);
+    // El drawer guarda una copia del producto: la mantiene al día con la lista.
+    effect(() => {
+      const abierto = this.drawerProduct();
+      if (!abierto) return;
+      const actual = this.inv.productos().find(p => p.id === abierto.id);
+      if (actual && actual !== abierto) this.drawerProduct.set(actual);
+    });
+  }
+
+  private parchearVariante(v: ProductoVariante) {
+    this.variantesPorProducto.update(m => {
+      const entrada = m.get(v.producto_id);
+      if (!entrada) return m;
+      const copia = new Map(m);
+      copia.set(v.producto_id, {
+        ...entrada,
+        variantes: entrada.variantes.map(x => (x.id === v.id ? { ...x, ...v } : x)),
+      });
+      return copia;
+    });
+  }
 
   ngOnInit() {
     this.inv.cargarTodos();
+    this.cargarVariantes();
     this.cargarEventoActivo();
+  }
+
+  private async cargarVariantes(): Promise<void> {
+    try {
+      this.variantesPorProducto.set(await this.inv.getVariantesTodas());
+    } catch (err) {
+      console.error('Error cargando variantes:', err);
+    }
+  }
+
+  readonly chipStock = chipStock;
+
+  activasDe(id: string): ProductoVariante[] {
+    return this.variantesPorProducto().get(id)?.variantes.filter(v => v.activo) ?? [];
+  }
+
+  etiqueta(id: string, v: ProductoVariante): string {
+    return etiquetaVariante(v.opciones, this.variantesPorProducto().get(id)?.orden ?? Object.keys(v.opciones));
+  }
+
+  /** Escape cierra la capa más superficial primero. */
+  onEscape() {
+    if (this.accionesTarget())   { this.accionesTarget.set(null); return; }
+    if (this.filtrosOpen())      { this.filtrosOpen.set(false); return; }
+    if (this.menuCabeceraOpen()) { this.menuCabeceraOpen.set(false); return; }
+    if (this.restockOpen())      { this.cerrarRestock(); return; }
+    if (this.ajusteOpen())       { this.cerrarAjuste(); return; }
+    if (this.crearEventoOpen())  { this.cerrarCrearEvento(); return; }
+    if (this.finalizarOpen())    { this.cerrarFinalizarEvento(); return; }
+    if (this.drawerOpen())       { this.cerrarDrawer(); }
   }
 
   private async cargarEventoActivo() {
     try {
-      const e = await this.eventosSvc.getEventoActivo();
-      this.eventoActivo.set(e);
-    } catch { /* no-op */ }
+      this.eventoActivo.set(await this.eventosSvc.getEventoActivo());
+    } catch { /* no-op: la lista funciona sin evento */ }
   }
 
-  nuevo()    { this.router.navigate(['/admin/productos/nuevo']); }
-  editar(p: ProductoEvento)  { this.router.navigate(['/admin/productos', p.id, 'editar']); }
+  // ── Navegación ────────────────────────────────────────────────────────────
+  nuevo()     { this.router.navigate(['/admin/productos/nuevo']); }
+  editar(p: ProductoEvento) { this.router.navigate(['/admin/productos', p.id, 'editar']); }
   verVentas() { this.router.navigate(['/admin/productos/ventas']); }
 
+  // ── Orden ─────────────────────────────────────────────────────────────────
+  ordenarPor(campo: OrdenCampo) {
+    if (this.ordenCampo() === campo) {
+      this.ordenDir.update(d => (d === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+    this.ordenCampo.set(campo);
+    // Los textos se leen mejor de la A a la Z; los números, de mayor a menor.
+    this.ordenDir.set(campo === 'nombre' ? 'asc' : 'desc');
+  }
+
+  ariaSort(campo: OrdenCampo): 'ascending' | 'descending' | 'none' {
+    if (this.ordenCampo() !== campo) return 'none';
+    return this.ordenDir() === 'asc' ? 'ascending' : 'descending';
+  }
+
+  fijarOrden(o: OrdenMovil) {
+    this.ordenCampo.set(o.campo);
+    this.ordenDir.set(o.dir);
+  }
+
+  /** Los KPIs de stock bajo y agotados filtran la lista; tocarlos otra vez lo quita. */
+  alternarEstado(e: EstadoFiltro) {
+    this.estadoFiltro.update(actual => (actual === e ? 'all' : e));
+  }
+
+  labelEstado(e: EstadoFiltro): string {
+    return ESTADOS.find(x => x.id === e)?.label ?? e;
+  }
+
+  abrirAcciones(p: ProductoEvento, event: Event) {
+    event.stopPropagation();
+    this.accionesTarget.set(p);
+  }
+
+  limpiarFiltros() {
+    this.catFiltro.set('all');
+    this.estadoFiltro.set('all');
+    this.busqueda.set('');
+  }
+
+  // ── Drawer ────────────────────────────────────────────────────────────────
   verDetalle(p: ProductoEvento, event: Event) {
     event.stopPropagation();
     this.drawerProduct.set(p);
+    this.historialVariante.set(null);
     this.drawerOpen.set(true);
+    this.cargarHistorial(p.id);
+  }
+
+  /** Historial de una sola combinación (null vuelve al del producto completo). */
+  verHistorial(p: ProductoEvento, v: ProductoVariante | null) {
+    this.historialVariante.set(v);
     this.cargarHistorial(p.id);
   }
 
   private async cargarHistorial(productoId: string) {
     this.historialCargando.set(true);
     try {
-      this.historial.set(await this.inv.getHistorialProducto(productoId));
+      this.historial.set(await this.inv.getHistorialProducto(productoId, this.historialVariante()?.id ?? null));
     } catch (err) {
       console.error('Error cargando historial:', err);
       this.historial.set([]);
@@ -104,28 +317,32 @@ export class ProductosListComponent implements OnInit {
 
   cerrarDrawer() { this.drawerOpen.set(false); }
 
+  // ── Acciones de fila ──────────────────────────────────────────────────────
   async duplicar(p: ProductoEvento, event: Event) {
     event.stopPropagation();
-    const { error } = await this.inv.duplicarProducto(p.id);
-    this.flash(error ? `Error: ${error}` : `"${p.nombre}" duplicado.`);
+    const { error, aviso } = await this.inv.duplicarProducto(p.id);
+    this.flash(error ? `Error: ${error}` : (aviso ?? `"${p.nombre}" duplicado.`));
+    if (!error) this.cargarVariantes();
   }
 
   async toggleActivo(p: ProductoEvento, event: Event) {
     event.stopPropagation();
     const { error } = await this.inv.toggleActivo(p.id, !p.activo);
-    if (!error) this.flash(p.activo ? 'Producto ocultado.' : 'Producto activado.');
+    // Antes el fallo era mudo: el botón no hacía nada y nadie sabía por qué.
+    this.flash(error ? `Error: ${error}` : (p.activo ? 'Producto ocultado.' : 'Producto activado.'));
   }
 
-  abrirRestock(p: ProductoEvento, event: Event) {
+  abrirRestock(p: ProductoEvento, event: Event, v: ProductoVariante | null = null) {
     event.stopPropagation();
     this.restockTarget.set(p);
+    this.varianteTarget.set(v);
     this.restockCantidad = null;
     this.restockNota = '';
     this.restockError.set(null);
     this.restockOpen.set(true);
   }
 
-  cerrarRestock() { this.restockOpen.set(false); }
+  cerrarRestock() { this.restockOpen.set(false); this.varianteTarget.set(null); }
 
   async confirmarRestock() {
     const p = this.restockTarget();
@@ -137,12 +354,64 @@ export class ProductosListComponent implements OnInit {
     }
     this.restockLoading.set(true);
     this.restockError.set(null);
-    const { error } = await this.inv.restockProducto(p.id, cantidad, this.restockNota.trim() || undefined);
+    const v = this.varianteTarget();
+    const { error } = await this.inv.restockProducto(p.id, cantidad, this.restockNota.trim() || undefined, v?.id ?? null);
     this.restockLoading.set(false);
     if (error) { this.restockError.set(error); return; }
     this.cerrarRestock();
-    this.flash(`+${cantidad} unidades agregadas a "${p.nombre}".`);
-    if (this.drawerProduct()?.id === p.id) this.cargarHistorial(p.id);
+    this.flash(`+${cantidad} unidades agregadas a "${p.nombre}"${v ? ' · ' + this.etiqueta(p.id, v) : ''}.`);
+    this.cargarVariantes();
+    this.refrescarDrawer(p.id);
+  }
+
+  abrirAjuste(p: ProductoEvento, event: Event, v: ProductoVariante | null = null) {
+    event.stopPropagation();
+    this.ajusteTarget.set(p);
+    this.varianteTarget.set(v);
+    this.ajusteStock.set(v?.stock_actual ?? p.stock_actual);
+    this.ajusteNota = '';
+    this.ajusteError.set(null);
+    this.ajusteOpen.set(true);
+  }
+
+  cerrarAjuste() { this.ajusteOpen.set(false); this.varianteTarget.set(null); }
+
+  async confirmarAjuste() {
+    const p = this.ajusteTarget();
+    if (!p) return;
+    const nuevo = this.ajusteStock();
+    if (nuevo === null || nuevo < 0 || !Number.isInteger(nuevo)) {
+      this.ajusteError.set('Ingresa un número entero de 0 o más.');
+      return;
+    }
+    // El ajuste corrige la realidad física del inventario: sin motivo escrito,
+    // el historial no sirve para auditar después.
+    if (!this.ajusteNota.trim()) {
+      this.ajusteError.set('Explica el motivo del ajuste.');
+      return;
+    }
+    const v = this.varianteTarget();
+    if (nuevo === (v?.stock_actual ?? p.stock_actual)) {
+      this.ajusteError.set('El stock es el mismo; no hay nada que ajustar.');
+      return;
+    }
+    this.ajusteLoading.set(true);
+    this.ajusteError.set(null);
+    const { error } = await this.inv.ajustarStock(p.id, nuevo, this.ajusteNota.trim(), v?.id ?? null);
+    this.ajusteLoading.set(false);
+    if (error) { this.ajusteError.set(error); return; }
+    this.cerrarAjuste();
+    this.flash(`Stock de "${p.nombre}"${v ? ' · ' + this.etiqueta(p.id, v) : ''} ajustado a ${nuevo}.`);
+    this.cargarVariantes();
+    this.refrescarDrawer(p.id);
+  }
+
+  /** Mantiene el drawer al día si el producto tocado es el que está abierto. */
+  private refrescarDrawer(productoId: string) {
+    if (this.drawerProduct()?.id !== productoId) return;
+    const actualizado = this.inv.productos().find(p => p.id === productoId);
+    if (actualizado) this.drawerProduct.set(actualizado);
+    this.cargarHistorial(productoId);
   }
 
   flash(msg: string) {
@@ -151,6 +420,7 @@ export class ProductosListComponent implements OnInit {
     this.toastTimer = setTimeout(() => this.toast.set(null), 2400);
   }
 
+  // ── Eventos ───────────────────────────────────────────────────────────────
   abrirCrearEvento()  { this.nuevoEventoNombre = ''; this.crearError.set(null); this.crearEventoOpen.set(true); }
   cerrarCrearEvento() { this.crearEventoOpen.set(false); }
 
@@ -183,10 +453,23 @@ export class ProductosListComponent implements OnInit {
     this.flash(`Evento "${e.nombre}" finalizado.`);
   }
 
+  // ── Formato ───────────────────────────────────────────────────────────────
   fmtCOP(n: number) { return '$' + n.toLocaleString('es-CO'); }
 
+  /** Los valores de inventario grandes se leen mejor abreviados en el KPI. */
+  fmtCOPCorto(n: number) {
+    if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(1).replace('.0', '') + 'M';
+    if (n >= 10_000)    return '$' + Math.round(n / 1000) + 'k';
+    return this.fmtCOP(n);
+  }
+
   labelCategoria(id: string) {
-    return this.categorias.find(c => c.id === id)?.label ?? id;
+    return etiquetaCategoria(id);
+  }
+
+  labelPersonaje(id: string | null) {
+    if (!id) return '—';
+    return id.charAt(0).toUpperCase() + id.slice(1);
   }
 
   toneForCat(cat: string) { return CAT_TONES[cat] ?? '#DDE3EA'; }

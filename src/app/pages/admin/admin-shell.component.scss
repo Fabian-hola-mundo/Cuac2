@@ -1,1 +1,38 @@
 :host { display: block; }
+
+/* ── Verificación en dos pasos ─────────────────────────────────────────────── */
+.mfa-qr {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 14px;
+
+  img {
+    width: 180px;
+    height: 180px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid var(--line, #e5e7eb);
+    border-radius: 12px;
+  }
+}
+
+.mfa-secret {
+  font-size: 12.5px;
+  color: var(--muted, #6b7280);
+  text-align: center;
+  margin: 0 0 16px;
+  line-height: 1.6;
+
+  code {
+    display: inline-block;
+    margin-top: 4px;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 14px;
+    letter-spacing: .12em;
+    color: var(--ink, #151F28);
+    background: rgba(0, 0, 0, .05);
+    padding: 4px 10px;
+    border-radius: 6px;
+    word-break: break-all;
+  }
+}

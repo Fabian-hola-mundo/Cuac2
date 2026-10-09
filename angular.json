@@ -28,6 +28,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "supabase.js",
+                "input": "node_modules/@supabase/supabase-js/dist/umd",
+                "output": "pos/vendor"
               }
             ],
             "styles": ["src/styles.scss"],

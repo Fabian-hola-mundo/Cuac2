@@ -1,9 +1,27 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { InventarioService, ProductoEvento } from '../../../../core/services/inventario.service';
+import {
+  InventarioService,
+  ProductoEvento,
+  ProductoOpcion,
+  ProductoPublico,
+  VariantePublica,
+  esEtiquetaPropia,
+  etiquetaCategoria,
+  etiquetaFlag,
+} from '../../../../core/services/inventario.service';
 import { CartService } from '../../services/cart.service';
 import { CartModalComponent } from '../../cart-modal/cart-modal.component';
 import { SeoService } from '../../../../core/services/seo.service';
+import { UMBRAL_POCAS_UNIDADES } from '../../services/tienda.constants';
+import {
+  Combinacion,
+  etiquetaVariante,
+  rangoPrecios,
+  valorDisponible,
+  varianteDeSeleccion,
+} from '../../../../../../supabase/functions/_shared/variantes';
 
 const CAT_SHORT: Record<string, string> = {
   tee:'Camiseta', tote:'Tote bag', libreta:'Libreta', sticker:'Sticker',
@@ -11,10 +29,23 @@ const CAT_SHORT: Record<string, string> = {
   llavero:'Llavero', pañoleta:'Pañoleta', amigurumi:'Amigurumi', charm:'Charm',
 };
 
-const CHAR_LABEL: Record<string, string> = {
-  cuac:'Cuac', kiki:'Kiki', roar:'Roar', yeison:'Yeison',
-  abejandro:'Abejandro', atolita:'Atolita', colibriana:'Colibriana', tiburcio:'Tiburcio',
-};
+/** Hash corto y determinista (djb2) para ordenar sugeridos sin azar. */
+function hash(s: string): number {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return h >>> 0;
+}
+
+const CONECTORES = new Set(['para', 'con', 'del', 'las', 'los', 'una', 'uno', 'mini']);
+
+/** Palabras con significado de un nombre de producto, sin tildes ni mayúsculas. */
+function palabras(nombre: string): Set<string> {
+  return new Set(
+    nombre.toLocaleLowerCase('es').normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .split(/[^a-z0-9ñ]+/)
+      .filter(w => w.length >= 3 && !CONECTORES.has(w)),
+  );
+}
 
 @Component({
   selector: 'app-producto-detail',
@@ -29,11 +60,69 @@ export class ProductoDetailComponent implements OnInit {
   private inv   = inject(InventarioService);
   readonly cart = inject(CartService);
   private seo   = inject(SeoService);
+  private destroyRef = inject(DestroyRef);
 
   readonly loading     = signal(true);
   readonly notFound    = signal(false);
+  /** Fallo de lectura, distinto de "no existe": el primero se puede reintentar. */
+  readonly errorCarga  = signal<string | null>(null);
   readonly producto    = signal<ProductoEvento | null>(null);
   readonly selectedImg = signal<string | null>(null);
+
+  readonly opciones   = signal<ProductoOpcion[]>([]);
+  readonly variantes  = signal<VariantePublica[]>([]);
+  readonly seleccion  = signal<Combinacion>({});
+
+  readonly tieneVariantes = computed(() => this.variantes().length > 0);
+  readonly orden = computed(() => this.opciones().map(o => o.nombre));
+
+  readonly variante = computed(() =>
+    varianteDeSeleccion(this.variantes(), this.seleccion(), this.orden()));
+
+  /** Stock que manda: el de la combinación elegida o el total del producto. */
+  readonly stockVisible = computed(() =>
+    this.variante()?.disponible ?? this.producto()?.stock_actual ?? 0);
+
+  readonly precioVisible = computed(() => {
+    const p = this.producto();
+    if (!p) return 0;
+    // Una combinación elegida sin precio propio cuesta lo que el producto, no el mínimo del rango.
+    const v = this.variante();
+    if (v) return v.precio ?? p.precio;
+    return this.tieneVariantes() ? (this.rango()?.min ?? p.precio) : p.precio;
+  });
+
+  /** Sin nada que se pueda comprar: producto simple agotado o todas las variantes sin stock. */
+  readonly sinExistencias = computed(() =>
+    this.tieneVariantes() ? this.variantes().every(v => v.disponible <= 0) : this.agotado());
+
+  readonly rango = computed(() => {
+    const p = this.producto();
+    return p && this.tieneVariantes() ? rangoPrecios(this.variantes(), p.precio) : null;
+  });
+
+  /** Nombre (en minúscula) de la primera opción sin elegir, para el botón. */
+  readonly faltaElegir = computed(() => {
+    const n = this.orden().find(o => !this.seleccion()[o]);
+    return n ? n.toLocaleLowerCase('es') : null;
+  });
+
+  disponible(opcion: string, valor: string): boolean {
+    return valorDisponible(this.variantes(), this.seleccion(), opcion, valor);
+  }
+
+  elegir(opcion: string, valor: string, foto: string | null): void {
+    this.avisoTope.set(false);
+    this.seleccion.update(s => ({ ...s, [opcion]: s[opcion] === valor ? '' : valor }));
+    if (foto && this.seleccion()[opcion]) this.selectedImg.set(foto);
+  }
+
+  readonly agotado = computed(() => this.stockVisible() <= 0);
+
+  readonly pocasUnidades = computed(() => {
+    const s = this.stockVisible();
+    return s > 0 && s <= UMBRAL_POCAS_UNIDADES;
+  });
 
   readonly allImgs = computed(() => {
     const p = this.producto();
@@ -41,6 +130,9 @@ export class ProductoDetailComponent implements OnInit {
     const imgs: string[] = [];
     if (p.cover_url) imgs.push(p.cover_url);
     p.fotos.forEach(f => { if (f && f !== p.cover_url) imgs.push(f); });
+    this.opciones().forEach(o => o.valores.forEach(v => {
+      if (v.foto_url && !imgs.includes(v.foto_url)) imgs.push(v.foto_url);
+    }));
     return imgs;
   });
 
@@ -49,39 +141,162 @@ export class ProductoDetailComponent implements OnInit {
     return this.selectedImg() ?? imgs[0] ?? null;
   });
 
-  async ngOnInit(): Promise<void> {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) { this.router.navigate(['/cuaquiverso/tienda']); return; }
+  ngOnInit(): void {
+    // paramMap y no snapshot: al ir de una ficha a otra desde «Sugeridos»
+    // Angular reutiliza el componente y el snapshot se quedaba con la primera.
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const id = params.get('id');
+      if (!id) { this.router.navigate(['/cuaquiverso/tienda']); return; }
+      this.selectedImg.set(null);
+      this.avisoTope.set(false);
+      void this.cargar(id);
+    });
+    // El catálogo alimenta los sugeridos. Si se llega directo a la ficha (link
+    // compartido) no está cargado; se pide sin bloquear el producto.
+    if (!this.inv.catalogo().length && !this.inv.cargandoCatalogo()) {
+      void this.inv.cargarCatalogo();
+    }
+  }
 
-    const data = await this.inv.getProducto(id);
-    if (!data) {
+  /**
+   * Hasta cuatro productos para la parte baja de la ficha: sólo con stock y que
+   * no estén ya en el carrito. Primero el mismo personaje o motivo en otra
+   * categoría (la Gorra Cuy sugiere el Pesquero Cuy), luego otras categorías y
+   * los destacados. El motivo sale del nombre porque `personaje` casi nunca se
+   * llena. El desempate es estable por par de productos: cada ficha muestra
+   * una mezcla distinta, pero no cambia al recargar.
+   */
+  readonly sugeridos = computed<ProductoPublico[]>(() => {
+    const actual = this.producto();
+    if (!actual) return [];
+    const enCarrito = new Set(this.cart.items().map(i => i.id));
+    const motivo = palabras(actual.nombre);
+    const puntaje = (p: ProductoPublico): number => {
+      const otraCat = p.categoria !== actual.categoria;
+      return (actual.personaje && p.personaje === actual.personaje ? 4 : 0) +
+        (otraCat && [...palabras(p.nombre)].some(w => motivo.has(w)) ? 3 : 0) +
+        (otraCat ? 2 : 0) +
+        (p.destacado ? 1 : 0);
+    };
+    return this.inv.catalogo()
+      .filter(p => p.id !== actual.id && p.stock_actual > 0 && !enCarrito.has(p.id))
+      .map(p => ({ p, s: puntaje(p), h: hash(actual.id + p.id) }))
+      .sort((a, b) => b.s - a.s || a.h - b.h)
+      .slice(0, 4)
+      .map(x => x.p);
+  });
+
+  precioSugerido(p: ProductoPublico): string {
+    const desde = p.tieneVariantes && p.precioMin !== p.precioMax ? 'Desde ' : '';
+    return desde + this.fmtPrice(p.tieneVariantes ? (p.precioMin ?? p.precio) : p.precio);
+  }
+
+  async cargar(id = this.route.snapshot.paramMap.get('id')!): Promise<void> {
+    this.loading.set(true);
+    this.errorCarga.set(null);
+    this.notFound.set(false);
+
+    const { producto, opciones, variantes, error } = await this.inv.getProductoPublico(id);
+
+    if (error) {
+      // Antes cualquier fallo de PostgREST —incluido un fetch caído— se
+      // mostraba como "este producto no existe o ya no está disponible".
+      this.errorCarga.set(error);
+    } else if (!producto) {
       this.notFound.set(true);
-    } else {
-      this.producto.set(data);
+      // Un id inexistente heredaba el título de la página anterior: soft-404.
       this.seo.set({
-        title:       `${data.nombre} — Cuaquiverso`,
-        description: data.descripcion ?? `${CAT_SHORT[data.categoria] ?? data.categoria} del Cuaquiverso. Hecho en Colombia.`,
+        title:       'Producto no encontrado — Cuaquiverso',
+        description: 'Este producto no existe o ya no está disponible en la tienda del Cuaquiverso.',
         canonical:   `https://cuacdesign.com/cuaquiverso/tienda/${id}`,
+        noindex:     true,
       });
+    } else {
+      this.producto.set(producto);
+      this.opciones.set(opciones);
+      this.variantes.set(variantes);
+      this.seleccion.set({});
+      this.aplicarSeo(producto, id);
     }
     this.loading.set(false);
   }
 
-  catLabel(cat: string): string  { return CAT_SHORT[cat] ?? cat; }
-  charLabel(ch: string): string  { return CHAR_LABEL[ch] ?? ch; }
+  /**
+   * La ficha compartía la OG genérica del estudio: quien pegaba el link de un
+   * peluche en WhatsApp o Instagram no veía ni el nombre ni la foto ni el
+   * precio del producto.
+   */
+  private aplicarSeo(p: ProductoEvento, id: string): void {
+    const url  = `https://cuacdesign.com/cuaquiverso/tienda/${id}`;
+    const desc = p.descripcion ?? `${CAT_SHORT[p.categoria] ?? p.categoria} del Cuaquiverso. Hecho en Colombia.`;
+
+    this.seo.set({
+      title:       `${p.nombre} — Cuaquiverso`,
+      description: desc,
+      canonical:   url,
+      ogImage:     p.cover_url ?? undefined,
+      ogType:      'article',
+    });
+
+    const rango = this.rango();
+    const availability = p.stock_actual > 0
+      ? 'https://schema.org/InStock'
+      : 'https://schema.org/OutOfStock';
+
+    this.seo.setJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: p.nombre,
+      description: desc,
+      image: this.allImgs(),
+      brand: { '@type': 'Brand', name: 'Cuaquiverso' },
+      offers: rango && rango.min !== rango.max
+        ? {
+            '@type': 'AggregateOffer',
+            priceCurrency: 'COP',
+            lowPrice: rango.min,
+            highPrice: rango.max,
+            offerCount: this.variantes().length,
+            availability,
+          }
+        : {
+            '@type': 'Offer',
+            url,
+            priceCurrency: 'COP',
+            price: rango?.min ?? p.precio,
+            availability,
+          },
+    });
+  }
+
+  etiquetaFlag = etiquetaFlag;
+  esEtiquetaPropia = esEtiquetaPropia;
+
+  catLabel(cat: string): string  { return CAT_SHORT[cat] ?? etiquetaCategoria(cat); }
   fmtPrice(n: number): string    { return '$' + n.toLocaleString('es-CO'); }
 
   addToCart(): void {
     const p = this.producto();
-    if (!p) return;
-    this.cart.add({
-      id:        p.id,
-      name:      p.nombre,
-      sub:       this.catLabel(p.categoria),
-      price:     p.precio,
-      color:     p.color ?? '#3D4856',
-      categoria: p.categoria,
+    if (!p || this.agotado()) return;
+    const v = this.variante();
+    if (this.tieneVariantes() && !v) return;
+    const agregado = this.cart.add({
+      id:            p.id,
+      name:          p.nombre,
+      sub:           this.catLabel(p.categoria),
+      price:         v?.precio ?? p.precio,
+      color:         p.color ?? '#3D4856',
+      categoria:     p.categoria,
+      stock:         this.stockVisible(),
+      varianteId:    v?.id ?? null,
+      varianteLabel: v ? etiquetaVariante(v.opciones, this.orden()) : null,
     });
-    this.cart.open();
+    // En la ficha sí se abre el carrito: es el final del recorrido del producto,
+    // no una interrupción de la exploración como en la grilla.
+    if (agregado) this.cart.open();
+    else this.avisoTope.set(true);
   }
+
+  /** El comprador ya tiene en el carrito todo el stock que queda. */
+  readonly avisoTope = signal(false);
 }

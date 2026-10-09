@@ -2,7 +2,7 @@
   <div class="ph-l">
     <div class="eyebrow"><span class="dot"></span> Sistema</div>
     <h1><em>Integraciones</em></h1>
-    <p class="sub">Conecta Cuaquiverso con tus herramientas de pagos, analítica y envíos.</p>
+    <p class="sub">Conecta la tienda con tus herramientas de pagos, analítica y envíos.</p>
   </div>
 </div>
 
@@ -44,7 +44,7 @@
       @if (i.config['webhookUrl'] !== undefined) {
       <div class="field">
         <label>Webhook URL</label>
-        <input class="input" [value]="i.config['webhookUrl']" (input)="updateConfig(i.id,'webhookUrl',$any($event.target).value)" placeholder="https://cuaquiverso.co/webhook/bold" />
+        <input class="input" [value]="i.config['webhookUrl']" (input)="updateConfig(i.id,'webhookUrl',$any($event.target).value)" placeholder="https://cuacdesign.com/webhook/bold" />
       </div>
       }
       @if (i.config['audienceId'] !== undefined) {

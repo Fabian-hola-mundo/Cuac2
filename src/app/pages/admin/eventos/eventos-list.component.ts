@@ -2,7 +2,7 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule }  from '@angular/common';
 import { FormsModule }   from '@angular/forms';
 import { Router }        from '@angular/router';
-import { EventosService, Evento } from '../../../core/services/eventos.service';
+import { EventosService, Evento, DispositivoPos } from '../../../core/services/eventos.service';
 
 @Component({
   selector: 'app-eventos-list',
@@ -21,6 +21,11 @@ export class EventosListComponent implements OnInit {
 
   // Totals per event (loaded lazily after eventos load)
   readonly totales  = signal<Record<string, number>>({});
+
+  readonly dispositivos      = signal<DispositivoPos[]>([]);
+  readonly dispositivosError = signal<string | null>(null);
+  readonly linkCopiado       = signal(false);
+  readonly posUrl = typeof location !== 'undefined' ? `${location.origin}/pos/` : '/pos/';
 
   // Drawer state for "+ Nuevo evento"
   drawerOpen    = signal(false);
@@ -45,6 +50,40 @@ export class EventosListComponent implements OnInit {
       this.errorMsg.set(e.message);
     }
     this.cargando.set(false);
+    void this.cargarDispositivos();
+  }
+
+  private async cargarDispositivos() {
+    this.dispositivosError.set(null);
+    try {
+      this.dispositivos.set(await this.svc.getDispositivosPos());
+    } catch (e: any) {
+      this.dispositivosError.set(e.message ?? 'No se pudieron cargar los dispositivos.');
+    }
+  }
+
+  async copiarLinkPos() {
+    try {
+      await navigator.clipboard.writeText(this.posUrl);
+      this.linkCopiado.set(true);
+      setTimeout(() => this.linkCopiado.set(false), 2000);
+    } catch {
+      prompt('Copia el link del POS:', this.posUrl);
+    }
+  }
+
+  nombreEvento(id: string | null): string {
+    if (!id) return '—';
+    return this.eventos().find(e => e.id === id)?.nombre ?? '—';
+  }
+
+  fmtHace(iso: string): string {
+    const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (min < 1)  return 'ahora';
+    if (min < 60) return `hace ${min} min`;
+    const h = Math.round(min / 60);
+    if (h < 24)   return `hace ${h} h`;
+    return this.fmtFecha(iso);
   }
 
   private async cargarTotales(eventos: Evento[]) {

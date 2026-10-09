@@ -58,19 +58,6 @@
         </div>
 
         <div class="field">
-          <label>Persona de contacto <span class="opt">opcional</span></label>
-          <input class="input" formControlName="client_person"
-            placeholder="Nombre y apellido" />
-          <span class="help">Nombre que aparece en el testimonio.</span>
-        </div>
-
-        <div class="field">
-          <label>Cargo <span class="opt">opcional</span></label>
-          <input class="input" formControlName="client_role"
-            placeholder="Fundadora · Marca de skincare" />
-        </div>
-
-        <div class="field">
           <label>Autores <span class="opt">*</span></label>
           <div class="author-checks">
             @for (a of authors; track a.id) {
@@ -91,12 +78,7 @@
             placeholder="Contexto del proyecto, proceso, entregables, impacto…"></textarea>
         </div>
 
-        <div class="field">
-          <label>Comentario del cliente <span class="opt">opcional</span></label>
-          <textarea class="input" formControlName="client_comment" rows="3"
-            placeholder="«El resultado superó nuestras expectativas…» — Cliente, Empresa"></textarea>
-          <span class="help">Aparece como cita destacada en la página del proyecto.</span>
-        </div>
+        <p class="help">Los comentarios de clientes se gestionan en <strong>Reseñas</strong>: ahí puedes ligar una reseña a este proyecto.</p>
 
         <div class="field">
           <label>Tags</label>
@@ -162,18 +144,7 @@
               <span class="inv-slider"></span>
             </label>
           </div>
-          <div class="field-toggle-row">
-            <div><span class="ftr-label">En testimonios</span></div>
-            <label class="inv-toggle">
-              <input type="checkbox" formControlName="show_testimonial"
-                (change)="onShowTestimonialChange($any($event.target).checked)" />
-              <span class="inv-slider"></span>
-            </label>
-          </div>
         </div>
-        @if (testimonialError()) {
-          <p class="form-error">{{ testimonialError() }}</p>
-        }
 
         @if (errorMsg()) {
           <p class="form-error">{{ errorMsg() }}</p>
@@ -194,38 +165,95 @@
     <div class="panel" style="align-self:start">
       <div class="panel-h"><h3>Imagen de portada</h3></div>
       <div class="panel-b">
-        @if (coverPreview()) {
-          <div class="img-preview">
-            <img [src]="coverPreview()" alt="Cover preview" />
+        @if (coverPreview(); as url) {
+          <!-- La misma foto con dos encuadres: tal como la muestran la tarjeta y el hero. -->
+          <div class="cover-vistas">
+            <figure>
+              <div class="foco-caja is-tarjeta" [style]="varsTarjeta()">
+                <div class="foco-img" [style.backgroundImage]="'url(' + url + ')'"></div>
+              </div>
+              <figcaption>Tarjeta</figcaption>
+            </figure>
+            <figure>
+              <div class="foco-caja is-hero" [style]="varsHero()">
+                <div class="foco-img" [style.backgroundImage]="'url(' + url + ')'"></div>
+              </div>
+              <figcaption>Hero</figcaption>
+            </figure>
+            <button type="button" class="img-editar" (click)="editarPortada()"
+                    aria-label="Editar portada: encuadre de la tarjeta y del hero, zoom y giro" title="Editar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
+            </button>
           </div>
         }
-        <label class="upload-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          {{ coverPreview() ? 'Cambiar portada' : 'Subir portada' }}
-          <input type="file" accept="image/*" (change)="onCoverChange($event)" hidden />
-        </label>
-        <span class="help">JPG, PNG o WebP · 4:3 recomendado · mín 1200 × 900 px</span>
+        <div class="cover-acciones">
+          <label class="upload-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            {{ coverPreview() ? 'Cambiar portada' : 'Subir portada' }}
+            <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onCoverChange($event)" hidden />
+          </label>
+          @if (galeria().length > 0) {
+            <button type="button" class="upload-btn" (click)="eligiendoDeGaleria.set(!eligiendoDeGaleria())"
+                    [attr.aria-expanded]="eligiendoDeGaleria()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              Usar una foto de la galería
+            </button>
+          }
+        </div>
+        @if (eligiendoDeGaleria() && galeria().length > 0) {
+          <div class="cover-desde-galeria" role="group" aria-label="Elegir la portada entre las fotos de la galería">
+            @for (g of galeria(); track $index; let i = $index) {
+              <button type="button" class="gallery-thumb" [style.backgroundImage]="'url(' + g.url + ')'"
+                      (click)="usarFotoDeGaleria(i)" [attr.aria-label]="'Usar la foto ' + (i + 1) + ' como portada'"></button>
+            }
+          </div>
+        }
+        <span class="help">JPG, PNG o WebP · mín 1600 px de ancho · la foto se guarda entera y la tarjeta y el hero se encuadran por separado</span>
       </div>
     </div>
 
     <div class="panel" style="align-self:start">
-      <div class="panel-h"><h3>Galería</h3><span class="sub">Hasta 8 imágenes</span></div>
+      <div class="panel-h"><h3>Galería</h3><span class="sub">{{ galeria().length }}/{{ maxFotos }}</span></div>
       <div class="panel-b">
-        @if (galleryPreviews().length > 0) {
+        @if (galeria().length > 0) {
           <div class="gallery-grid">
-            @for (url of galleryPreviews(); track url) {
-              <div class="gallery-thumb" [style.backgroundImage]="'url(' + url + ')'"></div>
+            @for (g of galeria(); track $index; let i = $index) {
+              <div class="gallery-item">
+                <div class="foco-caja gallery-thumb" [style]="g.vars">
+                  <div class="foco-img" [style.backgroundImage]="'url(' + g.url + ')'"></div>
+                </div>
+                <button type="button" class="gallery-remove" [attr.aria-label]="'Quitar foto ' + (i + 1)"
+                        (click)="removeGalleryItem(i)">×</button>
+                <button type="button" class="img-editar is-mini" (click)="editarFoto(i)"
+                        [attr.aria-label]="'Editar foto ' + (i + 1) + ': encuadre, zoom y giro'" title="Editar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
+                </button>
+              </div>
             }
           </div>
         }
-        <label class="upload-btn">
+        <label class="upload-btn" [class.is-disabled]="galeriaLlena()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Seleccionar imágenes
-          <input type="file" accept="image/*" multiple (change)="onGalleryChange($event)" hidden />
+          {{ galeriaLlena() ? 'Galería completa' : 'Agregar fotos' }}
+          <input type="file" accept="image/jpeg,image/png,image/webp" multiple
+                 [disabled]="galeriaLlena()" (change)="onGalleryChange($event)" hidden />
         </label>
-        <span class="help">JPG, PNG o WebP · mín 1200 px de ancho · hasta 8 imágenes</span>
+        <span class="help">JPG, PNG o WebP · mín 1200 px de ancho · hasta {{ maxFotos }} fotos</span>
       </div>
     </div>
+
+    @if (avisos().length > 0) {
+      <ul class="upload-avisos" role="alert">
+        @for (a of avisos(); track a) { <li>{{ a }}</li> }
+      </ul>
+    }
+
+    @if (edicion(); as e) {
+      <app-encuadre-foco [src]="e.src" [titulo]="e.titulo" [vistas]="e.vistas"
+                         (listo)="onEdicionLista($event)" (cancelar)="cancelarEdicion()" />
+    }
 
   </div>
 </div>

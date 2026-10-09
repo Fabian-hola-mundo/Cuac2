@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Payment } from '../../../core/services/mock-admin-data.service';
+import { Payment } from '../../../core/services/admin-data.service';
 import * as XLSX from 'xlsx';
 
 @Injectable({ providedIn: 'root' })

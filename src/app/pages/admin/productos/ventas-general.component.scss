@@ -1,5 +1,17 @@
 :host { display: block; }
 
+// Nota que se escribió en el POS: discreta, una línea, completa en el detalle.
+.venta-nota {
+  margin-top: 2px;
+  max-width: 280px;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--carbon-50);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .inv-date-field {
   display: flex;
   flex-direction: column;

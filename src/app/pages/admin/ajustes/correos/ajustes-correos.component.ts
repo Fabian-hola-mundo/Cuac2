@@ -17,8 +17,8 @@ export class AjustesCorreosComponent {
     { id: 'enviado',      nombre: 'Pedido enviado',            activa: true,  asunto: 'Tu pedido {{numero_orden}} está en camino', cuerpo: 'Hola {{nombre}},\n\nTu pedido {{numero_orden}} fue despachado. Puedes rastrear tu envío aquí: {{link_rastreo}}' },
     { id: 'entregado',    nombre: 'Pedido entregado',          activa: true,  asunto: '¡Tu pedido {{numero_orden}} llegó!', cuerpo: 'Hola {{nombre}},\n\n¡Tu pedido llegó! Esperamos que ames tus productos Cuaquiverso.\n\n{{productos}}' },
     { id: 'reembolso',    nombre: 'Reembolso aprobado',        activa: true,  asunto: 'Reembolso procesado — {{numero_orden}}', cuerpo: 'Hola {{nombre}},\n\nTu reembolso de {{total}} para el pedido {{numero_orden}} fue procesado. Verás el dinero en 3-5 días hábiles.' },
-    { id: 'bienvenida',   nombre: 'Bienvenida al cliente',     activa: false, asunto: '¡Bienvenido al Cuaquiverso, {{nombre}}!', cuerpo: 'Hola {{nombre}},\n\nBienvenido al Cuaquiverso. Somos una marca de personajes colombianos con alma.\n\nExplora la tienda en cuaquiverso.co' },
-    { id: 'carrito',      nombre: 'Recuperar carrito abandonado', activa: false, asunto: '{{nombre}}, olvidaste algo en el Cuaquiverso', cuerpo: 'Hola {{nombre}},\n\nDejaste {{productos}} en tu carrito. ¿Los recuperamos?\n\ncuaquiverso.co/carrito' },
+    { id: 'bienvenida',   nombre: 'Bienvenida al cliente',     activa: false, asunto: '¡Bienvenido al Cuaquiverso, {{nombre}}!', cuerpo: 'Hola {{nombre}},\n\nBienvenido al Cuaquiverso. Somos una marca de personajes colombianos con alma.\n\nExplora la tienda en cuacdesign.com' },
+    { id: 'carrito',      nombre: 'Recuperar carrito abandonado', activa: false, asunto: '{{nombre}}, olvidaste algo en el Cuaquiverso', cuerpo: 'Hola {{nombre}},\n\nDejaste {{productos}} en tu carrito. ¿Los recuperamos?\n\ncuacdesign.com/carrito' },
   ]);
 
   plantillaActiva = signal<string | null>('confirmacion');

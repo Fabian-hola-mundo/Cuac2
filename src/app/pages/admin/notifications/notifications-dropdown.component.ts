@@ -1,7 +1,8 @@
 // src/app/pages/admin/notifications/notifications-dropdown.component.ts
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AdminNotif } from './notifications.service';
+import { AdminNotif, NotificationsService } from './notifications.service';
+import { AdminStateService } from '../../../core/services/admin-state.service';
 
 @Component({
   selector: 'app-notifications-dropdown',
@@ -15,9 +16,16 @@ export class NotificationsDropdownComponent {
   @Output() closed = new EventEmitter<void>();
 
   private router = inject(Router);
+  private state  = inject(AdminStateService);
+  private notifs = inject(NotificationsService);
 
   navigate(item: AdminNotif, e: MouseEvent): void {
     e.stopPropagation();
+    if (item.type === 'pedido' && item.referencia) {
+      this.state.view.set('pedidos');
+      this.state.abrirPedido.set(item.referencia);
+      void this.notifs.marcarPedidoVisto(item.referencia);
+    }
     this.router.navigate(item.route).catch(err => console.error('[notif] navigate error', err));
     this.closed.emit();
   }
