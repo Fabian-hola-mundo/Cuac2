@@ -189,6 +189,27 @@ describe('validarPropuesta', () => {
     expect(r.dudas[0].opciones.map(o => o.producto_id).sort()).toEqual(['est', 'orq', 'sol']);
   });
 
+  it('fragmento con el nombre del catálogo en vez de lo dicho cuenta si cada palabra se dijo', () => {
+    const t = 'una totebag orquídea y una gorra sapo, pagó con nequi';
+    const r = validarPropuesta(
+      { lineas: [{ producto_id: 'orq', variante_id: null, cantidad: 1, fragmento: 'Totebag Orquídeas' }], dudas: [] },
+      catalogo, t,
+    );
+    expect(r.lineas).toEqual([{ producto_id: 'orq', variante_id: null, cantidad: 1 }]);
+    const inventado = validarPropuesta(
+      { lineas: [{ producto_id: 'orq', variante_id: null, cantidad: 1, fragmento: 'Totebag Orquídeas grande' }], dudas: [] },
+      catalogo, t,
+    );
+    expect(inventado.lineas).toEqual([]);
+  });
+
+  it('«tote bag» separado o pegado da lo mismo, en la frase y en el fragmento', () => {
+    const linea = (fragmento: string) => ({ lineas: [{ producto_id: 'orq', variante_id: null, cantidad: 1, fragmento }], dudas: [] });
+    const esperado = [{ producto_id: 'orq', variante_id: null, cantidad: 1 }];
+    expect(validarPropuesta(linea('tote bag orquídea'), catalogo, 'una totebag orquídea en efectivo').lineas).toEqual(esperado);
+    expect(validarPropuesta(linea('totebag orquídea'), catalogo, 'una tote bag orquídea en efectivo').lineas).toEqual(esperado);
+  });
+
   it('sin nada → vacío', () => {
     expect(validarPropuesta(vacio, catalogo, 'hola')).toEqual(vacio);
   });

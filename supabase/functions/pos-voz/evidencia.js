@@ -22,10 +22,12 @@ export function fichas(s) {
   return [...new Set(normalizar(s).split(' ').filter(w => (/^\d+$/.test(w) || w.length >= 3) && !VACIAS.has(w)))];
 }
 
-// Palabras de lo dicho, con los números en letras también como dígitos.
+// Palabras de lo dicho, con los números en letras también como dígitos y cada
+// par de palabras seguidas también pegado («tote bag» → «totebag»).
 function fichasDichas(s) {
   const ws = normalizar(s).split(' ').filter(Boolean);
-  return [...new Set([...ws, ...ws.map(w => NUMEROS[w]).filter(Boolean)])];
+  const pares = ws.slice(1).map((w, i) => ws[i] + w);
+  return [...new Set([...ws, ...pares, ...ws.map(w => NUMEROS[w]).filter(Boolean)])];
 }
 
 // «orquidea» ~ «orquideas»: igual, o prefijo común de ≥ 5 letras.
@@ -55,10 +57,21 @@ function mejores(items, fichasDe, dichas) {
   return r;
 }
 
+// El fragmento cuenta como dicho si cada palabra se parece a una de la frase
+// (el modelo a veces copia el nombre del catálogo en vez de lo dicho).
+// También acepta una palabra que, pegada a su vecina, se dijo junta (exacto:
+// con prefijo, «orquideas»+«grande» pasaría por «orquidea»).
+function fragmentoDicho(frag, dichas) {
+  const ws = frag.split(' ').filter(Boolean);
+  const ok = w => dichas.some(d => parecida(w, d) || NUMEROS[w] === d);
+  const junta = w => dichas.includes(w);
+  return ws.length > 0 && ws.every((w, i) => ok(w) || (i + 1 < ws.length && junta(w + ws[i + 1])) || (i > 0 && junta(ws[i - 1] + w)));
+}
+
 const esCantidad = c => Number.isInteger(c) && c >= 1;
 
 export function validarPropuesta(modelo, catalogo, transcripcion) {
-  const texto = normalizar(transcripcion);
+  const dichasFrase = fichasDichas(transcripcion);
   const porId = new Map(catalogo.productos.map(p => [p.id, p]));
   const variantesDe = id => catalogo.variantes.filter(v => v.producto_id === id);
   const opcionesDe = p => {
@@ -73,7 +86,7 @@ export function validarPropuesta(modelo, catalogo, transcripcion) {
     const p = porId.get(l.producto_id);
     if (!p || !esCantidad(l.cantidad)) continue;
     const frag = normalizar(l.fragmento);
-    if (!frag || !texto.includes(frag)) {
+    if (!fragmentoDicho(frag, dichasFrase)) {
       dudas.push({ texto: `¿Confirmas ${p.nombre}?`, cantidad: l.cantidad, opciones: opcionesDe(p) });
       continue;
     }
@@ -104,7 +117,7 @@ export function validarPropuesta(modelo, catalogo, transcripcion) {
     // El modelo puede olvidar opciones: se completan con todo lo que empata
     // con lo dicho («dos tote bags» → las 3 totes).
     const fragD = normalizar(d.fragmento);
-    const empatados = fragD && texto.includes(fragD)
+    const empatados = fragmentoDicho(fragD, dichasFrase)
       ? mejores(catalogo.productos, fichasProducto, fichasDichas(fragD)).map(p => ({ producto_id: p.id, variante_id: null }))
       : [];
     for (const o of [...(d.opciones ?? []), ...empatados]) {
