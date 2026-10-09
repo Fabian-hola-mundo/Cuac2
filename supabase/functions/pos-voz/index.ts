@@ -24,9 +24,6 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return json({ error: 'Método no permitido' }, 405)
 
-  const groqKey = Deno.env.get('GROQ_API_KEY')
-  if (!groqKey) return json({ error: 'Voz no configurada' }, 500)
-
   // Solo admin u operador del POS.
   const authHeader = req.headers.get('Authorization') ?? ''
   const usuario = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
@@ -34,6 +31,9 @@ Deno.serve(async (req) => {
   })
   const [adm, pos] = await Promise.all([usuario.rpc('is_admin'), usuario.rpc('is_pos_operator')])
   if (adm.data !== true && pos.data !== true) return json({ error: 'No autorizado' }, 401)
+
+  const groqKey = Deno.env.get('GROQ_API_KEY')
+  if (!groqKey) return json({ error: 'Voz no configurada' }, 500)
 
   // Entrada: audio (multipart) o texto (JSON).
   let audio: File | null = null
