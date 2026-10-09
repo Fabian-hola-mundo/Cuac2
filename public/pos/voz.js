@@ -253,6 +253,7 @@ function infoOpcion(o) {
   const etiqueta = v ? Object.keys(v.opciones ?? {}).sort().map(k => v.opciones[k]).join(' · ') : null;
   return {
     nombre: p.nombre,
+    categoria: p.categoria,
     etiqueta,
     precio: v?.precio ?? p.precio ?? 0,
     stock: (v ?? p).stock_actual,
@@ -274,7 +275,7 @@ function lineasFinales() {
 
 function filaHTML(info, cantidad, attrs, max) {
   const foto = info.foto ? `<img src="${esc(info.foto)}" alt="" loading="lazy">` : '<span class="ph"></span>';
-  const det = [info.etiqueta, `${cop(info.precio)}`, `${info.stock} en stock`].filter(Boolean).join(' · ');
+  const det = [info.etiqueta, info.categoria, cop(info.precio), `${info.stock} en stock`].filter(Boolean).join(' · ');
   return `<div class="voz-fila">${foto}
     <div class="nm">${esc(info.nombre)}<small>${esc(det)}</small></div>
     <div class="voz-step">
