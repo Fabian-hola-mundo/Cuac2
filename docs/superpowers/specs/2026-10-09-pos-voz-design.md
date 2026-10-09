@@ -148,3 +148,9 @@ Sin cambios: las líneas llegan al carrito y la hoja de cobro llama a `registrar
 - **Duda sin campo `texto`:** el modelo lo omitió una vez y Groq rechazó la respuesta; el esquema ya no lo pide y el servidor lo arma con el fragmento.
 - **Lógica del modelo** en `supabase/functions/pos-voz/interpretar.js` (JS plano), para probar frases reales desde Node sin desplegar.
 - Banco de 9 frases reales contra el catálogo de producción: todas correctas, ~1,1 s cada una.
+
+## 9. Puesta en marcha (2026-10-09)
+
+- **Clave de Groq en Supabase Vault** (`groq_api_key`). La migración `039_pos_voz_secreto.sql` crea `public.secreto_pos_voz(text)`, que solo `service_role` puede ejecutar y que solo entrega nombres permitidos. La función usa primero `GROQ_API_KEY` del entorno y, si no existe, la de Vault. Para rotar la clave: `select vault.update_secret((select id from vault.secrets where name = 'groq_api_key'), '<nueva>');`. La instancia la recuerda hasta que se recicla, así que conviene redesplegar `pos-voz` después de rotarla.
+- **Fragmento flexible:** el modelo a veces devuelve el nombre del catálogo («Totebag Orquídeas») o separa «tote bag». El fragmento cuenta como dicho si cada palabra se parece a una de la frase (prefijo ≥ 5) o, pegada a su vecina, coincide exactamente con una palabra dicha.
+- **Verificado en producción** (función v4, con la sesión real del POS): texto → respuestas correctas; sin sesión → 401; audio sintetizado en español → Whisper ~1 s, total ~2 s, duda correcta entre las 3 totes con efectivo y $80.000.
