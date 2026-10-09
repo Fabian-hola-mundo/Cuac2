@@ -220,48 +220,67 @@
     }
     .btn-secondary:hover { border-color: var(--carbon); background: rgba(21, 31, 40, 0.04); }
 
-    /* ════════ TOPBAR ════════ */
+    /* ════════ TOPBAR (una línea + buscador + chips) ════════ */
     #catalog-header {
       position: sticky; top: 0; z-index: 20;
-      background: rgba(240, 241, 246, 0.82);
+      background: rgba(240, 241, 246, 0.92);
       backdrop-filter: blur(14px) saturate(1.2);
       -webkit-backdrop-filter: blur(14px) saturate(1.2);
       border-bottom: 1px solid var(--line-soft);
-      padding: 12px 16px;
-      display: flex; flex-direction: column; gap: 10px;
+      padding: 8px 12px 8px;
+      display: flex; flex-direction: column; gap: 7px;
     }
-    .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .header-brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
-    .header-orb {
-      width: 36px; height: 36px; flex: none;
-      border-radius: var(--r-pill);
-      display: grid; place-items: center;
-      background: var(--paper-2);
-      border: 1px solid var(--line);
-      overflow: hidden;
-      padding: 7px;
-    }
-    .header-orb svg { width: 100%; height: auto; display: block; }
-    .header-titles { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
-    .header-kicker {
-      font-family: var(--mono);
-      font-size: 9.5px; font-weight: 700;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--terra);
+    .header-line {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      width: 100%; padding: 2px 0; background: none; border: none; font-family: inherit;
+      color: var(--ink); cursor: pointer; text-align: left;
+      -webkit-tap-highlight-color: transparent; position: relative;
     }
     .header-event {
       font-family: var(--display);
-      font-size: 18px; line-height: 1.05;
-      color: var(--carbon);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 16px; line-height: 1.1; color: var(--carbon);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;
     }
-    .header-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .header-device {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 12.5px; color: var(--ink-mute); min-width: 0;
+    .header-line .connection-badge { padding: 3px 8px; font-size: 9.5px; }
+    .header-line.tiene-pendientes::after {
+      content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--warn); flex: none;
     }
+    .header-detail {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 2px 0 4px; font-size: 12.5px; color: var(--ink-mute);
+    }
+    .header-detail[hidden] { display: none; }
+    .header-device { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
     .header-device svg { flex: none; opacity: 0.7; }
     .header-device span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .search-box {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--paper-2); border: 2px solid var(--carbon); border-radius: var(--r-md);
+      padding: 0 6px 0 10px;
+    }
+    .search-box input[type="search"] {
+      flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+      font-family: inherit; font-size: 16px; padding: 9px 0; color: var(--ink);
+      -webkit-appearance: none; appearance: none;
+    }
+    .search-box input::-webkit-search-cancel-button { display: none; }
+    #search-clear {
+      width: 30px; height: 30px; flex: none; border: none; border-radius: 50%;
+      background: var(--line-soft); color: var(--carbon); font-size: 14px; cursor: pointer;
+    }
+    #search-clear[hidden] { display: none; }
+    .cat-chips { display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+    .cat-chips::-webkit-scrollbar { display: none; }
+    .cat-chips[hidden] { display: none; }
+    .cat-chip {
+      flex: none; border: 1px solid var(--line); border-radius: var(--r-pill);
+      padding: 5px 12px; font-family: inherit; font-size: 12.5px; background: var(--paper-2); color: var(--ink);
+      cursor: pointer;
+    }
+    .cat-chip.on { background: var(--carbon); color: var(--paper); border-color: var(--carbon); }
+    .cat-chip.hot { border-color: var(--terra); color: #b8431f; background: rgba(232,98,61,.08); font-weight: 700; }
+    .cat-chip.hot.on { background: var(--terra); color: #fff; }
 
     .connection-badge {
       display: inline-flex; align-items: center; gap: 6px;
@@ -277,7 +296,6 @@
     .connection-badge.online .connection-dot { animation: pulse-dot 2.4s ease-in-out infinite; }
     @keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.82); } }
 
-    .chips { display: inline-flex; align-items: center; gap: 8px; flex: none; }
     .tally { display: inline-flex; align-items: baseline; gap: 5px; font-size: 12.5px; color: var(--ink-mute); }
     .tally b { font-family: var(--display); font-size: 14px; color: var(--carbon); font-weight: 400; }
     .tally .sep { color: var(--ink-faint); }
@@ -292,83 +310,65 @@
     .pending-chip .connection-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
 
     /* ════════ CATALOG ════════ */
-    #catalog-body { flex: 1; padding: 16px 16px calc(24px + var(--safe-b)); overflow-y: auto; }
-    #product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
+    #catalog-body { flex: 1; padding: 8px 12px calc(24px + var(--safe-b)); overflow-y: auto; }
+    #product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 7px; }
+    .no-results { grid-column: 1 / -1; text-align: center; padding: 40px 12px; color: var(--ink-mute); font-size: 14px; }
 
-    /* ── Product card (echoes storefront .pcard) ── */
+    /* ── Product card compacta ── */
     .product-card {
       position: relative;
       display: flex; flex-direction: column;
-      text-align: left; font-family: inherit;
+      text-align: left; font-family: inherit; padding: 0;
       background: var(--paper-2);
       border: 1px solid var(--line-soft);
-      border-radius: var(--r-lg);
+      border-radius: var(--r-md);
       overflow: hidden;
       cursor: pointer; color: var(--ink);
       -webkit-tap-highlight-color: transparent;
-      transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+      transition: transform 0.1s var(--ease), box-shadow 0.2s var(--ease);
     }
-    .product-card:hover { transform: translateY(-3px); box-shadow: 0 16px 32px rgba(21, 31, 40, 0.10); border-color: var(--line); }
-    .product-card:active { transform: translateY(-1px) scale(0.99); }
+    .product-card:active { transform: scale(0.98); }
     .product-card:disabled { cursor: default; }
-    .product-card:disabled:hover { transform: none; box-shadow: none; border-color: var(--line-soft); }
 
     .card-art {
-      position: relative;
-      min-height: 96px;
-      display: grid; place-items: center;
-      padding: 16px 14px;
+      position: relative; height: 64px; overflow: hidden;
+      display: flex; align-items: flex-end;
+      padding: 5px 7px;
       background: var(--c-soft, var(--bone-soft));
     }
     .card-art .art-name {
       font-family: var(--display);
-      font-size: 21px; line-height: 1.08;
-      text-align: center;
+      font-size: 13px; line-height: 1.12;
       color: var(--c, var(--carbon));
-      mix-blend-mode: multiply;
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+      position: relative;
     }
-    .card-flag {
-      position: absolute; top: 10px; left: 10px;
-      font-family: var(--mono);
-      font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-      padding: 4px 8px; border-radius: var(--r-pill);
+    .card-art.con-foto { padding: 0; }
+    .card-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .card-art.con-foto .art-name {
+      color: #fff; width: 100%; padding: 14px 7px 4px;
+      background: linear-gradient(transparent, rgba(21,31,40,.72));
+      -webkit-line-clamp: 2;
     }
-    .card-flag.low { background: var(--warn); color: #fff; }
-    .card-flag.sold { background: var(--carbon); color: var(--paper); }
     .product-card.sold-out .card-art { filter: grayscale(0.85); opacity: 0.7; }
-
+    .card-fire {
+      position: absolute; top: 5px; left: 5px; z-index: 1;
+      background: var(--carbon); color: #fff; border-radius: 8px;
+      font-size: 10px; font-weight: 700; padding: 0 6px; line-height: 16px;
+    }
     .card-info {
-      padding: 11px 13px 13px;
-      border-top: 1px solid var(--line-soft);
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .card-cat {
-      font-family: var(--mono);
-      font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--ink-mute);
-    }
-    .card-row {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-      padding-top: 9px; border-top: 1px dashed var(--line);
+      padding: 5px 8px 6px;
+      display: flex; justify-content: space-between; align-items: center; gap: 6px;
     }
     .card-price {
       font-family: var(--display);
-      font-size: 19px; line-height: 1; color: var(--carbon);
+      font-size: 15px; line-height: 1; color: var(--carbon);
       font-variant-numeric: tabular-nums;
       transition: color 0.3s var(--ease);
     }
-    .card-add {
-      width: 34px; height: 34px; flex: none;
-      border-radius: 50%;
-      display: grid; place-items: center;
-      background: var(--paper); color: var(--carbon);
-      border: 1px solid var(--line);
-      transition: background 0.15s var(--ease), color 0.15s var(--ease), transform 0.15s var(--ease);
-    }
-    .product-card:hover .card-add { background: var(--carbon); color: var(--paper); transform: scale(1.06); }
-    .card-stock { font-size: 11.5px; color: var(--ink-mute); font-variant-numeric: tabular-nums; }
-    .card-stock b { color: var(--ink); font-weight: 700; }
+    .card-stock { font-size: 11px; color: var(--ink-mute); font-variant-numeric: tabular-nums; }
+    .card-stock.low { color: var(--warn); font-weight: 700; }
+    .card-stock.sold { color: var(--ink-mute); font-weight: 700; }
 
     .product-card.flash { animation: card-flash 0.65s var(--ease); }
     .product-card.flash .card-price { color: var(--ok); }
@@ -379,7 +379,7 @@
 
     /* ── Skeleton ── */
     .skel-card { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: var(--r-lg); overflow: hidden; }
-    .skel-art { height: 96px; }
+    .skel-art { height: 64px; }
     .skel-info { padding: 13px; display: flex; flex-direction: column; gap: 10px; }
     .skel { background: linear-gradient(100deg, var(--surface-3, #E6E8F0) 30%, #f3f4f8 50%, var(--surface-3, #E6E8F0) 70%); background-size: 220% 100%; border-radius: 5px; animation: shimmer 1.3s linear infinite; }
     .skel.cat { height: 8px; width: 40%; }
@@ -532,8 +532,8 @@
 
     /* ════════ CARRITO ════════ */
     .card-qty {
-      position: absolute; top: 10px; right: 10px;
-      min-width: 28px; padding: 3px 9px; border-radius: var(--r-pill);
+      position: absolute; top: 5px; right: 5px; z-index: 1;
+      min-width: 24px; padding: 1px 7px; border-radius: var(--r-pill);
       background: var(--carbon); color: var(--paper);
       font-family: var(--mono); font-size: 12px; font-weight: 800; text-align: center;
     }
@@ -646,40 +646,35 @@
   <!-- SCREEN 2: Catalog -->
   <div id="screen-catalog" class="screen">
     <header id="catalog-header">
-      <div class="header-row">
-        <div class="header-brand">
-          <div class="header-orb" aria-hidden="true">
-            <svg viewBox="0 0 190 190" xmlns="http://www.w3.org/2000/svg">
-              <path fill="#151F28" d="M88.93,3.01c-6.81.03-13.63.39-20.38,1.12C34.86,7.77,12.18,27.29,4.07,60.16c-5.6,22.7-5.43,45.59.58,68.19,7.18,27.07,24.36,44.85,51.72,51.69,9.17,2.3,18.82,3.54,28.28,3.67,32.51.44,100.55-.05,102.03-.19v-36.66c0-13.9-11.26-25.16-25.16-25.16-16.91,0-39.23,0-56.98-.02l-14.65-.02c-4.27-.02-8.59-.15-12.81-.8-9.43-1.45-16.83-5.9-20.48-15.21-7.69-19.58,2.48-37.11,23.24-39.9,3.45-.46,6.98-.61,10.48-.61,18.24-.03,49.37-.03,71.35-.03,13.9,0,25.16-11.26,25.16-25.16V2.96c-2.57,0-67.52-.07-97.89.05h0Z"/>
-            </svg>
-          </div>
-          <div class="header-titles">
-            <span class="header-kicker">Cuaquiverso</span>
-            <span class="header-event" id="header-event-name">Cargando…</span>
-          </div>
-        </div>
+      <button type="button" class="header-line" id="header-line" aria-expanded="false" aria-controls="header-detail" onclick="window.toggleHeaderDetalle()">
+        <span class="header-event" id="header-event-name">Cargando…</span>
         <span id="connection-badge" class="connection-badge online">
           <span class="connection-dot"></span>
           <span id="connection-label">Conectado</span>
         </span>
-      </div>
-      <div class="header-meta">
+        <span class="tally" id="tally" title="Ventas de hoy en este dispositivo">
+          <b id="tally-count">0</b> ventas
+          <span class="sep">·</span>
+          <b id="tally-total">$0</b>
+        </span>
+      </button>
+      <div class="header-detail" id="header-detail" hidden>
         <span class="header-device">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
           <span id="header-device-name"></span>
         </span>
-        <div class="chips">
-          <span id="pending-badge" class="pending-chip">
-            <span class="connection-dot"></span>
-            <span id="pending-label">0 pendientes</span>
-          </span>
-          <span class="tally" id="tally" title="Ventas de hoy en este dispositivo">
-            <b id="tally-count">0</b> ventas
-            <span class="sep">·</span>
-            <b id="tally-total">$0</b>
-          </span>
-        </div>
+        <span id="pending-badge" class="pending-chip">
+          <span class="connection-dot"></span>
+          <span id="pending-label">0 pendientes</span>
+        </span>
       </div>
+      <div class="search-box">
+        <span aria-hidden="true">🔍</span>
+        <input type="search" id="search-input" placeholder="Buscar producto…" enterkeyhint="search"
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Buscar producto" />
+        <button type="button" id="search-clear" hidden aria-label="Limpiar búsqueda">✕</button>
+      </div>
+      <div class="cat-chips" id="cat-chips"></div>
     </header>
 
     <div id="catalog-body">
@@ -763,6 +758,7 @@
 
 <script type="module">
   import {
+    coincideBusqueda, ordenarCatalogo,
     agregarAlCarrito, cambiarCantidad, totalCarrito, unidadesCarrito,
     restaurarCarrito, atajosBilletes, calcularVueltas, nuevoCobro,
     armarTransaccion, migrarColaVieja,
@@ -790,6 +786,12 @@
   let variantsByProduct = {};
   let optionOrder = {};
   let reservedByVariant = {};
+
+  // Catálogo «vender primero»: buscador, chips y orden 🔥.
+  let masVendidos = [];         // {producto_id, unidades}[] — lo llena la Task 5
+  let ordenAplicado = [];       // salida de ordenarCatalogo, congelada mientras haya carrito
+  let chipActivo = 'todo';      // 'todo' | 'hot' | 'cat:<categoria>'
+  let textoBusqueda = '';
 
   // Carrito y cobro en curso. `cobro` se crea al abrir la hoja de cobro y solo
   // se descarta al registrar: así un reintento reutiliza el mismo transaccion_id.
@@ -918,6 +920,7 @@
     const q = getOfflineQueue();
     const badge = document.getElementById('pending-badge');
     const label = document.getElementById('pending-label');
+    document.getElementById('header-line').classList.toggle('tiene-pendientes', q.length > 0);
     if (q.length > 0) {
       badge.classList.add('visible');
       label.textContent = `${q.length} pendiente${q.length > 1 ? 's' : ''}`;
@@ -1085,22 +1088,85 @@
     return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
+  function productosActivos() {
+    return products.filter(p => p.activo);
+  }
+
+  // Recalcula el orden 🔥 solo con el carrito vacío: así las tarjetas no se
+  // mueven mientras se arma una venta. Se llama al cargar y tras cada venta.
+  function aplicarOrdenSiCarritoVacio() {
+    if (carrito.length !== 0) return;
+    ordenAplicado = ordenarCatalogo(productosActivos(), masVendidos);
+  }
+
+  // Orden ya calculado, con los datos frescos de cada producto; los que
+  // llegaron después del cálculo van al final en su orden natural.
+  function listaOrdenada() {
+    const activos = productosActivos();
+    const porId = new Map(activos.map(p => [p.id, p]));
+    const vistos = new Set();
+    const lista = [];
+    for (const { producto, rango } of ordenAplicado) {
+      const p = porId.get(producto.id);
+      if (!p) continue;
+      vistos.add(p.id);
+      lista.push({ producto: p, rango });
+    }
+    for (const p of activos) if (!vistos.has(p.id)) lista.push({ producto: p, rango: null });
+    return lista;
+  }
+
+  function renderChips() {
+    const cont = document.getElementById('cat-chips');
+    const cats = [...new Set(productosActivos().map(p => p.categoria || 'General'))]
+      .sort((a, b) => a.localeCompare(b, 'es'));
+    if (chipActivo === 'hot' && masVendidos.length === 0) chipActivo = 'todo';
+    if (chipActivo.startsWith('cat:') && !cats.includes(chipActivo.slice(4))) chipActivo = 'todo';
+    const chip = (clave, texto, extra = '') =>
+      `<button type="button" class="cat-chip${extra}${chipActivo === clave ? ' on' : ''}" data-chip="${escapeHtml(clave)}">${texto}</button>`;
+    cont.innerHTML = chip('todo', 'Todo')
+      + (masVendidos.length ? chip('hot', '🔥 Más vendidos', ' hot') : '')
+      + cats.map(c => chip('cat:' + c, escapeHtml(c))).join('');
+    cont.hidden = textoBusqueda.trim() !== '';
+  }
+
+  function urlFoto(url) {
+    // La transformación de Storage (/render/image) no está habilitada en el
+    // proyecto (responde 403): se usa la foto original.
+    return url;
+  }
+
   function renderProducts() {
     const grid = document.getElementById('product-grid');
     const empty = document.getElementById('empty-state');
     grid.innerHTML = '';
 
-    const active = products.filter(p => p.activo);
+    const active = productosActivos();
     if (active.length === 0) {
       empty.style.display = 'flex';
       return;
     }
     empty.style.display = 'none';
 
-    active.forEach(p => {
+    const consulta = textoBusqueda.trim();
+    let lista;
+    if (consulta) {
+      lista = active.filter(p => coincideBusqueda(p, consulta)).map(producto => ({ producto, rango: null }));
+    } else {
+      lista = listaOrdenada();
+      if (chipActivo === 'hot') lista = lista.filter(x => x.rango != null);
+      else if (chipActivo.startsWith('cat:')) lista = lista.filter(x => (x.producto.categoria || 'General') === chipActivo.slice(4));
+    }
+    if (lista.length === 0) {
+      grid.innerHTML = `<div class="no-results">No hay productos que coincidan${consulta ? ` con «${escapeHtml(consulta)}»` : ''}</div>`;
+      return;
+    }
+
+    lista.forEach(({ producto: p, rango }) => {
       const soldOut = p.stock_actual <= 0;
       const lowStock = p.stock_actual > 0 && p.stock_actual < 3;
       const c = colorFor(p.categoria);
+      const foto = Array.isArray(p.fotos) && p.fotos[0] ? urlFoto(p.fotos[0]) : null;
 
       const card = document.createElement('button');
       card.type = 'button';
@@ -1111,36 +1177,60 @@
       if (soldOut) card.disabled = true;
       else card.onclick = () => window.tocarProducto(p.id);
 
-      let flag = '';
-      if (soldOut) flag = `<span class="card-flag sold">Agotado</span>`;
-      else if (lowStock) flag = `<span class="card-flag low">Quedan ${p.stock_actual}</span>`;
-
-      const trailing = soldOut
-        ? `<span class="card-stock">Sin stock</span>`
-        : `<span class="card-add" aria-hidden="true">
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-           </span>`;
+      const stock = soldOut
+        ? `<span class="card-stock sold">Agotado</span>`
+        : `<span class="card-stock${lowStock ? ' low' : ''}">${p.stock_actual}</span>`;
+      const n = cantidadEnCarrito(p.id);
 
       card.innerHTML = `
-        <div class="card-art">
-          ${flag}
-          <span class="card-qty"${cantidadEnCarrito(p.id) ? '' : ' hidden'}>×${cantidadEnCarrito(p.id)}</span>
+        <div class="card-art${foto ? ' con-foto' : ''}">
+          ${foto ? `<img src="${escapeHtml(foto)}" alt="" loading="lazy" decoding="async">` : ''}
+          ${rango != null ? `<span class="card-fire">🔥${rango}</span>` : ''}
+          <span class="card-qty"${n ? '' : ' hidden'}>×${n}</span>
           <div class="art-name">${escapeHtml(p.nombre)}</div>
         </div>
         <div class="card-info">
-          <div class="card-cat">${escapeHtml(p.categoria || 'General')}</div>
-          <div class="card-row">
-            <div>
-              <div class="card-price">${formatCOP(p.precio)}</div>
-              ${soldOut ? '' : `<div class="card-stock" style="margin-top:4px">Stock <b>${p.stock_actual}</b></div>`}
-            </div>
-            ${trailing}
-          </div>
+          <div class="card-price">${formatCOP(p.precio)}</div>
+          ${stock}
         </div>
       `;
       grid.appendChild(card);
     });
   }
+
+  // Buscador y chips
+  function refrescarCatalogo() {
+    renderChips();
+    renderProducts();
+  }
+  function limpiarBuscadorYChip() {
+    textoBusqueda = '';
+    chipActivo = 'todo';
+    const input = document.getElementById('search-input');
+    if (input) input.value = '';
+    document.getElementById('search-clear').hidden = true;
+  }
+  document.getElementById('search-input').addEventListener('input', e => {
+    textoBusqueda = e.target.value;
+    document.getElementById('search-clear').hidden = textoBusqueda === '';
+    refrescarCatalogo();
+  });
+  document.getElementById('search-clear').addEventListener('click', () => {
+    limpiarBuscadorYChip();
+    refrescarCatalogo();
+    document.getElementById('search-input').focus();
+  });
+  document.getElementById('cat-chips').addEventListener('click', e => {
+    const b = e.target.closest('.cat-chip');
+    if (!b) return;
+    chipActivo = b.dataset.chip;
+    refrescarCatalogo();
+  });
+  window.toggleHeaderDetalle = function() {
+    const d = document.getElementById('header-detail');
+    d.hidden = !d.hidden;
+    document.getElementById('header-line').setAttribute('aria-expanded', String(!d.hidden));
+  };
 
   function flashCard(id) {
     const card = document.querySelector(`.product-card[data-id="${id}"]`);
@@ -1197,13 +1287,15 @@
       reservedByVariant = nuevasReservas;
       guardarCatalogoLocal();
       restaurarCarritoGuardado();
-      renderProducts();
+      aplicarOrdenSiCarritoVacio();
+      refrescarCatalogo();
     } catch (e) {
       console.error('Load products error:', e);
       // Sin red se vende con el último catálogo que se vio en este dispositivo.
       if (!products.length && cargarCatalogoLocal()) {
         restaurarCarritoGuardado();
-        renderProducts();
+        aplicarOrdenSiCarritoVacio();
+        refrescarCatalogo();
         showToast('Sin conexión: usando el último catálogo guardado', 'warning', 3500);
       } else {
         showToast('Error cargando productos', 'error');
@@ -1254,13 +1346,13 @@
             if (idx !== -1) products[idx] = { ...products[idx], ...updated };
             else products.push(updated);
           }
-          renderProducts();
+          refrescarCatalogo();
         } else if (payload.eventType === 'INSERT' && payload.new?.activo) {
           products.push(payload.new);
-          renderProducts();
+          refrescarCatalogo();
         } else if (payload.eventType === 'DELETE' && payload.old) {
           products = products.filter(p => p.id !== payload.old.id);
-          renderProducts();
+          refrescarCatalogo();
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'producto_variantes' }, () => loadProducts())
@@ -1631,6 +1723,10 @@
   // Gancho de la Task 5 (contador del evento y más vendidos). Por ahora solo
   // suma al contador por dispositivo.
   function onVentaRegistrada(transaccion) {
+    // Venta cerrada: buscador limpio, chip Todo y orden 🔥 recalculado (carrito vacío).
+    limpiarBuscadorYChip();
+    aplicarOrdenSiCarritoVacio();
+    refrescarCatalogo();
     const unidades = transaccion.lineas.reduce((s, l) => s + l.cantidad, 0);
     const total = transaccion.lineas.reduce((s, l) => s + l.cantidad * (l.precio_unitario ?? 0), 0);
     addTally(unidades, total);

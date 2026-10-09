@@ -3,7 +3,8 @@
 // caché si no hay conexión. Supabase no pasa por aquí: las ventas sin conexión
 // ya las guarda la propia página en localStorage.
 
-const CACHE = 'pos-v3';
+const CACHE = 'pos-v4';
+const CACHE_FOTOS = 'pos-fotos-v1'; // fotos de productos: cache aparte, sobrevive a las versiones
 const SHELL = [
   '/pos/',
   '/pos/pos-logic.js',
@@ -23,7 +24,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== CACHE_FOTOS).map(k => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -32,6 +33,20 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+
+  // Fotos de Supabase Storage (object o render): cache primero, sin internet siguen ahí.
+  if (url.hostname.endsWith('.supabase.co') && url.pathname.startsWith('/storage/v1/')) {
+    event.respondWith(
+      caches.open(CACHE_FOTOS).then(c =>
+        c.match(req).then(cacheada => cacheada || fetch(req).then(res => {
+          if (res.ok || res.type === 'opaque') c.put(req, res.clone()); // <img> sin CORS responde opaca
+          return res;
+        })),
+      ),
+    );
+    return;
+  }
+
   if (url.origin !== location.origin) return;
 
   if (req.mode === 'navigate') {
