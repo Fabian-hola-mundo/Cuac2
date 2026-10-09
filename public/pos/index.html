@@ -1728,9 +1728,19 @@
     catalogo: () => ({ productos: products, variantesPorProducto: variantsByProduct }),
     toast: showToast,
     async agregar(lineas, { metodoPago: metodo, observacion }) {
-      if (registrando) { showToast('Espera a que termine el registro en curso', 'warning'); return false; }
       const { fusionarCarrito } = await import('./voz-logic.js');
-      carrito = fusionarCarrito(carrito, lineas);
+      // Se revisa después del import: el registro pudo empezar mientras cargaba.
+      if (registrando) { showToast('Espera a que termine el registro en curso', 'warning'); return false; }
+      const stockDe = (productoId, varianteId) => {
+        const fuente = varianteId
+          ? (variantsByProduct[productoId] || []).find(v => v.id === varianteId)
+          : products.find(p => p.id === productoId);
+        return fuente ? Math.max(0, fuente.stock_actual) : 0;
+      };
+      const r = fusionarCarrito(carrito, lineas, stockDe);
+      if (r.recortadas) showToast(`${r.recortadas} unidad(es) no se agregaron por falta de stock`, 'warning', 4000);
+      if (r.carrito.length === carrito.length && r.carrito.every((l, i) => l.cantidad === carrito[i].cantidad)) return false;
+      carrito = r.carrito;
       cambioCarrito();
       window.abrirCobro();
       if (metodo) { metodoPago = metodo; renderCobro(); }

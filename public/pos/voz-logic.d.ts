@@ -15,5 +15,9 @@ export function propuestaACarrito(
   productos: Producto[],
   variantesPorProducto: Record<string, Variante[]>,
 ): { lineas: Linea[]; omitidas: number; recortadas: number };
-export function fusionarCarrito(carrito: Linea[], nuevas: Linea[]): Linea[];
+export function fusionarCarrito(
+  carrito: Linea[],
+  nuevas: Linea[],
+  stockDe: (productoId: string, varianteId: string | null) => number,
+): { carrito: Linea[]; recortadas: number };
 export function dudasPendientes(propuesta: PropuestaVoz, elecciones: Elecciones): number;

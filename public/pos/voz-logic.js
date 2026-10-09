@@ -81,14 +81,27 @@ export function propuestaACarrito(propuesta, elecciones, productos, variantesPor
   return { lineas, omitidas, recortadas };
 }
 
-export function fusionarCarrito(carrito, nuevas) {
+// Suma las líneas nuevas al carrito sin pasar el stock actual de cada producto
+// o combinación, contando TODAS sus líneas (la de catálogo y las de precio
+// dictado tienen claves distintas, así que el tope por línea no basta).
+// stockDe(producto_id, variante_id) → stock actual del catálogo.
+export function fusionarCarrito(carrito, nuevas, stockDe) {
   const r = carrito.map(l => ({ ...l }));
+  let recortadas = 0;
+  const enCarrito = n => r
+    .filter(l => l.producto_id === n.producto_id && (l.variante_id ?? null) === (n.variante_id ?? null))
+    .reduce((s, l) => s + l.cantidad, 0);
   for (const n of nuevas) {
+    const stock = stockDe(n.producto_id, n.variante_id ?? null);
+    const libre = Math.max(0, stock - enCarrito(n));
+    const cantidad = Math.min(n.cantidad, libre);
+    recortadas += n.cantidad - cantidad;
+    if (cantidad <= 0) continue;
     const e = r.find(l => l.clave === n.clave);
-    if (e) e.cantidad = Math.min(e.cantidad + n.cantidad, e.stock_max);
-    else r.push({ ...n });
+    if (e) e.cantidad += cantidad;
+    else r.push({ ...n, cantidad });
   }
-  return r;
+  return { carrito: r, recortadas };
 }
 
 export function dudasPendientes(propuesta, elecciones) {

@@ -82,11 +82,26 @@ describe('propuestaACarrito', () => {
 });
 
 describe('fusionarCarrito', () => {
-  it('suma por clave con tope y no mezcla precios dictados', () => {
+  const stock10 = () => 10;
+  it('suma por clave y el tope de stock cuenta todas las líneas del mismo producto', () => {
     const carrito = [linea('a', 40000, 9)];
-    const r = fusionarCarrito(carrito, [linea('a', 40000, 3), linea('a', 35000, 1, { clave: 'a||vx' })]);
-    expect(r.map(l => [l.clave, l.cantidad])).toEqual([['a|', 10], ['a||vx', 1]]);
+    const r = fusionarCarrito(carrito, [linea('a', 40000, 3), linea('a', 35000, 1, { clave: 'a||vx' })], stock10);
+    expect(r.carrito.map(l => [l.clave, l.cantidad])).toEqual([['a|', 10]]);
+    expect(r.recortadas).toBe(3);
     expect(carrito[0].cantidad).toBe(9);
+  });
+
+  it('no mezcla precios dictados cuando hay stock', () => {
+    const r = fusionarCarrito([linea('a', 40000, 1)], [linea('a', 35000, 2, { clave: 'a||vx' })], stock10);
+    expect(r.carrito.map(l => [l.clave, l.cantidad, l.precio_unitario])).toEqual([['a|', 1, 40000], ['a||vx', 2, 35000]]);
+    expect(r.recortadas).toBe(0);
+  });
+
+  it('usa el stock actual del catálogo y omite lo agotado', () => {
+    const stockDe = (id: string) => (id === 'a' ? 0 : 2);
+    const r = fusionarCarrito([], [linea('a', 1000, 1), linea('b', 1000, 3)], stockDe);
+    expect(r.carrito.map(l => [l.producto_id, l.cantidad])).toEqual([['b', 2]]);
+    expect(r.recortadas).toBe(2);
   });
 });
 
