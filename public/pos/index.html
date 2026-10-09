@@ -773,6 +773,7 @@
   const OFFLINE_QUEUE_KEY = 'pos_offline_queue';        // cola vieja (una fila por venta), solo se migra
   const OFFLINE_QUEUE_V2_KEY = 'pos_offline_queue_v2';  // cola actual (una transacción por carrito)
   const CARRITO_KEY = 'pos_carrito';
+  const TIMEOUT_RPC_MS = 8000;  // tope de espera al registrar una venta
   const DEVICE_NAME_KEY = 'pos_device_name';
   const DEVICE_ID_KEY = 'pos_device_id';
   const CATALOG_KEY = 'pos_catalogo';
@@ -994,7 +995,19 @@
   // ── OFFLINE QUEUE SYNC ──
   // Envía cada transacción con la misma RPC y el mismo id: reintentar es seguro
   // porque una ya registrada responde 'duplicada'.
+  // Sin respuesta a tiempo se trata como error de red: la venta va a la cola con
+  // el mismo id y un reintento posterior responde 'duplicada' si ya se guardó.
   async function enviarTransaccion(t) {
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), TIMEOUT_RPC_MS);
+    try {
+      return await enviarTransaccionSinLimite(t, ac.signal);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function enviarTransaccionSinLimite(t, signal) {
     const { data, error } = await sb.rpc('registrar_transaccion_pos', {
       p_transaccion_id: t.transaccion_id,
       p_metodo_pago: t.metodo_pago,
@@ -1004,7 +1017,7 @@
       p_comentario: t.comentario,
       p_vendido_en: t.vendido_en,
       p_lineas: t.lineas,
-    });
+    }).abortSignal(signal);
     if (error) throw error;
     return data; // 'registrada' | 'duplicada'
   }
@@ -1363,6 +1376,7 @@
 
   // Agrega 1 unidad. Devuelve false si ya no queda stock para sumar.
   function agregarLinea(producto, variante) {
+    if (registrando) return false; // el carrito no cambia mientras se registra
     const antes = unidadesCarrito(carrito);
     carrito = agregarAlCarrito(carrito, producto, variante, variante ? variantLabel(variante) : undefined);
     const agregado = unidadesCarrito(carrito) > antes;
@@ -1479,6 +1493,7 @@
   };
 
   window.cerrarCobro = function() {
+    if (registrando) return; // no se cierra mientras se registra
     document.getElementById('cobro-modal').classList.remove('open');
   };
 
@@ -1595,6 +1610,7 @@
 
       // Éxito (servidor o cola): se limpia todo y se cierra la hoja.
       descontarStockLocal(t.lineas);
+      registrando = false; // ya terminó: permite cerrar la hoja y vaciar el carrito
       carrito = [];
       cobro = null;
       resetCobroUI();
@@ -1603,6 +1619,9 @@
       renderProducts();
       showToast(aviso, tipo);
       onVentaRegistrada(t);
+      // Un envío que falló con la red "arriba" no se reintentaría hasta el próximo
+      // evento online: si la cola tiene algo, se intenta ya (sin esperar).
+      if (!guardarEnCola && getOfflineQueue().length > 0) void syncOfflineQueue();
     } finally {
       registrando = false;
       if (document.getElementById('cobro-modal').classList.contains('open')) renderCobro();
