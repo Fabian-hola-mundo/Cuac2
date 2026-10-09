@@ -40,7 +40,7 @@ Registrar una venta del evento activo (hoy **SOFA 2026**) hablándole al celular
 
 ## 2. Hoja de voz
 
-**Carga diferida.** Toda la hoja de voz (DOM, estilos, grabación y llamada a la función) vive en `public/pos/voz.js`, que importa `voz-logic.js`. `index.html` la carga con `import('./voz.js')` solo al tocar 🎙 o al abrir con `?voz=1`. Así el POS sin internet nunca depende de esos archivos: no van en el `SHELL` de `sw.js` y la caché sigue en `pos-v4`. `index.html` le pasa un puente: `abrirVoz(puente, { grabar })` con `puente = { sb, supabaseUrl, supabaseKey, eventoId, productos, variantesPorProducto, agregar(lineas, { metodoPago, observacion }), toast(msg, tipo) }`.
+**Carga diferida.** Toda la hoja de voz (DOM, estilos, grabación y llamada a la función) vive en `public/pos/voz.js`, que importa `voz-logic.js`. `index.html` la carga con `import('./voz.js')` solo al tocar 🎙 o al abrir con `?voz=1`. Así el POS sin internet nunca depende de esos archivos: no van en el `SHELL` de `sw.js` y la caché sigue en `pos-v4`. `index.html` le pasa un puente: `abrirVoz(puente, { grabar })` con `puente = { sb, supabaseUrl, supabaseKey, catalogo(): { productos, variantesPorProducto }, agregar(lineas, { metodoPago, observacion }): Promise<boolean>, toast(msg, tipo) }`. El catálogo se pide con una función para leer siempre el más reciente; el evento no viaja: lo pone la hoja de cobro al registrar.
 
 Estados: `grabando` → `procesando` → `propuesta` (o `error`).
 
@@ -140,3 +140,11 @@ Sin cambios: las líneas llegan al carrito y la hoja de cobro llama a `registrar
   - La regla de evidencia, aislada en `supabase/functions/pos-voz/evidencia.js` (+ `.d.ts`, mismo patrón que `pos-logic.js`) con pruebas de Vitest en `src/app/pos/evidencia.spec.ts`: «dos tote bags» → duda; «una orquídea» → línea; producto único en su categoría sin nombre exacto → línea; combinación sin valor dicho → duda.
   - Sin sesión → 401.
 - **Manual en el S25 Ultra:** instalar el PWA, arrastrar el atajo «Venta por voz» a inicio, abrirlo, conceder micrófono, dictar la frase del ejemplo, resolver la duda, registrar en QR y ver la venta en otro POS y en el cuadre de SOFA 2026. Después, anular esa venta de prueba desde el admin.
+
+## 8. Hallazgos de la implementación (2026-10-09)
+
+- **Ambigüedad entre categorías:** «Orquídeas» existe como Totebag, Banda y Pañoleta, y hay dos «Libretas ÚLTIMAS UNIDADES». La regla de evidencia compara el fragmento contra **todo** el catálogo (nombre + categoría, números en letras = dígitos, prefijo común ≥ 5 letras) y solo acepta un producto si gana sin empate; si no, duda con los empatados. Las dudas del modelo se completan con lo que empata con su `fragmento` (el modelo llegó a omitir la Totebag Orquídeas).
+- **Tokens:** el plan gratuito de Groq permite 8.000 tokens/minuto por modelo. Con UUIDs cada consulta gastaba ~6.900; con alias cortos (`p1`, `v1`, traducidos en el servidor) gasta ~2.300 (≈ 3 ventas/minuto por modelo). Ante 429 o JSON fuera del esquema (400) se reintenta con `GROQ_MODEL_RESPALDO` (por defecto `openai/gpt-oss-20b`), lo que da ≈ 6 ventas/minuto. Para más, subir la cuenta de Groq a Dev Tier.
+- **Duda sin campo `texto`:** el modelo lo omitió una vez y Groq rechazó la respuesta; el esquema ya no lo pide y el servidor lo arma con el fragmento.
+- **Lógica del modelo** en `supabase/functions/pos-voz/interpretar.js` (JS plano), para probar frases reales desde Node sin desplegar.
+- Banco de 9 frases reales contra el catálogo de producción: todas correctas, ~1,1 s cada una.
