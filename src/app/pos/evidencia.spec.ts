@@ -1,17 +1,24 @@
 import { describe, it, expect } from 'vitest';
-import { normalizar, palabrasDistintivas, validarPropuesta, type Catalogo } from '../../../supabase/functions/pos-voz/evidencia.js';
+import { normalizar, fichas, validarPropuesta, type Catalogo } from '../../../supabase/functions/pos-voz/evidencia.js';
 
 const catalogo: Catalogo = {
   productos: [
     { id: 'orq', nombre: 'Totebag Orquídeas', categoria: 'tote', precio: 40000, stock_actual: 3 },
     { id: 'est', nombre: 'Totebag Estrella', categoria: 'tote', precio: 40000, stock_actual: 5 },
     { id: 'sol', nombre: 'Totebag Sol', categoria: 'tote', precio: 40000, stock_actual: 3 },
+    { id: 'bor', nombre: 'Banda Orquídeas', categoria: 'bandas', precio: 20000, stock_actual: 6 },
+    { id: 'lib1', nombre: 'Libretas ÚLTIMAS UNIDADES', categoria: 'impresos', precio: 10000, stock_actual: 6 },
+    { id: 'lib2', nombre: 'Libretas ÚLTIMAS UNIDADES', categoria: 'produccion-vieja', precio: 10000, stock_actual: 4 },
+    { id: 'cab', nombre: 'Cabina de dibujo', categoria: 'actividades', precio: 10000, stock_actual: 100 },
     { id: 'age', nombre: 'Agenda Cuac 2027', categoria: 'agenda', precio: 60000, stock_actual: 4 },
     { id: 'cam', nombre: 'Camiseta Pato', categoria: 'ropa', precio: 70000, stock_actual: 6 },
   ],
   variantes: [
     { id: 'cam-s', producto_id: 'cam', opciones: { talla: 'S' }, precio: null, stock_actual: 2 },
     { id: 'cam-m', producto_id: 'cam', opciones: { talla: 'M' }, precio: null, stock_actual: 4 },
+    { id: 'cab-1', producto_id: 'cab', opciones: { Cant: '1persona' }, precio: 10000, stock_actual: 50 },
+    { id: 'cab-2', producto_id: 'cab', opciones: { Cant: '2 personas' }, precio: 15000, stock_actual: 48 },
+    { id: 'cab-3', producto_id: 'cab', opciones: { Cant: '3 personas' }, precio: 20000, stock_actual: 50 },
   ],
 };
 
@@ -23,10 +30,10 @@ describe('normalizar', () => {
   });
 });
 
-describe('palabrasDistintivas', () => {
-  it('excluye la categoría y las palabras compartidas', () => {
-    const totes = catalogo.productos.filter(p => p.categoria === 'tote');
-    expect(palabrasDistintivas(totes[0], totes, 'tote')).toEqual(['orquideas']);
+describe('fichas', () => {
+  it('quita palabras vacías y cortas, separa números pegados', () => {
+    expect(fichas('Libretas ÚLTIMAS UNIDADES')).toEqual(['libretas']);
+    expect(fichas('1persona')).toEqual(['1', 'persona']);
   });
 });
 
@@ -54,12 +61,12 @@ describe('validarPropuesta', () => {
   });
 
   it('la palabra distintiva debe estar en el fragmento de esa línea, no en otra parte', () => {
-    const t = 'dos tote bags y una orquídea';
+    const t = 'dos tote bags y una tote orquídea';
     const r = validarPropuesta(
       {
         lineas: [
           { producto_id: 'orq', variante_id: null, cantidad: 2, fragmento: 'dos tote bags' },
-          { producto_id: 'orq', variante_id: null, cantidad: 1, fragmento: 'una orquidea' },
+          { producto_id: 'orq', variante_id: null, cantidad: 1, fragmento: 'una tote orquidea' },
         ],
         dudas: [],
       },
@@ -68,6 +75,42 @@ describe('validarPropuesta', () => {
     expect(r.lineas).toEqual([{ producto_id: 'orq', variante_id: null, cantidad: 1 }]);
     expect(r.dudas).toHaveLength(1);
     expect(r.dudas[0].cantidad).toBe(2);
+  });
+
+  it('«una orquídea» sin decir qué es → duda entre tote y banda', () => {
+    const r = validarPropuesta(
+      { lineas: [{ producto_id: 'orq', variante_id: null, cantidad: 1, fragmento: 'una orquidea' }], dudas: [] },
+      catalogo, 'véndeme una orquídea',
+    );
+    expect(r.lineas).toEqual([]);
+    expect(r.dudas[0].opciones.map(o => o.producto_id).sort()).toEqual(['bor', 'orq']);
+  });
+
+  it('dos productos con el mismo nombre → duda', () => {
+    const r = validarPropuesta(
+      { lineas: [{ producto_id: 'lib1', variante_id: null, cantidad: 1, fragmento: 'una libreta' }], dudas: [] },
+      catalogo, 'una libreta',
+    );
+    expect(r.lineas).toEqual([]);
+    expect(r.dudas[0].opciones.map(o => o.producto_id).sort()).toEqual(['lib1', 'lib2']);
+  });
+
+  it('combinación con números dichos en letras', () => {
+    const ok = validarPropuesta(
+      { lineas: [{ producto_id: 'cab', variante_id: 'cab-2', cantidad: 1, fragmento: 'cabina para dos personas' }], dudas: [] },
+      catalogo, 'una cabina para dos personas',
+    );
+    expect(ok.lineas).toEqual([{ producto_id: 'cab', variante_id: 'cab-2', cantidad: 1 }]);
+    const uno = validarPropuesta(
+      { lineas: [{ producto_id: 'cab', variante_id: 'cab-1', cantidad: 1, fragmento: 'cabina de una persona' }], dudas: [] },
+      catalogo, 'cabina de una persona',
+    );
+    expect(uno.lineas).toEqual([{ producto_id: 'cab', variante_id: 'cab-1', cantidad: 1 }]);
+    const ambigua = validarPropuesta(
+      { lineas: [{ producto_id: 'cab', variante_id: 'cab-2', cantidad: 1, fragmento: 'cabina de personas' }], dudas: [] },
+      catalogo, 'cabina de personas',
+    );
+    expect(ambigua.lineas).toEqual([]);
   });
 
   it('producto único en su categoría basta con el fragmento', () => {

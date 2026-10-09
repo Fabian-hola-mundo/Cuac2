@@ -1,85 +1,97 @@
-// Regla anti-adivinanza: el modelo propone, el servidor exige que cada
-// producto (y su combinación) esté realmente dicho en la transcripción.
-// JS plano para que lo importen Deno (función) y Vitest (pruebas).
+// Regla anti-adivinanza: el modelo propone, el servidor exige que el fragmento
+// dicho señale a ese producto (y combinación) mejor que a cualquier otro del
+// catálogo. Si hay empate, se pregunta. JS plano para Deno y Vitest.
+
+const NUMEROS = { un: '1', uno: '1', una: '1', dos: '2', tres: '3', cuatro: '4', cinco: '5', seis: '6', siete: '7', ocho: '8', nueve: '9', diez: '10' };
+const VACIAS = new Set(['para', 'por', 'con', 'los', 'las', 'del', 'que', 'unidades', 'ultimas']);
 
 export function normalizar(s) {
   return String(s ?? '')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
+    .replace(/(\d)([a-z])/g, '$1 $2')
+    .replace(/([a-z])(\d)/g, '$1 $2')
     .replace(/[^a-z0-9ñ\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-const palabras = s => normalizar(s).split(' ').filter(Boolean);
-
-export function palabrasDistintivas(producto, productosCategoria, categoria) {
-  const comunes = new Set(palabras(categoria));
-  for (const p of productosCategoria) {
-    if (p.id !== producto.id) palabras(p.nombre).forEach(w => comunes.add(w));
-  }
-  return palabras(producto.nombre).filter(w => w.length >= 3 && !comunes.has(w));
+// Palabras con significado: ≥ 3 letras o números, sin palabras vacías.
+export function fichas(s) {
+  return [...new Set(normalizar(s).split(' ').filter(w => (/^\d+$/.test(w) || w.length >= 3) && !VACIAS.has(w)))];
 }
 
-// «orquidea» ~ «orquideas»: palabra completa o prefijo común de ≥ 5 letras.
-function coincide(palabra, textoPalabras) {
-  return textoPalabras.some(t => {
-    if (t === palabra) return true;
-    let i = 0;
-    while (i < t.length && i < palabra.length && t[i] === palabra[i]) i++;
-    return i >= 5;
-  });
+// Palabras de lo dicho, con los números en letras también como dígitos.
+function fichasDichas(s) {
+  const ws = normalizar(s).split(' ').filter(Boolean);
+  return [...new Set([...ws, ...ws.map(w => NUMEROS[w]).filter(Boolean)])];
+}
+
+// «orquidea» ~ «orquideas»: igual, o prefijo común de ≥ 5 letras.
+function parecida(a, b) {
+  if (a === b) return true;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return i >= 5;
+}
+
+export function puntaje(fichasObjetivo, dichas) {
+  return fichasObjetivo.filter(f => dichas.some(d => parecida(f, d))).length;
+}
+
+const fichasProducto = p => [...new Set([...fichas(p.nombre), ...fichas(p.categoria)])];
+// En combinaciones cuentan también las palabras cortas (tallas S, M, L).
+const fichasVariante = v => [...new Set(normalizar(Object.values(v.opciones ?? {}).join(' ')).split(' ').filter(w => w && !VACIAS.has(w)))];
+
+// Los mejores según el puntaje; vacío si nadie suma.
+function mejores(items, fichasDe, dichas) {
+  let max = 0;
+  let r = [];
+  for (const it of items) {
+    const p = puntaje(fichasDe(it), dichas);
+    if (p > max) { max = p; r = [it]; } else if (p === max && p > 0) r.push(it);
+  }
+  return r;
 }
 
 const esCantidad = c => Number.isInteger(c) && c >= 1;
 
 export function validarPropuesta(modelo, catalogo, transcripcion) {
   const texto = normalizar(transcripcion);
-  const textoPalabras = texto.split(' ').filter(Boolean);
   const porId = new Map(catalogo.productos.map(p => [p.id, p]));
   const variantesDe = id => catalogo.variantes.filter(v => v.producto_id === id);
-  const deCategoria = cat => catalogo.productos.filter(p => p.categoria === cat);
-
-  const lineas = [];
-  const dudas = [];
-
-  // Opciones de un producto: sus combinaciones si las tiene, o el producto.
   const opcionesDe = p => {
     const vs = variantesDe(p.id);
     return vs.length ? vs.map(v => ({ producto_id: p.id, variante_id: v.id })) : [{ producto_id: p.id, variante_id: null }];
   };
 
+  const lineas = [];
+  const dudas = [];
+
   for (const l of modelo.lineas ?? []) {
     const p = porId.get(l.producto_id);
     if (!p || !esCantidad(l.cantidad)) continue;
     const frag = normalizar(l.fragmento);
-    const fragmentoDicho = frag.length > 0 && texto.includes(frag);
-    const hermanos = deCategoria(p.categoria);
-    const distintivas = palabrasDistintivas(p, hermanos, p.categoria);
-    const productoDicho = fragmentoDicho &&
-      (hermanos.length <= 1 || distintivas.some(w => coincide(w, frag.split(' '))));
-
-    if (!productoDicho) {
-      const candidatos = fragmentoDicho ? hermanos : [p];
-      dudas.push({
-        texto: fragmentoDicho ? `¿Cuál ${p.categoria}?` : `¿Confirmas ${p.nombre}?`,
-        cantidad: l.cantidad,
-        opciones: candidatos.flatMap(opcionesDe),
-      });
+    if (!frag || !texto.includes(frag)) {
+      dudas.push({ texto: `¿Confirmas ${p.nombre}?`, cantidad: l.cantidad, opciones: opcionesDe(p) });
       continue;
     }
-
+    const dichas = fichasDichas(frag);
+    const top = mejores(catalogo.productos, fichasProducto, dichas);
+    if (top.length !== 1 || top[0].id !== p.id) {
+      const candidatos = top.length ? top : [p];
+      dudas.push({ texto: `¿Cuál exactamente? («${l.fragmento}»)`, cantidad: l.cantidad, opciones: candidatos.flatMap(opcionesDe) });
+      continue;
+    }
     const vs = variantesDe(p.id);
     if (!vs.length) {
       lineas.push({ producto_id: p.id, variante_id: null, cantidad: l.cantidad });
       continue;
     }
-    const v = vs.find(x => x.id === l.variante_id);
-    const varianteDicha = v && Object.values(v.opciones ?? {})
-      .some(val => palabras(val).every(w => textoPalabras.includes(w)));
-    if (varianteDicha) {
-      lineas.push({ producto_id: p.id, variante_id: v.id, cantidad: l.cantidad });
+    const topV = mejores(vs, fichasVariante, dichas);
+    if (topV.length === 1 && topV[0].id === l.variante_id) {
+      lineas.push({ producto_id: p.id, variante_id: l.variante_id, cantidad: l.cantidad });
     } else {
       dudas.push({ texto: `¿Qué combinación de ${p.nombre}?`, cantidad: l.cantidad, opciones: opcionesDe(p) });
     }

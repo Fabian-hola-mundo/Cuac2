@@ -8,5 +8,6 @@ export interface LineaModelo extends LineaVoz { fragmento: string; }
 export interface PropuestaModelo { lineas: LineaModelo[]; dudas: DudaVoz[]; }
 
 export function normalizar(s: string): string;
-export function palabrasDistintivas(producto: ProductoCat, productosCategoria: ProductoCat[], categoria: string): string[];
+export function fichas(s: string): string[];
+export function puntaje(fichasObjetivo: string[], dichas: string[]): number;
 export function validarPropuesta(modelo: PropuestaModelo, catalogo: Catalogo, transcripcion: string): { lineas: LineaVoz[]; dudas: DudaVoz[] };
