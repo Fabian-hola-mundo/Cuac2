@@ -16,6 +16,19 @@ const MAX_AUDIO = 10 * 1024 * 1024
 const MAX_TEXTO = 500
 const TIMEOUT_MS = 15000
 
+// Clave de Groq: secreto de entorno, o Supabase Vault (migración 039) si no
+// está. Se recuerda mientras viva la instancia.
+let claveCache: string | null = null
+// deno-lint-ignore no-explicit-any
+async function claveGroq(admin: any): Promise<string | null> {
+  if (claveCache) return claveCache
+  const env = Deno.env.get('GROQ_API_KEY')
+  if (env) return (claveCache = env)
+  const { data, error } = await admin.rpc('secreto_pos_voz', { p_nombre: 'groq_api_key' })
+  if (error) console.error('vault', error.message)
+  return (claveCache = typeof data === 'string' && data ? data : null)
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...CORS, 'Content-Type': 'application/json' } })
 }
@@ -32,7 +45,8 @@ Deno.serve(async (req) => {
   const [adm, pos] = await Promise.all([usuario.rpc('is_admin'), usuario.rpc('is_pos_operator')])
   if (adm.data !== true && pos.data !== true) return json({ error: 'No autorizado' }, 401)
 
-  const groqKey = Deno.env.get('GROQ_API_KEY')
+  const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+  const groqKey = await claveGroq(admin)
   if (!groqKey) return json({ error: 'Voz no configurada' }, 500)
 
   // Entrada: audio (multipart) o texto (JSON).
@@ -56,7 +70,6 @@ Deno.serve(async (req) => {
   }
 
   // Catálogo activo, el mismo que muestra el POS.
-  const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
   const { data: productos, error: errP } = await admin
     .from('productos_evento')
     .select('id, nombre, categoria, precio, stock_actual')
