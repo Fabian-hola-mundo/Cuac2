@@ -3,11 +3,12 @@
 // caché si no hay conexión. Supabase no pasa por aquí: las ventas sin conexión
 // ya las guarda la propia página en localStorage.
 
-const CACHE = 'pos-v4';
+// CACHE y el ?v= de pos-logic.js (aquí y en index.html) se suben juntos.
+const CACHE = 'pos-v5';
 const CACHE_FOTOS = 'pos-fotos-v1'; // fotos de productos: cache aparte, sobrevive a las versiones
 const SHELL = [
   '/pos/',
-  '/pos/pos-logic.js',
+  '/pos/pos-logic.js?v=5',
   '/pos/manifest.json',
   '/pos/vendor/supabase.js',
   '/pos/icon-192.png',

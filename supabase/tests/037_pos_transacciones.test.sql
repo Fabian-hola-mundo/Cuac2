@@ -43,7 +43,7 @@ begin
   assert (select count(*) from public.ventas_evento where transaccion_id = v_t) = 2, '2 líneas';
   assert (select stock_actual from public.productos_evento where id = v_pin) = 3, 'stock pin 3';
   assert (select stock_actual from public.producto_variantes where id = v_m) = 2, 'stock variante 2';
-  assert (select bool_and(metodo_pago = 'efectivo' and comentario = 'Regalo' and canal is null and sincronizado)
+  assert (select bool_and(metodo_pago = 'efectivo' and comentario = 'Regalo' and canal is distinct from 'web' and sincronizado)
             from public.ventas_evento where transaccion_id = v_t), 'campos de la venta';
   assert (select precio_unitario from public.ventas_evento where transaccion_id = v_t and producto_id = v_pin) = 8000, 'precio';
 

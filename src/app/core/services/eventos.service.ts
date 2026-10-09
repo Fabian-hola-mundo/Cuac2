@@ -82,22 +82,31 @@ export class EventosService {
 
   async getVentasEvento(evento: Evento): Promise<VentaEvento[]> {
     const fin = evento.fecha_fin ?? new Date().toISOString();
-    const { data, error } = await this.sb.db
-      .from('ventas_evento')
-      .select('*, productos_evento(nombre, categoria, precio), producto_variantes(opciones)')
-      .gte('vendido_en', evento.fecha_inicio)
-      .lte('vendido_en', fin)
-      .order('vendido_en', { ascending: false });
-    if (error) throw error;
-    return data ?? [];
+    // PostgREST devuelve como máximo 1000 filas: se pagina con orden estable.
+    const PAGINA = 1000;
+    const todas: VentaEvento[] = [];
+    for (let desde = 0; ; desde += PAGINA) {
+      const { data, error } = await this.sb.db
+        .from('ventas_evento')
+        .select('*, productos_evento(nombre, categoria, precio), producto_variantes(opciones)')
+        .gte('vendido_en', evento.fecha_inicio)
+        .lte('vendido_en', fin)
+        .order('vendido_en', { ascending: false })
+        .order('id')
+        .range(desde, desde + PAGINA - 1);
+      if (error) throw error;
+      todas.push(...(data ?? []));
+      if (!data || data.length < PAGINA) break;
+    }
+    return todas;
   }
 
   /** Avisa cuando entra una venta nueva (POS u otra). Devuelve la función para dejar de escuchar. */
-  escucharVentas(onInsert: () => void): () => void {
+  escucharVentas(onInsert: () => void, onSubscribed?: () => void): () => void {
     const canal = this.sb.db
       .channel(`evento-ventas-${crypto.randomUUID()}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ventas_evento' }, () => onInsert())
-      .subscribe();
+      .subscribe(s => { if (s === 'SUBSCRIBED') onSubscribed?.(); });
     return () => { this.sb.db.removeChannel(canal); };
   }
 

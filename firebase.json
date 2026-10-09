@@ -29,7 +29,7 @@
         ]
       },
       {
-        "source": "/pos/@(sw.js|manifest.json|vendor/supabase.js)",
+        "source": "/pos/@(sw.js|manifest.json|pos-logic.js|vendor/supabase.js)",
         "headers": [
           { "key": "Cache-Control", "value": "no-cache" }
         ]

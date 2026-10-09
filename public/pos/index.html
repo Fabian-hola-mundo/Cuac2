@@ -762,7 +762,7 @@
     agregarAlCarrito, cambiarCantidad, totalCarrito, unidadesCarrito,
     restaurarCarrito, atajosBilletes, calcularVueltas, nuevoCobro,
     armarTransaccion, migrarColaVieja, sumarPendientes, resumenPendientes,
-  } from './pos-logic.js';
+  } from './pos-logic.js?v=5'; // el ?v= va junto con CACHE y SHELL de sw.js: subirlos a la vez
 
   const SUPABASE_URL = 'https://ytqcwrjxlnlsjgnjxiiw.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWN3cmp4bG5sc2pnbmp4aWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTE1MzMsImV4cCI6MjA5NDk4NzUzM30.hW01ztylAFWhy3bAjJXPl4Q8wh2YP_DbpR2oaXWHxVs';
@@ -776,6 +776,8 @@
   const AUTH_KEY = 'sb-ytqcwrjxlnlsjgnjxiiw-auth-token';
   const MAS_VENDIDOS_KEY = 'pos_mas_vendidos';   // {evento_id, datos}
   const CONTADOR_KEY = 'pos_contador_evento';    // {evento_id, ventas, total}
+  const REINTENTO_COLA_MS = 45000;               // reintento de la cola mientras hay red
+  let timerCola = null;
   const REFRESCO_MS = 2000;                      // debounce de los avisos en vivo
 
   const { createClient } = supabase;
@@ -1005,7 +1007,7 @@
             .from('ventas_evento')
             .select('transaccion_id, id, cantidad, precio_unitario, productos_evento(precio)')
             .eq('evento_id', eventoId())
-            .is('canal', null)
+            .or('canal.is.null,canal.neq.web')
             .order('id')
             .range(desde, desde + PAGINA - 1);
           if (error) throw error;
@@ -1455,8 +1457,26 @@
         event: 'INSERT', schema: 'public', table: 'ventas_evento',
         filter: 'evento_id=eq.' + eventoId(),
       }, programarRefresco)
-      .subscribe();
+      .subscribe(s => { if (s === 'SUBSCRIBED') { programarRefresco(); reintentarCola(); } });
   }
+
+  // Reintenta la cola cada tanto: 'online' no se dispara si la red nunca se cayó
+  // del todo pero el envío falló. syncOfflineQueue ya evita solaparse.
+  function reintentarCola() {
+    if (isOnline && getOfflineQueue().length > 0) void syncOfflineQueue();
+  }
+  function iniciarReintentoCola() {
+    if (timerCola) return;
+    timerCola = setInterval(reintentarCola, REINTENTO_COLA_MS);
+  }
+
+  // Al volver a la app (pantalla bloqueada, otra pestaña) el canal pudo perder avisos.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || !realtimeChannel) return;
+    programarRefresco();
+    void loadProducts();
+    reintentarCola();
+  });
 
   // ── EVENTO ACTIVO (from DB) ──
   async function cargarEvento() {
@@ -1491,6 +1511,7 @@
     updatePendingBadge();
 
     subscribeRealtime();
+    iniciarReintentoCola();
 
     if (getOfflineQueue().length > 0 && isOnline) {
       await syncOfflineQueue();
@@ -1862,6 +1883,8 @@
     if (!confirm('¿Cerrar sesión?')) return;
     clearTimeout(timerRefresco);
     timerRefresco = null;
+    clearInterval(timerCola);
+    timerCola = null;
     if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
     await sb.auth.signOut();
     showScreen('screen-login');

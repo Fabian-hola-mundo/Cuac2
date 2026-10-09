@@ -112,17 +112,26 @@ export class EventoDetailComponent implements OnInit, OnDestroy {
     await this.cargar(id);
     if (this.destruido || !this.evento()) return;
     // Ventas nuevas: se vuelve a leer, agrupando ráfagas en una sola lectura.
-    this.quitarCanal = this.svc.escucharVentas(() => {
-      if (this.destruido) return;
-      clearTimeout(this.recarga);
-      this.recarga = setTimeout(() => void this.refrescarVentas(), 2000);
-    });
+    this.quitarCanal = this.svc.escucharVentas(() => this.programarRecarga(), () => this.programarRecarga());
+    // Al volver a la pestaña el canal pudo perder avisos.
+    document.addEventListener('visibilitychange', this.alVolver);
   }
+
+  private programarRecarga() {
+    if (this.destruido) return;
+    clearTimeout(this.recarga);
+    this.recarga = setTimeout(() => void this.refrescarVentas(), 2000);
+  }
+
+  private readonly alVolver = () => {
+    if (document.visibilityState === 'visible') this.programarRecarga();
+  };
 
   ngOnDestroy() {
     this.destruido = true;
     clearTimeout(this.recarga);
     this.quitarCanal?.();
+    document.removeEventListener('visibilitychange', this.alVolver);
   }
 
   private async refrescarVentas() {
