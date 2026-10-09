@@ -44,11 +44,16 @@ function etiquetaDe(variante) {
 
 export function agregarAlCarrito(carrito, producto, variante, etiqueta) {
   const fuente = variante ?? producto;
-  const tope = fuente.stock_actual;
   const clave = claveDe(producto.id, variante?.id);
+  // Otras líneas del mismo producto/combinación (las de precio dictado por voz
+  // llevan otra clave) también gastan stock.
+  const otras = carrito
+    .filter(l => l.clave !== clave && l.producto_id === producto.id && (l.variante_id ?? null) === (variante?.id ?? null))
+    .reduce((s, l) => s + l.cantidad, 0);
+  const tope = fuente.stock_actual - otras;
   const existe = carrito.some(l => l.clave === clave);
   if (existe) {
-    if (tope < 1) return carrito.filter(l => l.clave !== clave);
+    if (fuente.stock_actual < 1 || tope < 1) return carrito.filter(l => l.clave !== clave);
     return carrito.map(l => (l.clave === clave ? { ...l, cantidad: Math.min(l.cantidad + 1, tope), stock_max: tope } : l));
   }
   if (tope < 1) return carrito;

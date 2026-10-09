@@ -93,6 +93,19 @@ describe('carrito', () => {
     expect(unidadesCarrito(c)).toBe(3);
     expect(cambiarCantidad(cambiarCantidad(c, 'a|', -2), 'a|', -1)).toEqual([]);
   });
+  it('el tope de stock cuenta las líneas de precio dictado del mismo producto', () => {
+    const p = prod('a', { precio: 40000, stock_actual: 3 });
+    const dictada: Linea = {
+      clave: 'a||vx', producto_id: 'a', variante_id: null, nombre: 'Pa', etiqueta_variante: null,
+      cantidad: 2, precio_unitario: 35000, stock_max: 3,
+    };
+    let c = agregarAlCarrito([dictada], p, null);
+    expect(c.map(l => [l.clave, l.cantidad, l.stock_max])).toEqual([['a||vx', 2, 3], ['a|', 1, 1]]);
+    c = agregarAlCarrito(c, p, null);
+    expect(c.find(l => l.clave === 'a|')!.cantidad).toBe(1);
+    const lleno = agregarAlCarrito([{ ...dictada, cantidad: 3 }], p, null);
+    expect(lleno.map(l => l.clave)).toEqual(['a||vx']);
+  });
   it('cambiarCantidad -1 desde 1 elimina', () => {
     const c = agregarAlCarrito([], prod('a'), null);
     expect(cambiarCantidad(c, 'a|', -1)).toEqual([]);

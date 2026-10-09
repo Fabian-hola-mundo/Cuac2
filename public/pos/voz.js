@@ -4,7 +4,7 @@
 // líneas al carrito (puente.agregar). Nunca registra: eso lo hace la hoja de cobro.
 import {
   propuestaACarrito, repartirPrecio, dudasPendientes, observacionPrecio, totalLineas,
-} from './voz-logic.js';
+} from './voz-logic.js?v=1'; // mismo ?v= que en index.html
 
 const MAX_SEG = 60;
 const TIMEOUT_MS = 20000;

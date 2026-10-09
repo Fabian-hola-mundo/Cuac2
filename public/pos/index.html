@@ -764,7 +764,7 @@
     agregarAlCarrito, cambiarCantidad, totalCarrito, unidadesCarrito,
     restaurarCarrito, atajosBilletes, calcularVueltas, nuevoCobro,
     armarTransaccion, migrarColaVieja, sumarPendientes, resumenPendientes,
-  } from './pos-logic.js?v=5'; // el ?v= va junto con CACHE y SHELL de sw.js: subirlos a la vez
+  } from './pos-logic.js?v=6'; // el ?v= va junto con CACHE y SHELL de sw.js: subirlos a la vez
 
   const SUPABASE_URL = 'https://ytqcwrjxlnlsjgnjxiiw.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cWN3cmp4bG5sc2pnbmp4aWl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTE1MzMsImV4cCI6MjA5NDk4NzUzM30.hW01ztylAFWhy3bAjJXPl4Q8wh2YP_DbpR2oaXWHxVs';
@@ -1728,7 +1728,7 @@
     catalogo: () => ({ productos: products, variantesPorProducto: variantsByProduct }),
     toast: showToast,
     async agregar(lineas, { metodoPago: metodo, observacion }) {
-      const { fusionarCarrito } = await import('./voz-logic.js');
+      const { fusionarCarrito } = await import('./voz-logic.js?v=1'); // mismo ?v= que en voz.js
       // Se revisa después del import: el registro pudo empezar mientras cargaba.
       if (registrando) { showToast('Espera a que termine el registro en curso', 'warning'); return false; }
       const stockDe = (productoId, varianteId) => {
@@ -1757,7 +1757,7 @@
   async function abrirVozDiferido(grabar) {
     if (!navigator.onLine) { showToast('Sin conexión: agrega desde el catálogo', 'warning'); return; }
     try {
-      const { abrirVoz } = await import('./voz.js');
+      const { abrirVoz } = await import('./voz.js?v=1'); // subir el ?v= al cambiar voz.js o voz-logic.js
       abrirVoz(puenteVoz, { grabar });
     } catch (e) {
       console.error('voz', e);
