@@ -59,7 +59,22 @@ describe('carrito', () => {
     const c = agregarAlCarrito([], p, v);
     expect(c[0].precio_unitario).toBe(55000);
     expect(c[0].clave).toBe('a|v1');
-    expect(c[0].etiqueta_variante).toBe('M · Rojo');
+    expect(c[0].etiqueta_variante).toBe('Rojo · M');
+  });
+  it('etiqueta explícita prevalece', () => {
+    const c = agregarAlCarrito([], prod('a'), vari('v1', 'a'), 'Rojo / M');
+    expect(c[0].etiqueta_variante).toBe('Rojo / M');
+  });
+  it('etiqueta por defecto no depende del orden de claves', () => {
+    const p = prod('a');
+    const x = agregarAlCarrito([], p, vari('v1', 'a', { opciones: { Talla: 'M', Color: 'Rojo' } }));
+    const y = agregarAlCarrito([], p, vari('v1', 'a', { opciones: { Color: 'Rojo', Talla: 'M' } }));
+    expect(x[0].etiqueta_variante).toBe(y[0].etiqueta_variante);
+  });
+  it('producto agotado ya en el carrito quita la línea', () => {
+    let c = agregarAlCarrito([], prod('a'), null);
+    c = agregarAlCarrito(c, prod('a', { stock_actual: 0 }), null);
+    expect(c).toEqual([]);
   });
   it('precio null cuenta 0 y no muta la entrada', () => {
     const p = prod('a', { precio: null });

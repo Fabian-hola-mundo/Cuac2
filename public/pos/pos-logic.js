@@ -37,17 +37,19 @@ const claveDe = (productoId, varianteId) => productoId + '|' + (varianteId ?? ''
 
 function etiquetaDe(variante) {
   if (!variante) return null;
-  const vals = Object.values(variante.opciones ?? {});
+  const o = variante.opciones ?? {};
+  const vals = Object.keys(o).sort().map(k => o[k]);
   return vals.length ? vals.join(' · ') : null;
 }
 
-export function agregarAlCarrito(carrito, producto, variante) {
+export function agregarAlCarrito(carrito, producto, variante, etiqueta) {
   const fuente = variante ?? producto;
   const tope = fuente.stock_actual;
   const clave = claveDe(producto.id, variante?.id);
   const existe = carrito.some(l => l.clave === clave);
   if (existe) {
-    return carrito.map(l => (l.clave === clave ? { ...l, cantidad: Math.min(l.cantidad + 1, tope) } : l));
+    if (tope < 1) return carrito.filter(l => l.clave !== clave);
+    return carrito.map(l => (l.clave === clave ? { ...l, cantidad: Math.min(l.cantidad + 1, tope), stock_max: tope } : l));
   }
   if (tope < 1) return carrito;
   return [
@@ -57,7 +59,7 @@ export function agregarAlCarrito(carrito, producto, variante) {
       producto_id: producto.id,
       variante_id: variante?.id ?? null,
       nombre: producto.nombre,
-      etiqueta_variante: etiquetaDe(variante),
+      etiqueta_variante: etiqueta !== undefined ? etiqueta : etiquetaDe(variante),
       cantidad: 1,
       precio_unitario: variante?.precio ?? producto.precio ?? null,
       stock_max: tope,

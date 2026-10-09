@@ -67,7 +67,7 @@ export interface ContextoCobro {
 export function normalizarTexto(s: string): string;
 export function coincideBusqueda(producto: { nombre: string; categoria: string | null }, consulta: string): boolean;
 export function ordenarCatalogo(productos: Producto[], masVendidos: MasVendido[], limite?: number): { producto: Producto; rango: number | null }[];
-export function agregarAlCarrito(carrito: Linea[], producto: Producto, variante: Variante | null): Linea[];
+export function agregarAlCarrito(carrito: Linea[], producto: Producto, variante: Variante | null, etiqueta?: string | null): Linea[];
 export function cambiarCantidad(carrito: Linea[], clave: string, delta: number): Linea[];
 export function totalCarrito(carrito: Linea[]): number;
 export function unidadesCarrito(carrito: Linea[]): number;
