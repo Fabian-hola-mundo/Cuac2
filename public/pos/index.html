@@ -652,7 +652,7 @@
           <span class="connection-dot"></span>
           <span id="connection-label">Conectado</span>
         </span>
-        <span class="tally" id="tally" title="Ventas de hoy en este dispositivo">
+        <span class="tally" id="tally" title="Ventas del evento (todos los POS)">
           <b id="tally-count">0</b> ventas
           <span class="sep">·</span>
           <b id="tally-total">$0</b>
@@ -761,7 +761,7 @@
     coincideBusqueda, ordenarCatalogo,
     agregarAlCarrito, cambiarCantidad, totalCarrito, unidadesCarrito,
     restaurarCarrito, atajosBilletes, calcularVueltas, nuevoCobro,
-    armarTransaccion, migrarColaVieja,
+    armarTransaccion, migrarColaVieja, sumarPendientes, resumenPendientes,
   } from './pos-logic.js';
 
   const SUPABASE_URL = 'https://ytqcwrjxlnlsjgnjxiiw.supabase.co';
@@ -774,7 +774,9 @@
   const DEVICE_ID_KEY = 'pos_device_id';
   const CATALOG_KEY = 'pos_catalogo';
   const AUTH_KEY = 'sb-ytqcwrjxlnlsjgnjxiiw-auth-token';
-  const TALLY_KEY = 'pos_session_tally';
+  const MAS_VENDIDOS_KEY = 'pos_mas_vendidos';   // {evento_id, datos}
+  const CONTADOR_KEY = 'pos_contador_evento';    // {evento_id, ventas, total}
+  const REFRESCO_MS = 2000;                      // debounce de los avisos en vivo
 
   const { createClient } = supabase;
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -788,7 +790,12 @@
   let reservedByVariant = {};
 
   // Catálogo «vender primero»: buscador, chips y orden 🔥.
-  let masVendidos = [];         // {producto_id, unidades}[] — lo llena la Task 5
+  let masVendidos = [];         // base del servidor + pendientes de la cola
+  let masVendidosBase = [];     // solo lo que ya está en el servidor
+  let contadorBase = { ventas: 0, total: 0 }; // ventas del evento ya en el servidor
+  let timerRefresco = null;
+  let seqMasVendidos = 0;
+  let seqContador = 0;
   let ordenAplicado = [];       // salida de ordenarCatalogo, congelada mientras haya carrito
   let chipActivo = 'todo';      // 'todo' | 'hot' | 'cat:<categoria>'
   let textoBusqueda = '';
@@ -903,10 +910,6 @@
     }
   }
 
-  function todayKey() {
-    return new Date().toISOString().slice(0, 10);
-  }
-
   // Deterministic category → palette colour (mirrors storefront per-product tints)
   const PALETTE = ['rio', 'rosa', 'sol', 'selva', 'terra', 'lila', 'bone'];
   function colorFor(key) {
@@ -929,27 +932,112 @@
     }
   }
 
-  // ── SESSION TALLY (ventas de hoy en este dispositivo) ──
-  function getTally() {
+  // ── EVENTO, MÁS VENDIDOS Y CONTADOR (compartidos entre todos los POS) ──
+  function eventoId() {
+    return eventoActivo?.id ?? 'Venta-regular';
+  }
+
+  // Solo las pendientes de ESTE evento se suman a lo que ya está en el servidor.
+  function colaDelEvento() {
+    const id = eventoId();
+    return getOfflineQueue().filter(t => t.evento_id === id);
+  }
+
+  function leerCache(key) {
     try {
-      const t = JSON.parse(localStorage.getItem(TALLY_KEY) || '{}');
-      if (t.date !== todayKey()) return { date: todayKey(), count: 0, total: 0 };
-      return t;
-    } catch { return { date: todayKey(), count: 0, total: 0 }; }
+      const c = JSON.parse(localStorage.getItem(key) || 'null');
+      return c && c.evento_id === eventoId() ? c : null; // de otro evento: se ignora
+    } catch { return null; }
   }
 
-  function addTally(count, amount) {
-    const t = getTally();
-    t.count += count;
-    t.total += amount;
-    localStorage.setItem(TALLY_KEY, JSON.stringify(t));
-    renderTally();
+  function guardarCache(key, valor) {
+    try { localStorage.setItem(key, JSON.stringify({ ...valor, evento_id: eventoId() })); }
+    catch (e) { console.warn('No se pudo guardar', key, e); }
   }
 
-  function renderTally() {
-    const t = getTally();
-    document.getElementById('tally-count').textContent = t.count;
-    document.getElementById('tally-total').textContent = formatCOP(t.total);
+  function renderContador() {
+    const pend = resumenPendientes(colaDelEvento());
+    document.getElementById('tally-count').textContent = contadorBase.ventas + pend.ventas;
+    document.getElementById('tally-total').textContent = formatCOP(contadorBase.total + pend.total);
+  }
+
+  function renderMasVendidos() {
+    masVendidos = sumarPendientes(masVendidosBase, colaDelEvento());
+    aplicarOrdenSiCarritoVacio();
+    refrescarCatalogo();
+  }
+
+  function restaurarCachesLocales() {
+    const mv = leerCache(MAS_VENDIDOS_KEY);
+    masVendidosBase = Array.isArray(mv?.datos) ? mv.datos : [];
+    const ct = leerCache(CONTADOR_KEY);
+    contadorBase = ct ? { ventas: ct.ventas || 0, total: ct.total || 0 } : { ventas: 0, total: 0 };
+    masVendidos = sumarPendientes(masVendidosBase, colaDelEvento());
+    renderContador();
+  }
+
+  async function cargarMasVendidos() {
+    const seq = ++seqMasVendidos;
+    if (isOnline) {
+      try {
+        const { data, error } = await sb.rpc('mas_vendidos_evento', { p_evento_id: eventoId(), p_limite: 8 });
+        if (error) throw error;
+        if (seq !== seqMasVendidos) return; // llegó una respuesta más nueva
+        masVendidosBase = data || [];
+        guardarCache(MAS_VENDIDOS_KEY, { datos: masVendidosBase });
+      } catch (e) {
+        console.warn('No se pudieron cargar los más vendidos:', e);
+      }
+    }
+    if (seq === seqMasVendidos) renderMasVendidos();
+  }
+
+  async function cargarContadorEvento() {
+    const seq = ++seqContador;
+    if (isOnline) {
+      try {
+        const transacciones = new Set();
+        let sinTransaccion = 0;
+        let total = 0;
+        const PAGINA = 1000;
+        for (let desde = 0; ; desde += PAGINA) {
+          const { data, error } = await sb
+            .from('ventas_evento')
+            .select('transaccion_id, id, cantidad, precio_unitario, productos_evento(precio)')
+            .eq('evento_id', eventoId())
+            .is('canal', null)
+            .order('id')
+            .range(desde, desde + PAGINA - 1);
+          if (error) throw error;
+          for (const r of data || []) {
+            if (r.transaccion_id) transacciones.add(r.transaccion_id); else sinTransaccion++;
+            total += r.cantidad * (r.precio_unitario ?? r.productos_evento?.precio ?? 0);
+          }
+          if (!data || data.length < PAGINA) break;
+        }
+        if (seq !== seqContador) return;
+        contadorBase = { ventas: transacciones.size + sinTransaccion, total };
+        guardarCache(CONTADOR_KEY, contadorBase);
+      } catch (e) {
+        console.warn('No se pudo cargar el contador del evento:', e);
+      }
+    }
+    if (seq === seqContador) renderContador();
+  }
+
+  function refrescarEvento() {
+    return Promise.all([cargarContadorEvento(), cargarMasVendidos()]);
+  }
+
+  // Avisos en vivo: varias ventas seguidas se juntan en un solo refresco.
+  // Mientras se sincroniza la cola, servidor y cola se solapan: se espera.
+  function programarRefresco() {
+    clearTimeout(timerRefresco);
+    timerRefresco = setTimeout(() => {
+      timerRefresco = null;
+      if (sincronizando) { programarRefresco(); return; }
+      void refrescarEvento();
+    }, REFRESCO_MS);
   }
 
   // ── TOAST ──
@@ -987,6 +1075,8 @@
     showToast('Conexión restaurada. Sincronizando…', 'warning');
     await registrarDispositivo();
     await syncOfflineQueue();
+    // Lo que pasó en los otros POS mientras no había red.
+    if (!sincronizando) void refrescarEvento();
   });
 
   window.addEventListener('offline', () => {
@@ -1055,6 +1145,9 @@
       updatePendingBadge();
 
       if (synced > 0) {
+        // El servidor ya tiene esas ventas y la cola se achicó: se relee la base
+        // para no contarlas dos veces ni dejarlas sin contar.
+        await refrescarEvento();
         showToast(`${synced} venta${synced > 1 ? 's' : ''} sincronizada${synced > 1 ? 's' : ''}`, 'success', 3500);
         await loadProducts();
       }
@@ -1330,7 +1423,7 @@
 
   // ── REALTIME ──
   function subscribeRealtime() {
-    if (realtimeChannel) sb.removeChannel(realtimeChannel);
+    if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
 
     realtimeChannel = sb
       .channel('productos-pos')
@@ -1358,6 +1451,10 @@
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'producto_variantes' }, () => loadProducts())
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'ventas_evento',
+        filter: 'evento_id=eq.' + eventoId(),
+      }, programarRefresco)
       .subscribe();
   }
 
@@ -1382,11 +1479,12 @@
     document.getElementById('header-device-name').textContent = getDeviceName();
 
     updateConnectionUI();
-    renderTally();
     await cargarEvento();
+    restaurarCachesLocales(); // lo último visto de ESTE evento, mientras llega la red
     void registrarDispositivo();
     renderSkeleton();
     await loadProducts();
+    await refrescarEvento();
 
     // Con el catálogo ya cargado (o el guardado) la cola vieja toma sus precios.
     migrarColaAntigua();
@@ -1609,6 +1707,7 @@
       window.cerrarCobro();
     }
     cambioCarrito();
+    if (carrito.length === 0) { aplicarOrdenSiCarritoVacio(); refrescarCatalogo(); }
   });
 
   document.getElementById('cobro-pays').addEventListener('click', e => {
@@ -1656,7 +1755,7 @@
     const t = armarTransaccion(carrito, {
       ...cobro,
       metodo_pago: metodoPago,
-      evento_id: eventoActivo?.id ?? 'Venta-regular',
+      evento_id: eventoId(),
       dispositivo: getDeviceName(),
       dispositivo_id: getDeviceId(),
       comentario: document.getElementById('cobro-note').value,
@@ -1722,16 +1821,13 @@
     }
   };
 
-  // Gancho de la Task 5 (contador del evento y más vendidos). Por ahora solo
-  // suma al contador por dispositivo.
-  function onVentaRegistrada(transaccion) {
-    // Venta cerrada: buscador limpio, chip Todo y orden 🔥 recalculado (carrito vacío).
+  // Venta cerrada (registrada o en cola): contador y más vendidos al día.
+  function onVentaRegistrada() {
+    // Buscador limpio, chip Todo y orden 🔥 recalculado (carrito vacío).
     limpiarBuscadorYChip();
-    aplicarOrdenSiCarritoVacio();
-    refrescarCatalogo();
-    const unidades = transaccion.lineas.reduce((s, l) => s + l.cantidad, 0);
-    const total = transaccion.lineas.reduce((s, l) => s + l.cantidad * (l.precio_unitario ?? 0), 0);
-    addTally(unidades, total);
+    renderMasVendidos();    // al instante, con la pendiente de la cola si la hay
+    renderContador();
+    void refrescarEvento(); // y la base real del servidor si hay red
   }
 
   // ── LOGIN ──
@@ -1764,7 +1860,9 @@
   // ── LOGOUT ──
   window.doLogout = async function() {
     if (!confirm('¿Cerrar sesión?')) return;
-    if (realtimeChannel) sb.removeChannel(realtimeChannel);
+    clearTimeout(timerRefresco);
+    timerRefresco = null;
+    if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
     await sb.auth.signOut();
     showScreen('screen-login');
   };
